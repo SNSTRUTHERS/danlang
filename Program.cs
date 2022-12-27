@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
 class Parser {
-    [StructLayout(LayoutKind.Explicit)]
     public record Token {
         public enum Type {
             Error,
@@ -19,13 +17,10 @@ class Parser {
             String
         }
 
-        [FieldOffset(0)]
         public Type type;
 
-        [FieldOffset(8)]
         public string? str;
 
-        [FieldOffset(16)]
         public string? raw;
     }
 

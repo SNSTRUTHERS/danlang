@@ -31,7 +31,7 @@ class Parser {
 
     public static IEnumerable<Token> Tokenize(TextReader stream) {
         Token? reserve = null;
-        var rx = new Regex(@"['#,>:.]");
+        var rx = new Regex(@"['#,>:./~]");
 
         Token error(String reason) {
             return new Token { type = Token.Type.Error, str = reason };
@@ -76,6 +76,7 @@ class Parser {
                     ',' => "list",
                     ':' => "fn",
                     '>' => "apply",
+                    '~' => "complex",
                     _ => "!?!?"
                 }, Char.ToString(prefix));
                 return new Token { type = Token.Type.LParen };
@@ -91,7 +92,10 @@ class Parser {
             return symbol(str.ToString());
         }
 
-        Token lexNumber(int n) {
+        Token lexNumber(char c) {
+            if ((c == '-' || c == '+') && !Char.IsDigit((char)stream.Peek()))
+                return lexSymbol(c);
+
             // TODO: number parsing
             return new Token { type = Token.Type.Number };
         }
@@ -106,7 +110,7 @@ class Parser {
             } else yield return c switch {
                 '(' => new Token { type = Token.Type.LParen },
                 ')' => new Token { type = Token.Type.RParen },
-                var x when x >= '0' && x <= '9' => lexNumber(x - '0'),
+                var x when (x >= '0' && x <= '9') || (x == '+' || x == '-') => lexNumber(x),
                 '"' => lexString(),
                 var x => lexSymbol(x)
             };

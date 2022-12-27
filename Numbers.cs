@@ -1,14 +1,44 @@
+using System.Security.Principal;
 using System.Numerics;
+using System.Text.RegularExpressions;
 
-class Int {
-    public BigInteger num = 0;
-    public Int() : base() {}
-    public Int(BigInteger num) => this.num = num;
-    public override string ToString() => num.ToString();
-    public static Int Parse(string val) => new Int(BigInteger.Parse(val));
+public static class NumExtensions
+{
+    public static Num? ToNum(this string s) {
+        return Num.Parse(s);
+    }
 }
 
-class Fix : Int {
+public class Num {
+    public BigInteger num = 0;
+    public override string ToString() => num.ToString();
+    public static Num? Parse(string? s) {
+        if (s == null) return null;
+        var splits = s.Split('/');
+        if (splits.Length > 1) { // rational
+            var t0 = Parser.Tokenize(new StringReader(splits[0])).First();
+            if (t0.type == Parser.Token.Type.Number) {
+                var t1 = Parser.Tokenize(new StringReader(splits[1])).First();
+                if (t1.type == Parser.Token.Type.Number && t1.num != 0) {
+                    return new Rat(t0.num ?? 0, t1.num ?? 0);
+                }
+            }
+            throw new FormatException($"Failed to parse rational {s}");
+        }
+        
+        if (s.Contains('.')) return Fix.Parse(s);
+        var t = Parser.Tokenize(new StringReader(s)).First();
+        return new Int(t?.num ?? 0);
+    }
+}
+
+public class Int : Num {
+    public Int() : base() {}
+    public Int(BigInteger num) => this.num = num;
+    public new static Num? Parse(string? s) => s == null ? null : new Int(BigInteger.Parse(s));
+}
+
+public class Fix : Int {
     public int dec = 0;
 
     public Fix() {}
@@ -42,13 +72,14 @@ class Fix : Int {
         return $"{sign}{str.Insert(p, ".")}";
     }
 
-    public new static Fix Parse(string val) {
+    public new static Num? Parse(string? val) {
+        if (val == null) return null;
         var dp = val.Length - val.IndexOf('.');
         return new Fix(BigInteger.Parse(val.Remove(val.IndexOf('.'), 1)), dp);
     }
 }
 
-class Rat: Int {
+public class Rat: Int {
     public BigInteger den;
     public Rat() : base() => this.den = 1;
     public Rat(BigInteger num) : base(num) => this.den = 1;
@@ -66,7 +97,8 @@ class Rat: Int {
         }
         return base.ToString();
     }
-    public new static Rat Parse(string val) {
+    public new static Num? Parse(string? val) {
+        if (val == null) return null;
         if (val.Count(c => c == '/') > 1) throw new FormatException("Rational numbers cannot have > 1 '/' character");
         var sPos = val.IndexOf('/');
         if (sPos == 0 || sPos == val.Length -1) throw new FormatException("Invalid '/' position in rational number");
@@ -81,7 +113,7 @@ class Rat: Int {
     }
 }
 
-class Comp : Rat {
+public class Comp : Rat {
     public Comp() : base() => im = new Rat();
     public Comp(BigInteger num) : base(num) => im = new Rat();
     public Comp(BigInteger num, BigInteger den) : base(num, den) => im = new Rat();
@@ -94,7 +126,7 @@ class Comp : Rat {
     public Rat im;
 }
 
-class FComp : Fix {
+public class FComp : Fix {
     public FComp() : base() => im = new Fix();
     public FComp(BigInteger num) : base(num) => im = new Fix();
     public FComp(BigInteger num, int dec) : base(num, dec) => im = new Fix();
@@ -105,44 +137,4 @@ class FComp : Fix {
         return $"{base.ToString()}{(im.num > 0 ? '-' : '+')}{im.ToString()}i";
     }
     public Fix im;
-}
-
-public static class Tests {
-        public static void TestNumbers() {
-        var i = Int.Parse("100000000000000000000000000000000000000000000000002");
-        Console.WriteLine(i.ToString());
-        i = Fix.Parse("100000000000000000.00000000000000000");
-        Console.WriteLine(i.ToString());
-        i = Fix.Parse("100000.00000000100000");
-        Console.WriteLine(i.ToString());
-        i = Fix.Parse("100000.00000000100009");
-        Console.WriteLine(i.ToString());
-        var bi = BigInteger.Parse("999999129321000000");
-        var dp = -25;
-
-        while (dp <= 25) {
-            i = new Fix(bi, dp++);
-            Console.WriteLine(i.ToString());
-        }
-
-        var r = new Rat(10000, 1000);
-        Console.WriteLine(r.ToString());  // "10"
-        r = new Rat(169, 13);
-        Console.WriteLine(r.ToString());  // "13"
-        r = new Rat(712381, 32882);
-        Console.WriteLine(r.ToString()); // "712381/32882"
-        r = Rat.Parse(r.ToString());
-        Console.WriteLine(r.ToString()); // "712381/32882"
-        r = Rat.Parse("720/84");
-        Console.WriteLine(r.ToString()); // "60/7"
-
-        var badRats = new [] {"/1", "1/", "1/0"};
-        foreach (var rat in badRats)
-            try {
-                r = Rat.Parse(rat);
-            }
-            catch (Exception e) {
-                Console.WriteLine(e.Message);
-            }
-    }
 }

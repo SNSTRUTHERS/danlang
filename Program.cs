@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Text;
-using System.Text.RegularExpressions;
 
 class Parser {
     public record Token {
@@ -26,30 +22,37 @@ class Parser {
         public BigInteger? num;
     }
 
+    private const string NumChars = "0123456789abcdefghijklmnopqrstuvwxyz";
+    private static readonly Dictionary<char, int> NumBases =
+        new Dictionary<char, int> {{'b', 2}, {'d', 10}, {'o', 8}, {'q', 4}, {'t', 3}, {'x', 16}, {'z', 36}};
+    private static readonly Dictionary<char,string> SpecialPrefixes = // @"'#,>:./~";
+        new Dictionary<char, string> {
+            {'\'', "quote"}, {'#', "begin"}, {',', "list"}, {'>', ""},
+            {':', ""}, {'.', ""}, {'/', "rational"}, {'~', ""}
+        };
+
     public static IEnumerable<Token> Tokenize(TextReader stream) {
         Token? reserve = null;
-        var rx = new Regex(@"['#,>:./~]");
 
-        char peek() {
-            return (char)stream.Peek();
-        }
-        char next() {
-            return (char)stream.Read();
-        }
+        char peek() => (char)stream.Peek();
+        char next() => (char)stream.Read();
 
-        Token error(String reason) {
-            return new Token { type = Token.Type.Error, str = reason };
-        }
-        Token symbol(String sym, String? raw = null) {
-            return new Token { type = Token.Type.Symbol, str = sym, raw = raw ?? sym };
-        }
+        bool isTerminator(char c) => Char.IsWhiteSpace(c) || c == ')' || c == -1;
+
+        Token error(String reason) => new Token { type = Token.Type.Error, str = reason };
+        Token symbol(String sym, String? raw = null) => new Token { type = Token.Type.Symbol, str = sym, raw = raw ?? sym };
+        Token paren(char p) => 
+            new Token { 
+                raw = p.ToString(),
+                str = p.ToString(),
+                type = (p == '(' ? Token.Type.LParen : Token.Type.RParen)
+            };
 
         Token lexString() {
             var str = new StringBuilder();
-            var raw = new StringBuilder();
-            raw.Append('"');
+            var raw = new StringBuilder("\"");
 
-            for (char c; (c = peek()) != -1;) {
+            for (char c; (c = next()) != -1;) {
                 raw.Append(c);
 
                 if (Char.IsWhiteSpace(c)) {
@@ -72,24 +75,16 @@ class Parser {
         }
 
         Token lexSymbol(char prefix) {
-            if (peek() == '(' && rx.IsMatch(Char.ToString(prefix))) {
+            if (peek() == '(' && SpecialPrefixes.Keys.Contains(prefix)) {
                 next();
-                reserve = symbol(prefix switch {
-                    '\'' => "quote",
-                    '#' => "begin",
-                    ',' => "list",
-                    ':' => "fn",
-                    '>' => "apply",
-                    '~' => "complex",
-                    _ => "!?!?"
-                }, Char.ToString(prefix));
+                reserve = symbol(SpecialPrefixes[prefix], Char.ToString(prefix));
                 return new Token { type = Token.Type.LParen };
             }
 
             var str = new StringBuilder();
             str.Append(prefix);
 
-            for (char c; (c = peek()) != -1 && !Char.IsWhiteSpace(c) && c != ')';) {
+            while (!isTerminator(peek())) {
                 str.Append(next());
             }
 
@@ -97,26 +92,63 @@ class Parser {
         }
 
         Token lexNumber(char prefix) {
-            if ((prefix == '-' || prefix == '+') && !Char.IsDigit(peek()))
-                return lexSymbol(prefix);
-
-            var str = new StringBuilder();
-            str.Append(prefix);
-            
+            int numBase = 10;
+            var nextChar = prefix;
             var raw = new StringBuilder();
-            raw.Append(prefix);
 
-            for (char c; Char.IsDigit((c = peek())) || c == '_';) {
-                if (c != '_')
-                    str.Append(c);
-
-                raw.Append(next());
+            int digitVal() => NumChars.IndexOf(char.ToLower(nextChar));
+            
+            bool isNumDigit() {
+                if (nextChar == '_') return true;
+                var val = digitVal();
+                return val >= 0 && val < Math.Abs(numBase);
             }
 
-            return new Token { type = Token.Type.Number, num = BigInteger.Parse(str.ToString()), raw = raw.ToString() };
+            void advance() { raw.Append(nextChar); nextChar = next();}
+
+            var mult = prefix == '-' ? -1 : 1;
+
+            if (mult < 0 || nextChar == '+') {
+                if (!Char.IsDigit(peek()))
+                    return lexSymbol(nextChar);
+
+                advance();
+            }
+
+            // check for base
+            if (nextChar == '0') {
+                advance();
+                var lc = Char.ToLower(nextChar);
+                if (NumBases.ContainsKey(lc)) {
+                    // set numBase, which could be negative if mult == -1
+                    numBase = mult * NumBases[lc];
+
+                    // consume base
+                    advance();
+
+                    // reset mult since negative bases don't use minus signs
+                    mult = 1;
+                }
+            }
+
+            BigInteger scratch = 0;
+            while (isNumDigit()) {
+                if (nextChar != '_') {
+                    scratch = scratch * numBase + digitVal();
+                }
+                advance();
+            }
+
+            if (!isTerminator(nextChar))
+                return error($"Invalid number terminator ({nextChar}) for base ({numBase})");
+
+            scratch *= mult;
+
+            return new Token { type = Token.Type.Number, num = scratch, raw = raw.ToString() };
         }
 
-        for (char c; (c = next()) != -1;) {
+        char c;
+        while ((c = next()) != -1) {
             if (Char.IsWhiteSpace(c)) {
                 continue;
             } else if (Char.IsControl(c)) {
@@ -124,8 +156,7 @@ class Parser {
             } else if (!Char.IsAscii(c)) {
                 yield return error("Non-ASCII character outside of string literal");
             } else yield return c switch {
-                '(' => new Token { type = Token.Type.LParen },
-                ')' => new Token { type = Token.Type.RParen },
+                '(' or ')' => paren(c),
                 var x when (x >= '0' && x <= '9') || (x == '+' || x == '-') => lexNumber(x),
                 '"' => lexString(),
                 var x => lexSymbol(x)
@@ -144,6 +175,11 @@ class Parser {
 public class Program {
 
     public static int Main(string[] args) {
+        if (args.Contains("-t")) {
+            Tests.TestNumbers();
+            return 0;
+        }
+
         var reader = args.Length > 1 ? new StreamReader(args[1]) : Console.In;
 
         foreach (var tok in Parser.Tokenize(reader)) {

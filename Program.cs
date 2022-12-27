@@ -22,6 +22,8 @@ class Parser {
         public string? str;
 
         public string? raw;
+
+        public BigInteger? num;
     }
 
     public static IEnumerable<Token> Tokenize(TextReader stream) {
@@ -94,12 +96,24 @@ class Parser {
             return symbol(str.ToString());
         }
 
-        Token lexNumber(char c) {
-            if ((c == '-' || c == '+') && !Char.IsDigit(peek()))
-                return lexSymbol(c);
+        Token lexNumber(char prefix) {
+            if ((prefix == '-' || prefix == '+') && !Char.IsDigit(peek()))
+                return lexSymbol(prefix);
 
-            // TODO: number parsing
-            return new Token { type = Token.Type.Number };
+            var str = new StringBuilder();
+            str.Append(prefix);
+            
+            var raw = new StringBuilder();
+            raw.Append(prefix);
+
+            for (char c; Char.IsDigit((c = peek())) || c == '_';) {
+                if (c != '_')
+                    str.Append(c);
+
+                raw.Append(next());
+            }
+
+            return new Token { type = Token.Type.Number, num = BigInteger.Parse(str.ToString()), raw = raw.ToString() };
         }
 
         for (char c; (c = next()) != -1;) {

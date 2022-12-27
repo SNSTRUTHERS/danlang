@@ -33,6 +33,13 @@ class Parser {
         Token? reserve = null;
         var rx = new Regex(@"['#,>:./~]");
 
+        char peek() {
+            return (char)stream.Peek();
+        }
+        char next() {
+            return (char)stream.Read();
+        }
+
         Token error(String reason) {
             return new Token { type = Token.Type.Error, str = reason };
         }
@@ -45,7 +52,7 @@ class Parser {
             var raw = new StringBuilder();
             raw.Append('"');
 
-            for (char c; (c = (char)stream.Peek()) != -1;) {
+            for (char c; (c = peek()) != -1;) {
                 raw.Append(c);
 
                 if (Char.IsWhiteSpace(c)) {
@@ -68,8 +75,8 @@ class Parser {
         }
 
         Token lexSymbol(char prefix) {
-            if (stream.Peek() == '(' && rx.IsMatch(Char.ToString(prefix))) {
-                stream.Read();
+            if (peek() == '(' && rx.IsMatch(Char.ToString(prefix))) {
+                next();
                 reserve = symbol(prefix switch {
                     '\'' => "quote",
                     '#' => "begin",
@@ -85,22 +92,22 @@ class Parser {
             var str = new StringBuilder();
             str.Append(prefix);
 
-            for (char c; (c = (char)stream.Peek()) != -1 && !Char.IsWhiteSpace(c) && c != ')';) {
-                str.Append((char)stream.Read());
+            for (char c; (c = peek()) != -1 && !Char.IsWhiteSpace(c) && c != ')';) {
+                str.Append(next());
             }
 
             return symbol(str.ToString());
         }
 
         Token lexNumber(char c) {
-            if ((c == '-' || c == '+') && !Char.IsDigit((char)stream.Peek()))
+            if ((c == '-' || c == '+') && !Char.IsDigit(peek()))
                 return lexSymbol(c);
 
             // TODO: number parsing
             return new Token { type = Token.Type.Number };
         }
 
-        for (char c; (c = (char)stream.Read()) != -1;) {
+        for (char c; (c = next()) != -1;) {
             if (Char.IsWhiteSpace(c)) {
                 continue;
             } else if (Char.IsControl(c)) {

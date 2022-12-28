@@ -25,6 +25,26 @@ public static class Tests {
             Console.WriteLine(i.ToString());
         }
 
+        var r1 = new Rat(1, 5);
+        var r2 = new Int(7);
+        var r3 = new Fix(123812871238, 7);
+
+        Console.WriteLine(r1+r2);
+        Console.WriteLine(r1-r2);
+        Console.WriteLine(r2-r1);
+        Console.WriteLine(r1/r2);
+        Console.WriteLine(r2/r1);
+        Console.WriteLine(r1*r2);
+        Console.WriteLine(r2*r1);
+
+        Console.WriteLine(r1+r3);
+        Console.WriteLine(r1-r3);
+        Console.WriteLine(r3-r1);
+        Console.WriteLine(r1/r3);
+        Console.WriteLine(r3/r1);
+        Console.WriteLine(r1*r3);
+        Console.WriteLine(r3*r1);
+
         Num? r = new Rat(10000, 1000);
         Console.WriteLine(r);  // "10"
         r = new Rat(169, 13);

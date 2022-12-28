@@ -82,21 +82,87 @@ public class Fix : Int {
 public class Rat: Int {
     public BigInteger den;
     public Rat() : base() => this.den = 1;
+
+    public Rat(Num? r) : this(r?.num ?? 0) {
+        if (r is Rat) den = ((Rat)r)?.den ?? 1;
+        else if (r is Fix) {
+            den = 1;
+            var dec = ((Fix)r)?.dec ?? 0;
+            while (dec-- > 0) den *= 10;
+        }
+    }
+
     public Rat(BigInteger num) : base(num) => this.den = 1;
     public Rat(BigInteger num, BigInteger den) : base(num) { this.den = den; Normalize(); }
     private void Normalize() {
         BigInteger g;
+        if (den < 0) {
+            num = -num;
+            den = -den;
+        }
+        
         while ((g = BigInteger.GreatestCommonDivisor(num, den)) > 1) {
             den /= g;
             num /= g;
         }
     }
+
     public override string ToString() {
         if (den != 1) {
             return $"{base.ToString()}/{den.ToString()}";
         }
         return base.ToString();
     }
+
+    public static Rat operator+(Num r1, Rat r2) {
+        return r2 + r1;
+    }
+
+    public static Rat operator+(Rat r1, Rat r2) {
+        return new Rat(r1.num * r2.den + r2.num * r1.den, r1.den * r2.den);
+    }
+
+    public static Rat ToRat(Rat r2) => r2;
+    public static Rat ToRat(Num r2) => new Rat(r2);
+
+    public static Rat operator+(Rat r1, Num r2) {
+        var rT = ToRat(r2);
+        return new Rat(r1.num * rT.den + rT.num * r1.den, r1.den * rT.den);
+    }
+
+    public static Rat operator-(Num r1, Rat r2) {
+        var rT = ToRat(r1);
+        return new Rat(rT.num * r2.den - r2.num * rT.den, r2.den * rT.den);
+    }
+
+    public static Rat operator-(Rat r) {
+        return new Rat(-r.num, r.den);
+    }
+
+    public static Rat operator-(Rat r1, Num r2) {
+        var rT = ToRat(r2);
+        return r1 + (-rT);
+    }
+
+    public static Rat operator*(Rat r1, Num r2) {
+        var rT = ToRat(r2);
+        return new Rat(r1.num * rT.num, r1.den * rT.den);
+    }
+
+    public static Rat operator*(Num r1, Rat r2) {
+        return r2 * r1;
+    }
+
+    public static Rat operator/(Rat r1, Num r2) {
+        var rT = ToRat(r2);
+        return new Rat(r1.num * rT.den, r1.den * rT.num);
+    }
+
+    public static Rat operator/(Num r1, Rat r2) {
+        var rT = ToRat(r1);
+        return new Rat(rT.num * r2.den, rT.den * r2.num);
+    }
+
     public new static Num? Parse(string? val) {
         if (val == null) return null;
         if (val.Count(c => c == '/') > 1) throw new FormatException("Rational numbers cannot have > 1 '/' character");

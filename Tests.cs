@@ -27,7 +27,13 @@ public static class Tests {
 
         var r1 = new Rat(1, 5);
         var r2 = new Int(7);
-        var r3 = new Fix(123812871238, 7);
+        var r3 = new Fix(123812871238, 9);
+        var r4 = new Rat(1719, -342);
+
+        Console.WriteLine($"{r1}, double {(double)r1}, long {(long)r1}");
+        Console.WriteLine($"{r2}, double {(double)r2}, long {(long)r2}");
+        Console.WriteLine($"{r3}, double {(double)r3}, long {(long)r3}");
+        Console.WriteLine($"{r4}, double {(double)r4}, long {(long)r4}");
 
         Console.WriteLine(r1+r2);
         Console.WriteLine(r1-r2);
@@ -44,6 +50,22 @@ public static class Tests {
         Console.WriteLine(r3/r1);
         Console.WriteLine(r1*r3);
         Console.WriteLine(r3*r1);
+
+        Console.WriteLine(r4+r3);
+        Console.WriteLine(r4-r3);
+        Console.WriteLine(r3-r4);
+        Console.WriteLine(r4/r3);
+        Console.WriteLine(r3/r4);
+        Console.WriteLine(r4*r3);
+        Console.WriteLine(r3*r4);
+
+        Console.WriteLine(r4+r1);
+        Console.WriteLine(r4-r1);
+        Console.WriteLine(r1-r4);
+        Console.WriteLine(r4/r1);
+        Console.WriteLine(r1/r4);
+        Console.WriteLine(r4*r1);
+        Console.WriteLine(r1*r4);
 
         Num? r = new Rat(10000, 1000);
         Console.WriteLine(r);  // "10"

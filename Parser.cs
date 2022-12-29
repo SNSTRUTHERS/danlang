@@ -29,7 +29,7 @@ public class Parser {
     private static readonly Dictionary<char,string> SpecialPrefixes = // @"'#,>:./~";
         new Dictionary<char, string> {
             {'\'', "quote"}, {'#', "begin"}, {',', "list"}, {'>', "send"},
-            {':', "fn"}, {'.', "apply"}, {'/', "rational"}, {'~', "complex"}
+            {':', "fn"}, {'.', "apply"}, {'/', "ratio"}, {'~', "complex"}
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream) {
@@ -69,14 +69,16 @@ public class Parser {
                     raw.Append(c);
 
                     if (Char.IsWhiteSpace(c)) {
-                        if (c == '\n' && quoteCount == 1)
+                        if ((c == '\n' || c == '\r') && quoteCount == 1)
                             return error("Newlines are not allowed in regular strings", raw.ToString());
                         str.Append(c);
                     } else if (Char.IsControl(c)) {
                         return error("Control sequences not allowed", raw.ToString());
                     } else switch (c) {
                     case '"':
-                        while (++trailingQuotes < quoteCount && peek() == '"') raw.Append(next());
+                        while (++trailingQuotes < quoteCount && peek() == '"')
+                            raw.Append(next());
+
                         if (trailingQuotes == quoteCount)
                             return new Token { type = Token.Type.String, str = str.ToString(), raw = raw.ToString() };
                         
@@ -104,7 +106,7 @@ public class Parser {
             var str = new StringBuilder();
             raw.Append(next());
             int i;
-            while ((i = peekInt()) != '\n' && i != -1) {
+            while ((i = peekInt()) != '\n' && i != '\r' && i != -1) {
                 var c = next();
                 str.Append(c);
                 raw.Append(c);

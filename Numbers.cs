@@ -11,7 +11,15 @@ public static class NumExtensions
 
 public class Num {
     public BigInteger num = 0;
+    public Num(BigInteger n) => num = n;
+    public Num() {}
+
     public override string ToString() => num.ToString();
+
+    public static explicit operator double(Num r) => (double)r.num;
+    
+    public static explicit operator long(Num r) => (long)r.num;
+
     public static Num? Parse(string? s) {
         if (s == null) return null;
         var splits = s.Split('/');
@@ -34,8 +42,10 @@ public class Num {
 
 public class Int : Num {
     public Int() : base() {}
-    public Int(BigInteger num) => this.num = num;
+    public Int(BigInteger num) : base(num) {}
     public new static Num? Parse(string? s) => s == null ? null : new Int(BigInteger.Parse(s));
+
+    public static Int operator-(Int i) => new Int(-i.num);
 }
 
 public class Fix : Int {
@@ -43,7 +53,7 @@ public class Fix : Int {
 
     public Fix() {}
     public Fix(BigInteger num) : this(num, 0) {}
-    public Fix(BigInteger num, int dec) { this.num = num; this.dec = dec; Normalize(); }
+    public Fix(BigInteger num, int dec) : base(num) { this.dec = dec; Normalize(); }
 
     private void Normalize() {
         while (dec < 0) {
@@ -76,6 +86,14 @@ public class Fix : Int {
         if (val == null) return null;
         var dp = val.Length - val.IndexOf('.');
         return new Fix(BigInteger.Parse(val.Remove(val.IndexOf('.'), 1)), dp);
+    }
+
+    public static explicit operator double(Fix r) => (double)r.num / Math.Pow(10, r.dec);
+    
+    public static explicit operator long(Fix r) => (long)(double)r;
+
+    public static Fix operator-(Fix f) {
+        return new Fix(-f.num, f.dec);
     }
 }
 
@@ -114,6 +132,9 @@ public class Rat: Int {
         return base.ToString();
     }
 
+    public static explicit operator double(Rat r) => (double)r.num / (double)r.den;
+    public static explicit operator long(Rat r) => (long)(double)r;
+
     public static Rat operator+(Num r1, Rat r2) {
         return r2 + r1;
     }
@@ -132,7 +153,7 @@ public class Rat: Int {
 
     public static Rat operator-(Num r1, Rat r2) {
         var rT = ToRat(r1);
-        return new Rat(rT.num * r2.den - r2.num * rT.den, r2.den * rT.den);
+        return rT + (-r2);
     }
 
     public static Rat operator-(Rat r) {
@@ -144,23 +165,35 @@ public class Rat: Int {
         return r1 + (-rT);
     }
 
+    public static Rat operator-(Rat r1, Rat r2) {
+        return r1 + (-r2);
+    }
+
     public static Rat operator*(Rat r1, Num r2) {
         var rT = ToRat(r2);
-        return new Rat(r1.num * rT.num, r1.den * rT.den);
+        return r1 * rT;
     }
 
     public static Rat operator*(Num r1, Rat r2) {
         return r2 * r1;
     }
 
+    public static Rat operator*(Rat r1, Rat r2) {
+        return new Rat(r1.num * r2.num, r1.den * r2.den);
+    }
+
     public static Rat operator/(Rat r1, Num r2) {
         var rT = ToRat(r2);
-        return new Rat(r1.num * rT.den, r1.den * rT.num);
+        return r1 / rT;
     }
 
     public static Rat operator/(Num r1, Rat r2) {
         var rT = ToRat(r1);
-        return new Rat(rT.num * r2.den, rT.den * r2.num);
+        return rT / r2;
+    }
+
+    public static Rat operator/(Rat r1, Rat r2) {
+        return new Rat(r1.num * r2.den, r1.den * r2.num);
     }
 
     public new static Num? Parse(string? val) {

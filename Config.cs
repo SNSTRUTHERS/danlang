@@ -130,7 +130,8 @@ public record Config {
                 }
                 i = reader.Index;
             } else if (arg.StartsWith("-") && arg.Length > 1) {
-                for (var j = 1; j != arg.Length; ++j) {
+                Console.WriteLine(arg);
+                for (var j = 1; j < arg.Length; ++j) {
                     var ch = arg[j];
                     if (!short_opts.ContainsKey(ch)) {
                         Console.Error.WriteLine($"Unknown option \"-{ch}\"");
@@ -143,7 +144,8 @@ public record Config {
                     } else if (reader.Index > i) {
                         i = reader.Index;
                         break;
-                    }
+                    } else if (j == arg.Length - 1)
+                        ++i;
                 }
             } else break;
         }

@@ -12,6 +12,14 @@ public static class Tests {
         "0x004112311",
         "-0b1010111010110",
         "0q3020103020123010201301",
+        "-000123123802380986654945715",
+        "9876543210",
+        "1.23",
+        "0.01",
+        "+0.01-3.64i",
+        "1+3i",
+        "-1/3+3/7i",
+        "1/3-3i",
         "00000000123123123000000000"
     };
 
@@ -24,6 +32,48 @@ public static class Tests {
             var i = new Fix(bi, dp++);
             Console.WriteLine(i.ToString());
         }
+
+        var r1 = new Rat(1, 5);
+        var r2 = new Int(7);
+        var r3 = new Fix(123812871238, 9);
+        var r4 = new Rat(1719, -342);
+
+        Console.WriteLine($"{r1}, double {(double)r1}, long {(long)r1}");
+        Console.WriteLine($"{r2}, double {(double)r2}, long {(long)r2}");
+        Console.WriteLine($"{r3}, double {(double)r3}, long {(long)r3}");
+        Console.WriteLine($"{r4}, double {(double)r4}, long {(long)r4}");
+
+        Console.WriteLine(r1+r2);
+        Console.WriteLine(r1-r2);
+        Console.WriteLine(r2-r1);
+        Console.WriteLine(r1/r2);
+        Console.WriteLine(r2/r1);
+        Console.WriteLine(r1*r2);
+        Console.WriteLine(r2*r1);
+
+        Console.WriteLine(r1+r3);
+        Console.WriteLine(r1-r3);
+        Console.WriteLine(r3-r1);
+        Console.WriteLine(r1/r3);
+        Console.WriteLine(r3/r1);
+        Console.WriteLine(r1*r3);
+        Console.WriteLine(r3*r1);
+
+        Console.WriteLine(r4+r3);
+        Console.WriteLine(r4-r3);
+        Console.WriteLine(r3-r4);
+        Console.WriteLine(r4/r3);
+        Console.WriteLine(r3/r4);
+        Console.WriteLine(r4*r3);
+        Console.WriteLine(r3*r4);
+
+        Console.WriteLine(r4+r1);
+        Console.WriteLine(r4-r1);
+        Console.WriteLine(r1-r4);
+        Console.WriteLine(r4/r1);
+        Console.WriteLine(r1/r4);
+        Console.WriteLine(r4*r1);
+        Console.WriteLine(r1*r4);
 
         Num? r = new Rat(10000, 1000);
         Console.WriteLine(r);  // "10"
@@ -63,6 +113,8 @@ public static class Tests {
         ()
         .(a to-string 0 1 2 3)
         symbol-test
+        'quoted-symbol
+        ('x 'fn '(a b c 0) 'test-test)
         ""string""
         """"""
     HERE STRING

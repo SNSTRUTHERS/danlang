@@ -33,8 +33,6 @@ public class Parser {
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream) {
-        Token? reserve = null;
-
         int peekInt() => stream.Peek();
         char peek() => (char)peekInt();
         int nextInt() => stream.Read();
@@ -114,26 +112,36 @@ public class Parser {
             return new Token { type = Token.Type.Comment, str = str.ToString(), raw = raw.ToString()};
         }
 
-        Token lexSymbol(char? pref = null) {
+        IEnumerable<Token> lexSymbol(char? pref = null) {
             char prefix = pref ?? next();
+            var isQuote = prefix == '\'';
             if (peek() == '(' && SpecialPrefixes.Keys.Contains(prefix)) {
                 next();
                 var raw = $"{prefix}(";
-                reserve = symbol(SpecialPrefixes[prefix], raw);
-                return paren('(', raw);
+                yield return paren('(', raw);
+                yield return symbol(SpecialPrefixes[prefix], raw);
             }
+            else {
+                if (isQuote) {
+                    yield return paren('(', "'");
+                    yield return symbol("quote", "'");
+                    foreach (var t in lexSymbol()) yield return t;
+                    yield return paren(')', "'");
+                }
+                else {
+                    var str = new StringBuilder();
+                    str.Append(prefix);
 
-            var str = new StringBuilder();
-            str.Append(prefix);
+                    while (!isTerminator(peek())) {
+                        str.Append(next());
+                    }
 
-            while (!isTerminator(peek())) {
-                str.Append(next());
+                    yield return symbol(str.ToString());
+                }
             }
-
-            return symbol(str.ToString());
         }
 
-        Token lexNumber() {
+        IEnumerable<Token> lexNumber() {
             int numBase = 10;
             var nextChar = peekInt();
             var raw = new StringBuilder();
@@ -154,7 +162,7 @@ public class Parser {
                 var prefix = (char)nextChar;
                 advance();
                 if (!Char.IsDigit((char)nextChar))
-                    return lexSymbol(prefix);
+                    foreach (var t in lexSymbol(prefix)) yield return t;
             }
 
             // check for base
@@ -183,11 +191,11 @@ public class Parser {
             }
 
             if (!isTerminator(nextChar))
-                return error($"Invalid number terminator ({(char)nextChar}) for base ({numBase})", raw.Append((char)nextChar).ToString());
-
-            scratch *= mult;
-
-            return new Token { type = Token.Type.Number, num = scratch, raw = raw.ToString() };
+                yield return error($"Invalid number terminator ({(char)nextChar}) for base ({numBase})", raw.Append((char)nextChar).ToString());
+            else {
+                scratch *= mult;
+                yield return new Token { type = Token.Type.Number, num = scratch, raw = raw.ToString() };
+            }
         }
 
         var i = 0;
@@ -201,17 +209,12 @@ public class Parser {
             } else if (!Char.IsAscii(c)) {
                 yield return error("Non-ASCII character outside of string literal");
                 next();
-            } else yield return c switch {
-                ';' => lexComment(),
-                '(' or ')' => lexParen(),
-                (>= '0' and <= '9') or '+' or '-' => lexNumber(),
-                '"' => lexString(),
-                _ => lexSymbol()
-            };
-
-            if (reserve != null) {
-                yield return reserve;
-                reserve = null;
+            } else if (c ==';') yield return lexComment();
+            else if (c =='(' || c == ')') yield return lexParen();
+            else if ((c >= '0' && c <= '9') || c == '+' || c == '-') foreach (var t in lexNumber()) yield return t;
+            else if (c == '"') yield return lexString();
+            else {
+                foreach (var t in lexSymbol()) yield return t;
             }
         }
 

@@ -12,6 +12,14 @@ public static class Tests {
         "0x004112311",
         "-0b1010111010110",
         "0q3020103020123010201301",
+        "-000123123802380986654945715",
+        "9876543210",
+        "1.23",
+        "0.01",
+        "+0.01-3.64i",
+        "1+3i",
+        "-1/3+3/7i",
+        "1/3-3i",
         "00000000123123123000000000"
     };
 
@@ -105,6 +113,8 @@ public static class Tests {
         ()
         .(a to-string 0 1 2 3)
         symbol-test
+        'quoted-symbol
+        ('x 'fn '(a b c 0) 'test-test)
         ""string""
         """"""
     HERE STRING

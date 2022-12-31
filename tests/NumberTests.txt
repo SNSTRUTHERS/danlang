@@ -1,0 +1,70 @@
+        1234 ; decimal
+        -1234 ; negative decimal
+        1_234 ; decimal with _
+        -1_234 ; negative decimal with _
+        0d1_234 ; explicit base 10 with _
+        0+d1_234 ; explicit base 10 with _
+        0-D1_234 ; base -10 with _
+        -0D1_234 ; negative explicit base 10 with _
+        -0-d1_234 ; negative base -10 with _
+        0xab123 ; hex
+        0+x0ab123 ; hex
+        -0Xab123 ; negative hex
+        0-X00ab123 ; base -16
+        -0-x0ab123 ; negative base -16
+        0X0Ab_123 ; hex with _
+        0-X0_0aB_123 ; base -16 with _
+        -0x0_0ab_123 ; negative hex with _
+        -0-x0Ab_123 ; negative base -16 with _
+        0Z0x0ab123 ; base 36
+        0-z0x0ab123 ; base -36
+        -0z0x0aB123 ; negative base 36
+        -0-Z0X0AB123 ; negative base -36
+        0z0x_0ab_123 ; base 36 with _
+        0-Z0x_0ab_123 ; base -36 with _
+        -0z0X_0ab_123 ; negative base 36 with _
+        -0-z0x_0aB_123 ; negative base -36 with _
+        0c0-+-0--+0- ; balanced ternery
+        -0C0-+-0--+0- ; negative balanced ternery
+        0c+-0_-0+_++0_-- ; balanced ternery with _
+        -0C+-0_-0+_++0_-- ; negative balanced ternery with _
+        0-c0-+-0--+0- ; balanced negative ternery
+        -0-c0-+-0--+0- ; negative balanced negative ternery
+        0-C+-0_-0+_++0_-- ; balanced negative ternery with _
+        -0-c+-0_-0+_++0_-- ; negative balanced negative ternery with _
+        0q013201110 ; base 4
+        0-Q013201110 ; base -4
+        0Q013_201_110 ; base 4 with _
+        0-q013_201_110 ; base -4 with _
+        -0Q013201110 ; negative base 4
+        -0-q013201110 ; negative base -4
+        -0q013_201_110 ; negative base 4 with _
+        -0-Q013_201_110 ; negative base -4 with _
+        0b0100101 ; base 2
+        0-B0100101 ; base -2
+        0B001_100_111_001 ; base 2 with _
+        0-b001_100_111_001 ; base -2 with _
+        -0B0100101 ; negative base 2
+        -0-b0100101 ; negative base -2
+        -0b001_100_111_001 ; negative base 2 with _
+        -0-B001_100_111_001 ; negative base -2 with _
+        0T0102101 ; base 3
+        0-t0102101 ; base -3
+        0t001_102_111_001 ; base 3 with _
+        0-T001_102_111_001 ; base -3 with _
+        -0T0102101 ; negative base 3
+        -0-t0102101 ; negative base -3
+        -0t001_102_111_001 ; negative base 3 with _
+        -0-T001_102_111_001 ; negative base -3 with _
+        1/3
+        1/-3
+        -1/3
+        -1/-3
+        1.2
+        -1.4
+        -0.75
+        0b1001__01_0110/-0-c-0_+-+_+00_-
+        -0zbajhkkl934afljkkas9319034/+0-t01201021020011122201
+        0.33333333333333333333333333333
+        35629102845282.1280048717201000
+        3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384 ; PI

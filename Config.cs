@@ -130,7 +130,6 @@ public record Config {
                 }
                 i = reader.Index;
             } else if (arg.StartsWith("-") && arg.Length > 1) {
-                Console.WriteLine(arg);
                 for (var j = 1; j < arg.Length; ++j) {
                     var ch = arg[j];
                     if (!short_opts.ContainsKey(ch)) {

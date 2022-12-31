@@ -12,7 +12,7 @@ public static class NumExtensions
 public class Num {
     private const string _binRegex = "[+-]?0b[01]+";
     private const string _balTernRegex = @"0c[-0+]+(\.[-0+]+)?";
-    private const string _decRegex = @"[+-]?(0d)?\d+([\./]\d+)?([+-]\d+([\./]\d+)?i)?";
+    private const string _decRegex = @"[+-]?(0d)?\d+([\./]\d+)?(e\d+)?([+-]\d+([\./]\d+)?(e\d+)?i)?";
     private const string _octRegex = "[+-]?0o[0-7]+";
     private const string _quatRegex = "[+-]?0q[0-3]+";
     private const string _terRegex = "[+-]?0t[012]+";
@@ -22,6 +22,13 @@ public class Num {
         $"^({_binRegex}|{_decRegex}|{_octRegex}|{_quatRegex}|{_terRegex}|{_balTernRegex}|{_hexRegex}|{_b36Regex})$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     public Num() {}
+
+    public static Num operator*(Num n, int m) {
+        if (n is Rat) return new Rat((n as Rat)!.num * m, (n as Rat)!.den);
+        if (n is Fix) return new Fix((n as Fix)!.num * m, (n as Fix)!.dec);
+        if (n is Int) return new Int((n as Int)!.num * m);
+        return new Int(m);
+    }
 
     public static Num? Parse(string? s) {
         if (s == null) return null;
@@ -36,10 +43,10 @@ public class Num {
         var splits = s2.Split('/');
         if (splits.Length > 1) { // rational
             var t0 = Parser.Tokenize(new StringReader(splits[0])).First();
-            if (t0.type == Parser.Token.Type.Number) {
+            if (t0.type == Parser.Token.Type.Number && t0.num is Int) {
                 var t1 = Parser.Tokenize(new StringReader(splits[1])).First();
-                if (t1.type == Parser.Token.Type.Number && t1.num != 0) {
-                    return new Rat(t0.num ?? 0, t1.num ?? 1);
+                if (t1.type == Parser.Token.Type.Number && t1.num is Int) {
+                    return new Rat((t0.num as Int)!.num, (t1.num as Int)!.num);
                 }
             }
             throw new FormatException($"Failed to parse rational {s2}");
@@ -49,7 +56,7 @@ public class Num {
             return Fix.Parse(s2);
         }
         var t = Parser.Tokenize(new StringReader(s2)).First();
-        return new Int(t?.num ?? 0);
+        return t.num;
     }
 }
 

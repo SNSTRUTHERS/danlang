@@ -23,8 +23,7 @@ public static class Tests {
         "00000000123123123000000000"
     };
 
-    public static void TestNumbers() {
- 
+    public static void TestNumbers() { 
         var bi = BigInteger.Parse("999999129321000000");
         var dp = -25;
 
@@ -104,27 +103,6 @@ public static class Tests {
             }
     }
 
-    private static string ValidTokens = @"
-        0x00ab123
-        -1231
-        -0b0100101 ; this is a comment
-        ; this is a comment, too
-        '(a b c d)
-        ()
-        .(a to-string 0 1 2 3)
-        symbol-test
-        'quoted-symbol
-        ('x 'fn '(a b c 0) 'test-test)
-        ""string""
-        """"""
-    HERE STRING
-    MULTIPLE LINES
-    ""Quoted text""
-    """"Doubley-quoted text""""
-    AND SPACES   
-""""""
-    ";
-
     private static string InvalidTokens = @"
         0xabcdefghij
         0b-1011
@@ -133,11 +111,13 @@ public static class Tests {
         1a
         ""
         ""
+        0c01
     ";
 
     public static void TestTokens() {
-        foreach (var t in Parser.Tokenize(new System.IO.StringReader(ValidTokens))) {
-            Console.WriteLine(t);
+        var tests = new System.IO.DirectoryInfo(@".\tests");
+        foreach(var test in tests.GetFiles()) {
+            foreach(var t in Parser.Tokenize(new StreamReader(test.OpenRead()))) Console.WriteLine(t);
         }
         foreach (var t in Parser.Tokenize(new System.IO.StringReader(InvalidTokens))) {
             try {

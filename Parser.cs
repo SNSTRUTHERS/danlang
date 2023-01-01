@@ -23,59 +23,117 @@ public class Parser {
 
         public Num? num;
 
-        public char? numBase;
+        public IntAcc? acc;
     }
 
-    private const string NumChars = "0123456789abcdefghijklmnopqrstuvwxyz";
-    private static readonly Dictionary<char, int> NumBases =
-        new Dictionary<char, int> {{'b', 2}, {'c', 3}, {'d', 10}, {'o', 8}, {'q', 4}, {'t', 3}, {'x', 16}, {'z', 36}};
+    public static readonly Dictionary<char, int> NumBases =
+        new Dictionary<char, int> {{'b', 2}, {'c', 3}, {'d', 10}, {'e', 5}, {'f', 6}, {'g', 7}, {'k', 27}, {'n', 9}, {'o', 8}, {'q', 4}, {'s', 7}, {'t', 3}, {'v', 5}, {'x', 16}, {'y', 53}, {'z', 36}};
 
-    abstract class IntAcc {
-        protected string Chars;
-        private int? _dec = null;
-        public IntAcc(int numDigits, string chars = NumChars) => Chars = chars.Substring(0, numDigits);
+    public class IntAcc {
+        private const string NumChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private const string BalancedChars = "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ";   
+        private const string BalancedTernQuineryChars = "~=-0+#*";
+
+        private BigInteger? _den = null;
+        private BigInteger _factor = 1;
+        private int _base = 10;
+        private int _zeroIndex = 0;
+        protected bool _ltr = false;
+        protected bool _balanced = false;
+
+        public static int Log10(BigInteger den) {
+            if (den < 0) den = -den;
+            int log = 0;
+            while (den >= 10) { ++log; den /= 10; }
+            return log;
+        }
+
+        public string Chars;
+        public char NumberBase { get; private set; }
         public BigInteger Val { get; private set; }
-        public Num Num { get => _dec == null ? new Int(Val) : new Fix(Val, _dec ?? 0); }
-        public abstract BigInteger NewVal(int c);
+        public Num Num { get => (_den == null || _den == 1) ?
+            new Int(Val) :
+            (NumberBase == 'd' ?
+                new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
+                new Rat(Val, _den ?? 1)); }
+
+        public IntAcc(char b = 'd', int mult = 1, bool ltr = false) {
+            b = Char.ToLower(b);
+            NumberBase = b;
+            _base = NumBases[b];
+            _balanced = "cegky".Contains(b);
+            Chars = _balanced ?
+                (_base > BalancedTernQuineryChars.Length ?
+                    BalancedChars :
+                    BalancedTernQuineryChars) :
+                (b == 'k' ?
+                    BalancedChars :
+                    NumChars);
+
+            _ltr = ltr;
+            _zeroIndex = Chars.IndexOf('0');
+            Chars = Chars.Substring(_balanced ? _zeroIndex - (_base / 2) : _zeroIndex, _base);
+            _zeroIndex = Chars.IndexOf('0');
+            _base = _base * mult;
+        }
+
+        public void Reset() {
+            _factor = 1; _den = null; Val = 0;
+        }
+
+        private char DigitOf(int i) => _balanced ? (char)i : Char.ToUpper((char)i);
+        
+        private BigInteger DigitVal(int c) => Chars.IndexOf(DigitOf(c)) - Chars.IndexOf('0');
+
+        public char CharFor(int v) => Chars[v];
+        
+        private bool IsPlaceholder(int c) => c == '_' || c == '.';
+        
+        public bool IsDigit(int i) => i >= 0 && Chars.IndexOf(DigitOf(i)) >= 0;
+        public int MinDigitVal { get => -_zeroIndex; }
+        public int MaxDigitVal{ get => _balanced ? _zeroIndex : Chars.Length - 1; }
+        
+        public BigInteger NewVal(int c) => _ltr ? Val + (_factor * DigitVal(c)) : Val * _base + DigitVal(c);
+
         public bool Add(int c) {
             if (IsPlaceholder(c)) {
                 if (c == '.') {
-                    if (_dec != null) return false; // already consumed a '.'
-                    _dec = 0;
+                    if (_den != null) return false; // already consumed a '.'
+                    _den = _ltr ? _factor : 1;
                 }
                 return true;
             }
             if (!IsDigit(c)) return false;
-            if (_dec != null) ++_dec;
+            if (!_ltr && _den != null) _den = _den * _base;
             Val = NewVal(c);
+            _factor *= _base;
             return true;
         }
-        public bool IsDigit(int c) => c >= 0 && Chars.IndexOf((char)c) >= 0;
-        public virtual BigInteger DigitVal(int c) => Chars.IndexOf((char)c);
-        public virtual bool IsPlaceholder(int c) => c == '_' || c == '.';
-    }
 
-    class StandardAcc : IntAcc {
-        protected int _b;
-        public StandardAcc(int b = 10, string chars = NumChars) : base(Math.Abs(b), chars) => _b = b;
-        public override BigInteger NewVal(int c) => Val * _b + DigitVal(c);
-    }
+        public override string ToString() => $"IntAcc: base={_base}, chars={Chars}, ltr={_ltr}, balanced={_balanced}";
 
-    class BalancedTerneryAcc : StandardAcc {
-        public BalancedTerneryAcc(int b = 3) : base(b, "-0+") {}
-        private BigInteger _factor = 1;
-        public override BigInteger NewVal(int c) {
-            var v = Val + DigitVal(c);
-            _factor *= _b;
-            return v;
+        public static string ToBase(BigInteger n, string b) {
+            b = b.ToLower();
+            var reg = new Regex("$-?0[<>+-]{0,3}[bcdefgknoqstvxyz]");
+            var mult = b.StartsWith('-') ? -1 : 1;
+            var baseMult = b.Substring(1).Contains('-') ? -1 : 1;
+            var ltr = b.Contains('>') || b.Any(c => "ceg".Contains(c));
+
+            var acc = new IntAcc(b.Last(), baseMult, ltr);
+            var str = new StringBuilder();
+
+            BigInteger min = acc.MinDigitVal, max = acc.MaxDigitVal;
+            var scratch = n;
+            BigInteger p = 1;
+
+            return str.ToString();
         }
-        public override BigInteger DigitVal(int c) => _factor * (base.DigitVal(c) - 1);
     }
 
-    private static IntAcc GetAcc(char b = 'd', int mult = 1) =>
+    private static IntAcc GetAcc(char b = 'd', int mult = 1, bool? ltr = null) =>
         Char.ToLower(b) switch {
-            'c' => new BalancedTerneryAcc(NumBases[b] * mult),
-            _ => new StandardAcc(NumBases[b] * mult)
+            'c' or 'e' or 'g' or 'k' or 'y' => new IntAcc(b, mult, ltr ?? true),
+            _ => new IntAcc(b, mult, ltr ?? false)
         };
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~";
@@ -91,9 +149,8 @@ public class Parser {
         char next() => (char)nextInt();
 
         bool isNumberSeparator(int c, char? numBase = null) =>
-            numBase != null && (c == '/' || numBase switch {
+            numBase != null && (c == '/' || c == '.'|| numBase switch {
                 'd' or 'D'=> c == '+' || c == '-' || c == '.' || c == 'e' || c == 'E',
-                'c' or 'C'=> c == '.',
                 _ => false
             });
 
@@ -200,8 +257,7 @@ public class Parser {
             }
         }
 
-        Token lexIntegerOrFixed() {
-            char numBase = 'd';
+        Token lexIntegerOrFixed(IntAcc? acc = null) {
             var nextChar = peekInt();
             var raw = new StringBuilder();
 
@@ -224,76 +280,87 @@ public class Parser {
                 }
             }
 
-            var acc = GetAcc('d');
-
             // check for base
             if (nextChar == '0') {
                 // consume leading zero always
                 advance();
 
-                // see if there is a base modifier (+/-)
+                // see if there is a base modifier (+-), a balanced indicator (%), and a direction identifier (<>)
                 int? baseMult = null;
-                if ("+-".Contains((char)nextChar)) {
-                    baseMult = nextChar ==  '-' ? -1 : 1;
-                    advance();
+                bool? ltr = null;
+                while (true) {
+                    if ("+-".Contains((char)nextChar)) {
+                        if (baseMult == null) {
+                            baseMult = nextChar ==  '-' ? -1 : 1;
+                            advance();
+                        }
+                        else return error("Duplicate base multiplier in number prefix", raw.ToString());
+                    }
+                    else if ("<>".Contains((char)nextChar)) {
+                        if (ltr == null) {
+                            ltr = nextChar ==  '>';
+                            advance();
+                        }
+                        else return error("Duplicate direction indicator in number prefix", raw.ToString());
+                    } else break;
                 }
 
                 var lc = Char.ToLower((char)nextChar);
                 if (NumBases.ContainsKey(lc)) {
-                    // set numBase, which could be negative if mult == -1
-                    numBase = lc;
-
                     // consume base
                     advance();
 
                     // get the new accumulator based on the numBase and sign
-                    acc = GetAcc(numBase, baseMult ?? 1);
+                    acc = GetAcc(lc, baseMult ?? 1, ltr);
                 }
                 // else if IsDigit(nextChar) then is valid (possibly) complex of the for 0+xi or 0-xi
-                else if (baseMult != null) return error("Invalid sign in integer/fixed number sequence", raw.ToString());
+                else if (baseMult != null || ltr != null) return error("Invalid character(s) in integer/fixed number sequence", raw.ToString());
             }
+            else if (acc != null) acc.Reset();
+
+            acc = acc ?? GetAcc();
 
             while (acc.Add(nextChar)) {
                 advance();
             }
 
-            if (!isTerminator(nextChar, numBase))
-                return error($"Invalid number terminator ({(char)nextChar}) for base ({numBase})", raw.Append((char)nextChar).ToString());
+            if (!isTerminator(nextChar, acc.NumberBase))
+                return error($"Invalid number terminator ({(char)nextChar}) for base ({acc.NumberBase})", raw.Append((char)nextChar).ToString());
             else {
-                return new Token { type = Token.Type.Number, num = acc.Num * mult, numBase = numBase, raw = raw.ToString() };
+                return new Token { type = Token.Type.Number, num = acc.Num * mult, acc = acc, raw = raw.ToString() };
             }
         }
 
-        IEnumerable<Token> lexNumber() {
+        Token lexNumber() {
             var tokens = new List<Tuple<Token, int>>();
-            Tuple<Token, int> t;
+            Tuple<Token, int>? t = null;
             do {
-                t = new (lexIntegerOrFixed(), peekInt());
+                var token = lexIntegerOrFixed(t?.Item1.acc);
+                t = new (token, peekInt());
                 tokens.Add(t);
-                if (isNumberSeparator(t.Item2, t.Item1.numBase)) next();
-            } while (t.Item1.type == Token.Type.Number && isNumberSeparator(t.Item2, t.Item1.numBase));
+                if (isNumberSeparator(t.Item2, t.Item1.acc?.NumberBase)) next();
+            } while (t.Item1.type == Token.Type.Number && isNumberSeparator(t.Item2, t.Item1.acc!.NumberBase));
             
-            var token = tokens[0];
-            if (tokens.Count == 1) yield return token.Item1;
+            t = tokens[0];
+            if (tokens.Count == 1) return t.Item1;
             else {
                 var raw = new StringBuilder();
                 foreach (var tt in tokens) {
                     raw.Append(tt.Item1.raw);
-                    if (isNumberSeparator(tt.Item2, tt.Item1.numBase)) raw.Append((char)tt.Item2);
+                    if (isNumberSeparator(tt.Item2, tt.Item1.acc!.NumberBase)) raw.Append((char)tt.Item2);
                 }
 
                 var i = 0;
                 Num? n = null;
                 while (i < tokens.Count) {
-                    token = tokens[i];
-                    if (token.Item1.type != Token.Type.Number) {
-                        yield return token.Item1;
-                        yield break;
+                    t = tokens[i];
+                    if (t.Item1.type != Token.Type.Number) {
+                        return t.Item1;
                     }
                     
-                    if (!isNumberSeparator(token.Item2, token.Item1.numBase)) {
+                    if (!isNumberSeparator(t.Item2, t.Item1.acc!.NumberBase)) {
                         if (i == 0) {
-                            n = token.Item1.num;
+                            n = t.Item1.num;
                             break;
                         }
                         else {
@@ -302,22 +369,22 @@ public class Parser {
                     }
                     
                     if (i < tokens.Count - 1) {
-                        if ("+-".Contains((char)token.Item2)) { // complex
+                        if ("+-".Contains((char)t.Item2)) { // complex
                             if (n == null) {
                                 
                             }
                         }
-                        else if (token.Item2 == '/') { // Rational
-                            n = new Rat((token.Item1.num as Int)!.num, (tokens[++i].Item1.num as Int)!.num);
+                        else if (t.Item2 == '/') { // Rational
+                            n = new Rat((t.Item1.num as Int)!.num, (tokens[++i].Item1.num as Int)!.num);
                             ++i;
                         }
                         else {
                             // error, missing denominator
-                            yield return error("Missing denominator in number", raw.ToString());
+                            return error("Missing denominator in number", raw.ToString());
                         }
                     }
                 }
-                yield return new Token {type = Token.Type.Number, num = n, raw = raw.ToString()};
+                return new Token {type = Token.Type.Number, num = n, raw = raw.ToString()};
             }
         }
 
@@ -326,19 +393,25 @@ public class Parser {
             var c = (char)i;
             if (Char.IsWhiteSpace(c)) {
                 next();
-            } else if (Char.IsControl(c)) {
+            }
+            else if (Char.IsControl(c)) {
                 yield return error("Control sequences not allowed");
                 next();
-            } else if (!Char.IsAscii(c)) {
+            }
+            else if (!Char.IsAscii(c)) {
                 yield return error("Non-ASCII character outside of string literal");
                 next();
-            } else if (c ==';') yield return lexComment();
-            else if (c =='(' || c == ')') yield return lexParen();
-            else if ((c >= '0' && c <= '9') || c == '+' || c == '-') foreach (var t in lexNumber()) yield return t;
-            else if (c == '"') yield return lexString();
-            else {
-                foreach (var t in lexSymbol()) yield return t;
             }
+            else if (c ==';')
+                yield return lexComment();
+            else if (c =='(' || c == ')')
+                yield return lexParen();
+            else if ((c >= '0' && c <= '9') || c == '+' || c == '-')
+                yield return lexNumber();
+            else if (c == '"')
+                yield return lexString();
+            else foreach (var t in lexSymbol())
+                yield return t;
         }
 
         yield return new Token { type = Token.Type.EOF };

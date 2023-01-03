@@ -42,7 +42,6 @@ public class Parser {
         private int _zeroIndex = 0;
         private bool _le = false;
         private bool _balanced = false;
-        private bool _customCharset = false;
         private bool _caseSignificant = false;
 
         public static int Log10(BigInteger den) {
@@ -86,7 +85,6 @@ public class Parser {
             _base = NumBases[b];
             _balanced = "cegky".Contains(b);
             if ((chars?.Length ?? 0) < _base || !IsUniqueSet(chars)) chars = null;
-            _customCharset = chars != null;
             Chars = chars ?? (_balanced ?
                 (_base > BalancedTernQuinSeptChars.Length ?
                     BalancedChars :

@@ -34,6 +34,7 @@ public class Parser {
         private const string NumChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string BalancedChars = "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ";   
         private const string BalancedTernQuinSeptChars = "~=-0+#*";
+        private const string InvalidCharsetCharacters = "[]() \t\r\n._\\'\"";
 
         private BigInteger? _den = null;
         private BigInteger _factor = 1;
@@ -69,17 +70,14 @@ public class Parser {
 
             var set = new HashSet<char>();
             var unique = s.ToCharArray().All(c => set.Add(c));
-            var allLegal = set.All(c => !"[] \t\r\n._".Contains(c) && (int)c > 32);
+            var allLegal = set.All(c => !InvalidCharsetCharacters.Contains(c) && (int)c > 32);
             return allLegal && unique;
         }
 
         public static bool IsCaseUnique(string? s = null) {
             if (string.IsNullOrEmpty(s)) return false;
 
-            var set = new HashSet<char>();
-            var unique = s.ToUpper().ToCharArray().All(c => set.Add(c));
-            var allLegal = set.All(c => !"[] \t\r\n._".Contains(c) && (int)c > 32);
-            return allLegal && unique;
+            return IsUniqueSet(s.ToUpper());
         }
 
         public IntAcc(char b = 'd', int mult = 1, bool le = false, string? chars = null) {
@@ -139,7 +137,8 @@ public class Parser {
             return true;
         }
 
-        public override string ToString() => $"IntAcc: Base={_base}, Chars={Chars}, {(_le ? "Little" : "Big")} Endian{(_balanced ? ", Balanced" : "")}";
+        public override string ToString() => 
+            $"IntAcc: Base={_base}, Chars={Chars}, {(_le ? "Little" : "Big")} Endian{(_balanced ? ", Balanced" : "")}, Case {(IsCaseSignificant ? "Sensitive" : "Insensitive")}";
 
         public static string ToBase(Num n, string b) {
             var num = ToBase((n as Int)!.num, b);
@@ -185,7 +184,7 @@ public class Parser {
 
             var acc = new IntAcc(baseChar, baseMult, le, chars);
             // Console.WriteLine($"Acc: {acc}");
-            customCharset = IntAcc.IsUniqueSet(chars) && (chars?.Length ?? 0) >= Math.Abs(acc._base);
+            customCharset = acc.Chars != new IntAcc(baseChar, baseMult, le).Chars;
 
             // final normalize
             if (b == "0d") b = "";

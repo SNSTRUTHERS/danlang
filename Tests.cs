@@ -29,7 +29,7 @@ public static class Tests {
             foreach (var d in "<>") {
                 foreach (var i in new[] {1, -1}) {
                     foreach (var s in "+-") {
-                        foreach (var chars in new[] {"", "[qwertyuiopasdfghjklzxcvbnm)(*&^%$#@!-0123456789MNBVCXZLKJHGFDSAPOIUYTREWQ]"}) {
+                        foreach (var chars in new[] {"", "[qwertyuiopasdfghjklzxcvbnm}{*&^%$#@!-0123456789MNBVCXZLKJHGFDSAPOIUYTREWQ]"}) {
                         Console.WriteLine($"Number: {(i < 0 ? "-" : "")}{xx}, LE: {(d == '>')}, Base: {(s == '+' ? "Positive" : "Negative")}");
                         foreach (var b in "bcdefgknoqstvxyz") {
                             var bs = $"0{d}{s}{chars}{b}";

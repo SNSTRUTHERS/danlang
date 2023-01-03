@@ -50,6 +50,8 @@ public class Parser {
 
         public string Chars;
         public char NumberBase { get; private set; }
+        public int Base { get => _base; }
+        public bool IsBalanced { get => _balanced; }
         public BigInteger Val { get; private set; }
         public Num Num { get => (_den == null || _den == 1) ?
             new Int(Val) :
@@ -85,7 +87,7 @@ public class Parser {
         
         private BigInteger DigitVal(int c) => Chars.IndexOf(DigitOf(c)) - Chars.IndexOf('0');
 
-        public char CharFor(int v) => Chars[v];
+        public char CharFor(int v) => Chars[v + _zeroIndex];
         
         private bool IsPlaceholder(int c) => c == '_' || c == '.';
         
@@ -114,25 +116,74 @@ public class Parser {
 
         public static string ToBase(BigInteger n, string b) {
             b = b.ToLower();
-            var reg = new Regex("$-?0[<>+-]{0,3}[bcdefgknoqstvxyz]");
-            var mult = b.StartsWith('-') ? -1 : 1;
+
+            // validate incoming b
+            var reg = new Regex("^0([<>]?[+-]?|[+-]?[<>]?)[bcdefgknoqstvxyz]$", RegexOptions.IgnoreCase);
+            if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
+
+            // normalize b
+            b = b.Replace("+", "");
+            var isCEG = "ceg".Contains(b.Last());
+            if (b.Contains('>') && isCEG) b = b.Replace(">", "");
+            if (b.Contains('<') && !isCEG) b = b.Replace("<", "");
+
             var baseMult = b.Substring(1).Contains('-') ? -1 : 1;
-            var ltr = b.Contains('>') || b.Any(c => "ceg".Contains(c));
+            var ltr = b.Contains('>') || isCEG;
 
             var acc = new IntAcc(b.Last(), baseMult, ltr);
+
+            // final normalize
+            if (b == "0d") b = "";
+
             var str = new StringBuilder();
-
-            BigInteger min = acc.MinDigitVal, max = acc.MaxDigitVal;
-            var scratch = n;
+            var mult = (acc.Base > 0 && !acc.IsBalanced && n < 0) ? -1 : 1;
+            var scratch = n * mult;
             BigInteger p = 1;
+            BigInteger min = acc.MinDigitVal;
+            BigInteger max = acc.MaxDigitVal;
 
-            return str.ToString();
+            while (scratch > max || scratch < min) {
+                p = p * acc.Base;
+                min = min + (p * ((p > 0) ? acc.MinDigitVal : acc.MaxDigitVal));
+                max = max + (p * ((p > 0) ? acc.MaxDigitVal : acc.MinDigitVal));
+            }
+
+            while (p != 0) {
+                var d = (int)(scratch / p);
+                scratch = scratch % p;
+
+                min = min - (p * ((p > 0) ? acc.MinDigitVal : acc.MaxDigitVal));
+                max = max - (p * ((p > 0) ? acc.MaxDigitVal : acc.MinDigitVal));
+
+                var m = 0;
+                if (scratch > max) m = (scratch > p ? -1 : 1);
+                else if (scratch < min) m = (scratch > p ? 1 : -1);
+
+                d = d + m;
+                scratch = scratch - (m * p);
+
+                try {
+                    if (acc._ltr) str.Insert(0, acc.CharFor(d));
+                    else str.Append(acc.CharFor(d));
+                } catch {
+                    Console.WriteLine($"*** Exception: (d:{d} b:{acc.Base} p:{p} scratch:{scratch} max:{max} min:{min})");
+                }
+
+                p = p / acc.Base;
+            }
+
+            str.Insert(0, b);
+            if (mult < 0) str.Insert(0, '-');
+            var ret = str.ToString();
+
+            // TODO: validate that ret parses to n
+            return ret;
         }
     }
 
     private static IntAcc GetAcc(char b = 'd', int mult = 1, bool? ltr = null) =>
         Char.ToLower(b) switch {
-            'c' or 'e' or 'g' or 'k' or 'y' => new IntAcc(b, mult, ltr ?? true),
+            'c' or 'e' or 'g' => new IntAcc(b, mult, ltr ?? true),
             _ => new IntAcc(b, mult, ltr ?? false)
         };
 

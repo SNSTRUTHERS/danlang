@@ -23,7 +23,24 @@ public static class Tests {
         "00000000123123123000000000"
     };
 
-    public static void TestNumbers() { 
+    public static void TestNumbers() {
+        foreach (var b in "bcdefgknoqstvxyz") {
+            foreach (var s in "+-") {
+                foreach (var d in "<>") {
+                    foreach (var i in new[] {1, -1}) {
+                        foreach (var n in new[] {"9875", "0", "60238761983717636153001927465929276381"}) {
+                            var bs = $"0{s}{d}{b}";
+                            BigInteger x = BigInteger.Parse(n);
+                            Console.Write($"{x}:{bs} => {Parser.IntAcc.ToBase(x, bs)}");
+                            Console.Write($"\t{-x}:{bs} => {Parser.IntAcc.ToBase(-x, bs)}");
+                            bs = $"0{d}{s}{b}";
+                            Console.Write($"\t{x}:{bs} => {Parser.IntAcc.ToBase(x, bs)}");
+                            Console.WriteLine($"\t{-x}:{bs} => {Parser.IntAcc.ToBase(-x, bs)}");
+                        }
+                    }
+                }
+            }
+        }
         var bi = BigInteger.Parse("999999129321000000");
         var dp = -25;
 

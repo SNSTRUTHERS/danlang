@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Text;
@@ -32,14 +33,16 @@ public class Parser {
     public class IntAcc {
         private const string NumChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string BalancedChars = "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ";   
-        private const string BalancedTernQuineryChars = "~=-0+#*";
+        private const string BalancedTernQuinSeptChars = "~=-0+#*";
 
         private BigInteger? _den = null;
         private BigInteger _factor = 1;
         private int _base = 10;
         private int _zeroIndex = 0;
-        protected bool _ltr = false;
-        protected bool _balanced = false;
+        private bool _le = false;
+        private bool _balanced = false;
+        private bool _customCharset = false;
+        private bool _caseSignificant = false;
 
         public static int Log10(BigInteger den) {
             if (den < 0) den = -den;
@@ -52,6 +55,8 @@ public class Parser {
         public char NumberBase { get; private set; }
         public int Base { get => _base; }
         public bool IsBalanced { get => _balanced; }
+        public bool IsLE { get => _le; }
+        public bool IsCaseSignificant { get => _caseSignificant; }
         public BigInteger Val { get; private set; }
         public Num Num { get => (_den == null || _den == 1) ?
             new Int(Val) :
@@ -59,33 +64,55 @@ public class Parser {
                 new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
                 new Rat(Val, _den ?? 1)); }
 
-        public IntAcc(char b = 'd', int mult = 1, bool ltr = false) {
+        public static bool IsUniqueSet(string? s = null) {
+            if (string.IsNullOrEmpty(s)) return false;
+
+            var set = new HashSet<char>();
+            var unique = s.ToCharArray().All(c => set.Add(c));
+            var allLegal = set.All(c => !"[] \t\r\n._".Contains(c) && (int)c > 32);
+            return allLegal && unique;
+        }
+
+        public static bool IsCaseUnique(string? s = null) {
+            if (string.IsNullOrEmpty(s)) return false;
+
+            var set = new HashSet<char>();
+            var unique = s.ToUpper().ToCharArray().All(c => set.Add(c));
+            var allLegal = set.All(c => !"[] \t\r\n._".Contains(c) && (int)c > 32);
+            return allLegal && unique;
+        }
+
+        public IntAcc(char b = 'd', int mult = 1, bool le = false, string? chars = null) {
             b = Char.ToLower(b);
             NumberBase = b;
             _base = NumBases[b];
             _balanced = "cegky".Contains(b);
-            Chars = _balanced ?
-                (_base > BalancedTernQuineryChars.Length ?
+            if ((chars?.Length ?? 0) < _base || !IsUniqueSet(chars)) chars = null;
+            _customCharset = chars != null;
+            Chars = chars ?? (_balanced ?
+                (_base > BalancedTernQuinSeptChars.Length ?
                     BalancedChars :
-                    BalancedTernQuineryChars) :
+                    BalancedTernQuinSeptChars) :
                 (b == 'k' ?
                     BalancedChars :
-                    NumChars);
+                    NumChars));
 
-            _ltr = ltr;
-            _zeroIndex = Chars.IndexOf('0');
+            _le = le;
+            _zeroIndex = _balanced ? Chars.Length / 2 : 0;
             Chars = Chars.Substring(_balanced ? _zeroIndex - (_base / 2) : _zeroIndex, _base);
-            _zeroIndex = Chars.IndexOf('0');
+            _zeroIndex = _balanced ? Chars.Length / 2 : 0;
             _base = _base * mult;
+            _caseSignificant = !IsCaseUnique(Chars);
+            if (!_caseSignificant) Chars = Chars.ToUpper();
         }
 
         public void Reset() {
             _factor = 1; _den = null; Val = 0;
         }
 
-        private char DigitOf(int i) => _balanced ? (char)i : Char.ToUpper((char)i);
+        private char DigitOf(int i) => _caseSignificant ? (char)i : Char.ToUpper((char)i);
         
-        private BigInteger DigitVal(int c) => Chars.IndexOf(DigitOf(c)) - Chars.IndexOf('0');
+        private BigInteger DigitVal(int c) => Chars.IndexOf(DigitOf(c)) - _zeroIndex;
 
         public char CharFor(int v) => Chars[v + _zeroIndex];
         
@@ -95,42 +122,70 @@ public class Parser {
         public int MinDigitVal { get => -_zeroIndex; }
         public int MaxDigitVal{ get => _balanced ? _zeroIndex : Chars.Length - 1; }
         
-        public BigInteger NewVal(int c) => _ltr ? Val + (_factor * DigitVal(c)) : Val * _base + DigitVal(c);
+        public BigInteger NewVal(int c) => _le ? Val + (_factor * DigitVal(c)) : Val * _base + DigitVal(c);
 
         public bool Add(int c) {
             if (IsPlaceholder(c)) {
                 if (c == '.') {
                     if (_den != null) return false; // already consumed a '.'
-                    _den = _ltr ? _factor : 1;
+                    _den = _le ? _factor : 1;
                 }
                 return true;
             }
             if (!IsDigit(c)) return false;
-            if (!_ltr && _den != null) _den = _den * _base;
+            if (!_le && _den != null) _den = _den * _base;
             Val = NewVal(c);
             _factor *= _base;
             return true;
         }
 
-        public override string ToString() => $"IntAcc: base={_base}, chars={Chars}, ltr={_ltr}, balanced={_balanced}";
+        public override string ToString() => $"IntAcc: Base={_base}, Chars={Chars}, {(_le ? "Little" : "Big")} Endian{(_balanced ? ", Balanced" : "")}";
+
+        public static string ToBase(Num n, string b) {
+            var num = ToBase((n as Int)!.num, b);
+            var den = "";
+            if (n is Fix f && f.num != 0 && f.dec != 0) {
+                den = ToBase(BigInteger.Pow(10, f.dec), b);
+            } else if (n is Rat r && r.den != 1 && r.num != 0) {
+                den = ToBase(r.den, b);
+            }
+
+            if (den != "") return num + "/" + den.Substring(den.IndexOf(b.ToLower().Last()) + 1);
+            return num;
+        }
 
         public static string ToBase(BigInteger n, string b) {
-            b = b.ToLower();
-
             // validate incoming b
-            var reg = new Regex("^0([<>]?[+-]?|[+-]?[<>]?)[bcdefgknoqstvxyz]$", RegexOptions.IgnoreCase);
+            var reg = new Regex(@"^0([<>]|[+-~]|\[.*\]){0,3}[bcdefgknoqstvxyz]$", RegexOptions.IgnoreCase);
             if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
 
             // normalize b
+            var charsStart = b.IndexOf('[');
+            string? chars = null;
+            var customCharset = false;
+            if (charsStart > 0) {
+                var charsEnd = b.LastIndexOf(']') - 1;
+                var numChars = charsEnd - charsStart;
+                if (numChars > 1) {
+                    chars = b.Substring(charsStart + 1, numChars);
+                    b = b.Remove(charsStart, numChars + 2);
+                    customCharset = true;
+                }
+            }
+
             b = b.Replace("+", "");
-            var isCEG = "ceg".Contains(b.Last());
+            var baseChar = Char.ToLower(b.Last());
+            var isCEG = "ceg".Contains(baseChar);
             if (b.Contains('>') && isCEG) b = b.Replace(">", "");
             if (b.Contains('<') && !isCEG) b = b.Replace("<", "");
+            if (b.Contains('~') && (!"cegky".Contains(baseChar) || b.Contains('-'))) b.Replace("~", "");
 
             var baseMult = b.Substring(1).Contains('-') ? -1 : 1;
-            var ltr = b.Contains('>') || (isCEG && !b.Contains('<'));
+            var le = b.Contains('>') || (isCEG && !b.Contains('<'));
 
-            var acc = new IntAcc(b.Last(), baseMult, ltr);
+            var acc = new IntAcc(baseChar, baseMult, le, chars);
+            // Console.WriteLine($"Acc: {acc}");
+            customCharset = IntAcc.IsUniqueSet(chars) && (chars?.Length ?? 0) >= Math.Abs(acc._base);
 
             // final normalize
             if (b == "0d") b = "";
@@ -176,11 +231,15 @@ public class Parser {
                 p = p / acc.Base;
 
                 try {
-                    if (acc._ltr) str.Insert(0, acc.CharFor(d));
+                    if (acc.IsLE) str.Insert(0, acc.CharFor(d));
                     else str.Append(acc.CharFor(d));
                 } catch {
                     Console.WriteLine($"*** Exception: (d:{d} b:{acc.Base} p:{p} scratch:{scratch} max:{max} min:{min})");
                 }
+            }
+            if (customCharset) {
+                if (b.Length == 0) b = "0d";
+                b = b.Insert(b.Length - 1, $"[{acc.Chars}]");
             }
 
             str.Insert(0, b);
@@ -189,10 +248,10 @@ public class Parser {
         }
     }
 
-    private static IntAcc GetAcc(char b = 'd', int mult = 1, bool? ltr = null) =>
+    private static IntAcc GetAcc(char b = 'd', int mult = 1, bool? le = null, string? charset = null) =>
         Char.ToLower(b) switch {
-            'c' or 'e' or 'g' => new IntAcc(b, mult, ltr ?? true),
-            _ => new IntAcc(b, mult, ltr ?? false)
+            'c' or 'e' or 'g' => new IntAcc(b, mult, le ?? true, charset),
+            _ => new IntAcc(b, mult, le ?? false, charset)
         };
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~";
@@ -346,8 +405,23 @@ public class Parser {
 
                 // see if there is a base modifier (+-), a balanced indicator (%), and a direction identifier (<>)
                 int? baseMult = null;
-                bool? ltr = null;
+                bool? le = null;
+                string? charset = null;
                 while (true) {
+                    if (nextChar == '[') {
+                        var charsetSb = new StringBuilder();
+
+                        // consume the '['
+                        advance();
+                        while (nextChar != ']') {
+                            charsetSb.Append((char)nextChar);
+                            advance();
+                        }
+
+                        // consume the ']';
+                        advance();
+                        charset = charsetSb.ToString();
+                    }
                     if ("+-".Contains((char)nextChar)) {
                         if (baseMult == null) {
                             baseMult = nextChar ==  '-' ? -1 : 1;
@@ -356,8 +430,8 @@ public class Parser {
                         else return error("Duplicate base multiplier in number prefix", raw.ToString());
                     }
                     else if ("<>".Contains((char)nextChar)) {
-                        if (ltr == null) {
-                            ltr = nextChar ==  '>';
+                        if (le == null) {
+                            le = nextChar ==  '>';
                             advance();
                         }
                         else return error("Duplicate direction indicator in number prefix", raw.ToString());
@@ -370,10 +444,10 @@ public class Parser {
                     advance();
 
                     // get the new accumulator based on the numBase and sign
-                    acc = GetAcc(lc, baseMult ?? 1, ltr);
+                    acc = GetAcc(lc, baseMult ?? 1, le, charset);
                 }
                 // else if IsDigit(nextChar) then is valid (possibly) complex of the for 0+xi or 0-xi
-                else if (baseMult != null || ltr != null) return error("Invalid character(s) in integer/fixed number sequence", raw.ToString());
+                else if (baseMult != null || le != null) return error("Invalid character(s) in integer/fixed number sequence", raw.ToString());
             }
             else if (acc != null) acc.Reset();
 

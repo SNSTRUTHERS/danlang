@@ -1,3 +1,4 @@
+using System.Data;
 using System.Numerics;
 public static class Tests {
     private static string[] ValidNumbers = new string[] {
@@ -28,19 +29,28 @@ public static class Tests {
             foreach (var d in "<>") {
                 foreach (var i in new[] {1, -1}) {
                     foreach (var s in "+-") {
-                        Console.WriteLine($"Number: {(i < 0 ? "-" : "")}{xx}, LSD: {(d == '>' ? "Left" : "Right")}, Base: {(s == '+' ? "Positive" : "Negative")}");
+                        foreach (var chars in new[] {"", "[qwertyuiopasdfghjklzxcvbnm)(*&^%$#@!-0123456789MNBVCXZLKJHGFDSAPOIUYTREWQ]"}) {
+                        Console.WriteLine($"Number: {(i < 0 ? "-" : "")}{xx}, LE: {(d == '>')}, Base: {(s == '+' ? "Positive" : "Negative")}");
                         foreach (var b in "bcdefgknoqstvxyz") {
-                            var bs = $"0{d}{s}{b}";
+                            var bs = $"0{d}{s}{chars}{b}";
                             BigInteger x = BigInteger.Parse(xx) * i;
                             var ret = Parser.IntAcc.ToBase(x, bs);
-                            Console.WriteLine($"\t{b} => {ret.Substring(ret.IndexOf(b) + 1)}");
-                            var val = Parser.Tokenize(new StringReader(ret)).First().num;
+                            var pStr = ret;
+                            var cStart = ret.IndexOf('[');
+                            if (cStart > 0) {
+                                var cEnd = ret.IndexOf(']');
+                                pStr = pStr.Remove(cStart, (cEnd - cStart) + 1);
+                            }
+                            Console.WriteLine($"\t{b} => {ret}"); // {pStr.Substring(pStr.IndexOf(b) + 1)}");
+                            var val = Parser.Tokenize(new StringReader(ret)).ToArray().First().num;
                             if (x != (val as Int)!.num) Console.WriteLine($"\t\t*****MISMATCHED INPUT/OUTPUT: IN={x} => OUT={val}");
+                        }
                         }
                     }
                 }
             }
         }
+
         var bi = BigInteger.Parse("999999129321000000");
         var dp = -25;
 

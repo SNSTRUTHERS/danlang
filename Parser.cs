@@ -128,7 +128,7 @@ public class Parser {
             if (b.Contains('<') && !isCEG) b = b.Replace("<", "");
 
             var baseMult = b.Substring(1).Contains('-') ? -1 : 1;
-            var ltr = b.Contains('>') || isCEG;
+            var ltr = b.Contains('>') || (isCEG && !b.Contains('<'));
 
             var acc = new IntAcc(b.Last(), baseMult, ltr);
 
@@ -174,10 +174,7 @@ public class Parser {
 
             str.Insert(0, b);
             if (mult < 0) str.Insert(0, '-');
-            var ret = str.ToString();
-
-            // TODO: validate that ret parses to n
-            return ret;
+            return str.ToString();
         }
     }
 

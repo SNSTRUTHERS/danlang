@@ -136,12 +136,17 @@ public class Parser {
             if (b == "0d") b = "";
 
             var str = new StringBuilder();
+
+            // adjuster for negative numbers when the base is positive and not balanced
+            // in that case, we parse the positive value and then insert a '-' at the front when done
             var mult = (acc.Base > 0 && !acc.IsBalanced && n < 0) ? -1 : 1;
             var scratch = n * mult;
+
             BigInteger p = 1;
             BigInteger min = acc.MinDigitVal;
             BigInteger max = acc.MaxDigitVal;
 
+            // find our starting place
             while (scratch > max || scratch < min) {
                 p = p * acc.Base;
                 min = min + (p * ((p > 0) ? acc.MinDigitVal : acc.MaxDigitVal));
@@ -149,18 +154,25 @@ public class Parser {
             }
 
             while (p != 0) {
+                // get the digit for the current place
                 var d = (int)(scratch / p);
                 scratch = scratch % p;
 
+                // adjust the min/max in anticipation of the next place
                 min = min - (p * ((p > 0) ? acc.MinDigitVal : acc.MaxDigitVal));
                 max = max - (p * ((p > 0) ? acc.MaxDigitVal : acc.MinDigitVal));
 
+                // fix up for when the current p is too big/small for the remaining value,
+                //   but the remaining places cannot possibly cover the remaining value
                 var m = 0;
-                if (scratch > max) m = (scratch > p ? -1 : 1);
-                else if (scratch < min) m = (scratch > p ? 1 : -1);
+                if (scratch > max) m = (scratch > p ? -1 : 1); // too big case
+                else if (scratch < min) m = (scratch > p ? 1 : -1); // too small case
 
-                d = d + m;
-                scratch = scratch - (m * p);
+                d = d + m; // adjust digit
+                scratch = scratch - (m * p); // adjust scratch
+
+                // adjust p for the next place
+                p = p / acc.Base;
 
                 try {
                     if (acc._ltr) str.Insert(0, acc.CharFor(d));
@@ -168,8 +180,6 @@ public class Parser {
                 } catch {
                     Console.WriteLine($"*** Exception: (d:{d} b:{acc.Base} p:{p} scratch:{scratch} max:{max} min:{min})");
                 }
-
-                p = p / acc.Base;
             }
 
             str.Insert(0, b);

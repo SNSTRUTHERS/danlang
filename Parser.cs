@@ -154,13 +154,13 @@ public class Parser {
             }
 
             while (p != 0) {
-                // get the digit for the current place
-                var d = (int)(scratch / p);
-                scratch = scratch % p;
-
                 // adjust the min/max in anticipation of the next place
                 min = min - (p * ((p > 0) ? acc.MinDigitVal : acc.MaxDigitVal));
                 max = max - (p * ((p > 0) ? acc.MaxDigitVal : acc.MinDigitVal));
+
+                // get the digit for the current place
+                var d = (int)(scratch / p);
+                scratch = scratch % p;
 
                 // fix up for when the current p is too big/small for the remaining value,
                 //   but the remaining places cannot possibly cover the remaining value
@@ -169,6 +169,7 @@ public class Parser {
                 else if (scratch < min) m = (scratch > p ? 1 : -1); // too small case
 
                 d = d + m; // adjust digit
+                // if (m != 0) Console.WriteLine($"***** {scratch}, m={m}, d={d}, p={p} min={min} max={max}");
                 scratch = scratch - (m * p); // adjust scratch
 
                 // adjust p for the next place

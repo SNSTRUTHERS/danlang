@@ -24,18 +24,18 @@ public static class Tests {
     };
 
     public static void TestNumbers() {
-        foreach (var b in "bcdefgknoqstvxyz") {
+        foreach (var xx in new[] {"0", "1", "9875", "4910956197564501375461209835638104736961"}) {
             foreach (var d in "<>") {
                 foreach (var i in new[] {1, -1}) {
-                    foreach (var xx in new[] {"9875", "0", "1", "4910956197564501375461209835638104736961"}) {
-                        foreach (var n in new[] {xx, $"-{xx}"}) {
-                            foreach (var bs in new[] {$"0{d}{b}", $"0{d}-{b}"}) {
-                                BigInteger x = BigInteger.Parse(n);
-                                var ret = Parser.IntAcc.ToBase(x, bs);
-                                Console.WriteLine($"{x}:{bs} => {ret}");
-                                var val = Parser.Tokenize(new StringReader(ret)).First().num;
-                                if (x != (val as Int)!.num) Console.WriteLine($"MISMATCHED INPUT/OUTPUT: IN={n} => OUT={val}");
-                            }
+                    foreach (var s in "+-") {
+                        Console.WriteLine($"Number: {(i < 0 ? "-" : "")}{xx}, LSD: {(d == '>' ? "Left" : "Right")}, Base: {(s == '+' ? "Positive" : "Negative")}");
+                        foreach (var b in "bcdefgknoqstvxyz") {
+                            var bs = $"0{d}{s}{b}";
+                            BigInteger x = BigInteger.Parse(xx) * i;
+                            var ret = Parser.IntAcc.ToBase(x, bs);
+                            Console.WriteLine($"\t{b} => {ret.Substring(ret.IndexOf(b) + 1)}");
+                            var val = Parser.Tokenize(new StringReader(ret)).First().num;
+                            if (x != (val as Int)!.num) Console.WriteLine($"\t\t*****MISMATCHED INPUT/OUTPUT: IN={x} => OUT={val}");
                         }
                     }
                 }

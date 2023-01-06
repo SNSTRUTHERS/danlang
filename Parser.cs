@@ -180,6 +180,7 @@ public class Parser {
                 int? baseMult = null;
                 bool? le = null;
                 string? charset = null;
+                bool? comp = null;
                 while (true) {
                     if (nextChar == '[') {
                         var charsetSb = new StringBuilder();
@@ -208,6 +209,13 @@ public class Parser {
                             advance();
                         }
                         else return error("Duplicate direction indicator in number prefix", raw.ToString());
+                    }
+                    else if (nextChar == '~') {
+                        if (comp == null) {
+                            comp = true;
+                            advance();
+                        }
+                        else return error("Duplicate complement indicator in number prefix", raw.ToString());
                     } else break;
                 }
 
@@ -217,7 +225,7 @@ public class Parser {
                     advance();
 
                     // get the new accumulator based on the numBase and sign
-                    acc = IntAcc.Create(lc, baseMult ?? 1, le, charset);
+                    acc = IntAcc.Create(lc, baseMult ?? 1, le, comp, charset);
                 }
                 // else if IsDigit(nextChar) then is valid (possibly) complex of the for 0+xi or 0-xi
                 else if (baseMult != null || le != null) return error("Invalid character(s) in integer/fixed number sequence", raw.ToString());

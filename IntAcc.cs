@@ -18,6 +18,7 @@ public class IntAcc {
     private bool _le = false;
     private bool _balanced = false;
     private bool _caseSignificant = false;
+    private bool _comp = false;
 
     public static int Log10(BigInteger den) {
         if (den < 0) den = -den;
@@ -54,11 +55,12 @@ public class IntAcc {
         return IsUniqueSet(s.ToUpper());
     }
 
-    public IntAcc(char b = 'd', int mult = 1, bool le = false, string? chars = null) {
+    public IntAcc(char b = 'd', int mult = 1, bool le = false, bool comp = false, string? chars = null) {
         b = Char.ToLower(b);
         NumberBase = b;
         _base = NumBases[b];
         _balanced = "cegky".Contains(b);
+        _comp = comp && !_balanced && _base > 0;
         if ((chars?.Length ?? 0) < _base || !IsUniqueSet(chars)) chars = null;
         Chars = chars ?? (_balanced ?
             (_base > BalancedTernQuinSeptChars.Length ?
@@ -87,7 +89,7 @@ public class IntAcc {
 
     public char CharFor(int v) => Chars[v + _zeroIndex];
     
-    private bool IsPlaceholder(int c) => c == '_' || c == '.';
+    private static bool IsPlaceholder(int c) => c == '_' || c == '.';
     
     public bool IsDigit(int i) => i >= 0 && Chars.IndexOf(DigitOf(i)) >= 0;
     public int MinDigitVal { get => -_zeroIndex; }
@@ -128,7 +130,7 @@ public class IntAcc {
 
     public static string ToBase(BigInteger n, string b) {
         // validate incoming b
-        var reg = new Regex(@"^0([<>]|[+-~]|\[.*\]){0,3}[bcdefgknoqstvxyz]$", RegexOptions.IgnoreCase);
+        var reg = new Regex(@"^0([<>]|([+~]|-)|\[[^\s[\u005D.\\_'""]{2,}\]){0,3}[bcdefgknoqstvxyz]$", RegexOptions.IgnoreCase);
         if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
 
         // normalize b
@@ -136,7 +138,7 @@ public class IntAcc {
         string? chars = null;
         var customCharset = false;
         if (charsStart > 0) {
-            var charsEnd = b.LastIndexOf(']') - 1;
+            var charsEnd = b.IndexOf(']') - 1;
             var numChars = charsEnd - charsStart;
             if (numChars > 1) {
                 chars = b.Substring(charsStart + 1, numChars);
@@ -150,14 +152,15 @@ public class IntAcc {
         var isCEG = "ceg".Contains(baseChar);
         if (b.Contains('>') && isCEG) b = b.Replace(">", "");
         if (b.Contains('<') && !isCEG) b = b.Replace("<", "");
-        if (b.Contains('~') && (!"cegky".Contains(baseChar) || b.Contains('-'))) b.Replace("~", "");
+        if (b.Contains('~') && (!"cegky".Contains(baseChar) || b.Contains('-'))) b = b.Replace("~", "");
 
         var baseMult = b.Substring(1).Contains('-') ? -1 : 1;
         var le = b.Contains('>') || (isCEG && !b.Contains('<'));
+        var comp = b.Contains('~');
 
-        var acc = new IntAcc(baseChar, baseMult, le, chars);
+        var acc = new IntAcc(baseChar, baseMult, le, comp, chars);
         // Console.WriteLine($"Acc: {acc}");
-        customCharset = acc.Chars != new IntAcc(baseChar, baseMult, le).Chars;
+        customCharset = acc.Chars != new IntAcc(baseChar, baseMult, le, comp).Chars;
 
         // final normalize
         if (b == "0d") b = "";
@@ -191,12 +194,8 @@ public class IntAcc {
 
             // fix up for when the current p is too big/small for the remaining value,
             //   but the remaining places cannot possibly cover the remaining value
-            var m = 0;
-            if (scratch > max) m = (scratch > p ? -1 : 1); // too big case
-            else if (scratch < min) m = (scratch > p ? 1 : -1); // too small case
-
+            var m = (scratch > max ? (scratch > p ? -1 : 1) : (scratch < min ? (scratch < p ? -1 : 1) : 0));
             d = d + m; // adjust digit
-            // if (m != 0) Console.WriteLine($"***** {scratch}, m={m}, d={d}, p={p} min={min} max={max}");
             scratch = scratch - (m * p); // adjust scratch
 
             // adjust p for the next place
@@ -209,6 +208,7 @@ public class IntAcc {
                 Console.WriteLine($"*** Exception: (d:{d} b:{acc.Base} p:{p} scratch:{scratch} max:{max} min:{min})");
             }
         }
+
         if (customCharset) {
             if (b.Length == 0) b = "0d";
             b = b.Insert(b.Length - 1, $"[{acc.Chars}]");
@@ -219,9 +219,9 @@ public class IntAcc {
         return str.ToString();
     }
 
-    public static IntAcc Create(char b = 'd', int mult = 1, bool? le = null, string? charset = null) =>
+    public static IntAcc Create(char b = 'd', int mult = 1, bool? le = null, bool? comp = null, string? charset = null) =>
         Char.ToLower(b) switch {
-            'c' or 'e' or 'g' => new IntAcc(b, mult, le ?? true, charset),
-            _ => new IntAcc(b, mult, le ?? false, charset)
+            'c' or 'e' or 'g' => new IntAcc(b, mult, le ?? true, comp ?? false, charset),
+            _ => new IntAcc(b, mult, le ?? false, comp ?? false, charset)
         };
 }

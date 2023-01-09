@@ -1,10 +1,37 @@
-﻿public class Program {
+﻿using System.Security.Principal;
+public class Program {
     public static readonly int MAJOR_VERSION = 0;
     public static readonly int MINOR_VERSION = 1;
 
     private static void DoTokenize(TextReader reader) {
+        Parser.Token? priorToken = null;
+        var indentLevel = 0;
         foreach (var tok in Parser.Tokenize(reader)) {
-            Console.WriteLine(tok);
+            if (priorToken != null) {
+                Console.Write(priorToken.type switch {
+                    Parser.Token.Type.Number or Parser.Token.Type.String or Parser.Token.Type.Symbol => 
+                        tok.type != Parser.Token.Type.RParen ? " " : "",
+                    Parser.Token.Type.Comment => "\n",
+                    _ => "" });
+            }
+
+            if (tok.type == Parser.Token.Type.LParen && indentLevel > 0) {
+                if (priorToken?.type != Parser.Token.Type.RParen) Console.WriteLine();
+                Console.Write(new String(' ', 2 * indentLevel));
+            }
+            
+            if (tok.type == Parser.Token.Type.RParen) {
+                --indentLevel;
+                if (priorToken?.type == Parser.Token.Type.RParen && indentLevel > 0)
+                    Console.Write(new String(' ', 2 * indentLevel));
+            }
+
+            Console.Write(tok.str);
+            if (tok.type == Parser.Token.Type.LParen) ++indentLevel;
+            if (tok.type == Parser.Token.Type.RParen) {
+                Console.WriteLine();
+            }
+            priorToken = tok;
         }
     }
 

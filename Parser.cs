@@ -29,7 +29,7 @@ public class Parser {
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~";
         new Dictionary<char, string> {
-            {'\'', "quote"}, {'#', "block"}, {',', "list"}, {'~', "format"},
+            {'#', "block"}, {',', "list"}, {'~', "format"},
             {':', "fn"}, {'.', "apply"}, {'/', "rational"}, {'c', "complex"}
         };
 
@@ -121,7 +121,6 @@ public class Parser {
 
         IEnumerable<Token> lexSymbol(char? pref = null) {
             char prefix = pref ?? next();
-            var isQuote = prefix == '\'';
             if (peek() == '(' && LParenPrefixes.Keys.Contains(prefix)) {
                 next();
                 var raw = $"{prefix}(";
@@ -129,22 +128,14 @@ public class Parser {
                 yield return symbol(LParenPrefixes[prefix], raw);
             }
             else {
-                if (isQuote) {
-                    yield return paren('(', "'");
-                    yield return symbol("quote", "'");
-                    foreach (var t in lexSymbol()) yield return t;
-                    yield return paren(')', "'");
-                }
-                else {
-                    var str = new StringBuilder();
-                    str.Append(prefix);
+                var str = new StringBuilder();
+                str.Append(prefix);
 
-                    while (!isTerminator(peek())) {
-                        str.Append(next());
-                    }
-
-                    yield return symbol(str.ToString());
+                while (!isTerminator(peek())) {
+                    str.Append(next());
                 }
+
+                yield return symbol(str.ToString());
             }
         }
 
@@ -241,7 +232,8 @@ public class Parser {
             if (!isTerminator(nextChar, acc.NumberBase))
                 return error($"Invalid number terminator ({(char)nextChar}) for base ({acc.NumberBase})", raw.Append((char)nextChar).ToString());
             else {
-                return new Token { type = Token.Type.Number, num = acc.Num * mult, acc = acc, raw = raw.ToString() };
+                var str = raw.ToString();
+                return new Token { type = Token.Type.Number, num = acc.Num * mult, acc = acc, str = str, raw = str };
             }
         }
 
@@ -302,31 +294,49 @@ public class Parser {
             }
         }
 
-        var i = 0;
-        while ((i = peekInt()) != -1) {
-            var c = (char)i;
-            if (Char.IsWhiteSpace(c)) {
-                next();
+        IEnumerable<Token> Lex(bool isQuote = false) {
+            var i = 0;
+            var listDepth = 0;
+            while ((i = peekInt()) != -1) {
+                var c = (char)i;
+                if (Char.IsWhiteSpace(c)) {
+                    next();
+                }
+                else if (Char.IsControl(c)) {
+                    yield return error("Control sequences not allowed");
+                    next();
+                }
+                else if (!Char.IsAscii(c)) {
+                    yield return error("Non-ASCII character outside of string literal");
+                    next();
+                }
+                else if (c ==';')
+                    yield return lexComment();
+                else if (c =='(' || c == ')') {
+                    yield return lexParen();
+                    if (c == '(') ++listDepth;
+                    else --listDepth;
+                    if (listDepth == 0 && isQuote) break;
+                }
+                else if ((!isQuote || listDepth > 0) && ((c >= '0' && c <= '9') || c == '+' || c == '-'))
+                    yield return lexNumber();
+                else if ((!isQuote || listDepth > 0) && c == '"')
+                    yield return lexString();
+                else if (c == '\'') {
+                    next();
+                    yield return paren('(', "'");
+                    yield return symbol("quote", "'");
+                    foreach (var t1 in Lex(true)) yield return t1;
+                    yield return paren(')', "'");
+                }
+                else  {
+                    foreach (var t in lexSymbol()) yield return t;
+                    if (isQuote && listDepth == 0) break;
+                }
             }
-            else if (Char.IsControl(c)) {
-                yield return error("Control sequences not allowed");
-                next();
-            }
-            else if (!Char.IsAscii(c)) {
-                yield return error("Non-ASCII character outside of string literal");
-                next();
-            }
-            else if (c ==';')
-                yield return lexComment();
-            else if (c =='(' || c == ')')
-                yield return lexParen();
-            else if ((c >= '0' && c <= '9') || c == '+' || c == '-')
-                yield return lexNumber();
-            else if (c == '"')
-                yield return lexString();
-            else foreach (var t in lexSymbol())
-                yield return t;
         }
+
+        foreach (var t in Lex()) yield return t;
 
         yield return new Token { type = Token.Type.EOF };
     }

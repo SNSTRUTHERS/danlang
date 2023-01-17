@@ -21,6 +21,11 @@ public static class Tests {
         "1+3i",
         "-1/3+3/7i",
         "1/3-3i",
+        "1.38i-5/9",
+        "-7/13i+5.647",
+        "3/5i",
+        "0-2.876i",
+        "-8.387i",
         "00000000123123123000000000"
     };
 
@@ -101,16 +106,34 @@ public static class Tests {
         Console.WriteLine(r4*r1);
         Console.WriteLine(r1*r4);
 
-        Num? r = new Rat(10000, 1000);
+        Rat r = new Rat(10000, 1000);
         Console.WriteLine(r);  // "10"
         r = new Rat(169, 13);
         Console.WriteLine(r);  // "13"
-        r = new Rat(712381, 32882);
-        Console.WriteLine(r); // "712381/32882"
-        r = Num.Parse(r?.ToString());
-        Console.WriteLine(r); // "712381/32882"
-        r = Num.Parse("720/84");
+        r = new Rat(712384, 32587);
+        Console.WriteLine(r);
+        Console.WriteLine(r.ToFix(100));
+        Console.WriteLine(r.ToString("M"));
+        Console.WriteLine((-r).ToString("M"));
+        r = (Rat)Num.Parse(r?.ToString())!;
+        Console.WriteLine(r);
+        Console.WriteLine(r.ToFix(20));
+        r = (Rat)Num.Parse("720/84")!;
         Console.WriteLine(r); // "60/7"
+        Console.WriteLine(r.ToFix(100));
+        Console.WriteLine(r.ToString("M"));
+
+        Console.WriteLine(Num.Parse("2.5")! + Num.Parse("3/7")!);
+        Console.WriteLine(Num.Parse("2.5")! - Num.Parse("3/7")!);
+        Console.WriteLine(Num.Parse("2.5")! * Num.Parse("3/7")!);
+        Console.WriteLine(Num.Parse("2.5")! / Num.Parse("3/7")!);
+
+        Console.WriteLine(Rat.ToRat((Num.Parse("10000")! + Num.Parse("0.00001")!)).ToFix());
+        Console.WriteLine(Num.Parse("10000")! - Num.Parse("0.00001")!);
+        Console.WriteLine(Num.Parse("10000")! * Num.Parse("0.00001")!);
+        Console.WriteLine(Num.Parse("10000")! / Num.Parse("0.00001")!);
+
+        Console.WriteLine((Num.Parse("-192837475601928383446/6757191026728393927") as Rat)?.ToString("M") ?? "error");
 
         foreach (var rat in ValidNumbers)
             try {
@@ -123,7 +146,7 @@ public static class Tests {
         var badRats = new [] {"/1", "1/", "1/0"};
         foreach (var rat in badRats)
             try {
-                r = Num.Parse(rat);
+                r = (Rat)Num.Parse(rat)!;
             }
             catch (Exception e) {
                 Console.WriteLine(e.Message);

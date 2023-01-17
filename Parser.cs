@@ -27,10 +27,10 @@ public class Parser {
         public IntAcc? acc;
     }
 
-    private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~";
+    private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
-            {'#', "block"}, {',', "list"}, {'~', "format"},
-            {':', "fn"}, {'.', "apply"}, {'/', "rational"}, {'c', "complex"}
+            {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"},
+            {'~', "format"}, {':', "fn"}, {'!', "eval"}, {'=', "def"}
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream) {
@@ -40,7 +40,7 @@ public class Parser {
         char next() => (char)nextInt();
 
         bool isNumberSeparator(int c, char? numBase = null) =>
-            numBase != null && (c == '/' || c == '.'|| numBase switch {
+            numBase != null && (c == '/' || c == '.' || numBase switch {
                 'd' or 'D'=> c == '+' || c == '-' || c == '.' || c == 'e' || c == 'E',
                 _ => false
             });
@@ -153,11 +153,10 @@ public class Parser {
                 if (!Char.IsDigit((char)nextChar)) {
                     var str = new StringBuilder();
                     str.Append(prefix);
-
-                    while (!isTerminator(peek())) {
-                        str.Append(next());
+                    while (!isTerminator(nextChar)) {
+                        str.Append(nextChar);
+                        next();
                     }
-
                     return symbol(str.ToString());
                 }
             }
@@ -322,13 +321,6 @@ public class Parser {
                     yield return lexNumber();
                 else if ((!isQuote || listDepth > 0) && c == '"')
                     yield return lexString();
-                else if (c == '\'') {
-                    next();
-                    yield return paren('(', "'");
-                    yield return symbol("quote", "'");
-                    foreach (var t1 in Lex(true)) yield return t1;
-                    yield return paren(')', "'");
-                }
                 else  {
                     foreach (var t in lexSymbol()) yield return t;
                     if (isQuote && listDepth == 0) break;

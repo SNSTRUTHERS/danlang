@@ -1,12 +1,12 @@
-﻿using System.Security.Principal;
-public class Program {
+﻿public class Program {
     public static readonly int MAJOR_VERSION = 0;
     public static readonly int MINOR_VERSION = 1;
 
-    private static void DoTokenize(TextReader reader) {
+    private static void PrintTokens(IEnumerable<Parser.Token> tokens) {
         Parser.Token? priorToken = null;
         var indentLevel = 0;
-        foreach (var tok in Parser.Tokenize(reader)) {
+        var tokArray = tokens.ToList();
+        foreach (var tok in tokArray) {
             if (priorToken != null) {
                 Console.Write(priorToken.type switch {
                     Parser.Token.Type.Number or Parser.Token.Type.String or Parser.Token.Type.Symbol => 
@@ -26,13 +26,18 @@ public class Program {
                     Console.Write(new String(' ', 2 * indentLevel));
             }
 
-            Console.Write(tok.str);
+            Console.Write(tok.raw);
             if (tok.type == Parser.Token.Type.LParen) ++indentLevel;
             if (tok.type == Parser.Token.Type.RParen) {
                 Console.WriteLine();
             }
             priorToken = tok;
         }
+    }
+
+    private static void DoTokenize(TextReader reader) {
+        var tokens = Parser.Tokenize(reader);
+        Console.WriteLine(SExpr.Create(tokens.ToList(), true).Evaluate(Env.RootEnv).Value);
     }
 
     public static int Main(string[] args) {

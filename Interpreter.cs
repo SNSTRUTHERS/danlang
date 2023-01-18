@@ -61,11 +61,25 @@ public class Env {
         return sexp;
     }
 
+    private static IVal Join(List<IVal>? p) {
+        if (p == null || p.Count == 0) return new BoolVal(false);
+        var r = p.First() as QExpr ?? new QExpr(p.Take(1).ToList());
+        foreach (QExpr n in p.Skip(1)) {
+            r.Cells.AddRange(n.Cells);
+        }
+        return r;
+    }
+
     public static Env RootEnv = new Env {
         _env = {
-            { "quote", new FuncVal("quote", (p, env) => (p != null ? new QExpr(p) : new BoolVal(false) )) },
+            { "pi", new NumVal(Num.Parse("3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384")!) },
             { "list",  new FuncVal("list",  (p, env) => (p != null ? new QExpr(p) : new BoolVal(false) )) },
-            { "eval",  new FuncVal("eval", (p, env) => new SExpr(p?.LastOrDefault() as QExpr ?? new QExpr(p)) as IVal ?? new BoolVal(false)) },
+            { "head",  new FuncVal("head",  (p, env) => (p?.FirstOrDefault() as QExpr)?.Cells.FirstOrDefault() ?? new BoolVal(false)) },
+            { "tail",  new FuncVal("tail",  (p, env) => (p != null ? new QExpr((p.First() as QExpr)!.Cells.Skip(1).ToList()) : new BoolVal(false) )) },
+            { "join",  new FuncVal("join",  (p, env) => Join(p)) },
+            { "eval",  new FuncVal("eval", (p, env) => new SExpr(p?.LastOrDefault() as QExpr ?? new QExpr(p)).Evaluate(env) as IVal ?? new BoolVal(false)) },
+            { "def", new FuncVal("", (p, env) => new BoolVal(false)) },
+            { "fn", new FuncVal("", (p, env) => new BoolVal(false)) },
             { "to-fixed", new FuncVal("to-fixed", (p, env) => new NumVal(Rat.ToRat((p?[0] as NumVal)?.UnderlyingValue ?? new Int(0)).ToFix(p?.Count > 1 ? (int)(((p?[1] as NumVal)?.UnderlyingValue as Int)?.num ?? 0) : 10))) },
             { "to-rational", new FuncVal("to-rational", (p, env) => new NumVal(Rat.ToRat((p![0] as NumVal)!.UnderlyingValue))) },
             { "truncate", new FuncVal("truncate", (p, env) => new NumVal((p?[0] as NumVal)?.UnderlyingValue?.ToInt() ?? new Int(0))) },
@@ -73,7 +87,8 @@ public class Env {
             { "+", new FuncVal("+", (p, env) => Agg(p, (a, b) => a + b)) },
             { "*", new FuncVal("*", (p, env) => Agg(p, (a, b) => a * b)) },
             { "-", new FuncVal("-", (p, env) => Agg(p, (a, b) => a - b)) },
-            { "/", new FuncVal("/", (p, env) => Agg(p, (a, b) => a / b)) }
+            { "/", new FuncVal("/", (p, env) => Agg(p, (a, b) => a / b)) },
+            { "%", new FuncVal("%", (p, env) => Agg(p, (a, b) => new Int(a.ToInt().num % b.ToInt().num))) },
         }
     };
 }
@@ -138,7 +153,7 @@ public abstract class Expr : IVal
     public abstract ValType Type { get; }
     public Expr(List<IVal>? cells) => Cells = cells ?? Cells;
     public virtual string? Value => string.Join(" ", Cells.Select(c => c.Value));
-    public abstract IVal Evaluate(Env env);
+    public virtual IVal Evaluate(Env env) => this;
 }
 
 public class QExpr : Expr {
@@ -146,10 +161,7 @@ public class QExpr : Expr {
     public QExpr(List<IVal>? cells) : base(cells) {
         if (Cells.Count == 1 && Cells[0] is SExpr s) Cells = s.Cells;
     }
-    public override IVal Evaluate(Env env) {
-        Console.WriteLine($"Evaluating QExpr {Value}");
-        return new SExpr(this);
-    }
+    public override string? Value => $"'({base.Value})";
 }
 
 public class SExpr : Expr {
@@ -192,10 +204,8 @@ public class SExpr : Expr {
         Cells = Cells.Select(c => c.Evaluate(env)).ToList();
         var fun = Cells[0];
         if (fun == null) return new ErrVal($"Unbound Symbol {Cells[0].Value}");
-        if (fun.Type != ValType.FUNC) return new ErrVal("First element of SExpr is not a function");
-        // Console.WriteLine($"Applying {Cells.Skip(1)} to {fun.Value}");
+        if (fun.Type != ValType.FUNC) return new ErrVal($"First element of SExpr is not a function: {fun.Value}");
         var result = (fun as FuncVal)!.Apply(Cells.Skip(1).ToList(), env);
-        // Console.WriteLine($"Result = {result}");
         return result;
     }
 }

@@ -29,8 +29,8 @@ public class Parser {
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
-            {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"},
-            {'~', "format"}, {':', "fn"}, {'!', "eval"}, {'=', "def"}
+            {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"}, {'|', "join"},
+            {'~', "format"}, {'=', "def"}, {':', "fn"}, {'!', "eval"}
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream) {
@@ -122,9 +122,8 @@ public class Parser {
         IEnumerable<Token> lexSymbol(char? pref = null) {
             char prefix = pref ?? next();
             if (peek() == '(' && LParenPrefixes.Keys.Contains(prefix)) {
-                next();
                 var raw = $"{prefix}(";
-                yield return paren('(', raw);
+                yield return lexParen();
                 yield return symbol(LParenPrefixes[prefix], raw);
             }
             else {
@@ -293,9 +292,8 @@ public class Parser {
             }
         }
 
-        IEnumerable<Token> Lex(bool isQuote = false) {
+        IEnumerable<Token> Lex() {
             var i = 0;
-            var listDepth = 0;
             while ((i = peekInt()) != -1) {
                 var c = (char)i;
                 if (Char.IsWhiteSpace(c)) {
@@ -313,17 +311,13 @@ public class Parser {
                     yield return lexComment();
                 else if (c =='(' || c == ')') {
                     yield return lexParen();
-                    if (c == '(') ++listDepth;
-                    else --listDepth;
-                    if (listDepth == 0 && isQuote) break;
                 }
-                else if ((!isQuote || listDepth > 0) && ((c >= '0' && c <= '9') || c == '+' || c == '-'))
+                else if (((c >= '0' && c <= '9') || c == '+' || c == '-'))
                     yield return lexNumber();
-                else if ((!isQuote || listDepth > 0) && c == '"')
+                else if (c == '"')
                     yield return lexString();
                 else  {
                     foreach (var t in lexSymbol()) yield return t;
-                    if (isQuote && listDepth == 0) break;
                 }
             }
         }

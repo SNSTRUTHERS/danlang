@@ -58,7 +58,14 @@
                     if (reader != Console.In) reader.Dispose();
                 }
             } else {
-                DoTokenize(Console.In);
+                var env = Env.RootEnv;
+                while (true) {
+                    var tokens = Parser.Tokenize(new StringReader(Console.ReadLine() ?? "exit"));
+                    var expr = SExpr.Create(tokens.ToList(), true);
+                    var val = expr.Evaluate(env);
+                    if (val.Type == ValType.EXIT) break;
+                    Console.WriteLine($"=> {val.Value}");
+                }
             }
             break;
         }

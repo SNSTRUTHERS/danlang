@@ -30,7 +30,7 @@ public class Parser {
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
             {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"}, {'|', "join"},
-            {'~', "format"}, {'=', "def"}, {':', "fn"}, {'!', "eval"}
+            {'~', "format"}, {'=', "set"}, {':', "def"}, {'@', "fn"}, {'!', "eval"}
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream) {
@@ -130,7 +130,7 @@ public class Parser {
                 var str = new StringBuilder();
                 str.Append(prefix);
 
-                while (!isTerminator(peek())) {
+                while (!isTerminator(peekInt())) {
                     str.Append(next());
                 }
 

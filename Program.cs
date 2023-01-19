@@ -37,7 +37,9 @@
 
     private static void DoTokenize(TextReader reader) {
         var tokens = Parser.Tokenize(reader);
-        Console.WriteLine(SExpr.Create(tokens.ToList(), true).Evaluate(Env.RootEnv).Value);
+        var env = Env.RootEnv;
+        Env.AddGlobalsDefinesToEnv(env);
+        Console.WriteLine(SExpr.Create(tokens.ToList(), true).Evaluate(env).Value);
     }
 
     public static int Main(string[] args) {
@@ -59,6 +61,7 @@
                 }
             } else {
                 var env = Env.RootEnv;
+                Env.AddGlobalsDefinesToEnv(env);
                 while (true) {
                     var tokens = Parser.Tokenize(new StringReader(Console.ReadLine() ?? "exit"));
                     var expr = SExpr.Create(tokens.ToList(), true);

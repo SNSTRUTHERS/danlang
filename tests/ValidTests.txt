@@ -1,17 +1,18 @@
+(do 
         ; this is a standalone comment
         '(a b c d)
-        ()
-        .(a to-string 0 1 2 3)
-        symbol-test
-        'quoted-symbol
-        ('x 'fn '(a b c 0) 'test-test)
-        ""string""
-        """"""
+        '()
+        '(a to-string 0 1 2 3)
+        '(symbol-test)
+        '(quoted-symbol)
+        '(x '(f) '(a b c 0) '(test-test))
+        '("string")
+        '("""
     HERE STRING
     MULTIPLE LINES
-    ""Quoted text""
-    """"Doubley-quoted text""""
+    "Quoted text"
+    ""Doubley-quoted text""
     AND SPACES   
 
-        """"""
-    "
+        """)
+)

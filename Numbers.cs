@@ -10,7 +10,7 @@ public static class NumExtensions
     }
 }
 
-public class Num {
+public class Num : IComparable<Num> {
     private const string _binRegex = "[+-]?0b[01]+";
     private const string _balTernRegex = @"0c[-0+]+(\.[-0+]+)?";
     private const string _decRegex = @"[+-]?(0d)?\d+([\./]\d+)?(e\d+)?([+-]\d+([\./]\d+)?(e\d+)?i)?|[+-]?(0d)?\d+([\./]\d+)?(e\d+)?i([+-]\d+([\./]\d+)?(e\d+)?)?";
@@ -122,8 +122,14 @@ public class Num {
         if (s2.Contains('.')) {
             return Fix.Parse(s2);
         }
+
         var t = Parser.Tokenize(new StringReader(s2)).First();
         return t.num;
+    }
+
+    public int CompareTo(Num? obj) {
+        if (this is Int i && obj is Int i2) return i.num.CompareTo(i2.num);
+        return 0;
     }
 }
 

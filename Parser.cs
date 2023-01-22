@@ -5,8 +5,11 @@ public class Parser {
         public enum Type {
             Error,
             EOF,
-            LParen,
-            RParen,
+            More,
+            QExOpen,
+            QExClose,
+            SExOpen,
+            SExClose,
             Symbol,
             Number,
             String,
@@ -22,15 +25,16 @@ public class Parser {
         public Num? num;
 
         public IntAcc? acc;
+        public string parens = "";
     }
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
             {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"}, {'|', "join"},
-            {'~', "format"}, {'=', "set"}, {':', "def"}, {'@', "fn"}, {'!', "eval"}
+            {'~', "format"}, {'=', "set"}, {':', "def"}, {'@', "fn"}, {'!', "eval"}, {'?', "if"}
         };
 
-    public static IEnumerable<Token> Tokenize(TextReader stream) {
+    public static IEnumerable<Token> Tokenize(TextReader stream, string startingParens = "") {
         int peekInt() => stream.Peek();
         char peek() => (char)peekInt();
         int nextInt() => stream.Read();
@@ -42,7 +46,7 @@ public class Parser {
                 _ => false
             });
 
-        bool isTerminator(int c, char? numBase = null) => c == -1 || Char.IsWhiteSpace((char)c) || c == ')' || isNumberSeparator(c, numBase);
+        bool isTerminator(int c, char? numBase = null) => c == -1 || Char.IsWhiteSpace((char)c) || c == ')' || c == '}' || isNumberSeparator(c, numBase);
 
         Token error(String reason, String? raw = null) => new Token { type = Token.Type.Error, str = reason, raw = raw };
         Token symbol(String sym, String? raw = null) => new Token { type = Token.Type.Symbol, str = sym, raw = raw ?? sym };
@@ -50,7 +54,13 @@ public class Parser {
             new Token { 
                 raw = str ?? p.ToString(),
                 str = p.ToString(),
-                type = (p == '(' ? Token.Type.LParen : Token.Type.RParen)
+                type = p switch {
+                    '(' => Token.Type.SExOpen,
+                    ')' => Token.Type.SExClose,
+                    '{' => Token.Type.QExOpen,
+                    '}'  => Token.Type.QExClose,
+                    _ => Token.Type.Error
+                }
             };
 
         Token lexParen() => paren(next());
@@ -306,7 +316,7 @@ public class Parser {
                 }
                 else if (c ==';')
                     yield return lexComment();
-                else if (c =='(' || c == ')') {
+                else if (c =='(' || c == ')' || c == '{' || c == '}') {
                     yield return lexParen();
                 }
                 else if (((c >= '0' && c <= '9') || c == '+' || c == '-'))
@@ -319,8 +329,22 @@ public class Parser {
             }
         }
 
-        foreach (var t in Lex()) yield return t;
+        var parens = startingParens;
+        foreach (var t in Lex()) {
+            if (t.type == Token.Type.SExOpen) parens += ')';
+            if (t.type == Token.Type.QExOpen) parens += '}';
+            if (t.type == Token.Type.SExClose) {
+                if (parens.EndsWith(')')) parens = parens.Remove(parens.Length - 1);
+                else yield return error("Closed a SExpr without opening");
+            }
+            if (t.type == Token.Type.QExClose) {
+                if (parens.EndsWith('}')) parens = parens.Remove(parens.Length - 1);
+                else yield return error("Closed a QExpr without opening");
+            }
+            yield return t;
+        }
 
-        yield return new Token { type = Token.Type.EOF };
+        if (parens.Length > 0) yield return new Token { type = Token.Type.More, parens = parens };
+        else yield return new Token { type = Token.Type.EOF };
     }
 }

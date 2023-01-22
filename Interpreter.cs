@@ -18,9 +18,9 @@ public class Env {
     }
 
     public IVal Evaluate(IVal i) => i.Evaluate(this);
-    public IVal EvalQExpr(IVal i) {
+    public IVal EvalQExpr(QExpr q) {
         // Console.WriteLine($"Evaluating QExpr: {i.Value}");
-        return new SExpr(i as QExpr ?? NIL).Evaluate(this);
+        return new SExpr(q).Evaluate(this);
     }
 
     public static void AddGlobalsDefinesToEnv(Env env) {
@@ -47,7 +47,7 @@ public class Env {
     public bool Contains(string s) => _env.ContainsKey(s) || ParentContains(s);
     public IVal? GetValue(string s) {
         var v = _env.GetValueOrDefault(s) ?? Parent?.GetValue(s);
-        if (s.StartsWith("&")) Console.WriteLine($"*** Getting {s}={v?.ToString() ?? "null"} ***");
+        // if (s.StartsWith("&")) Console.WriteLine($"*** Getting {s}={v?.ToString() ?? "null"} ***");
         return v?.Copy();
     }
 
@@ -58,10 +58,8 @@ public class Env {
         return sb.ToString();
     }
     public void SetValue(string s, IVal v) {
-        // var oldVal = GetValue(s);
         _env[s] = v.Copy();
-        if (s.StartsWith("&")) Console.WriteLine($"Env: setting {s} to {v.Value}");
-        // return oldVal;
+        // if (s.StartsWith("&")) Console.WriteLine($"Env: setting {s} to {v.Value}");
     }
 
     public bool RemoveValue(string s) {
@@ -193,7 +191,7 @@ public class Env {
             { "join", new FuncVal("join", (p, env) => Join(p, env, false)) },
             // { "cons", new FuncVal("cons", (p, env) => Join(p, env, true)) },
             { "len", new FuncVal("len", (p, env) => Len(p)) },
-            { "eval", new FuncVal("eval", (p, env) => new SExpr(p?.FirstOrDefault() as QExpr ?? new QExpr(p)).Evaluate(env) as IVal ?? NIL) },
+            { "eval", new FuncVal("eval", (p, env) => env.EvalQExpr(p?.FirstOrDefault() as QExpr ?? new QExpr(p)) as IVal ?? NIL) },
             { "def", new FuncVal("def", (p, env) => Define(p, env, true)) },
             { "set", new FuncVal("set", (p, env) => Define(p, env)) },
             { "fn", new FuncVal("fn", (p, env) => Fn(p)) },

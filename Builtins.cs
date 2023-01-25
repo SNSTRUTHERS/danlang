@@ -32,7 +32,7 @@ public class Builtins
         // LASSERT_NOT_EMPTY("head", a, 0);
         
         LVal v = a.Take(0);  
-        while (v.Count > 1) {  v.Pop(1); }
+        while (v.Count > 1) v.Pop(1);
         return v;
     }
 
@@ -59,7 +59,7 @@ public class Builtins
         // LASSERT_NOT_EMPTY("end", a, 0);
         
         LVal v = a.Take(0);  
-        while (v.Count > 1) {  v.Pop(0); }
+        while (v.Count > 1) v.Pop(0);
         return v;
     }
 
@@ -75,8 +75,8 @@ public class Builtins
         LVal x =  a.Pop(0);
         
         while (a.Count > 0) {
-            LVal y =  a.Pop(0);
-            x =  x.Join(y);
+            LVal y = a.Pop(0);
+            x = x.Join(y);
         }
         return x;
     }
@@ -88,7 +88,7 @@ public class Builtins
         if ((op == "-") && a.Count == 0) { x.NumVal = -x.NumVal!; }
         
         while (a.Count > 0) {  
-            LVal y =  a.Pop(0);
+            LVal y = a.Pop(0);
             
             if (op == "+") { x.NumVal = x.NumVal! + y.NumVal!; }
             if (op == "-") { x.NumVal = x.NumVal! - y.NumVal!; }
@@ -134,8 +134,8 @@ public class Builtins
         // LASSERT_TYPE(op, a, 0, LE.LVAL_NUM);
         // LASSERT_TYPE(op, a, 1, LE.LVAL_NUM);
         bool r = false;
-        if (op == ">") { r = ((a.Cells![0].NumVal as Int)!.num >  (a.Cells[1].NumVal as Int)!.num); }
-        if (op == "<") { r = ((a.Cells![0].NumVal as Int)!.num <  (a.Cells[1].NumVal as Int)!.num); }
+        if (op == ">") { r = ((a.Cells![0].NumVal as Int)!.num > (a.Cells[1].NumVal as Int)!.num); }
+        if (op == "<") { r = ((a.Cells![0].NumVal as Int)!.num < (a.Cells[1].NumVal as Int)!.num); }
         return LVal.Number(new Int(r ? 1 : 0));
     }
 
@@ -149,6 +149,7 @@ public class Builtins
         bool r = false;
         if (op == "eq")  { r =  a.Cells![0].Equals(a.Cells[1]); }
         if (op == "neq") { r = !a.Cells![0].Equals(a.Cells[1]); }
+        // TODO: Future "spaceship" operator: if (op == "<=>") { r = !a.Cells![0].CompareTo(a.Cells[1]); }
         return LVal.Number(new Int(r ? 1 : 0));
     }
 
@@ -160,18 +161,14 @@ public class Builtins
         // LASSERT_TYPE("if", a, 0, LE.LVAL_NUM);
         // LASSERT_TYPE("if", a, 1, LE.LVAL_QEXPR);
         // LASSERT_TYPE("if", a, 2, LE.LVAL_QEXPR);        
-        LVal x;
-        // Console.Write("In If: "); a.Println();
         a.Cells![1].ValType = LVal.LE.LVAL_SEXPR;
         a.Cells![2].ValType = LVal.LE.LVAL_SEXPR;
         
         if (a.Cells[0].NumVal != null && a.Cells[0].NumVal?.CompareTo(0) != 0) {
-            x = a.Pop(1).Eval(e)!;
+            return a.Pop(1).Eval(e)!;
         } else {
-            x = a.Pop(2).Eval(e)!;
+            return a.Pop(2).Eval(e)!;
         }
-
-        return x;
     }
 
     public static LVal Load(LEnv e, LVal a) {

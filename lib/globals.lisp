@@ -1,9 +1,11 @@
 ; Special thanks to buildyourownlisp.com for the inspiration from 'lispy'!
 
-(def {pi}         3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384)
-(def {fun}        (fn {a b} {def (head a) (fn (tail a) b)}))
-(fun {cons a b}   {join (list a) b})
-(fun {lambda}     {fn NIL &1})
+(def {pi}            3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384)
+(def {NIL} {})
+(def {T} 1)
+(def {fun}           (fn {a b} {def (head a) (fn (tail a) b)}))
+(fun {cons a b}      {join (list a) b})
+; (fun {lambda f}    {fn NIL f})
 (fun {local-fun a b} {set (head a) (fn (tail a) b)})
 
 ; Comparisons
@@ -32,15 +34,15 @@
 })
 
 ; Currying
-(fun {apply f l}  {eval (cons f l)})
-(fun {pack f}     {f &_})
+(fun {unpack f l}  {eval (cons f l)})
+(fun {pack f}      {f &_})
 
-;(def {apply} unpack)
-;(def {curry} unpack)
-;(def {uncurry} pack)
+(def {apply} unpack)
+(def {curry} unpack)
+(def {uncurry} pack)
 
 ; Reverse
-(fun {reverse l} {if l {join (reverse (tail l)) (head l)} {NIL}})
+(fun {reverse} {if (neq &1 {}) {join (reverse (tail &1)) (head &1)} {NIL}})
 
 ; nth element 
 (fun {fst l} {eval (head l)})
@@ -52,6 +54,8 @@
     {fst l}
     {nth (- n 1) (tail l)}
 })
+
+(fun {len} {if (eq &1 {}) {0} {+ 1 (len (tail &1))}})
 
 (fun {last l} {nth (- (len l) 1) l})
 
@@ -79,10 +83,10 @@
 })
 
 ; create a private scope
-(fun {let} {((fn NIL &1) ())})
+(fun {let x} {((fn NIL x) ())})
 
 ; do a number of items and return value of the last one
-(fun {do} {if &_ {last &_} {NIL}})
+(fun {do} {if (neq (len &_) 0) {last &_} {NIL}})
 
 (def {begin} do)
 (def {block} do)
@@ -113,26 +117,26 @@
     {z}
 })
 
-(fun {sum}     {foldl + 0 &1})
-(fun {product} {foldl * 1 &1})
+(fun {sum s}     {foldl + 0 s})
+(fun {product p} {foldl * 1 p})
 
 ; Switch/Cond
 (fun {cond} {
-  if (> (len &_) 0)
+  if (eq  &_ {})
+    {error "No Selection Found"}
     { if (fst (fst &_))
       {snd (fst &_)}
       {apply cond (tail &_)} }
-    {error "No Selection Found"}
 })
 
 ;(def {switch} cond)
 
 (fun {case x} {
-  if &_
+  if (eq &_ {})
+    {error "No Case Found"}
     {if (eq x (fst (fst &_)))
        {snd (fst &_)}
        {apply case (cons x (tail &_))}}
-    {error "No Case Found"}
 })
 
 ; Fibonacci

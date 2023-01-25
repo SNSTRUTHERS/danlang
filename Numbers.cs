@@ -10,7 +10,7 @@ public static class NumExtensions
     }
 }
 
-public class Num : IComparable<Num> {
+public class Num : IComparable<Num>, IComparable<int> {
     private const string _binRegex = "[+-]?0b[01]+";
     private const string _balTernRegex = @"0c[-0+]+(\.[-0+]+)?";
     private const string _decRegex = @"[+-]?(0d)?\d+([\./]\d+)?(e\d+)?([+-]\d+([\./]\d+)?(e\d+)?i)?|[+-]?(0d)?\d+([\./]\d+)?(e\d+)?i([+-]\d+([\./]\d+)?(e\d+)?)?";
@@ -53,7 +53,8 @@ public class Num : IComparable<Num> {
     public static Num operator+(Num n, BigInteger m) {
         if (n is Rat r) return new Rat(r.num + (m * r.den), r.den);
         if (n is Fix f) return new Fix(f.num + (m * BigInteger.Pow(10, f.dec)), f.dec);
-        else return new Int(((Int)n).num + m);
+        if (n is Int i) return new Int(i.num + m);
+        else return n;
     }
 
     public static Num operator/(Num n, BigInteger m) {
@@ -94,7 +95,8 @@ public class Num : IComparable<Num> {
     public static Num operator-(Num n, Num m) {
         if (m is Rat r) return -r + n;
         if (m is Fix f) return -f + n;
-        return n - ((Int)m).num;
+        if (m is Int i) return n - i.num;
+        return -n;
     }
 
     public static Num? Parse(string? s) {
@@ -127,10 +129,12 @@ public class Num : IComparable<Num> {
         return t.num;
     }
 
-    public int CompareTo(Num? obj) {
+    public int CompareTo(Num? obj) { // TODO: do a proper implementation!
         if (this is Int i && obj is Int i2) return i.num.CompareTo(i2.num);
         return 0;
     }
+
+    public int CompareTo(int other) => this.CompareTo(new Int(other));
 }
 
 public class Int : Num {

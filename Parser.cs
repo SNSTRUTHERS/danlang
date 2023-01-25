@@ -100,7 +100,8 @@ public class Parser {
                         break;
                     case '\\':
                         // TODO: escape sequences
-                        break;
+                        // str.Append("\\");
+                        // break;
                     default:
                         str.Append(c);
                         break;

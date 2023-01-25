@@ -1,4 +1,5 @@
-﻿public class Program {
+﻿using System.ComponentModel;
+public class Program {
     public static readonly int MAJOR_VERSION = 0;
     public static readonly int MINOR_VERSION = 1;
 
@@ -35,12 +36,6 @@
         }
     }
 
-    private static void DoTokenize(string filename) {
-        var env = Env.RootEnv;
-        Env.AddGlobalsDefinesToEnv(env);
-        Console.WriteLine(Env.Load(filename).Evaluate(env).Value);
-    }
-
     private const string Prompt = "danlang>";
 
     public static int Main(string[] args) {
@@ -54,13 +49,14 @@
 
         // case Config.Mode.Compile:
         default:
-            if (files.Length > 0) {
-                foreach (var filename in files) {
-                    DoTokenize(filename);
-                }
-            } else {
-                var env = Env.RootEnv;
-                Env.AddGlobalsDefinesToEnv(env);
+            LEnv e = new LEnv();
+            Builtins.add_builtins(e);            
+
+            /* Interactive Prompt */
+            if (args.Length == 0) {
+                Console.WriteLine($"DanLang Version {MAJOR_VERSION}.{MINOR_VERSION}");
+                Console.WriteLine("Press Ctrl+c to Exit\n");
+                Builtins.Load(e, LVal.Sexpr().Add(LVal.Str(@"lib\globals.lisp")));
                 var prompt = Prompt;
                 var parens = "";
                 while (true) {
@@ -79,10 +75,19 @@
 
                         allTokens.AddRange(tokens);
                     } while (parens.Length > 0);
-                    var expr = SExpr.Create(allTokens.ToList());
-                    var val = expr.Evaluate(env);
-                    if (val.Type == ValType.EXIT) break;
-                    Console.WriteLine($"=> {val.Value}");
+                    
+                    var expr = LVal.read_expr_from_tokens(allTokens.ToList());
+                    var val = expr?.Eval(e);
+                    // if (val.Type == ValType.EXIT) break;
+                    Console.Write($"=> "); val?.Println();
+                }
+            }
+            /* Supplied with list of files */
+            else if (files?.Length >= 1) {
+                for (int i = 1; i < files.Length; i++) {
+                    LVal a = LVal.Sexpr().Add(LVal.Str(files[i]));
+                    LVal x = Builtins.Load(e, a);
+                    if (x.ValType == LVal.LE.LVAL_ERR) { x.Println(); }
                 }
             }
             break;
@@ -90,4 +95,12 @@
 
         return 0;
     }
+
+    static string? readline(string prompt) {
+        Console.Write(prompt);
+        return Console.ReadLine();
+    }
+
+    static void add_history(string? unused) {}
+    /* Lisp Value */
 }

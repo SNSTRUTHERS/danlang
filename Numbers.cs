@@ -75,7 +75,7 @@ public class Num : IComparable<Num>, IComparable<int> {
             Int i => new Fix(f.num * i.num, f.dec),
             _ => new Fix() // Complex?
         };
-        return n * ((Int)n).num;
+        return n * ((Int)m).num;
     }
 
     public static Num operator+(Num n, Num m) {

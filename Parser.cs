@@ -3,17 +3,17 @@ using System.Text;
 public class Parser {
     public record Token {
         public enum Type {
-            Error,
-            EOF,
-            More,
-            QExOpen,
-            QExClose,
-            SExOpen,
-            SExClose,
-            Symbol,
-            Number,
-            String,
-            Comment
+            EOF = '\0',
+            Error = '!',
+            More = '>',
+            QExOpen = '{',
+            QExClose = '}',
+            SExOpen = '(',
+            SExClose = ')',
+            Symbol = '$',
+            Number = '#',
+            String = '@',
+            Comment = ';'
         }
 
         public Type type;
@@ -279,11 +279,11 @@ public class Parser {
 
                         }
                     }
-                    
+
                     if (i < tokens.Count - 1) {
                         if ("+-".Contains((char)t.Item2)) { // complex
                             if (n == null) {
-                                
+// TODO: Complex Number creation
                             }
                         }
                         else if (t.Item2 == '/') { // Rational

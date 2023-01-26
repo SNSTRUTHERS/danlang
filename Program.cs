@@ -50,13 +50,14 @@ public class Program {
         // case Config.Mode.Compile:
         default:
             LEnv e = new LEnv();
-            Builtins.add_builtins(e);            
+            Builtins.AddBuiltins(e);
 
             /* Interactive Prompt */
             if (args.Length == 0) {
                 Console.WriteLine($"DanLang Version {MAJOR_VERSION}.{MINOR_VERSION}");
-                Console.WriteLine("Press Ctrl+c to Exit\n");
-                Builtins.Load(e, LVal.Sexpr().Add(LVal.Str(@"lib\globals.lisp")));
+                Console.WriteLine("Type 'exit' to Exit\n");
+                Builtins.Load(e, LVal.Sexpr().Add(LVal.Str("globals")));
+                Console.WriteLine();
                 var prompt = Prompt;
                 var parens = "";
                 while (true) {
@@ -67,7 +68,7 @@ public class Program {
                         var tokens = Parser.Tokenize(new StringReader(Console.ReadLine() ?? "exit"), parens).ToList();
                         last = tokens.LastOrDefault();
                         if (last == null) continue;
-                        
+
                         if (last.type == Parser.Token.Type.More) {
                             parens = last.parens;
                             tokens.RemoveAt(tokens.Count - 1);
@@ -75,10 +76,10 @@ public class Program {
 
                         allTokens.AddRange(tokens);
                     } while (parens.Length > 0);
-                    
-                    var expr = LVal.read_expr_from_tokens(allTokens.ToList());
+
+                    var expr = LVal.ReadExprFromTokens(allTokens.ToList());
                     var val = expr?.Eval(e);
-                    // if (val.Type == ValType.EXIT) break;
+                    if (val?.ValType == LVal.LE.EXIT) break;
                     Console.Write($"=> "); val?.Println();
                 }
             }
@@ -87,7 +88,7 @@ public class Program {
                 for (int i = 1; i < files.Length; i++) {
                     LVal a = LVal.Sexpr().Add(LVal.Str(files[i]));
                     LVal x = Builtins.Load(e, a);
-                    if (x.ValType == LVal.LE.LVAL_ERR) { x.Println(); }
+                    if (x.ValType == LVal.LE.ERR) { x.Println(); }
                 }
             }
             break;

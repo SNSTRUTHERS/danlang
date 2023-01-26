@@ -1,5 +1,8 @@
+using System.ComponentModel;
+using System.Numerics;
+
 public class LVal {
-    public enum LE { LVAL_ERR, LVAL_NUM, LVAL_SYM, LVAL_STR, LVAL_FUN, LVAL_SEXPR, LVAL_QEXPR, LVAL_COMMENT };
+    public enum LE { ERR, T, NUM, SYM, STR, FUN, SEXPR, QEXPR, COMMENT, EXIT };
 
     public LE ValType;
     public Func<LEnv, LVal, LVal>? BuiltinVal = null;
@@ -13,12 +16,13 @@ public class LVal {
     public List<LVal>? Cells = null;
 
     public int Count => Cells?.Count ?? 0;
+    public bool IsNIL => Count == 0 && (ValType == LE.SEXPR || ValType == LE.QEXPR);
 
     public LVal Copy() {
         LVal x = new LVal();
         x.ValType = ValType;
         switch (ValType) {
-            case LE.LVAL_FUN:
+            case LE.FUN:
                 if (BuiltinVal != null) {
                     x.BuiltinVal = BuiltinVal;
                 } else {
@@ -29,57 +33,82 @@ public class LVal {
                 }
                 break;
 
-            case LE.LVAL_NUM: x.NumVal = NumVal; break;
-            case LE.LVAL_ERR: x.ErrVal = ErrVal; break;
-            case LE.LVAL_SYM: x.SymVal = SymVal; break;
-            case LE.LVAL_STR: x.StrVal = StrVal; break;
+            case LE.NUM: x.NumVal = NumVal; break;
+            case LE.ERR: x.ErrVal = ErrVal; break;
+            case LE.SYM: x.SymVal = SymVal; break;
+            case LE.STR: x.StrVal = StrVal; break;
 
-            case LE.LVAL_SEXPR:
-            case LE.LVAL_QEXPR:
+            case LE.SEXPR:
+            case LE.QEXPR:
                 x.Cells = Cells?.Select(c => c.Copy()).ToList();
                 break;
         }
         return x;
     }
 
+    public static LVal T() {
+        LVal v = new LVal();
+        v.ValType = LE.T;
+        v.NumVal = new Int(1);
+        return v;
+    }
+
+    public static LVal NIL() {
+        return Qexpr();
+    }
+
+    public static LVal Bool(bool b) {
+        return b ? T() : NIL();
+    }
+
+    public static LVal Number(int x) => Number(new Int(x));
+    public static LVal Number(BigInteger x) => Number(new Int(x));
     public static LVal Number(Num x) {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_NUM;
+        v.ValType = LE.NUM;
         v.NumVal = x;
         return v;
     }
 
     public static LVal Err(string errStr) {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_ERR;  
+        v.ValType = LE.ERR;  
         v.ErrVal = errStr;
         return v;
     }
 
     public static LVal Sym(string s) {
+        // special cases
+        s = s.ToLower();
+        switch (s) {
+            case "t": return T();
+            case "nil": return NIL();
+            case "exit": return Exit();
+        }
+
         LVal v = new LVal();
-        v.ValType = LE.LVAL_SYM;
+        v.ValType = LE.SYM;
         v.SymVal = s;
         return v;
     }
 
     public static LVal Str(string s) {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_STR;
+        v.ValType = LE.STR;
         v.StrVal = s;
         return v;
     }
 
     public static LVal Builtin(Func<LEnv, LVal, LVal> func) {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_FUN;
+        v.ValType = LE.FUN;
         v.BuiltinVal = func;
         return v;
     }
 
     public static LVal Lambda(LVal formals, LVal body) {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_FUN;  
+        v.ValType = LE.FUN;  
         v.BuiltinVal = null;  
         v.Env = new LEnv();  
         v.Formals = formals;
@@ -90,22 +119,28 @@ public class LVal {
 
     public static LVal Sexpr() {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_SEXPR;
+        v.ValType = LE.SEXPR;
         v.Cells = new List<LVal>();
         return v;
     }
 
     public static LVal Qexpr() {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_QEXPR;
+        v.ValType = LE.QEXPR;
         v.Cells = new List<LVal>();
         return v;
     }
 
     public static LVal Comment(string s) {
         LVal v = new LVal();
-        v.ValType = LE.LVAL_COMMENT;
+        v.ValType = LE.COMMENT;
         v.StrVal = s;
+        return v;
+    }
+
+    public static LVal Exit() {
+        LVal v = new LVal();
+        v.ValType = LE.EXIT;
         return v;
     }
 
@@ -122,19 +157,23 @@ public class LVal {
     }
 
     public LVal Pop(int i) {
-        if (Cells == null || i >= Cells.Count) return Err($"Popping nonexistent item {i} from Expr");
-        LVal x = Cells[i];
-        Cells.RemoveAt(i);
+        if (i >= Count) return Err($"Popping nonexistent item {i} from Expr");
+        LVal x = this[i];
+        Cells!.RemoveAt(i);
         return x;
     }
 
-    public LVal Take(int i) => Pop(i);
-
     private void PrintExpr(char open, char close) {
+        // Special case for nil
+        if (close == '}' && Count == 0) {
+            Console.Write("NIL");
+            return;
+        }
+
         Console.Write(open);
         var con = "";
-        if (Cells != null) {
-            foreach (var c in Cells) {
+        if (Count > 0) {
+            foreach (var c in Cells!) {
                 Console.Write(con);
                 con = " ";
                 c.Print();
@@ -142,6 +181,10 @@ public class LVal {
         }
 
         Console.Write(close);
+    }
+
+    public LVal this[int i] {
+        get => (i >= 0 && Count > i) ? Cells![i] : Err($"Invalid item number {i}"); 
     }
 
     /* Possible unescapable characters */
@@ -165,10 +208,10 @@ public class LVal {
     }
 
     /* List of possible escapable characters */
-    const string str_escapable = "\a\b\f\n\r\t\v\\\'\"";
+    const string StrEscapable = "\a\b\f\n\r\t\v\\\'\"";
 
     /* Function to escape characters */
-    private static string str_escape(char x) {
+    private static string StrEscape(char x) {
         switch (x) {
             case '\a': return "\\a";
             case '\b': return "\\b";
@@ -188,9 +231,9 @@ public class LVal {
         Console.Write('"');
         /* Loop over the characters in the string */
         foreach (char c in StrVal) {
-            if (str_escapable.Contains(c)) {
+            if (StrEscapable.Contains(c)) {
                 /* If the character is escapable then escape it */
-                Console.Write(str_escape(c));
+                Console.Write(StrEscape(c));
             } else {
                 /* Otherwise print character as it is */
                 Console.Write(c);
@@ -201,7 +244,7 @@ public class LVal {
 
     public void Print() {
         switch (ValType) {
-            case LE.LVAL_FUN:
+            case LE.FUN:
                 if (BuiltinVal != null) {
                     Console.Write($"<builtin>");
                 } else {
@@ -213,12 +256,13 @@ public class LVal {
                 }
                 break;
 
-            case LE.LVAL_NUM:   Console.Write(NumVal); break;
-            case LE.LVAL_ERR:   Console.Write($"Error: {ErrVal}"); break;
-            case LE.LVAL_SYM:   Console.Write(SymVal); break;
-            case LE.LVAL_STR:   PrintStr(); break;
-            case LE.LVAL_SEXPR: PrintExpr('(', ')'); break;
-            case LE.LVAL_QEXPR: PrintExpr('{', '}'); break;
+            case LE.NUM:   Console.Write(NumVal); break;
+            case LE.T:     Console.Write("T"); break;
+            case LE.ERR:   Console.Write($"Error: {ErrVal}"); break;
+            case LE.SYM:   Console.Write(SymVal); break;
+            case LE.STR:   PrintStr(); break;
+            case LE.SEXPR: PrintExpr('(', ')'); break;
+            case LE.QEXPR: PrintExpr('{', '}'); break;
         }
     }
 
@@ -231,21 +275,22 @@ public class LVal {
         if (ValType != y.ValType) return false;
     
         switch (ValType) {
-            case LE.LVAL_NUM: return (NumVal!.CompareTo(y.NumVal) == 0);    
-            case LE.LVAL_ERR: return (ErrVal == y.ErrVal);
-            case LE.LVAL_SYM: return (SymVal == y.SymVal);    
-            case LE.LVAL_STR: return (StrVal == y.StrVal);    
-            case LE.LVAL_FUN: 
+            case LE.T:   return true;   // we already checked that the Types are the same for these, so we are good.
+            case LE.NUM: return (NumVal!.CompareTo(y.NumVal) == 0);    
+            case LE.ERR: return (ErrVal == y.ErrVal);
+            case LE.SYM: return (SymVal == y.SymVal);    
+            case LE.STR: return (StrVal == y.StrVal);    
+            case LE.FUN: 
                 if (BuiltinVal != null || y.BuiltinVal != null) {
                     return BuiltinVal == y.BuiltinVal;
                 }
                 return (Formals!.Equals(y.Formals) && Body!.Equals(y.Body));
 
-            case LE.LVAL_QEXPR:
-            case LE.LVAL_SEXPR:
-                if (Cells!.Count != y.Cells!.Count) return false;
-                for (int i = 0; i < Cells!.Count; i++) {
-                    if (!Cells[i].Equals(y.Cells[i])) return false;
+            case LE.QEXPR:
+            case LE.SEXPR:
+                if (Count != y.Count) return false;
+                for (int i = 0; i < Count; i++) {
+                    if (!this[i].Equals(y[i])) return false;
                 }
 
                 return true;
@@ -263,15 +308,15 @@ public class LVal {
         // TODO: include Cells
     }
 
-    private static string ltype_name(LE t) {
+    private static string LEName(LE t) {
         switch(t) {
-            case LE.LVAL_FUN: return "Function";
-            case LE.LVAL_NUM: return "Number";
-            case LE.LVAL_ERR: return "Error";
-            case LE.LVAL_SYM: return "Symbol";
-            case LE.LVAL_STR: return "String";
-            case LE.LVAL_SEXPR: return "S-Expression";
-            case LE.LVAL_QEXPR: return "Q-Expression";
+            case LE.FUN: return "Function";
+            case LE.NUM: return "Number";
+            case LE.ERR: return "Error";
+            case LE.SYM: return "Symbol";
+            case LE.STR: return "String";
+            case LE.SEXPR: return "S-Expression";
+            case LE.QEXPR: return "Q-Expression";
             default: return "Unknown";
         }
     }
@@ -281,7 +326,6 @@ public class LVal {
         
         int given = a.Count;
         int total = f.Formals!.Count;
-        // Console.Write($"Function passed {given} arguments. Expected {total}. Formals: "); f.Formals?.Print(); Console.WriteLine();
         int i = 0;
         var extras = Qexpr();
         
@@ -290,7 +334,6 @@ public class LVal {
             LVal val = a.Pop(0);
             if (f.Formals!.Count == 0) {
                 f.Env!.Put($"&{i}", val);
-                // Console.Write($"Setting &{i} to "); val.Print(); Console.WriteLine();
                 extras.Add(val);
             } else {
                 LVal sym = f.Formals.Pop(0);
@@ -307,28 +350,26 @@ public class LVal {
         }
     }
 
-    public static LVal? eval_sexpr(LEnv e, LVal? v) {
+    public static LVal? EvalSExpr(LEnv e, LVal? v) {
         if (v == null) return null;
-        // v.Println();
-        for (int i = 0; i < v.Count; i++) { v.Cells![i] = v.Cells![i].Eval(e)!; }
-        for (int i = 0; i < v.Count; i++) { if (v.Cells![i].ValType == LE.LVAL_ERR) { return v.Take(i); } }
+        if (v.Count == 0) return NIL();
+
+        for (int i = 0; i < v.Count; i++) { v.Cells![i] = v[i].Eval(e)!; }
+        for (int i = 0; i < v.Count; i++) { if (v[i].ValType == LE.ERR) { return v.Pop(i); } }
         
         if (v.Count == 0) { return v; }  
-        if (v.Count == 1) { return v.Take(0).Eval(e); }
+        if (v.Count == 1) { return v.Pop(0).Eval(e); }
         
-        // Console.Write("Evaluating: ");v.Println();
         LVal f = v.Pop(0);
-        if (f.ValType != LE.LVAL_FUN) {
-            LVal err = LVal.Err($"S-Expression starts with incorrect type. Got {ltype_name(f.ValType)}, Expected {ltype_name(LE.LVAL_FUN)}.");
+        if (f.ValType != LE.FUN) {
+            LVal err = LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
             return err;
         }
         
-        LVal result = LVal.Call(e, f, v);
-        //result.Print();
-        return result;
+        return LVal.Call(e, f, v);
     }
 
-    public static LVal? read_expr_from_tokens(List<Parser.Token> tokens, char? end = null) {
+    public static LVal? ReadExprFromTokens(List<Parser.Token> tokens, char? end = null) {
         LVal exp = end == '}' ? Qexpr() : Sexpr();
         var t = tokens.FirstOrDefault();
         while (t != null) {
@@ -337,8 +378,8 @@ public class LVal {
                 Parser.Token.Type.EOF => end == null ? null : Err("Missing SExClose for SExpr"),
                 Parser.Token.Type.Comment => Comment(t.str!),
                 Parser.Token.Type.Error => Err(t.str ?? "Unknown error"),
-                Parser.Token.Type.SExOpen => read_expr_from_tokens(tokens, ')'),
-                Parser.Token.Type.QExOpen => read_expr_from_tokens(tokens, '}'),
+                Parser.Token.Type.SExOpen => ReadExprFromTokens(tokens, ')'),
+                Parser.Token.Type.QExOpen => ReadExprFromTokens(tokens, '}'),
                 Parser.Token.Type.SExClose => end != ')' ? Err("SExClose without SExOpen") : null,
                 Parser.Token.Type.QExClose => end != '}' ? Err("QExClose without QExOpen") : null,
                 Parser.Token.Type.Number => Number(t.num!),
@@ -350,8 +391,8 @@ public class LVal {
             if (val == null) break;
             
             switch (val.ValType) {
-                case LE.LVAL_ERR: throw new Exception(val.ErrVal);
-                case LE.LVAL_COMMENT: break;
+                case LE.ERR: throw new Exception(val.ErrVal);
+                case LE.COMMENT: break;
                 default:
                     exp.Cells!.Add(val);
                     break;
@@ -360,14 +401,18 @@ public class LVal {
         }
 
         return exp;
-
     }
 
     public LVal Eval(LEnv e) {
-        if (ValType == LE.LVAL_SYM) return e.Get(SymVal!);
-        if (ValType == LE.LVAL_SEXPR) return eval_sexpr(e, this)!;
+        if (ValType == LE.SYM) return e.Get(SymVal!);
+        if (ValType == LE.SEXPR) return EvalSExpr(e, this)!;
         
         // Print();
         return this;
+    }
+
+    public int CompareTo(LVal v) {
+        if (NumVal != null && v.NumVal != null) return NumVal.CompareTo(v.NumVal);
+        return 0;
     }
 }

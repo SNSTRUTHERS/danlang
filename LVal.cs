@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
+using System.Text;
 
 public class LVal {
     public enum LE { ERR, T, NUM, SYM, STR, FUN, SEXPR, QEXPR, COMMENT, EXIT };
@@ -163,24 +164,25 @@ public class LVal {
         return x;
     }
 
-    private void PrintExpr(char open, char close) {
+    private string ExprAsString(char open, char close) {
         // Special case for nil
-        if (close == '}' && Count == 0) {
-            Console.Write("NIL");
-            return;
+        if (Count == 0) {
+            return "NIL";
         }
 
-        Console.Write(open);
+        var s = new StringBuilder();
+        s.Append(open);
         var con = "";
         if (Count > 0) {
             foreach (var c in Cells!) {
-                Console.Write(con);
+                s.Append(con);
                 con = " ";
-                c.Print();
+                s.Append(c.ToStr());
             }
         }
 
-        Console.Write(close);
+        s.Append(close);
+        return s.ToString();
     }
 
     public LVal this[int i] {
@@ -227,43 +229,51 @@ public class LVal {
         return "";
     }
 
-    private void PrintStr() {
-        Console.Write('"');
+    private string StrAsString() {
+        var s = new StringBuilder();
+        s.Append('"');
         /* Loop over the characters in the string */
         foreach (char c in StrVal) {
             if (StrEscapable.Contains(c)) {
                 /* If the character is escapable then escape it */
-                Console.Write(StrEscape(c));
+                s.Append(StrEscape(c));
             } else {
                 /* Otherwise print character as it is */
-                Console.Write(c);
+                s.Append(c);
             }
         }
-        Console.Write('"');
+        s.Append('"');
+        return s.ToString();
     }
 
-    public void Print() {
+    public string ToStr() {
+        var s = new StringBuilder();
         switch (ValType) {
             case LE.FUN:
                 if (BuiltinVal != null) {
-                    Console.Write($"<builtin>");
+                    return "<builtin>";
                 } else {
-                    Console.Write("<function>(fn ");
-                    Formals!.Print();
-                    Console.Write(' ');
-                    Body!.Print();
-                    Console.Write(')');
+                    s.Append("<function>(fn ")
+                        .Append(Formals!.ToStr())
+                        .Append(' ')
+                        .Append(Body!.ToStr())
+                        .Append(')');
                 }
                 break;
 
-            case LE.NUM:   Console.Write(NumVal); break;
-            case LE.T:     Console.Write("T"); break;
-            case LE.ERR:   Console.Write($"Error: {ErrVal}"); break;
-            case LE.SYM:   Console.Write(SymVal); break;
-            case LE.STR:   PrintStr(); break;
-            case LE.SEXPR: PrintExpr('(', ')'); break;
-            case LE.QEXPR: PrintExpr('{', '}'); break;
+            case LE.NUM:   return NumVal!.ToString()!;
+            case LE.T:     return "T";
+            case LE.ERR:   s.Append("Error: ").Append(ErrVal); break;
+            case LE.SYM:   s.Append(SymVal); break;
+            case LE.STR:   return StrAsString();
+            case LE.SEXPR: return ExprAsString('(', ')');
+            case LE.QEXPR: return ExprAsString('{', '}');
         }
+        return s.ToString();
+    }
+
+    public void Print() {
+        Console.Write(ToStr());
     }
 
     public void Println() { Print(); Console.WriteLine(); }

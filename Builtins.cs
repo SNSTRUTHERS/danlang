@@ -286,9 +286,30 @@ public class Builtins
         return LVal.NIL();
     }
     private static LVal IsZero(LEnv e, LVal a) {
-        if (a.Count == 0) return LVal.Err("");
-        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("");
+        if (a.Count != 1) return LVal.Err("'zero?' requires 1 parameter");
+        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("Parameter passed to '?zero' is not a Number");
         return LVal.Bool(a[0].NumVal == IntZero);
+    }
+
+    private static LVal Complex(LEnv e, LVal a) {
+        if (a.Count != 2) return LVal.Err("Too few parameters passed to 'complex'");
+        if (a.Cells!.Any(c => c.ValType != LVal.LE.NUM)) return LVal.Err("One or more parameters passed to 'complex' is not a Number");
+
+        if (a.Pop(0).NumVal! is Int r) {
+            if (a.Pop(0).NumVal! is Int i) return LVal.Number(new Comp(r, i));
+            return LVal.Err("Imaginary part of complex must be an int, a rational, or a fixed");
+        }
+        return LVal.Err("Real part of complex must be an int, a rational, or a fixed");
+    }
+
+    private static LVal ToStr(LEnv e, LVal a) {
+        if (a.Count < 1) return LVal.Err("Too few parameters passed to 'to-base'");
+        if (a.Count == 2) {
+            if (a[0].ValType != LVal.LE.NUM) return LVal.Err("First 'to-str' parameter must be a Number");
+            if (a[1].ValType != LVal.LE.STR) return LVal.Err("Second 'to-str' parameter must be a String");
+            return LVal.Str(IntAcc.ToBase(a[0].NumVal!, a[1].StrVal!));
+        }
+        return LVal.Str(a[0].ToStr());
     }
 
     private static LVal FastFib(LEnv env, LVal val) {
@@ -351,6 +372,10 @@ public class Builtins
         AddBuiltin(e, "to-fixed",    (e, p) => LVal.Number(Rat.ToRat((p[0].NumVal ?? new Int(0))).ToFix(p.Count > 1 ? (int)(((p[1].NumVal as Int)?.num ?? 0)) : 10)));
         AddBuiltin(e, "to-rational", (e, p) => LVal.Number(Rat.ToRat(p[0].NumVal!)));
         AddBuiltin(e, "truncate",    (e, p) => LVal.Number((p[0].NumVal?.ToInt() ?? new Int(0))));
+        AddBuiltin(e, "complex",     Complex);
+        AddBuiltin(e, "to-str",      ToStr);
+
+        // fun functions
         AddBuiltin(e, "fib",         FastFib);
 
         // helper

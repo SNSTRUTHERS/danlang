@@ -1,5 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Cryptography;
 using System.Numerics;
 using System.Text.RegularExpressions;
 
@@ -12,16 +10,25 @@ public static class NumExtensions
 
 public class Num : IComparable<Num>, IComparable<int> {
     private const string _binRegex = "[+-]?0b[01]+";
-    private const string _balTernRegex = @"0c[-0+]+(\.[-0+]+)?";
-    private const string _decRegex = @"[+-]?(0d)?\d+([\./]\d+)?(e\d+)?([+-]\d+([\./]\d+)?(e\d+)?i)?|[+-]?(0d)?\d+([\./]\d+)?(e\d+)?i([+-]\d+([\./]\d+)?(e\d+)?)?";
-    private const string _octRegex = "[+-]?0o[0-7]+";
-    private const string _quatRegex = "[+-]?0q[0-3]+";
-    private const string _terRegex = "[+-]?0t[012]+";
-    private const string _hexRegex = "[+-]?0x[0-9a-f]+";
-    private const string _b36Regex = "[+-]?0z[0-9a-z]+";
+    private const string _balTernRegex = @"0c[\-0+]+(\.[\-0+]+)?";
+    private const string _balQuintRegex = @"0e[=\-0+#]+(\.[=\-0+#]+)?";
+    private const string _balSeptRegex = @"0g[~=\-0+#*]+(\.[~=\-0+#*]+)?";
+    private const string _balB27Regex = @"0k[a-m0A-M]+(\.[a-m0A-M]+)?";
+    private const string _balB53Regex = @"[+-]?0y[a-z0A-Z]+(\.[a-z0A-Z]+)?";
+    private const string _decRegex = @"[+-]?(0-?d)?\d+([\./]\d+)?(e\d+)?([+-]\d+([\./]\d+)?(e\d+)?i)?|[+-]?(0d)?\d+([\./]\d+)?(e\d+)?i([+-]\d+([\./]\d+)?(e\d+)?)?";
+    private const string _sixRegex = "[+-]?0-?f[0-5]+";
+    private const string _octRegex = "[+-]?0-?o[0-7]+";
+    private const string _nonRegex = "[+-]?0-?n[0-8]+";
+    private const string _quatRegex = "[+-]?0-?q[0-3]+";
+    private const string _terRegex = "[+-]?0-?t[012]+";
+    private const string _hexRegex = "[+-]?0-?x[0-9a-fA-F]+";
+    private const string _b36Regex = "[+-]?0-?z[0-9a-zA-Z]+";
+    private const string _customRegex = @"[+-]?0-?\<[^<>\[\]\t\r\n \\'""\._]+\>-?[bcdefgknoqstxyz].+";
     private static readonly Regex _numRegex = new Regex(
-        $"^({_binRegex}|{_decRegex}|{_octRegex}|{_quatRegex}|{_terRegex}|{_balTernRegex}|{_hexRegex}|{_b36Regex})$",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        $"^({_binRegex}|{_decRegex}|{_octRegex}|{_quatRegex}|{_terRegex}|{_balTernRegex}|"
+            + $"{_hexRegex}|{_b36Regex}|{_balQuintRegex}|{_balSeptRegex}|{_balB27Regex}|"
+            + $"{_sixRegex}|{_nonRegex}|{_balB53Regex}|{_customRegex})$",
+        RegexOptions.Compiled);
     protected Num() {}
 
     public static Num operator-(Num n) {
@@ -103,13 +110,13 @@ public class Num : IComparable<Num>, IComparable<int> {
         if (s == null) return null;
 
         var s2 = s.Trim().Replace("_", ""); // trim and remove any underscores
-        if (!_numRegex.IsMatch(s2)) throw new FormatException($"String `{s2}` does not match the format for a Num type");
+        var splits = s2.Split('/');
+        if (splits.Any(ss => !_numRegex.IsMatch(ss))) throw new FormatException($"String `{s2}` does not match the format for a Num type");
 
-        if (s2.Contains('i')) {
+        if (Regex.IsMatch(s2, _decRegex) && s2.EndsWith('i')) {
             return Comp.Parse(s2);
         }
 
-        var splits = s2.Split('/');
         if (splits.Length > 1) { // rational
             var t0 = Parser.Tokenize(new StringReader(splits[0])).First();
             if (t0.type == Parser.Token.Type.Number && t0.num is Int) {
@@ -215,7 +222,7 @@ public enum Rounding {
     Truncate, RoundUp, RoundDown, RoundAwayFromZero
 }
 
-public class Rat: Int {
+public class Rat : Int {
     public BigInteger den { get; private set; }
     public Rat() : base() => this.den = 1;
 
@@ -413,51 +420,5 @@ public class Comp : Num {
         }
 
         return new Comp(rPart ?? new Int(0), imPart ?? new Int(0));
-    }
-}
-
-public class FComp : Fix {
-    public Fix im;
-    public FComp() : base() => im = new Fix();
-    public FComp(BigInteger num) : base(num) => im = new Fix();
-    public FComp(Fix r, Fix im) : base(r) => this.im = im;
-    public FComp(BigInteger num, int dec) : base(num, dec) => im = new Fix();
-    public FComp(BigInteger numR, int decR, BigInteger numI, int decI) : base(numR, decR)
-        => im = new Fix(numI, decI);
-    public override string ToString() {
-        if (im.num == 0) return base.ToString();
-        return $"{base.ToString()}{(im.num > 0 ? "+" : "")}{im.ToString()}i";
-    }
-
-    public static new FComp? Parse(string? s) {
-        if (s == null) return null;
-        s = s.Trim().Replace("_", "");
-        if (!s.EndsWith('i')) throw new FormatException();
-        s = s.Remove(s.Length - 1); // trim the i
-
-        var realSign = '+';
-        if (s.StartsWith('+') || s.StartsWith('-')) {
-            realSign = s[0];
-            s = s.Substring(1);
-        }
-        
-        var imaginarySign = '+';
-        var splits = s.Split(imaginarySign);
-        if (splits.Length == 1)
-        {
-            imaginarySign = '-';
-            splits = s.Split(imaginarySign);
-            if (splits.Length == 1) throw new FormatException("No real/imaginary separator character (+/-) found in FComp Num");
-        }
-        
-        if (splits.Length > 2) throw new FormatException("Too many separators found in FComp Num");
-
-        var f1 = Fix.Parse(splits[0]);
-        var f2 = Fix.Parse(splits[1]);
-        if (f1 == null || f2 == null) return null;
-
-        if (realSign == '-') f1 = -f1;
-        if (imaginarySign == '-') f2 = -f2;
-        return new FComp(f1, f2);
     }
 }

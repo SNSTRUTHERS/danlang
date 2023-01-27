@@ -9,7 +9,7 @@ public class IntAcc {
     private const string NumChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private const string BalancedChars = "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ";   
     private const string BalancedTernQuinSeptChars = "~=-0+#*";
-    private const string InvalidCharsetCharacters = "[]() \t\r\n._\\'\"";
+    private const string InvalidCharsetCharacters = "<>[]() \t\r\n._\\'\"";
 
     private BigInteger? _den = null;
     private BigInteger _factor = 1;
@@ -124,13 +124,13 @@ public class IntAcc {
             den = ToBase(r.den, b);
         }
 
-        if (den != "") return num + "/" + den.Substring(den.IndexOf(b.ToLower().Last()) + 1);
+        if (den != "") return num + "/" + den;
         return num;
     }
 
     public static string ToBase(BigInteger n, string b) {
         // validate incoming b
-        var reg = new Regex(@"^0([<>]|([+~]|-)|\[[^\s[\u005D.\\_'""]{2,}\]){0,3}[bcdefgknoqstvxyz]$", RegexOptions.IgnoreCase);
+        var reg = new Regex(@"^0([<>]|([+~]|-)|\[[^\s[\u005D.\\_'""]{2,}\]){0,3}[" + string.Join("", NumBases.Keys.Select(c => c.ToString())) +"]$", RegexOptions.IgnoreCase);
         if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
 
         // normalize b

@@ -379,6 +379,7 @@ public class Comp : Num {
 
     public override string ToString() {
         if (im.num == 0) return r.ToString();
+        if (r.num == 0) return im.ToString() + 'i';
         return $"{r.ToString()}{(im.num > 0 ? "+" : "")}{im.ToString()}i";
     }
 

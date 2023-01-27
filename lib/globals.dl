@@ -64,12 +64,6 @@
     {nth (- n 1) (tail l)}
 })
 
-(fun {len} {
-  if &1
-    {+ 1 (len (tail &1))}
-    {0}
-})
-
 (fun {last l} {nth (- (len l) 1) l})
 
 ; Take N items

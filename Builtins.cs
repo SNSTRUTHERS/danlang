@@ -285,9 +285,33 @@ public class Builtins
         }
         return LVal.NIL();
     }
+
+    private static LVal IsInt(LEnv _, LVal a) {
+        if (a.Count != 1) return LVal.Err("'int?' requires 1 parameter");
+        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("Parameter passed to 'int?' is not a Number");
+        if (a[0].NumVal is Int i && !(i is Fix) && !(i is Rat)) return LVal.Bool(true);
+        return LVal.Bool(false);
+    }
+    private static LVal IsFix(LEnv _, LVal a) {
+        if (a.Count != 1) return LVal.Err("'fixed?' requires 1 parameter");
+        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("Parameter passed to 'fixed?' is not a Number");
+        return LVal.Bool(a[0].NumVal is  Fix);
+    }
+    private static LVal IsRat(LEnv _, LVal a) {
+        if (a.Count != 1) return LVal.Err("'rational?' requires 1 parameter");
+        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("Parameter passed to 'rational?' is not a Number");
+        return LVal.Bool(a[0].NumVal is  Rat);
+    }
+
+    private static LVal IsComplex(LEnv _, LVal a) {
+        if (a.Count != 1) return LVal.Err("'complex?' requires 1 parameter");
+        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("Parameter passed to 'complex?' is not a Number");
+        if (a[0].NumVal is Comp) return LVal.Bool(true);
+        return LVal.Bool(false);
+    }
     private static LVal IsZero(LEnv e, LVal a) {
         if (a.Count != 1) return LVal.Err("'zero?' requires 1 parameter");
-        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("Parameter passed to '?zero' is not a Number");
+        if (a[0].ValType != LVal.LE.NUM) return LVal.Err("Parameter passed to 'zero?' is not a Number");
         return LVal.Bool(a[0].NumVal == IntZero);
     }
 
@@ -313,18 +337,20 @@ public class Builtins
     }
 
     private static LVal FastFib(LEnv env, LVal val) {
-        int n = (int)val[0].NumVal!.ToInt().num;
-        BigInteger a = BigInteger.Zero;
-        BigInteger b = BigInteger.One;
-        for (int i = 31; i >= 0; i--) {
-            BigInteger d = a * (b * 2 - a);
-            BigInteger e = a * a + b * b;
-            a = d;
-            b = e;
-            if ((((uint)n >> i) & 1) != 0) {
-                BigInteger c = a + b;
+        if (val.Count == 0 || val[0].ValType != LVal.LE.NUM) return LVal.Err("'fib' expects one parameter of type Number");
+        var v = val[0].NumVal!.ToInt().num;
+        if (v < 0) return LVal.Err("'fib' parameter 'n' cannot be negative");
+        uint n = (uint)v;
+        BigInteger a = 0;
+        BigInteger b = 1;
+        for (int i = 31; i >= 0; --i) {
+            var t = a * (b * 2 - a);
+            b = a * a + b * b;
+            a = t;
+            if (((n >> i) & 1) != 0) {
+                t = a + b;
                 a = b;
-                b = c;
+                b = t;
             }
         }
         return LVal.Number(a);
@@ -344,6 +370,7 @@ public class Builtins
         AddBuiltin(e, "end",  End);
         AddBuiltin(e, "join", Join);
         AddBuiltin(e, "eval", Eval);
+        AddBuiltin(e, "len",  (e, a) => LVal.Number(a[0].Count));
         
         // Mathematical Functions
         AddBuiltin(e, "+", Add);
@@ -382,15 +409,19 @@ public class Builtins
         AddBuiltin(e, "defined?",    (e, p) => LVal.Bool(p[0].ValType == LVal.LE.SYM && e.ContainsKey(p[0].SymVal)));
 
         // type checking
-        AddBuiltin(e, "t?",      IsT);
-        AddBuiltin(e, "nil?",    IsNIL);
-        AddBuiltin(e, "num?",    IsNumber);
-        AddBuiltin(e, "symbol?", IsSymbol);
-        AddBuiltin(e, "string?", IsString);
-        AddBuiltin(e, "func?",   IsFunc);
-        AddBuiltin(e, "error?",  IsError);
-        AddBuiltin(e, "expr?",   IsExpr);
-        AddBuiltin(e, "qexpr?",  IsQExpr);
-        AddBuiltin(e, "sexpr?",  IsSExpr);
+        AddBuiltin(e, "t?",        IsT);
+        AddBuiltin(e, "nil?",      IsNIL);
+        AddBuiltin(e, "num?",      IsNumber);
+        AddBuiltin(e, "fixed?",    IsFix);
+        AddBuiltin(e, "rational?", IsRat);
+        AddBuiltin(e, "int?",      IsInt);
+        AddBuiltin(e, "complex?",  IsComplex);
+        AddBuiltin(e, "symbol?",   IsSymbol);
+        AddBuiltin(e, "string?",   IsString);
+        AddBuiltin(e, "func?",     IsFunc);
+        AddBuiltin(e, "error?",    IsError);
+        AddBuiltin(e, "expr?",     IsExpr);
+        AddBuiltin(e, "qexpr?",    IsQExpr);
+        AddBuiltin(e, "sexpr?",    IsSExpr);
     }
 }

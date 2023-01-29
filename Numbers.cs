@@ -8,27 +8,7 @@ public static class NumExtensions
     }
 }
 
-public class Num : IComparable<Num>, IComparable<int> {
-    private const string _binRegex = "[+-]?0b[01]+";
-    private const string _balTernRegex = @"0c[\-0+]+(\.[\-0+]+)?";
-    private const string _balQuintRegex = @"0e[=\-0+#]+(\.[=\-0+#]+)?";
-    private const string _balSeptRegex = @"0g[~=\-0+#*]+(\.[~=\-0+#*]+)?";
-    private const string _balB27Regex = @"0k[a-m0A-M]+(\.[a-m0A-M]+)?";
-    private const string _balB53Regex = @"[+-]?0y[a-z0A-Z]+(\.[a-z0A-Z]+)?";
-    private const string _decRegex = @"[+-]?(0-?d)?\d+([\./]\d+)?(e\d+)?([+-]\d+([\./]\d+)?(e\d+)?i)?|[+-]?(0d)?\d+([\./]\d+)?(e\d+)?i([+-]\d+([\./]\d+)?(e\d+)?)?";
-    private const string _sixRegex = "[+-]?0-?f[0-5]+";
-    private const string _octRegex = "[+-]?0-?o[0-7]+";
-    private const string _nonRegex = "[+-]?0-?n[0-8]+";
-    private const string _quatRegex = "[+-]?0-?q[0-3]+";
-    private const string _terRegex = "[+-]?0-?t[012]+";
-    private const string _hexRegex = "[+-]?0-?x[0-9a-fA-F]+";
-    private const string _b36Regex = "[+-]?0-?z[0-9a-zA-Z]+";
-    private const string _customRegex = @"[+-]?0-?\<[^<>\[\]\t\r\n \\'""\._]+\>-?[bcdefgknoqstxyz].+";
-    private static readonly Regex _numRegex = new Regex(
-        $"^({_binRegex}|{_decRegex}|{_octRegex}|{_quatRegex}|{_terRegex}|{_balTernRegex}|"
-            + $"{_hexRegex}|{_b36Regex}|{_balQuintRegex}|{_balSeptRegex}|{_balB27Regex}|"
-            + $"{_sixRegex}|{_nonRegex}|{_balB53Regex}|{_customRegex})$",
-        RegexOptions.Compiled);
+public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> {
     protected Num() {}
 
     public static Num operator-(Num n) {
@@ -107,33 +87,7 @@ public class Num : IComparable<Num>, IComparable<int> {
     }
 
     public static Num? Parse(string? s) {
-        if (s == null) return null;
-
-        var s2 = s.Trim().Replace("_", ""); // trim and remove any underscores
-        var splits = s2.Split('/');
-        if (splits.Any(ss => !_numRegex.IsMatch(ss))) throw new FormatException($"String `{s2}` does not match the format for a Num type");
-
-        if (Regex.IsMatch(s2, _decRegex) && s2.EndsWith('i')) {
-            return Comp.Parse(s2);
-        }
-
-        if (splits.Length > 1) { // rational
-            var t0 = Parser.Tokenize(new StringReader(splits[0])).First();
-            if (t0.type == Parser.Token.Type.Number && t0.num is Int) {
-                var t1 = Parser.Tokenize(new StringReader(splits[1])).First();
-                if (t1.type == Parser.Token.Type.Number && t1.num is Int) {
-                    return new Rat((t0.num as Int)!.num, (t1.num as Int)!.num);
-                }
-            }
-            throw new FormatException($"Failed to parse rational {s2}");
-        }
-
-        if (s2.Contains('.')) {
-            return Fix.Parse(s2);
-        }
-
-        var t = Parser.Tokenize(new StringReader(s2)).First();
-        return t.num;
+        return NumberParser.ParseString(s);
     }
 
     public int CompareTo(Num? obj) { // TODO: do a proper implementation!
@@ -141,13 +95,15 @@ public class Num : IComparable<Num>, IComparable<int> {
         return 0;
     }
 
-    public int CompareTo(int other) => this.CompareTo(new Int(other));
+    public int CompareTo(BigInteger other) => this.CompareTo(new Int(other));
+
+    public int CompareTo(long other) => CompareTo(new BigInteger(other));
 }
 
 public class Int : Num {
     public BigInteger num { get; protected set; } = 0;
     public Int() : base() {}
-    public Int(BigInteger num) => this.num = num;
+    public Int(BigInteger? num = null) => this.num = num ?? BigInteger.Zero;
 
     public static explicit operator double(Int r) => (double)r.num;
     
@@ -227,10 +183,10 @@ public class Rat : Int {
     public Rat() : base() => this.den = 1;
 
     public Rat(Int? r) : this(r?.num ?? 0) {
-        if (r is Rat) den = ((Rat)r)?.den ?? 1;
-        else if (r is Fix) {
+        if (r is Rat r2) den = r2.den;
+        else if (r is Fix f) {
             den = 1;
-            var dec = ((Fix)r)?.dec ?? 0;
+            var dec = f.dec;
             while (dec-- > 0) den *= 10;
         }
     }
@@ -365,7 +321,7 @@ public class Rat : Int {
 
         // single '/' found
         var den =  BigInteger.Parse(val.Substring(sPos + 1));
-        if (den == 0) throw new FormatException("Cannot specify a rational with a denominator of zero (0)");
+        if (den == BigInteger.Zero) throw new FormatException("Cannot specify a rational with a denominator of zero (0)");
         return new Rat(BigInteger.Parse(val.Substring(0, sPos)), den);
     }
 }
@@ -378,8 +334,8 @@ public class Comp : Num {
     public Comp(Int r, Int im) { this.r = r; this.im = im; }
 
     public override string ToString() {
-        if (im.num == 0) return r.ToString();
-        if (r.num == 0) return im.ToString() + 'i';
+        if (im.num == BigInteger.Zero) return r.ToString();
+        if (r.num == BigInteger.Zero) return im.ToString() + 'i';
         return $"{r.ToString()}{(im.num > 0 ? "+" : "")}{im.ToString()}i";
     }
 
@@ -420,6 +376,6 @@ public class Comp : Num {
             imPart = (iOffset != s.Length ? nums[0] : nums[1]) as Int;
         }
 
-        return new Comp(rPart ?? new Int(0), imPart ?? new Int(0));
+        return new Comp(rPart ?? new Int(BigInteger.Zero), imPart ?? new Int(BigInteger.Zero));
     }
 }

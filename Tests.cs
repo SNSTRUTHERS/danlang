@@ -39,7 +39,7 @@ public static class Tests {
                         foreach (var b in "bcdefgknoqstvxyz") {
                             var bs = $"0{d}{s}{chars}{b}";
                             BigInteger x = BigInteger.Parse(xx) * i;
-                            var ret = IntAcc.ToBase(x, bs);
+                            var ret = NumberParser.ToBase(x, bs);
                             var pStr = ret;
                             var cStart = ret.IndexOf('[');
                             if (cStart > 0) {

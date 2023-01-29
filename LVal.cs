@@ -17,7 +17,17 @@ public class LVal {
     public List<LVal>? Cells = null;
 
     public int Count => Cells?.Count ?? 0;
-    public bool IsNIL => Count == 0 && (ValType == LE.SEXPR || ValType == LE.QEXPR);
+    public bool IsNIL => Count == 0 && (IsSExpr || IsQExpr);
+    public bool IsT => ValType == LE.T;
+    public bool IsNum => ValType == LE.NUM;
+    public bool IsSym => ValType == LE.SYM;
+    public bool IsFun => ValType == LE.FUN;
+    public bool IsErr => ValType == LE.ERR;
+    public bool IsExit => ValType == LE.EXIT;
+    public bool IsStr => ValType == LE.STR;
+    public bool IsSExpr => ValType == LE.SEXPR;
+    public bool IsQExpr => ValType == LE.QEXPR;
+    public bool IsComment => ValType == LE.COMMENT;
 
     public LVal Copy() {
         LVal x = new LVal();
@@ -50,7 +60,7 @@ public class LVal {
     public static LVal T() {
         LVal v = new LVal();
         v.ValType = LE.T;
-        v.NumVal = new Int(1);
+        v.NumVal = new Int(BigInteger.One);
         return v;
     }
 
@@ -365,16 +375,13 @@ public class LVal {
         if (v.Count == 0) return NIL();
 
         for (int i = 0; i < v.Count; i++) { v.Cells![i] = v[i].Eval(e)!; }
-        for (int i = 0; i < v.Count; i++) { if (v[i].ValType == LE.ERR) { return v.Pop(i); } }
+        for (int i = 0; i < v.Count; i++) { if (v[i].IsErr) { return v.Pop(i); } }
         
         if (v.Count == 0) { return v; }  
         if (v.Count == 1) { return v.Pop(0).Eval(e); }
         
         LVal f = v.Pop(0);
-        if (f.ValType != LE.FUN) {
-            LVal err = LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
-            return err;
-        }
+        if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
         
         return LVal.Call(e, f, v);
     }
@@ -385,7 +392,7 @@ public class LVal {
         while (t != null) {
             tokens.RemoveAt(0);
             LVal? val = t.type switch {
-                Parser.Token.Type.EOF => end == null ? null : Err("Missing SExClose for SExpr"),
+                Parser.Token.Type.EOF => end == null ? null : Err($"Missing {end} for {(end == '}' ? 'Q' : 'S')}Expr"),
                 Parser.Token.Type.Comment => Comment(t.str!),
                 Parser.Token.Type.Error => Err(t.str ?? "Unknown error"),
                 Parser.Token.Type.SExOpen => ReadExprFromTokens(tokens, ')'),
@@ -414,8 +421,8 @@ public class LVal {
     }
 
     public LVal Eval(LEnv e) {
-        if (ValType == LE.SYM) return e.Get(SymVal!);
-        if (ValType == LE.SEXPR) return EvalSExpr(e, this)!;
+        if (IsSym) return e.Get(SymVal!);
+        if (IsSExpr) return EvalSExpr(e, this)!;
         
         // Print();
         return this;

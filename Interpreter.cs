@@ -1,5 +1,6 @@
 // THIS IS NOT DEPRECATED
 
+using System.Numerics;
 using System.Text;
 namespace Dep {
     public class Env {
@@ -77,9 +78,9 @@ namespace Dep {
             if (p.Any(v => v.Type != ValType.NUM))
                 return new StrVal(p.Aggregate(new StringBuilder(), (s1, s2) => s1.Append(s2.Value ?? "")).ToString());
             
-            var start = (p.FirstOrDefault() as NumVal)?.UnderlyingValue ?? new Int(0);
+            var start = (p.FirstOrDefault() as NumVal)?.UnderlyingValue ?? new Int();
             
-            if (p.Count == 1) start = f(new Int(0), start);
+            if (p.Count == 1) start = f(new Int(), start);
             
             foreach (NumVal n in p.Skip(1)) {
                 start = f(start, n.UnderlyingValue);
@@ -205,9 +206,9 @@ namespace Dep {
                 { "eq", new FuncVal("eq", (p, env) => Cmp(p, (a, b) => a.CompareTo(b) == 0)) },
                 { "val", new FuncVal("val", (p, env) => new NumVal(Num.Parse(p?[0]?.Value?.Replace("\"", "") ?? "0")!))},
                 { "is-def", new FuncVal("is-def", (p, env) => (p?[0] is SymVal s && env.Contains(s.Value)) ? TRUE : NIL) },
-                { "to-fixed", new FuncVal("to-fixed", (p, env) => new NumVal(Rat.ToRat((p?[0] as NumVal)?.UnderlyingValue ?? new Int(0)).ToFix(p?.Count > 1 ? (int)(((p?[1] as NumVal)?.UnderlyingValue as Int)?.num ?? 0) : 10))) },
+                { "to-fixed", new FuncVal("to-fixed", (p, env) => new NumVal(Rat.ToRat((p?[0] as NumVal)?.UnderlyingValue ?? new Int()).ToFix(p?.Count > 1 ? (int)(((p?[1] as NumVal)?.UnderlyingValue as Int)?.num ?? BigInteger.Zero) : 10))) },
                 { "to-rational", new FuncVal("to-rational", (p, env) => new NumVal(Rat.ToRat((p![0] as NumVal)!.UnderlyingValue))) },
-                { "truncate", new FuncVal("truncate", (p, env) => new NumVal((p?[0] as NumVal)?.UnderlyingValue?.ToInt() ?? new Int(0))) },
+                { "truncate", new FuncVal("truncate", (p, env) => new NumVal((p?[0] as NumVal)?.UnderlyingValue?.ToInt() ?? new Int())) },
                 { "error", new FuncVal("error", (p, env) => ERROR(p?[0].Value ?? "Unknown Error")) },
 
                 { "+", new FuncVal("+", (p, env) => Agg(p, (a, b) => a + b)) },

@@ -120,7 +120,8 @@ public class NumberParser {
         _le = le ?? bi.IsLittleEndian;
 
         bool negBase = negativeBase ?? bi.IsNegative;
-        if ((_base < 0 && !negBase) || (_base > 0 && negBase!)) _base *= 1;
+        if (negBase) _base = -Math.Abs(_base);
+        else _base = Math.Abs(_base);
 
         _zeroIndex = _balanced ? Chars.Length / 2 : 0;
         _caseSignificant = !IsCaseUnique(Chars);
@@ -213,14 +214,15 @@ public class NumberParser {
 
         var baseChar = Char.ToLower(b.Last());
         bool? negBase = null;
-        if (b.Substring(1).Contains('-')) negBase = true;
-        if (b.Substring(1).Contains('+')) negBase = false;
+        if (b.Contains('-')) negBase = true;
+        if (b.Contains('+')) negBase = false;
 
         bool? le = null;
         if (b.Contains('<')) le = true;
         if (b.Contains('>')) le = false;
         
-        var comp = b.Contains('~');
+        // TODO: Complemented base
+        // var comp = b.Contains('~');
 
         var acc = new NumberParser(baseChar, le, negBase);
 
@@ -285,13 +287,12 @@ public class NumberParser {
         if (mult < 0) str.Insert(0, '-');
         return str.ToString();
     }
-        public Num Num { get => (_den == null || _den == 1) ?
-            new Int(Val) :
-            (_base == 10 ?
-                new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
-                new Rat(Val, _den ?? 1)); }
 
-    public static NumberParser Create(char b = 'd', int mult = 1, bool? le = null, bool? comp = null, string? charset = null) => new NumberParser(b, le, mult == -1);
+    public Num Num { get => (_den == null || _den == 1) ?
+        new Int(Val) :
+        (_base == 10 ?
+            new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
+            new Rat(Val, _den ?? 1)); }
 
     private Regex _customBaseRegex = new Regex(@"^0(?<dir>[<>])?(?<bal>=)?(?<baseMod>[+-])?\[(?<chars>[^\<\>\[\]\{\}\(\)\t\r\n \\'""\./_]+)\]");
 
@@ -366,7 +367,6 @@ public class NumberParser {
                 i = new NumberParser(negBase, le, bal, b.ValueChars);
 
                 var value = m.Groups["value"].Captures[0].Value;
-                Console.WriteLine($"Number match found.  Parser: {i.ToString()}, Value: {value}");
                 var consumed = i.AddString(value);
                 if (consumed != value.Length) return null;
 

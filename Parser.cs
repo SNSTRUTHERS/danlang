@@ -146,11 +146,9 @@ public class Parser {
         }
 
         Token _LexNumber() {
-            Console.WriteLine("Parsing number");
             var sb = new StringBuilder();
             while (peekInt() != -1 && !Char.IsWhiteSpace(peek()) && !"})".Contains(peek())) sb.Append(next());
             var num = NumberParser.ParseString(sb.ToString());
-            Console.WriteLine($"Parsed number {sb.ToString()} => {num?.ToString() ?? "null"}");
             if (num == null) return symbol(sb.ToString());
             return new Token {type = Token.Type.Number, num = num, raw = sb.ToString()};
         }

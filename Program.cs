@@ -79,7 +79,7 @@ public class Program {
 
                     var expr = LVal.ReadExprFromTokens(allTokens.ToList());
                     var val = expr?.Eval(e);
-                    if (val?.ValType == LVal.LE.EXIT) break;
+                    if (val?.IsExit ?? false) break;
                     Console.Write($"=> "); val?.Println();
                 }
             }
@@ -88,7 +88,7 @@ public class Program {
                 for (int i = 1; i < files.Length; i++) {
                     LVal a = LVal.Sexpr().Add(LVal.Str(files[i]));
                     LVal x = Builtins.Load(e, a);
-                    if (x.ValType == LVal.LE.ERR) { x.Println(); }
+                    if (x.IsErr) { x.Println(); }
                 }
             }
             break;

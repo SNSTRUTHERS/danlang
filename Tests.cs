@@ -30,15 +30,14 @@ public static class Tests {
     };
 
     public static void TestNumbers() {
-        foreach (var xx in new[] {"0", "1", "9875", "4910956197564501375461209835638104736961"}) {
+        foreach (var xx in new[] {"0", "1", "9875", "4910956197564501375461209835638104736961", "500.75", "3.229124917509812370", "1/2", "93438974263/181277823"}) {
             foreach (var d in "<>") {
                 foreach (var i in new[] {1, -1}) {
                     foreach (var s in "+-") {
-                        foreach (var chars in new[] {"", "[qwertyuiopasdfghjklzxcvbnm}{*&^%$#@!-0123456789MNBVCXZLKJHGFDSAPOIUYTREWQ]"}) {
-                        Console.WriteLine($"Number: {(i < 0 ? "-" : "")}{xx}, LE: {(d == '>')}, Base: {(s == '+' ? "Positive" : "Negative")}");
+                        Console.WriteLine($"Number: {(i < 0 ? "-" : "")}{xx}, LE: {(d == '<')}, Base: {(s == '+' ? "Positive" : "Negative")}");
                         foreach (var b in "bcdefgkmnoqstvxyz") {
                             var bs = $"0{d}{s}{b}";
-                            BigInteger x = BigInteger.Parse(xx) * i;
+                            Num x = NumberParser.ParseString(xx)! * i;
                             var ret = NumberParser.ToBase(x, bs);
                             var pStr = ret;
                             var cStart = ret.IndexOf('[');
@@ -46,10 +45,9 @@ public static class Tests {
                                 var cEnd = ret.IndexOf(']');
                                 pStr = pStr.Remove(cStart, (cEnd - cStart) + 1);
                             }
-                            Console.WriteLine($"\t{b} => {ret}"); // {pStr.Substring(pStr.IndexOf(b) + 1)}");
+                            Console.WriteLine($"\t{b} => {ret}");
                             var val = Parser.Tokenize(new StringReader(ret)).ToArray().First().num;
-                            if (x != (val as Int)!.num) Console.WriteLine($"\t\t*****MISMATCHED INPUT/OUTPUT: IN={x} => OUT={val}");
-                        }
+                            if (x.ToString() != val!.ToString()) Console.WriteLine($"\t\t*****MISMATCHED INPUT/OUTPUT: IN={x} => OUT={val}");
                         }
                     }
                 }

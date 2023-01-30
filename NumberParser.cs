@@ -8,14 +8,14 @@ public class NumberParser {
 
 
     public class NumberBaseInfo {
-        public NumberBaseInfo(char baseChar, string valueChars, bool le, bool balanced, bool? negativeBase = null) {
+        public NumberBaseInfo(char baseChar, string valueChars, bool le = false, bool balanced = false, bool negativeBase = false) {
             BaseChar = baseChar;
             Base = valueChars.Length;
             ValueChars = valueChars; // need to make sure the valueChars fit the valid set and are unique
             IsLittleEndian = le;
             IsBalanced = balanced;
             IsComplemented = false;
-            IsNegative = negativeBase ?? false;
+            IsNegative = negativeBase;
             if (IsNegative) Base *= -1;
             ParseRegex = _BuildParseRegex(baseChar, valueChars, balanced, IsCaseUnique(valueChars));
         }
@@ -33,27 +33,31 @@ public class NumberParser {
 
     private const string InvalidCharsetCharacters = "<>[]() \t\r\n./_\\'\"";
 
+    // SimonNchlasZptBvrue => acehilmnoprstuvBNSZ
+
     public static Dictionary<char, NumberBaseInfo> Bases = new Dictionary<char, NumberBaseInfo> {
             // LE, balance
         {'c', new NumberBaseInfo('c', "-0+", true, true)},
         {'e', new NumberBaseInfo('e', "=-0+#", true, true)},
         {'g', new NumberBaseInfo('g', "~=-0+#*", true, true)},
-        {'m', new NumberBaseInfo('m', "nlieDaShprstu", true, true, true)},
+        {'i', new NumberBaseInfo('i', "UON", true, true)},
+        {'j', new NumberBaseInfo('j', "WUONM", true, true)},
+        {'m', new NumberBaseInfo('m', "DanielStphrus", true, true, true)},
         // BE, standard
-        {'b', new NumberBaseInfo('b', "01", false, false)},
-        {'t', new NumberBaseInfo('t', "012", false, false)},
-        {'q', new NumberBaseInfo('q', "0123", false, false)},
-        {'v', new NumberBaseInfo('v', "01234", false, false)},
-        {'f', new NumberBaseInfo('f', "012345", false, false)},
-        {'s', new NumberBaseInfo('s', "0123456", false, false)},
-        {'o', new NumberBaseInfo('o', "01234567", false, false)},
-        {'n', new NumberBaseInfo('n', "012345678", false, false)},
-        {'d', new NumberBaseInfo('d', "0123456789", false, false)},
-        {'x', new NumberBaseInfo('x', "0123456789ABCDEF", false, false)},
-        {'z', new NumberBaseInfo('z', "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", false, false)},
+        {'b', new NumberBaseInfo('b', "01")},
+        {'t', new NumberBaseInfo('t', "012")},
+        {'q', new NumberBaseInfo('q', "0123")},
+        {'v', new NumberBaseInfo('v', "01234")},
+        {'f', new NumberBaseInfo('f', "012345")},
+        {'s', new NumberBaseInfo('s', "0123456")},
+        {'o', new NumberBaseInfo('o', "01234567")},
+        {'n', new NumberBaseInfo('n', "012345678")},
+        {'d', new NumberBaseInfo('d', "0123456789")},
+        {'x', new NumberBaseInfo('x', "0123456789ABCDEF")},
+        {'z', new NumberBaseInfo('z', "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")},
         // BE, balanced
-        {'k', new NumberBaseInfo('k', "mlkjihgfedcba0ABCDEFGHIJKLM", false, true)},
-        {'y', new NumberBaseInfo('y', "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ", false, true)}
+        {'k', new NumberBaseInfo('k', "ZYXWVUTSRQPON0ABCDEFGHIJKLM", balanced: true)},
+        {'y', new NumberBaseInfo('y', "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ", balanced: true)}
     };
 
     private BigInteger? _den = null;
@@ -319,7 +323,7 @@ public class NumberParser {
         }
 
         // simple case first (it is just a normal, decimal number in while, fixed, or fractional notation, i.e. 1, 1.4, or 1/3)
-        if (Regex.IsMatch(s, @"^[+-]?(0|[1-9]\d*)(\.\d+)?$")) {
+        if (Regex.IsMatch(s, @"^[+-]?([0-9]\d*)(\.\d+)?$")) {
             BigInteger _ParseInt(string p) => BigInteger.Parse(p);
 
             // is it a fixed?

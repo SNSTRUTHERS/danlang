@@ -3,14 +3,58 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 public class NumberParser {
-    public static readonly Dictionary<char, int> NumBases =
-        new Dictionary<char, int> {{'b', 2}, {'c', 3}, {'d', 10}, {'e', 5}, {'f', 6}, {'g', 7}, {'k', 27}, {'m', 13}, {'n', 9}, {'o', 8}, {'q', 4}, {'s', 7}, {'t', 3}, {'v', 5}, {'x', 16}, {'y', 53}, {'z', 36}};
+    private static Regex _BuildParseRegex(char b, string chars, bool balanced = false, bool ignoreCase = true) =>
+        new Regex($"^0(?<dir>[<>])?(?<baseMod>[+-])?(?<base>[{char.ToLower(b)}{char.ToUpper(b)}])(?<value>[{chars.Replace("-", @"\-")}]+(\\.[{chars.Replace("-", @"\-")}]+)?)$", ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
 
-    private const string NumChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private const string BalancedChars = "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ";   
-    private const string BalancedTernQuinSeptChars = "~=-0+#*";
-    private const string InvalidCharsetCharacters = "<>[]() \t\r\n._\\'\"";
-    private const string BaseMChars = "nlieDaShprstu";
+
+    public class NumberBaseInfo {
+        public NumberBaseInfo(char baseChar, string valueChars, bool le, bool balanced, bool? negativeBase = null) {
+            BaseChar = baseChar;
+            Base = valueChars.Length;
+            ValueChars = valueChars; // need to make sure the valueChars fit the valid set and are unique
+            IsLittleEndian = le;
+            IsBalanced = balanced;
+            IsComplemented = false;
+            IsNegative = negativeBase ?? false;
+            if (IsNegative) Base *= -1;
+            ParseRegex = _BuildParseRegex(baseChar, valueChars, balanced, IsCaseUnique(valueChars));
+        }
+
+        public char BaseChar {get; private set;}
+        public string ValueChars {get; private set;}
+        public bool IsLittleEndian {get; private set;}
+        public bool IsBalanced {get; private set;}
+        public bool IsComplemented {get; private set;}
+        public bool IsNegative {get; private set;}
+        public Regex ParseRegex {get; private set;}
+
+        public int Base {get; private set;}
+    }
+
+    private const string InvalidCharsetCharacters = "<>[]() \t\r\n./_\\'\"";
+
+    public static Dictionary<char, NumberBaseInfo> Bases = new Dictionary<char, NumberBaseInfo> {
+            // LE, balance
+        {'c', new NumberBaseInfo('c', "-0+", true, true)},
+        {'e', new NumberBaseInfo('e', "=-0+#", true, true)},
+        {'g', new NumberBaseInfo('g', "~=-0+#*", true, true)},
+        {'m', new NumberBaseInfo('m', "nlieDaShprstu", true, true, true)},
+        // BE, standard
+        {'b', new NumberBaseInfo('b', "01", false, false)},
+        {'t', new NumberBaseInfo('t', "012", false, false)},
+        {'q', new NumberBaseInfo('q', "0123", false, false)},
+        {'v', new NumberBaseInfo('v', "01234", false, false)},
+        {'f', new NumberBaseInfo('f', "012345", false, false)},
+        {'s', new NumberBaseInfo('s', "0123456", false, false)},
+        {'o', new NumberBaseInfo('o', "01234567", false, false)},
+        {'n', new NumberBaseInfo('n', "012345678", false, false)},
+        {'d', new NumberBaseInfo('d', "0123456789", false, false)},
+        {'x', new NumberBaseInfo('x', "0123456789ABCDEF", false, false)},
+        {'z', new NumberBaseInfo('z', "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", false, false)},
+        // BE, balanced
+        {'k', new NumberBaseInfo('k', "mlkjihgfedcba0ABCDEFGHIJKLM", false, true)},
+        {'y', new NumberBaseInfo('y', "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ", false, true)}
+    };
 
     private BigInteger? _den = null;
     private BigInteger _factor = 1;
@@ -63,22 +107,22 @@ public class NumberParser {
         if (!_caseSignificant) Chars = Chars.ToUpper();
     }
 
-    public NumberParser(char b = 'd', int mult = 1, bool le = false, bool comp = false, string? chars = null) {
-        _base = NumBases[Char.ToLower(b)];
-        _balanced = "cegkmy".Contains(b);
-        _comp = comp && !_balanced && _base > 0;
-        if ((chars?.Length ?? 0) < _base || !IsUniqueSet(chars)) chars = null;
-        Chars = chars ?? b switch {
-            'c' or 'e' or 'g' => BalancedTernQuinSeptChars,
-            'k' or 'y' => BalancedChars,
-            'm' => BaseMChars,
-            _ => NumChars};
+    public NumberParser(char b = 'd', bool? le = null, bool? negativeBase = null) {
+        if (!Bases.ContainsKey(b)) throw new Exception($"Invalid number base '{b}'");
+        b = Char.ToLower(b);
 
-        _le = le;
+        var bi = Bases[b];
+        _base = bi.Base;
+        _balanced = bi.IsBalanced;
+        _comp = bi.IsComplemented;
+        Chars = bi.ValueChars;
+
+        _le = le ?? bi.IsLittleEndian;
+
+        bool negBase = negativeBase ?? bi.IsNegative;
+        if ((_base < 0 && !negBase) || (_base > 0 && negBase!)) _base *= 1;
+
         _zeroIndex = _balanced ? Chars.Length / 2 : 0;
-        Chars = Chars.Substring(_balanced ? _zeroIndex - (_base / 2) : _zeroIndex, _base);
-        _zeroIndex = _balanced ? Chars.Length / 2 : 0;
-        _base = _base * mult;
         _caseSignificant = !IsCaseUnique(Chars);
         if (!_caseSignificant) Chars = Chars.ToUpper();
     }
@@ -128,12 +172,17 @@ public class NumberParser {
     public override string ToString() => 
         $"NumberParser: Base={_base}, Chars={Chars}, {(_le ? "Little" : "Big")} Endian{(_balanced ? ", Balanced" : "")}, Case {(IsCaseSignificant ? "Sensitive" : "Insensitive")}";
 
+    //@b: base specifier of the form '0[<>]?[+-]?[bcdefgkmnoqstvxyz]'
+    //    > = Big Endian (override default little endianness)
+    //    < = Little Endian (override default big endianness)
+    //    - = Negative Base (override default positive base)
+    //    + = Positive Base (override default negative base)
     public static string ToBase(Num n, string b) {
         var num = ToBase((n as Int)!.num, b);
         var den = "";
         if (n is Fix f && f.num != 0 && f.dec != 0) {
             den = ToBase(BigInteger.Pow(10, f.dec), b);
-        } else if (n is Rat r && r.den != 1 && r.num != 0) {
+        } else if (n is Rat r && r.num != 0 && r.den != 1) {
             den = ToBase(r.den, b);
         }
 
@@ -143,7 +192,7 @@ public class NumberParser {
 
     public static string ToBase(BigInteger n, string b) {
         // validate incoming b
-        var reg = new Regex(@"^0[<>]?-?[" + string.Join("", NumBases.Keys.Select(c => c.ToString())) +"]$", RegexOptions.IgnoreCase);
+        var reg = new Regex(@"^0[<>]?[+-]?[" + string.Join("", Bases.Keys.Select(c => c.ToString())) +"]$", RegexOptions.IgnoreCase);
         if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
 
         // normalize b
@@ -162,18 +211,19 @@ public class NumberParser {
         }
         */
 
-        b = b.Replace("+", "");
         var baseChar = Char.ToLower(b.Last());
-        var isCEGM = "cegm".Contains(baseChar);
-        if (b.Contains('>') && isCEGM) b = b.Replace(">", "");
-        if (b.Contains('<') && !isCEGM) b = b.Replace("<", "");
-        if (b.Contains('~') && (!"cegmky".Contains(baseChar) || b.Contains('-'))) b = b.Replace("~", "");
+        bool? negBase = null;
+        if (b.Substring(1).Contains('-')) negBase = true;
+        if (b.Substring(1).Contains('+')) negBase = false;
 
-        var baseMult = b.Substring(1).Contains('-') ? -1 : 1;
-        var le = b.Contains('<') || (isCEGM && !b.Contains('>'));
+        bool? le = null;
+        if (b.Contains('<')) le = true;
+        if (b.Contains('>')) le = false;
+        
         var comp = b.Contains('~');
 
-        var acc = new NumberParser(baseChar, baseMult, le, comp);
+        var acc = new NumberParser(baseChar, le, negBase);
+
         // Console.WriteLine($"Acc: {acc}");
         // customCharset = acc.Chars != new NumberParser(baseChar, baseMult, le, comp).Chars;
 
@@ -241,38 +291,9 @@ public class NumberParser {
                 new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
                 new Rat(Val, _den ?? 1)); }
 
-    public static NumberParser Create(char b = 'd', int mult = 1, bool? le = null, bool? comp = null, string? charset = null) =>
-        Char.ToLower(b) switch {
-            'c' or 'e' or 'g' => new NumberParser(b, mult, le ?? true, comp ?? false, charset),
-            _ => new NumberParser(b, mult, le ?? false, comp ?? false, charset)
-        };
+    public static NumberParser Create(char b = 'd', int mult = 1, bool? le = null, bool? comp = null, string? charset = null) => new NumberParser(b, le, mult == -1);
 
-    private static (Regex, string) BuildParseRegex(char b, string chars, bool balanced = false, bool ignoreCase = true) =>
-        (new Regex($"^0(?<dir>[<>])?(?<baseMod>-)?(?<base>[{char.ToLower(b)}{char.ToUpper(b)}])(?<value>[{chars.Replace("-", @"\-")}]+(\\.[{chars.Replace("-", @"\-")}]+)?)", ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None), chars);
-
-    private static ((Regex, string), bool, bool)[] Bases = new [] { // Item2 is whether the base is, by default, balanced.  Item3 is whether the base is little-endian (least-significant place on the left) by default.
-        // LE, balance
-        (BuildParseRegex('c', "-0+",   true), true, true),
-        (BuildParseRegex('e', "=-0+#",  true), true, true),
-        (BuildParseRegex('g', "~=-0+#*", true), true, true),
-        (BuildParseRegex('m', "nlieDaShprstu", true), true, true),
-        // BE, standard
-        (BuildParseRegex('b', "01"), false, false),
-        (BuildParseRegex('t', "012"), false, false),
-        (BuildParseRegex('q', "0123"), false, false),
-        (BuildParseRegex('v', "01234"), false, false),
-        (BuildParseRegex('f', "012345"), false, false),
-        (BuildParseRegex('s', "0123456"), false, false),
-        (BuildParseRegex('o', "01234567"), false, false),
-        (BuildParseRegex('n', "012345678"), false, false),
-        (BuildParseRegex('d', "0123456789"), false, false),
-        (BuildParseRegex('x', "0123456789ABCDEF"), false, false),
-        (BuildParseRegex('z', "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), false, false),
-        // BE, balanced
-        (BuildParseRegex('k', "mlkjihgfedcba0ABCDEFGHIJKLM", balanced: true, ignoreCase: false), true, false),
-        (BuildParseRegex('y', "zyxwvutsrqponmlkjihgfedcba0ABCDEFGHIJKLMNOPQRSTUVWXYZ", true, false), true, false)
-        //(new Regex(@"^0(?<dir>[<>])?(?<baseMod>[-=])?\[(?<chars>[^\<\>\[\]\{\}\(\)\t\r\n \\'""\./_]+)\](?<value>[\k<chars>]+(\.[\k<chars>]+)?)"), false, false)
-    };
+    private Regex _customBaseRegex = new Regex(@"^0(?<dir>[<>])?(?<bal>=)?(?<baseMod>[+-])?\[(?<chars>[^\<\>\[\]\{\}\(\)\t\r\n \\'""\./_]+)\]");
 
     public static Num? ParseString(string? s) {
         // read base
@@ -318,22 +339,31 @@ public class NumberParser {
 
         if (s == "") return null;
 
-        foreach (var b in Bases) {
-            if (b.Item1.Item1.IsMatch(s)) {
-                var m = b.Item1.Item1.Match(s);
-                var bal =b.Item2;
-                var le = b.Item3;
-                var negBase = false;
-                var bmg = m.Groups["baseMod"].Captures;
-                if (bmg.Count > 0 && bmg[0].Length > 0) {
-                    negBase = bmg[0].Value == "-";
-                    bal = bal || bmg[0].Value == "=";
-                }
+        foreach (var b in Bases.Values) {
+            if (b.ParseRegex.IsMatch(s)) {
+                var m = b.ParseRegex.Match(s);
+                var bal = b.IsBalanced;
+                var le = b.IsLittleEndian;
+                var negBase = b.IsNegative;
 
                 var leg = m.Groups["dir"].Captures;
-                if (leg.Count > 0 && leg[0].Length > 0) le = leg[0].Value == ">";
+                if (leg.Count > 0 && leg[0].Length > 0) {
+                    if (leg[0].Value == "<") le = true;
+                    if (leg[0].Value == ">") le = false;
+                }
 
-                i = new NumberParser(negBase, le, bal, b.Item1.Item2);
+                var bmg = m.Groups["baseMod"].Captures;
+                if (bmg.Count > 0 && bmg[0].Length > 0) {
+                    if (bmg[0].Value == "-") negBase = true;
+                    if (bmg[0].Value == "+") negBase = false;
+                }
+
+                var bg = m.Groups["bal"].Captures;
+                if (bg.Count > 0 && bg[0].Length > 0) {
+                    if (bg[0].Value == "=") bal = true;
+                }
+
+                i = new NumberParser(negBase, le, bal, b.ValueChars);
 
                 var value = m.Groups["value"].Captures[0].Value;
                 Console.WriteLine($"Number match found.  Parser: {i.ToString()}, Value: {value}");

@@ -3,17 +3,15 @@
         01_2340 ; decimal with _
         -01_2340 ; negative decimal with _
         0d01_2340 ; explicit base 10 with _
-        0+d01_2340 ; explicit base 10 with _
         0-D01_23400 ; base -10 with _
         -0D01_2340 ; negative explicit base 10 with _
         -0-d01_2340 ; negative base -10 with _
-        0>d01_2340 ; explicit LTR base 10 with _
-        0+>d01_2340 ; explicit LTR base 10 with _
-        0->D01_2340 ; LTR base -10 with _
-        -0>D01_2340 ; negative explicit LTR base 10 with _
-        -0->d01_2340 ; negative LTR base -10 with _
+        0<d01_2340 ; explicit LTR base 10 with _
+        0<-D01_2340 ; LTR base -10 with _
+        -0<D01_2340 ; negative explicit LTR base 10 with _
+        -0<-d01_2340 ; negative LTR base -10 with _
         0xab123 ; hex
-        0+x0ab123 ; hex
+        0x0ab123 ; hex
         -0Xab123 ; negative hex
         0-X00ab123 ; base -16
         -0-x0ab123 ; negative base -16
@@ -37,14 +35,14 @@
         -0-c0-+-0--+0- ; negative balanced negative ternery
         0-C+-0_-0+_++0_-- ; balanced negative ternery with _
         -0-c+-0_-0+_++0_-- ; negative balanced negative ternery with _
-        0<c0-+-0--+0- ; balanced RTL ternery
-        -0<C0-+-0--+0- ; negative balanced RTL ternery
-        0<c+-0_-0+_++0_-- ; balanced RTL ternery with _
-        -0<C+-0_-0+_++0_-- ; negative balanced RTL ternery with _
-        0-<c0-+-0--+0- ; balanced negative RTL ternery
-        -0-<c0-+-0--+0- ; negative balanced negative RTL ternery
-        0-<C+-0_-0+_++0_-- ; balanced negative RTL ternery with _
-        -0-<c+-0_-0+_++0_-- ; negative balanced negative RTL ternery with _
+        0>c0-+-0--+0- ; balanced RTL ternery
+        -0>C0-+-0--+0- ; negative balanced RTL ternery
+        0>c+-0_-0+_++0_-- ; balanced RTL ternery with _
+        -0>C+-0_-0+_++0_-- ; negative balanced RTL ternery with _
+        0>-c0-+-0--+0- ; balanced negative RTL ternery
+        -0>-c0-+-0--+0- ; negative balanced negative RTL ternery
+        0>-C+-0_-0+_++0_-- ; balanced negative RTL ternery with _
+        -0>-c+-0_-0+_++0_-- ; negative balanced negative RTL ternery with _
         0q013201110 ; base 4
         0-Q013201110 ; base -4
         0Q013_201_110 ; base 4 with _
@@ -69,7 +67,7 @@
         -0-t0102101 ; negative base -3
         -0t001_102_111_001 ; negative base 3 with _
         -0-T001_102_111_001 ; negative base -3 with _
-        0y_AjKaj_n0NO_Nnm.hHLkw_o0bF ; balance base-53  with _
+        0y_AjKaj_n0NO_Nnm.hHLkw_o0bF ; balanced base-53 with _
         1/3
         1/-3
         -1/3
@@ -79,22 +77,22 @@
         -0.75
         0b1001__01_0110/-0-c-0_+-+_+00_-
         -0zbajhkkl934afljkkas9319034/+0-t01201021020011122201
-        0e0-#0_+=-#0/#0-_=+#0
+        0e0-#0_+=-#0/0e#0-_=+#0
         10000.33333333333333333333333333333
         0-d1000.33333333333333333333333333333
-        0>d1000.33333333333333333333333333333
-        0>-d1000.33333333333333333333333333333
+        0<d1000.33333333333333333333333333333
+        0<-d1000.33333333333333333333333333333
         35629102845282.1280048717201000
         3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384 ; PI
-        0[9876543210]d6.85840734641020676153735661672049711580283060062489417902505540769218359371379100137196517465788293201785191348671769335290615 ; PI
-        0xc01ab/9a7c00
-        -0->z00ase82jlav.su298z00
-        0->z00ase82jlav.su298z00
+        ; 0[9876543210]d6.85840734641020676153735661672049711580283060062489417902505540769218359371379100137196517465788293201785191348671769335290615 ; PI
+        0xc01ab/0x9a7c00
+        -0<-z00ase82jlav.su298z00
+        0<-z00ase82jlav.su298z00
         -0-z00ase82jlav.su298z00
         0-z00ase82jlav.su298z00
         0z00ase82jlav.su298z00
         -0z00ase82jlav.su298z00
-        0[baOAB]eaOABObOAaO
-        0-<[baOAB]eaOABObOAaO
-        0>d41.3
+        ; 0[baOAB]eaOABObOAaO
+        ; 0>-[baOAB]eaOABObOAaO
+        0<d41.3
         

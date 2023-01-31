@@ -143,4 +143,8 @@
 })
 
 ; math functions
-(fun {abs a} {if (< a 0) {- a} {a}})
+(fun {abs a} {
+  if (num? a)
+   {if (< a 0) {- a} {a}}
+   {error "Cannot perform 'abs' on non-number"}
+})

@@ -18,6 +18,7 @@
 (fun {neg? a}   {< a 0})
 (fun {pos? a}   {< 0 a})
 (fun {one? a}   {eq a 1})
+(def {trunc}    truncate)
 
 ; Comparisons
 (fun {>= a b}   {< b a})
@@ -139,20 +140,20 @@
 })
 
 (fun {floor a} {
-  <=> (cmp a (truncate a))
-    {< (- (truncate a) 1)}
-    {(truncate a)}
+  <=> (cmp a (trunc a))
+    {< (- (trunc a) 1)}
+    {(trunc a)}
 })
 
 (fun {ceil a} {
-  <=> (cmp a (truncate a))
-    {> (+ (truncate a) 1)}
-    {(truncate a)}
+  <=> (cmp a (trunc a))
+    {> (+ (trunc a) 1)}
+    {(trunc a)}
 })
 
 (fun {div a b} {
   if (and {num? a} {num? b})
-    {truncate (/ a b)}
+    {trunc (/ a b)}
     {error "Cannot perform 'div' on non-numbers"}
 })
 

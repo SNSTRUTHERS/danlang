@@ -10,22 +10,16 @@ public static class Tests {
         "712381/32882",
         "100000/1000",
         "169/13",
-        "0x004112311",
-        "-0b1010111010110",
-        "0q3020103020123010201301",
+        "#v004112311",
+        "#<-x004112311",
+        "#5r004112311",
+        "-#b1010111010110",
+        "#q3020103020123010201301",
         "-000123123802380986654945715",
         "9876543210",
+        "#-[9876543210]9876543210",
         "1.23",
         "0.01",
-        "+0.01-3.64i",
-        "1+3i",
-        "-1/3+3/7i",
-        "1/3-3i",
-        "1.38i-5/9",
-        "-7/13i+5.647",
-        "3/5i",
-        "0-2.876i",
-        "-8.387i",
         "00000000123123123000000000"
     };
 
@@ -36,7 +30,7 @@ public static class Tests {
                     foreach (var s in "+-") {
                         Console.WriteLine($"Number: {(i < 0 ? "-" : "")}{xx}, LE: {(d == '<')}, Base: {(s == '+' ? "Positive" : "Negative")}");
                         foreach (var b in "bcdefgkmnoqstvxyz") {
-                            var bs = $"0{d}{s}{b}";
+                            var bs = $"#{d}{s}{b}";
                             Num x = NumberParser.ParseString(xx)! * i;
                             var ret = NumberParser.ToBase(x, bs);
                             var pStr = ret;
@@ -152,14 +146,14 @@ public static class Tests {
     }
 
     private static string InvalidTokens = @"
-        0xabcdefghij
-        0b-1011
-        0f0000
-        -0dabc
+        #xabcdefghij
+        #b-1011
+        #f0000
+        -#dabc
         1a
         ""
         ""
-        0c01
+        #c01
     ";
 
     public static void TestTokens() {

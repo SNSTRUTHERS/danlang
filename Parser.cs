@@ -145,7 +145,7 @@ public class Parser {
             }
         }
 
-        Token _LexNumber() {
+        Token lexNumber() {
             var sb = new StringBuilder();
             while (peekInt() != -1 && !Char.IsWhiteSpace(peek()) && !"})".Contains(peek())) sb.Append(next());
             var num = NumberParser.ParseString(sb.ToString());
@@ -173,8 +173,8 @@ public class Parser {
                 else if (c =='(' || c == ')' || c == '{' || c == '}') {
                     yield return lexParen();
                 }
-                else if (((c >= '0' && c <= '9') || c == '+' || c == '-'))
-                    yield return _LexNumber();
+                else if (((c >= '0' && c <= '9') || c == '+' || c == '-' || c == '#'))
+                    yield return lexNumber();
                 else if (c == '"')
                     yield return lexString();
                 else  {

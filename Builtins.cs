@@ -94,13 +94,13 @@ public class Builtins
 
     private static LVal Var(LEnv e, LVal a, string func) {
         //if (a.Count == 0 || !a.IsQExpr) return LVal.Err($"Invalid parameter(s) passed to '{func}'");
-        LVal syms = a[0];
+        LVal syms = a.Pop(0);
         if (syms.Cells!.Any(v => !v.IsSym)) return LVal.Err($"'{func}' cannot define non-symbols");
-        if (syms.Count != a.Count - 1) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected {syms.Count}, got {a.Count - 1}");
+        if (syms.Count != a.Count) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected {syms.Count}, got {a.Count}");
             
-        for (int i = 0; i < syms.Count; i++) {
-            var symbol = syms[i].SymVal!;
-            var value = a[i+1].Eval(e);
+        while (syms.Count > 0 && a.Count > 0) {
+            var symbol = syms.Pop(0).SymVal!;
+            var value = a.Pop(0).Eval(e);
             if (func == "def") { e.Def(symbol, value) ; }
             if (func == "set") { e.Put(symbol, value); } 
         }
@@ -142,17 +142,20 @@ public class Builtins
 
         // Actual logical check; all non-NIL expressions evaluate to T in the 'if' context
         if (!a[0].IsNIL) {
-            if (!a[1].IsQExpr) return LVal.Err("'if' body elements must be QExpr");
-            a[1].ValType = LVal.LE.SEXPR;
-            return a.Pop(1).Eval(e)!;
+            var vT = a.Pop(1);
+            if (!vT.IsQExpr) return LVal.Err("'if' body elements must be QExpr");
+            vT.ValType = LVal.LE.SEXPR;
+            return vT.Eval(e)!;
         }
 
         // if no else, so return NIL
-         if (a.Count == 2) return LVal.NIL();
+        if (a.Count == 2) return LVal.NIL();
 
-        if (!a[2].IsQExpr) return LVal.Err("'if' body elements must be QExpr");
-        a[2].ValType = LVal.LE.SEXPR;
-        return a.Pop(2).Eval(e);
+        var vF = a.Pop(2);
+
+        if (!vF.IsQExpr) return LVal.Err("'if' body elements must be QExpr");
+        vF.ValType = LVal.LE.SEXPR;
+        return vF.Eval(e);
     }
 
     private static LVal And(LEnv e, LVal a) {

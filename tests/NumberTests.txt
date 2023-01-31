@@ -1,98 +1,98 @@
         012340 ; decimal
-        -012340 ; negative decimal
+        -#12340 ; negative decimal
         01_2340 ; decimal with _
-        -01_2340 ; negative decimal with _
-        0d01_2340 ; explicit base 10 with _
-        0-D01_23400 ; base -10 with _
-        -0D01_2340 ; negative explicit base 10 with _
-        -0-d01_2340 ; negative base -10 with _
-        0<d01_2340 ; explicit LTR base 10 with _
-        0<-D01_2340 ; LTR base -10 with _
-        -0<D01_2340 ; negative explicit LTR base 10 with _
-        -0<-d01_2340 ; negative LTR base -10 with _
-        0xab123 ; hex
-        0x0ab123 ; hex
-        -0Xab123 ; negative hex
-        0-X00ab123 ; base -16
-        -0-x0ab123 ; negative base -16
-        0X0Ab_123 ; hex with _
-        0-X0_0aB_123 ; base -16 with _
-        -0x0_0ab_123 ; negative hex with _
-        -0-x0Ab_123 ; negative base -16 with _
-        0Z0x0ab123 ; base 36
-        0-z0x0ab123 ; base -36
-        -0z0x0aB123 ; negative base 36
-        -0-Z0X0AB123 ; negative base -36
-        0z0x_0ab_123 ; base 36 with _
-        0-Z0x_0ab_123 ; base -36 with _
-        -0z0X_0ab_123 ; negative base 36 with _
-        -0-z0x_0aB_123 ; negative base -36 with _
-        0c0-+-0--+0- ; balanced ternery
-        -0C0-+-0--+0- ; negative balanced ternery
-        0c+-0_-0+_++0_-- ; balanced ternery with _
-        -0C+-0_-0+_++0_-- ; negative balanced ternery with _
-        0-c0-+-0--+0- ; balanced negative ternery
-        -0-c0-+-0--+0- ; negative balanced negative ternery
-        0-C+-0_-0+_++0_-- ; balanced negative ternery with _
-        -0-c+-0_-0+_++0_-- ; negative balanced negative ternery with _
-        0>c0-+-0--+0- ; balanced RTL ternery
-        -0>C0-+-0--+0- ; negative balanced RTL ternery
-        0>c+-0_-0+_++0_-- ; balanced RTL ternery with _
-        -0>C+-0_-0+_++0_-- ; negative balanced RTL ternery with _
-        0>-c0-+-0--+0- ; balanced negative RTL ternery
-        -0>-c0-+-0--+0- ; negative balanced negative RTL ternery
-        0>-C+-0_-0+_++0_-- ; balanced negative RTL ternery with _
-        -0>-c+-0_-0+_++0_-- ; negative balanced negative RTL ternery with _
-        0q013201110 ; base 4
-        0-Q013201110 ; base -4
-        0Q013_201_110 ; base 4 with _
-        0-q013_201_110 ; base -4 with _
-        -0Q013201110 ; negative base 4
-        -0-q013201110 ; negative base -4
-        -0q013_201_110 ; negative base 4 with _
-        -0-Q013_201_110 ; negative base -4 with _
-        0b0100101 ; base 2
-        0-B0100101 ; base -2
-        0B001_100_111_001 ; base 2 with _
-        0-b001_100_111_001 ; base -2 with _
-        -0B0100101 ; negative base 2
-        -0-b0100101 ; negative base -2
-        -0b001_100_111_001 ; negative base 2 with _
-        -0-B001_100_111_001 ; negative base -2 with _
-        0T0102101 ; base 3
-        0-t0102101 ; base -3
-        0t001_102_111_001 ; base 3 with _
-        0-T001_102_111_001 ; base -3 with _
-        -0T0102101 ; negative base 3
-        -0-t0102101 ; negative base -3
-        -0t001_102_111_001 ; negative base 3 with _
-        -0-T001_102_111_001 ; negative base -3 with _
-        0y_AjKaj_n0NO_Nnm.hHLkw_o0bF ; balanced base-53 with _
+        -#1_2340 ; negative decimal with _
+        #d01_2340 ; explicit base 10 with _
+        #-D01_23400 ; base -10 with _
+        -#D01_2340 ; negative explicit base 10 with _
+        -#-d01_2340 ; negative base -10 with _
+        #<d01_2340 ; explicit LTR base 10 with _
+        #<-D01_2340 ; LTR base -10 with _
+        -#<D01_2340 ; negative explicit LTR base 10 with _
+        -#<-d01_2340 ; negative LTR base -10 with _
+        #xab123 ; hex
+        #x0ab123 ; hex
+        -#Xab123 ; negative hex
+        #-X00ab123 ; base -16
+        -#-x0ab123 ; negative base -16
+        #X0Ab_123 ; hex with _
+        #-X0_0aB_123 ; base -16 with _
+        -#x0_0ab_123 ; negative hex with _
+        -#-x0Ab_123 ; negative base -16 with _
+        #Z0x0ab123 ; base 36
+        #-z0x0ab123 ; base -36
+        -#z0x0aB123 ; negative base 36
+        -#-Z0X0AB123 ; negative base -36
+        #z0x_0ab_123 ; base 36 with _
+        #-Z0x_0ab_123 ; base -36 with _
+        -#z0X_0ab_123 ; negative base 36 with _
+        -#-z0x_0aB_123 ; negative base -36 with _
+        #c0-+-0--+0- ; balanced ternery
+        -#C0-+-0--+0- ; negative balanced ternery
+        #c+-0_-0+_++0_-- ; balanced ternery with _
+        -#C+-0_-0+_++0_-- ; negative balanced ternery with _
+        #-c0-+-0--+0- ; balanced negative ternery
+        -#-c0-+-0--+0- ; negative balanced negative ternery
+        #-C+-0_-0+_++0_-- ; balanced negative ternery with _
+        -#-c+-0_-0+_++0_-- ; negative balanced negative ternery with _
+        #>c0-+-0--+0- ; balanced RTL ternery
+        -#>C0-+-0--+0- ; negative balanced RTL ternery
+        #>c+-0_-0+_++0_-- ; balanced RTL ternery with _
+        -#>C+-0_-0+_++0_-- ; negative balanced RTL ternery with _
+        #>-c0-+-0--+0- ; balanced negative RTL ternery
+        -#>-c0-+-0--+0- ; negative balanced negative RTL ternery
+        #>-C+-0_-0+_++0_-- ; balanced negative RTL ternery with _
+        -#>-c+-0_-0+_++0_-- ; negative balanced negative RTL ternery with _
+        #q013201110 ; base 4
+        #-Q013201110 ; base -4
+        #Q013_201_110 ; base 4 with _
+        #-q013_201_110 ; base -4 with _
+        -#Q013201110 ; negative base 4
+        -#-q013201110 ; negative base -4
+        -#q013_201_110 ; negative base 4 with _
+        -#-Q013_201_110 ; negative base -4 with _
+        #b0100101 ; base 2
+        #-B0100101 ; base -2
+        #B001_100_111_001 ; base 2 with _
+        #-b001_100_111_001 ; base -2 with _
+        -#B0100101 ; negative base 2
+        -#-b0100101 ; negative base -2
+        -#b001_100_111_001 ; negative base 2 with _
+        -#-B001_100_111_001 ; negative base -2 with _
+        #T0102101 ; base 3
+        #-t0102101 ; base -3
+        #t001_102_111_001 ; base 3 with _
+        #-T001_102_111_001 ; base -3 with _
+        -#T0102101 ; negative base 3
+        -#-t0102101 ; negative base -3
+        -#t001_102_111_001 ; negative base 3 with _
+        -#-T001_102_111_001 ; negative base -3 with _
+        #y_AjKaj_n0NO_Nnm.hHLkw_o0bF ; balanced base-53 with _
         1/3
         1/-3
         -1/3
         -1/-3
         1.2
         -1.4
-        -0.75
-        0b1001__01_0110/-0-c-0_+-+_+00_-
-        -0zbajhkkl934afljkkas9319034/+0-t01201021020011122201
-        0e0-#0_+=-#0/0e#0-_=+#0
+        -#.75
+        #b1001__01_0110/-#-c-0_+-+_+00_-
+        -#zbajhkkl934afljkkas9319034/+#-t01201021020011122201
+        #e0-#0_+=-#0/#0e#0-_=+#0
         10000.33333333333333333333333333333
-        0-d1000.33333333333333333333333333333
-        0<d1000.33333333333333333333333333333
-        0<-d1000.33333333333333333333333333333
+        #-d1000.33333333333333333333333333333
+        #<d1000.33333333333333333333333333333
+        #<-d1000.33333333333333333333333333333
         35629102845282.1280048717201000
         3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384 ; PI
-        ; 0[9876543210]d6.85840734641020676153735661672049711580283060062489417902505540769218359371379100137196517465788293201785191348671769335290615 ; PI
-        0xc01ab/0x9a7c00
-        -0<-z00ase82jlav.su298z00
-        0<-z00ase82jlav.su298z00
-        -0-z00ase82jlav.su298z00
-        0-z00ase82jlav.su298z00
-        0z00ase82jlav.su298z00
-        -0z00ase82jlav.su298z00
-        ; 0[baOAB]eaOABObOAaO
-        ; 0>-[baOAB]eaOABObOAaO
-        0<d41.3
-        
+        #[9876543210]6.85840734641020676153735661672049711580283060062489417902505540769218359371379100137196517465788293201785191348671769335290615 ; PI
+        #xc01ab/#x9a7c00
+        #<15rc01ab/#-14R9a7c00
+        -#<-z00ase82jlav.su298z00
+        #<-z00ase82jlav.su298z00
+        -#-z00ase82jlav.su298z00
+        #-z00ase82jlav.su298z00
+        #z00ase82jlav.su298z00
+        -#z00ase82jlav.su298z00
+        #<=[baOAB]aOABObOAaO
+        #>=-[baOAB]aOABObOAaO
+        #<d41.3

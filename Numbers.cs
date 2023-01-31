@@ -151,20 +151,6 @@ public class Fix : Int {
         return $"{sign}{str.Insert(p, ".")}";
     }
 
-    public new static Fix? Parse(string? val) {
-        if (val == null) return null;
-
-        val = val.Replace("_", "");
-        if (val.StartsWith('.')) throw new FormatException($"Fix Nums cannot start with a '.'");
-        if (val.EndsWith('.')) throw new FormatException($"Fix Nums cannot end with a '.'");
-        if (val.Count(c => c == '.') > 1) throw new FormatException("Fix Nums cannot have > 1 '.'");
-        
-        var dotOffset = val.IndexOf('.');
-        if (dotOffset < 0) return new Fix(BigInteger.Parse(val));
-        var dp = val.Length - dotOffset - 1;
-        return new Fix(BigInteger.Parse(val.Remove(dotOffset, 1)), dp);
-    }
-
     public static explicit operator double(Fix r) => (double)r.num / Math.Pow(10, r.dec);
     
     public static explicit operator long(Fix r) => (long)(double)r;
@@ -308,21 +294,6 @@ public class Rat : Int {
 
     public static Rat operator/(Rat r1, Rat r2) {
         return new Rat(r1.num * r2.den, r1.den * r2.num);
-    }
-
-    public new static Rat? Parse(string? val) {
-        if (val == null) return null;
-        if (val.Count(c => c == '/') > 1) throw new FormatException("Rational numbers cannot have > 1 '/' character");
-        var sPos = val.IndexOf('/');
-        if (sPos == 0 || sPos == val.Length -1) throw new FormatException("Invalid '/' position in rational number");
-
-        // no '/' found
-        if (sPos < 0) return new Rat(BigInteger.Parse(val));
-
-        // single '/' found
-        var den =  BigInteger.Parse(val.Substring(sPos + 1));
-        if (den == BigInteger.Zero) throw new FormatException("Cannot specify a rational with a denominator of zero (0)");
-        return new Rat(BigInteger.Parse(val.Substring(0, sPos)), den);
     }
 }
 

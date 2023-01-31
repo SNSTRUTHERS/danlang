@@ -195,3 +195,10 @@
      {* a (pow a (- b 1))}
    }
 })
+
+; Math helper functions
+(fun {1+ n} {+ n 1})
+(fun {1- n} {- n 1})
+(fun {square n} {* n n})
+(fun {cube n} {* n (square n)})
+(fun {recip n} {/ 1 n})

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 public class NumberParser {
     private static Regex _BuildParseRegex(char b, string chars, bool balanced = false, bool ignoreCase = true) =>
-        new Regex($"^0(?<dir>[<>])?(?<baseMod>[+-])?(?<base>[{char.ToLower(b)}{char.ToUpper(b)}])(?<value>[{chars.Replace("-", @"\-")}]+(\\.[{chars.Replace("-", @"\-")}]+)?)$", ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
+        new Regex($"^#(?<dir>[<>])?(?<baseMod>[+-])?(?<base>[{char.ToLower(b)}{char.ToUpper(b)}])(?<value>[{chars.Replace("-", @"\-")}]+(\\.[{chars.Replace("-", @"\-")}]+)?)$", ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
 
 
     public class NumberBaseInfo {
@@ -111,7 +111,7 @@ public class NumberParser {
         if (!_caseSignificant) Chars = Chars.ToUpper();
     }
 
-    public NumberParser(char b = 'd', bool? le = null, bool? negativeBase = null) {
+    public NumberParser(char b = 'd', bool? negativeBase = null, bool? le = null) {
         if (!Bases.ContainsKey(b)) throw new Exception($"Invalid number base '{b}'");
         b = Char.ToLower(b);
 
@@ -201,7 +201,7 @@ public class NumberParser {
 
     public static string ToBase(BigInteger n, string b) {
         // validate incoming b
-        var reg = new Regex(@"^0[<>]?[+-]?[" + string.Join("", Bases.Keys.Select(c => c.ToString())) +"]$", RegexOptions.IgnoreCase);
+        var reg = new Regex(@"^#[<>]?[+-]?(?<numberBase>([1-7]?[0-9]|80)[rR]|[" + string.Join("", Bases.Keys.Select(c => c.ToString())) +"])$", RegexOptions.IgnoreCase);
         if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
 
         // normalize b
@@ -221,6 +221,12 @@ public class NumberParser {
         */
 
         var baseChar = Char.ToLower(b.Last());
+        int? radix = null;
+        if (baseChar == 'r') {
+            var m = reg.Match(b);
+            radix = int.Parse(m.Groups["numberBase"].Captures[0].Value);
+        }
+
         bool? negBase = null;
         if (b.Contains('-')) negBase = true;
         if (b.Contains('+')) negBase = false;
@@ -232,13 +238,15 @@ public class NumberParser {
         // TODO: Complemented base
         // var comp = b.Contains('~');
 
-        var acc = new NumberParser(baseChar, le, negBase);
+        NumberParser? acc = null;
+        if (radix == null) acc = new NumberParser(baseChar, negBase, le);
+        else acc = new NumberParser(negBase ?? false, le ?? false, false, _customBaseStandardCharset.Substring(0, radix ?? 10));
 
         // Console.WriteLine($"Acc: {acc}");
         // customCharset = acc.Chars != new NumberParser(baseChar, baseMult, le, comp).Chars;
 
         // final normalize
-        if (b == "0d") b = "";
+        if (b == "#d") b = "";
 
         var str = new StringBuilder();
 
@@ -303,7 +311,7 @@ public class NumberParser {
             new Rat(Val, _den ?? 1)); }
 
     private const string _customBaseStandardCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-=+`~!@#$%^&*,;:|?";
-    private static Regex _customBaseRegex = new Regex(@"^0(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\](?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
+    private static Regex _customBaseRegex = new Regex(@"^#(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)((?<numberBase>([1-7]?[0-9]|80))[rR]|\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\])(?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
 
     public static Num? ParseString(string? s) {
         // read base

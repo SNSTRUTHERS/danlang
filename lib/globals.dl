@@ -1,8 +1,9 @@
 ; Special thanks to buildyourownlisp.com for the inspiration from 'lispy'!
 
-(def {pi}  3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384)
-(def {e}   2.71828_18284_59045_23536_02874_71352_66249_77572_47093_69995)
-(def {phi} 1.61803_39887_49894_84820_45868_34365_63811_77203_09179_80576)
+(def {math.pi}    3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384)
+(def {math.e}     2.71828_18284_59045_23536_02874_71352_66249_77572_47093_69995)
+(def {math.phi}   1.61803_39887_49894_84820_45868_34365_63811_77203_09179_80576)
+(def {math.gamma} 0.57721_56649_01532_86061)
 
 (def {fun local-fun}
   (fn {a b} {def (head a) (fn (tail a) b)})
@@ -25,20 +26,8 @@
 (def {== <> !=} eq neq neq)
 
 ; Logical operators
-(fun {or a b} {
-  if a {T} {
-    if b {T}
-  }
-})
-
-(fun {and a b} {
-  if a {
-    if b {T} {NIL}
-  }
-})
-
 (fun {xor a b} {
-  and (or a b) (not (and a b))
+  and {or a b} {not (and a b)}
 })
 
 ; Currying
@@ -49,7 +38,7 @@
 
 ; Reverse
 (fun {reverse} {
-  if &1 
+  if (and {defined? {&1}} {qexpr? &1} {&1})
     {join (reverse (tail &1)) (head &1)}
 })
 
@@ -147,4 +136,61 @@
   if (num? a)
    {if (< a 0) {- a} {a}}
    {error "Cannot perform 'abs' on non-number"}
+})
+
+(fun {floor a} {
+  <=> (cmp a (truncate a))
+    {< (- (truncate a) 1)}
+    {(truncate a)}
+})
+
+(fun {ceil a} {
+  <=> (cmp a (truncate a))
+    {> (+ (truncate a) 1)}
+    {(truncate a)}
+})
+
+(fun {div a b} {
+  if (and {num? a} {num? b})
+    {truncate (/ a b)}
+    {error "Cannot perform 'div' on non-numbers"}
+})
+
+(fun {mod a b} {
+  if (and {num? a} {num? b})
+    {- a (* b (floor (/ a b)))}
+    {error "Cannot perform 'mod' on non-numbers"}
+})
+
+(fun {divmod a b} {
+  if (and {num? a} {num? b})
+    {cons (div a b) (list (mod a b))}
+    {error "Cannot perform 'divmod' on non-numbers"}
+})
+
+(fun {fdiv a b} {
+  if (and {num? a} {num? b})
+    {to-fixed (/ a b) (if (and {defined? {&3}} {num? &3}) {&3} {10})}
+    {error "Cannot perform 'fdiv' on non-numbers"}
+})
+
+(fun {odd? n} {
+  if (num? n)
+    {eq (mod n 2) 1}
+    {error "Cannot perform 'odd?' on non-number"}
+})
+
+(fun {even? n} {
+  if (num? n)
+    {eq (mod n 2) 0}
+    {error "Cannot perform 'even?' on non-number"}
+})
+
+(fun {pow a b} {
+  if (zero? b)
+   {1}
+   { if (even? b)
+     {* (pow a (/ b 2)) (pow a (/ b 2))}
+     {* a (pow a (- b 1))}
+   }
 })

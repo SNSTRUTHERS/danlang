@@ -78,9 +78,11 @@ public class Program {
                     } while (parens.Length > 0);
 
                     var expr = LVal.ReadExprFromTokens(allTokens.ToList());
+                    var ticks = Environment.TickCount;
                     var val = expr?.Eval(e);
+                    ticks = Environment.TickCount - ticks;
                     if (val?.IsExit ?? false) break;
-                    Console.Write($"=> "); val?.Println();
+                    Console.Write($"{(ticks > 1000 ? $"({ticks}ms)" : "")}=> "); val?.Println();
                 }
             }
             /* Supplied with list of files */

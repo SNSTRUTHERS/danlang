@@ -152,7 +152,32 @@ public class Builtins
 
         if (!a[2].IsQExpr) return LVal.Err("'if' body elements must be QExpr");
         a[2].ValType = LVal.LE.SEXPR;
-        return a.Pop(2).Eval(e)!;
+        return a.Pop(2).Eval(e);
+    }
+
+    private static LVal And(LEnv e, LVal a) {
+        if (a.Count < 2) return LVal.Err("'and' supplied too few parameters");
+        if (a.Cells!.Any(c => !c.IsQExpr)) return LVal.Err("'and' can only operate on QExprs");
+
+        while (a.Count > 0) {
+            var b = a.Pop(0);
+            b.ValType = LVal.LE.SEXPR;
+            var la = b.Eval(e);
+            if (la.IsNIL) return la;
+        }
+        return LVal.Bool(true);
+    }
+
+    private static LVal Or(LEnv e, LVal a) {
+        if (a.Count < 2) return LVal.Err("'or' supplied too few parameters");
+        if (a.Cells!.Any(c => !c.IsQExpr)) return LVal.Err("'or' can only operate on QExprs");
+        while (a.Count > 0) {
+            var b = a.Pop(0);
+            b.ValType = LVal.LE.SEXPR;
+            var la = b.Eval(e);
+            if (!la.IsNIL) return LVal.Bool(true);
+        }
+        return LVal.Bool(false);
     }
 
     private static Num IntZero = new Int(BigInteger.Zero);
@@ -378,7 +403,11 @@ public class Builtins
         AddBuiltin(e, "-", Sub);
         AddBuiltin(e, "*", Mul);
         AddBuiltin(e, "/", Div);
-        
+
+        // Logical Funcions
+        AddBuiltin(e, "and", And);
+        AddBuiltin(e, "or", Or);
+
         // Comparison Functions
         AddBuiltin(e, "if",  If);
         AddBuiltin(e, "eq",  Eq);
@@ -388,7 +417,7 @@ public class Builtins
         AddBuiltin(e, "<",   Lt);
         AddBuiltin(e, "cmp", Cmp);
         AddBuiltin(e, "<=>", SpaceShip);
-        
+
         // String Functions
         AddBuiltin(e, "load",  Load); 
         AddBuiltin(e, "error", Error);
@@ -407,7 +436,7 @@ public class Builtins
         AddBuiltin(e, "fib",         FastFib);
 
         // helper
-        AddBuiltin(e, "defined?",    (e, p) => LVal.Bool(p[0].IsSym && e.ContainsKey(p[0].SymVal)));
+        AddBuiltin(e, "defined?",    (e, p) => LVal.Bool(p.Count > 0 && p[0].IsQExpr && p[0].Cells!.All(pp => pp.IsSym && e.ContainsKey(pp.SymVal))));
 
         // type checking
         AddBuiltin(e, "t?",        IsT);

@@ -141,3 +141,6 @@
        {apply case (cons x (tail &_))}}
     {error "Case not found"}
 })
+
+; math functions
+(fun {abs a} {if (< a 0) {- a} {a}})

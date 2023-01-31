@@ -113,7 +113,7 @@ public class Builtins
 
     private static LVal Ord(LEnv e, LVal a, string op) {
         if (a.Count != 2) return LVal.Err($"Too few parameters passed to '{op}'");
-        if (!a[1].IsNum || !a[2].IsNum) return LVal.Err($"'{op}' passed non-number parameter(s)");
+        if (!a[0].IsNum || !a[1].IsNum) return LVal.Err($"'{op}' passed non-number parameter(s)");
         bool r = false;
         if (op == ">") { r = ((a[0].NumVal as Int)!.num > (a[1].NumVal as Int)!.num); }
         if (op == "<") { r = ((a[0].NumVal as Int)!.num < (a[1].NumVal as Int)!.num); }

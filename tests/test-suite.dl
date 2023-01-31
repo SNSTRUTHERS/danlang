@@ -1,0 +1,1 @@
+(fun {assert a b err} {if (eq a b) T {do (print err) NIL}})

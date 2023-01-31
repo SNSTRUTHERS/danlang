@@ -54,7 +54,7 @@ public static class Tests {
             }
         }
 
-        var bi = BigInteger.Parse("999999129321000000");
+        var bi = BigInteger.Parse("98765432100000000000000");
         var dp = -25;
 
         while (dp <= 25) {

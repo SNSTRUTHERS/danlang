@@ -195,6 +195,10 @@ public class NumberParser {
         return num;
     }
 
+    public static string ToBase(Num n, int numberBase) {
+        return "";
+    }
+
     public static string ToBase(BigInteger n, string b) {
         // validate incoming b
         var reg = new Regex(@"^0[<>]?[+-]?[" + string.Join("", Bases.Keys.Select(c => c.ToString())) +"]$", RegexOptions.IgnoreCase);
@@ -298,7 +302,8 @@ public class NumberParser {
             new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
             new Rat(Val, _den ?? 1)); }
 
-    private Regex _customBaseRegex = new Regex(@"^0(?<dir>[<>])?(?<bal>=)?(?<baseMod>[+-])?\[(?<chars>[^\<\>\[\]\{\}\(\)\t\r\n \\'""\./_]+)\]");
+    private const string _customBaseStandardCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-=+`~!@#$%^&*,;:|?";
+    private static Regex _customBaseRegex = new Regex(@"^0(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\](?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
 
     public static Num? ParseString(string? s) {
         // read base
@@ -344,6 +349,51 @@ public class NumberParser {
 
         if (s == "") return null;
 
+        if (_customBaseRegex.IsMatch(s)) {
+            var m = _customBaseRegex.Match(s);
+            bool bal = false;
+            bool le = false;
+            bool negBase = false;
+
+            var leg = m.Groups["dir"].Captures;
+            if (leg.Count > 0 && leg[0].Length > 0) {
+                if (leg[0].Value == "<") le = true;
+                if (leg[0].Value == ">") le = false;
+            }
+
+            var bmg = m.Groups["baseMod"].Captures;
+            if (bmg.Count > 0 && bmg[0].Length > 0) {
+                if (bmg[0].Value == "-") negBase = true;
+            }
+
+            var bg = m.Groups["bal"].Captures;
+            if (bg.Count > 0 && bg[0].Length > 0) {
+                if (bg[0].Value == "=") bal = true;
+            }
+
+            string valueChars = "";
+            var nbg = m.Groups["numberBase"].Captures;
+            if (nbg.Count > 0 && nbg[0].Length > 0) {
+                var numberBase = int.Parse(nbg[0].Value);
+                valueChars = _customBaseStandardCharset.Substring(0, numberBase);
+            }
+            else {
+                valueChars = m.Groups["chars"].Captures[0].Value;
+                // TODO: ensure that valueChars is a unique set, and return an LVal:Err() if not
+            }
+
+            i = new NumberParser(negBase, le, bal, valueChars);
+
+            // TODO: check to see if all value characters match the valueChars
+            var value = m.Groups["value"].Captures[0].Value;
+            var consumed = i.AddString(value);
+            if (consumed != value.Length) return null;
+
+            var v = i.Num;
+            if (sign == '-') v = -v;
+            return v;
+        }
+
         foreach (var b in Bases.Values) {
             if (b.ParseRegex.IsMatch(s)) {
                 var m = b.ParseRegex.Match(s);
@@ -380,6 +430,6 @@ public class NumberParser {
             }
         }
 
-        return null; // TODO: 
+        return null; // TODO: return an LVal.Err() or LVal.Sym()
     }
 }

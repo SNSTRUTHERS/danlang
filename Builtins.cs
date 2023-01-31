@@ -404,6 +404,9 @@ public class Builtins
         AddBuiltin(e, "*", Mul);
         AddBuiltin(e, "/", Div);
 
+        AddBuiltin(e, "rational.n", (e, p) => p.Count > 0 ? (p[0].IsNum ? LVal.Number(Rat.ToRat(p[0].NumVal!).num) : LVal.Err("Argument is not a number")): LVal.Err("One or more arguments required"));
+        AddBuiltin(e, "rational.d", (e, p) => p.Count > 0 ? (p[0].IsNum ? LVal.Number(Rat.ToRat(p[0].NumVal!).den) : LVal.Err("Argument is not a number")): LVal.Err("One or more arguments required"));
+ 
         // Logical Funcions
         AddBuiltin(e, "and", And);
         AddBuiltin(e, "or", Or);

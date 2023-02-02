@@ -163,6 +163,8 @@
     {error "Cannot perform 'mod' on non-numbers"}
 })
 
+(def {%} mod)
+
 (fun {divmod a b} {
   if (and {num? a} {num? b})
     {cons (div a b) (list (mod a b))}
@@ -186,6 +188,11 @@
     {eq (mod n 2) 0}
     {error "Cannot perform 'even?' on non-number"}
 })
+
+(fun {positive? a} {if (num> a) {> a 0} {error ""})
+(fun {negative? a} {< a 0})
+
+(def {+? -? 0?} positive? negative? zero?)
 
 (fun {pow a b} {
   if (zero? b)

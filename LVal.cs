@@ -203,7 +203,6 @@ public class LVal {
 
     // Helper methods
     public LVal Add(LVal x) {
-        Console.WriteLine($"Adding {x.ToStr()} to {this.ToStr()}");
         Cells = Cells ?? new List<LVal>();
         Cells.Add(x);
         return this;

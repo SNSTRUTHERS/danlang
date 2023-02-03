@@ -486,7 +486,7 @@ public class Builtins
         if (val.Count < 1) return LVal.Err("'hash-clone' requires one parameters");
         var hash = val.Pop(0);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-clone' must be a hash");
-        return LVal.Hash(hash.HashValue!.Clone(val.Cells?.FirstOrDefault()));
+        return LVal.Hash(hash.HashValue!.Clone(val));
     }
 
     private static LVal HashAddTag(LEnv _, LVal val) {
@@ -502,23 +502,26 @@ public class Builtins
         return ret;
     }
 
-    private static LVal _HashAddSpecificTag(LEnv e, LVal val, string tag) {
+    private static LVal _HashApplyTag(LEnv e, LVal val, string tag) {
         var a = LVal.Atom(tag);
         if (val.Count > 1) {
-            while (val.Count > 1) {
+            var v = LVal.Qexpr();
+            v.Add(val.Pop(0));
+            while (val.Count > 0) {
                 var q = LVal.Qexpr();
-                q.Add(val.Pop(1));
+                q.Add(val.Pop(0));
                 q.Add(a);
-                val.Add(q);
+                v.Add(q);
             }
+            val = v;
         }
         else val.Add(a);
         return HashAddTag(e, val);
     }
 
-    private static LVal HashLock(LEnv e, LVal val) => _HashAddSpecificTag(e, val, LHash.TAG_LOCKED);
-    private static LVal HashMakeReadonly(LEnv e, LVal val) => _HashAddSpecificTag(e, val, LHash.TAG_RO);
-    private static LVal HashMakePrivate(LEnv e, LVal val) => _HashAddSpecificTag(e, val, LHash.TAG_PRIV);
+    private static LVal HashLock(LEnv e, LVal val) => _HashApplyTag(e, val, LHash.TAG_LOCKED);
+    private static LVal HashMakeReadonly(LEnv e, LVal val) => _HashApplyTag(e, val, LHash.TAG_RO);
+    private static LVal HashMakePrivate(LEnv e, LVal val) => _HashApplyTag(e, val, LHash.TAG_PRIV);
 
     private static LVal HashHasTag(LEnv _, LVal val) {
         if (val.Count < 2) return LVal.Err("'hash-tag?' requires two parameters");

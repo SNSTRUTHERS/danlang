@@ -1,0 +1,11 @@
+(set {h} (hash-create))
+(hash-put h {:a "Hello, World!"}) ; add a single item
+(hash-put h {:b 10} {:f (fn {} {hash-get &0 :a})})
+(hash-get h :a)
+(hash-make-private h :a)
+(print (hash-get h :a)) ; get an error
+(print (hash-call h :f)) ; get the same value, but this time it works!
+
+(set {h-clone} (hash-clone h {{:a "Hello, Clone World!"} {:b 15}}))
+(if (eq (hash-call h-clone :f) "Hello, Clone World!") {print "Clone worked!"} {error "Clone failed :("})
+(if (eq (hash-call h :f) "Hello, World!") {print "Clone didn't corrupt the original!"} {error "Clone corrupted the original :("})

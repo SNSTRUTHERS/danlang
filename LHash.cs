@@ -16,14 +16,14 @@ public class TaggedValue<T> where T: class {
         }
     }
 
-    protected bool _Add(string t) {
+    public bool _Add(string t) {
         if (_privateCallProxy != null) return _privateCallProxy._Add(t);
         Tags = Tags ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         return Tags.Add(t);
     }
 
     public virtual LVal AddTag(LVal t) {
-        Console.WriteLine($"Adding tag {t.SymVal}");
+//        Console.WriteLine($"Adding tag {t.SymVal}");
         if (t.IsAtom) return LVal.Bool(_Add(t.SymVal));
         return LVal.Bool(false);
     }
@@ -46,18 +46,52 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     public const string TAG_RO = "__read-only";
     public const string TAG_PRIV = "__private";
     public LHash() : base(new Dictionary<string, LHash.LHashEntry>()) {}
-    public LHash(LHash l, LVal? overrides = null, bool isProxy = false) : base(l, isProxy) {
-        if (isProxy) return;
+    public LHash(LHash l, LVal? overrides = null, bool isProxy = false) {
+        if (isProxy) {
+            _privateCallProxy = l;
+            return;
+        }
         // make sure entry values are copied properly
-        foreach (var e in _Values!) {
-            e.Value = e.Value?.Copy();
+        // LVal? thisRef = null;
+        if (l.Value != null) {
+            Value = new Dictionary<string, LHashEntry>();
+            foreach (var kvp in l.Value) {
+                var he = new LHashEntry();
+                if (kvp.Value.Tags != null) {
+                    foreach (var t in kvp.Value.Tags) he._Add(t);
+                }
+                he.Value = kvp.Value.Value?.Copy();
+                Value.Add(kvp.Key, he);
+            }
         }
 
         // apply overrides
         // TODO: validate the overall shape and type of the overrides object
         if (overrides != null && overrides.Count > 0) {
-            var entries = overrides.Count == 1 ? overrides[0].Cells : overrides.Cells;
-            if (entries != null) foreach (var e in entries) Put(e, true);
+            var v = overrides;
+            while (v.Count == 1) v = v[0];
+
+//Console.WriteLine($"**** Applying overrides: {v.ToStr()} ****");
+            if (v.Count > 1 && v[0].IsAtom) {
+                var key = v.Pop(0);
+                var val = v.Pop(0);
+                Put(key, val, true);
+                while (v.Count > 0) AddTag(key, v.Pop(0));
+            }
+            else {
+                while (v.Count > 0) {
+                    var e = v.Pop(0);
+//Console.WriteLine($"***** Applying override: {e.ToStr()} *****");
+                    if (e.Count == 1) AddTag(e[0]);
+                    else {
+                        var key = e.Pop(0);
+                        var val = e.Pop(0);
+                        var putResult = Put(key, val, true);
+                        // Console.WriteLine($"Put result: {putResult.ToStr()}");
+                        while (e.Count > 0) AddTag(key, e.Pop(0));
+                    }
+                }
+            }
         }
     }
 
@@ -205,7 +239,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
     public LVal AddTag(LVal key, LVal tag) {
         try {
-            Console.WriteLine($"Adding tag {tag.ToStr()} to key {key.ToStr()}");
+//            Console.WriteLine($"Adding tag {tag.ToStr()} to key {key.ToStr()}");
             var e = _GetEntry(key);
             if (e != null) {
                 return e.AddTag(tag);

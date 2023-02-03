@@ -113,10 +113,11 @@ public class Builtins
 
     private static LVal Ord(LEnv e, LVal a, string op) {
         if (a.Count != 2) return LVal.Err($"Too few parameters passed to '{op}'");
-        if (!a[0].IsNum || !a[1].IsNum) return LVal.Err($"'{op}' passed non-number parameter(s)");
+        // if (!(a[0].IsNum && a[1].IsNum)) return LVal.Err($"'{op}' passed non-number parameter(s)");
         bool r = false;
-        if (op == ">") { r = ((a[0].NumVal as Int)!.num > (a[1].NumVal as Int)!.num); }
-        if (op == "<") { r = ((a[0].NumVal as Int)!.num < (a[1].NumVal as Int)!.num); }
+        var cmp = Cmp(e, a, "cmp").NumVal!.ToInt().num;
+        if (op == ">") { r = cmp > 0; } //((a[0].NumVal as Int)!.num > (a[1].NumVal as Int)!.num); }
+        if (op == "<") { r = cmp < 0; } //((a[0].NumVal as Int)!.num < (a[1].NumVal as Int)!.num); }
         return LVal.Bool(r);
     }
 
@@ -295,6 +296,7 @@ public class Builtins
 
     private static LVal IsNumber(LEnv e, LVal a) => IsType(a, LVal.LE.NUM);
     private static LVal IsString(LEnv e, LVal a) => IsType(a, LVal.LE.STR);
+    private static LVal IsAtom(LEnv e, LVal a) => IsType(a, LVal.LE.ATOM);
     private static LVal IsSymbol(LEnv e, LVal a) => IsType(a, LVal.LE.SYM);
     private static LVal IsFunc(LEnv e, LVal a) => IsType(a, LVal.LE.FUN);
     private static LVal IsError(LEnv e, LVal a) => IsType(a, LVal.LE.ERR);
@@ -308,6 +310,8 @@ public class Builtins
             case LVal.LE.NUM:
             case LVal.LE.T:
             case LVal.LE.SYM:
+            case LVal.LE.ATOM:
+            case LVal.LE.FUN:
             case LVal.LE.QEXPR:
             case LVal.LE.SEXPR: return LVal.T();
         }
@@ -385,6 +389,163 @@ public class Builtins
         return LVal.Number(a);
     }
 
+    // Hash functions
+    private static LVal HashCreate(LEnv e, LVal val) {
+        if (val.Count > 0) return LVal.Hash(val.Pop(0), e);
+        return LVal.Hash();
+    }
+
+    private static LVal HashGet(LEnv _, LVal val) {
+        if (val.Count < 2) return LVal.Err("'hash-get' requires two parameters");
+        if (val.Count > 2) return LVal.Err($"Too many parameters passed to 'hash-get'.  Expected 2, got {val.Count}");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-get' must be a hash");
+
+        var key = val.Pop(0);
+        return hash.HashValue!.Get(key);
+    }
+
+    private static LVal HashPut(LEnv e, LVal val) {
+        if (val.Count < 2) return LVal.Err("'hash-put' requires two or more parameters");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-put' must be a hash");
+
+        if (val.Count == 1) {
+            var p = val.Pop(0);
+            if (p.Count == 2) return hash.HashValue!.Put(p[0], p[1].Eval(e));
+            return hash.HashValue!.Put(p);
+        }
+
+        var ret = LVal.Qexpr();
+        while (val.Count > 0) {
+            var v = val.Pop(0);
+            if (v.Count == 2) {
+                ret.Add(hash.HashValue!.Put(v[0], v[1].Eval(e)));
+            }
+            else ret.Add(hash.HashValue!.Put(v));
+        }
+
+        return ret;
+    }
+
+    private static LVal ToHash(LEnv e, LVal val) {
+        if (val.Count < 1) return LVal.Err("'to#' requires one parameters");
+        var hash = val.Pop(0);
+        if (!hash.IsQExpr) return LVal.Err("First parameter to 'to#' must be a QExpr");
+        return LVal.Hash(val, e);
+    }
+
+    private static LVal FromHash(LEnv _, LVal val) {
+        if (val.Count < 1) return LVal.Err("'from#' requires one parameters");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'from#' must be a hash");
+        return hash.HashValue!.ToQexpr();
+    }
+
+    private static LVal HashHasKey(LEnv _, LVal val) {
+        if (val.Count < 2) return LVal.Err("'hash-key?' requires two parameters");
+        if (val.Count > 2) return LVal.Err($"Too many parameters passed to 'hash-key?'.  Expected 2, got {val.Count}");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-key?' must be a hash");
+
+        var key = val.Pop(0);
+        return hash.HashValue!.ContainsKey(key);
+    }
+
+    private static LVal HashKeys(LEnv _, LVal val) {
+        if (val.Count < 1) return LVal.Err("'hash-keys' requires one parameter");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-keys' must be a hash");
+        return hash.HashValue!.Keys;
+    }
+
+    private static LVal HashValues(LEnv _, LVal val) {
+        if (val.Count < 1) return LVal.Err("'hash-values' requires one parameter");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-values' must be a hash");
+        return hash.HashValue!.Values;
+    }
+
+    private static LVal HashCall(LEnv e, LVal val) {
+        // TODO: check the parameters
+        if (val.Count < 2) return LVal.Err("'hash-call' requires two parameters");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-call' must be a hash");
+        var fKey = val.Pop(0);
+
+        var f = hash.HashValue!.Get(fKey);
+        if (f.IsErr) return f;
+        if (!f.IsFun) return LVal.Err("Second parameter to 'hash-call' must be a key to a member function");
+
+        e.Put("&0", hash);
+        var retVal = LVal.Call(e, f, val);
+        e.Remove("&0");
+        return retVal;
+    }
+
+    private static LVal HashClone(LEnv _, LVal val) {
+        if (val.Count < 1) return LVal.Err("'hash-clone' requires one parameters");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-clone' must be a hash");
+        return LVal.Hash(hash.HashValue!.Clone(val.Cells?.FirstOrDefault()));
+    }
+
+    private static LVal HashAddTag(LEnv _, LVal val) {
+        if (val.Count < 2) return LVal.Err("'hash-add-tag' requires two or more parameters");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-add-tag' must be a hash");
+
+        if (val.Count == 1) return hash.HashValue!.AddTag(val[0]);
+
+        var ret = LVal.Qexpr();
+        while (val.Count > 0) ret.Add(hash.HashValue!.AddTag(val.Pop(0)));
+
+        return ret;
+    }
+
+    private static LVal _HashAddSpecificTag(LEnv e, LVal val, string tag) {
+        var a = LVal.Atom(tag);
+        if (val.Count > 1) {
+            while (val.Count > 1) {
+                var q = LVal.Qexpr();
+                q.Add(val.Pop(1));
+                q.Add(a);
+                val.Add(q);
+            }
+        }
+        else val.Add(a);
+        return HashAddTag(e, val);
+    }
+
+    private static LVal HashLock(LEnv e, LVal val) => _HashAddSpecificTag(e, val, LHash.TAG_LOCKED);
+    private static LVal HashMakeReadonly(LEnv e, LVal val) => _HashAddSpecificTag(e, val, LHash.TAG_RO);
+    private static LVal HashMakePrivate(LEnv e, LVal val) => _HashAddSpecificTag(e, val, LHash.TAG_PRIV);
+
+    private static LVal HashHasTag(LEnv _, LVal val) {
+        if (val.Count < 2) return LVal.Err("'hash-tag?' requires two parameters");
+        if (val.Count > 2) return LVal.Err($"Too many parameters passed to 'hash-tag?'.  Expected 2, got {val.Count}");
+        var hash = val.Pop(0);
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-tag?' must be a hash");
+
+        return hash.HashValue!.HasTag(val.Pop(0));
+    }
+
+    private static LVal HashIsLocked(LEnv e, LVal val) {
+        val.Add(LVal.Atom(LHash.TAG_LOCKED));
+        return HashHasTag(e, val);
+    }
+
+    private static LVal HashIsPrivate(LEnv e, LVal val) {
+        val.Add(LVal.Atom(LHash.TAG_PRIV));
+        return HashHasTag(e, val);
+    }
+
+    private static LVal HashIsConst(LEnv e, LVal val) {
+        val.Add(LVal.Atom(LHash.TAG_RO));
+        return HashHasTag(e, val);
+    }
+
+    // Add Builtins to an Environment
     public static void AddBuiltins(LEnv e) {
         // Variable Functions
         AddBuiltin(e, "fn",  Lambda); 
@@ -399,8 +560,12 @@ public class Builtins
         AddBuiltin(e, "end",  End);
         AddBuiltin(e, "join", Join);
         AddBuiltin(e, "eval", Eval);
-        AddBuiltin(e, "len",  (e, a) => LVal.Number(a[0].Count));
-        
+        AddBuiltin(e, "len",  (e, a) => a[0].ValType switch { 
+            LVal.LE.QEXPR => LVal.Number(a[0].Count),
+            LVal.LE.STR   => LVal.Number(a[0].StrVal.Length),
+            _             => LVal.Err("'len' requires parameter of type string or list")
+        });
+
         // Mathematical Functions
         AddBuiltin(e, "+", Add);
         AddBuiltin(e, "-", Sub);
@@ -452,6 +617,7 @@ public class Builtins
         AddBuiltin(e, "rational?", IsRat);
         AddBuiltin(e, "int?",      IsInt);
         AddBuiltin(e, "complex?",  IsComplex);
+        AddBuiltin(e, "atom?",     IsAtom);
         AddBuiltin(e, "symbol?",   IsSymbol);
         AddBuiltin(e, "string?",   IsString);
         AddBuiltin(e, "func?",     IsFunc);
@@ -459,5 +625,25 @@ public class Builtins
         AddBuiltin(e, "expr?",     IsExpr);
         AddBuiltin(e, "qexpr?",    IsQExpr);
         AddBuiltin(e, "sexpr?",    IsSExpr);
+
+        // Hash functions
+        AddBuiltin(e, "hash-create", HashCreate);
+        AddBuiltin(e, "hash-get", HashGet);
+        AddBuiltin(e, "hash-put", HashPut);
+        AddBuiltin(e, "to#", ToHash);
+        AddBuiltin(e, "from#", FromHash);
+        AddBuiltin(e, "hash-key?", HashHasKey);
+        AddBuiltin(e, "hash-keys", HashKeys);
+        AddBuiltin(e, "hash-values", HashValues);
+        AddBuiltin(e, "hash-call", HashCall);
+        AddBuiltin(e, "hash-clone", HashClone);
+        AddBuiltin(e, "hash-add-tag", HashAddTag);
+        AddBuiltin(e, "hash-lock", HashLock);
+        AddBuiltin(e, "hash-make-const", HashMakeReadonly);
+        AddBuiltin(e, "hash-make-private", HashMakePrivate);
+        AddBuiltin(e, "hash-tag?", HashHasTag);
+        AddBuiltin(e, "hash-locked?", HashIsLocked);
+        AddBuiltin(e, "hash-private?", HashIsPrivate);
+        AddBuiltin(e, "hash-const?", HashIsConst);
     }
 }

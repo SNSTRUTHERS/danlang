@@ -189,8 +189,8 @@
     {error "Cannot perform 'even?' on non-number"}
 })
 
-(fun {positive? a} {if (num> a) {> a 0} {error ""})
-(fun {negative? a} {< a 0})
+(fun {positive? a} {if (num? a) {> a 0} {error "Only numbers can be positive"}})
+(fun {negative? a} {if (num? a) {< a 0} {error "Only numbers can be negative"}})
 
 (def {+? -? 0?} positive? negative? zero?)
 

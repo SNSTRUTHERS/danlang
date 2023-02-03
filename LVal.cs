@@ -3,23 +3,25 @@ using System.Numerics;
 using System.Text;
 
 public class LVal {
-    public enum LE { ERR, T, NUM, SYM, STR, FUN, SEXPR, QEXPR, COMMENT, EXIT };
+    public enum LE { ERR, T, NUM, ATOM, SYM, STR, FUN, SEXPR, QEXPR, HASH, COMMENT, EXIT };
 
     public LE ValType;
-    public Func<LEnv, LVal, LVal>? BuiltinVal = null;
     public LEnv? Env = null;
     public LVal? Formals = null;
     public LVal? Body = null;
     public Num? NumVal = null;
+    public Func<LEnv, LVal, LVal>? BuiltinVal = null;
     public string ErrVal = string.Empty;
     public string SymVal = string.Empty;
     public string StrVal = string.Empty;
+    public LHash? HashValue = null;
     public List<LVal>? Cells = null;
 
     public int Count => Cells?.Count ?? 0;
     public bool IsNIL => Count == 0 && (IsSExpr || IsQExpr);
     public bool IsT => ValType == LE.T;
     public bool IsNum => ValType == LE.NUM;
+    public bool IsAtom => ValType == LE.ATOM;
     public bool IsSym => ValType == LE.SYM;
     public bool IsFun => ValType == LE.FUN;
     public bool IsErr => ValType == LE.ERR;
@@ -27,9 +29,12 @@ public class LVal {
     public bool IsStr => ValType == LE.STR;
     public bool IsSExpr => ValType == LE.SEXPR;
     public bool IsQExpr => ValType == LE.QEXPR;
+    public bool IsHash => ValType == LE.HASH;
     public bool IsComment => ValType == LE.COMMENT;
 
+    //  Hashes
     public LVal Copy() {
+        if (IsHash) return this;
         LVal x = new LVal();
         x.ValType = ValType;
         switch (ValType) {
@@ -46,6 +51,7 @@ public class LVal {
 
             case LE.NUM: x.NumVal = NumVal; break;
             case LE.ERR: x.ErrVal = ErrVal; break;
+            case LE.ATOM:
             case LE.SYM: x.SymVal = SymVal; break;
             case LE.STR: x.StrVal = StrVal; break;
 
@@ -88,8 +94,17 @@ public class LVal {
         return v;
     }
 
+    public static LVal Atom(string s) {
+        LVal v = new LVal();
+        v.ValType = LE.ATOM;
+        v.SymVal = s.ToLower(); // TODO: assess if case-sensitive atoms would be useful
+        return v;
+    }
+
     public static LVal Sym(string s) {
         // special cases
+        if (s.StartsWith(":")) return Atom(s.Substring(1));
+
         s = s.ToLower();
         switch (s) {
             case "t": return T();
@@ -100,6 +115,7 @@ public class LVal {
         LVal v = new LVal();
         v.ValType = LE.SYM;
         v.SymVal = s;
+
         return v;
     }
 
@@ -124,7 +140,6 @@ public class LVal {
         v.Env = new LEnv();  
         v.Formals = formals;
         v.Body = body;
-        // v.Println();
         return v;
     }
 
@@ -155,7 +170,40 @@ public class LVal {
         return v;
     }
 
+    public static LVal Hash(LHash hash) {
+        LVal v = new LVal();
+        v.ValType = LE.HASH;
+        v.HashValue = hash;
+        return v;
+    }
+
+    public static LVal Hash(LVal? initialValues = null, LEnv? e = null) {
+        LVal v = new LVal();
+        v.ValType = LE.HASH;
+        var hash = new LHash();
+        v.HashValue = hash;
+
+        // TODO: ensure the shape of the intialValues is correct, i.e. {{:1 a} {:2 b} :tag1 :tag2}
+        if (initialValues != null) Console.WriteLine($"Creating hash: initialValues = {initialValues.ToStr()}, type: {LVal.LEName(initialValues.ValType)}");
+        if (initialValues != null && initialValues.IsQExpr) {
+            var entries = initialValues.Count == 1 && initialValues[0].IsQExpr ? initialValues[0].Cells : initialValues.Cells;
+            if (entries != null) {
+                foreach (var entry in entries) {
+                    if (entry.Count > 1 && e != null) {
+                        hash.Put(entry[0], entry[1].Eval(e), true);
+                        // add any tags
+                        while (entry.Count > 2) hash.AddTag(entry[0], entry.Pop(2));
+                    }
+                    else if (entry.IsAtom) hash.AddTag(entry);
+                }
+            }
+        }
+        return v;
+    }
+
+    // Helper methods
     public LVal Add(LVal x) {
+        Console.WriteLine($"Adding {x.ToStr()} to {this.ToStr()}");
         Cells = Cells ?? new List<LVal>();
         Cells.Add(x);
         return this;
@@ -274,8 +322,10 @@ public class LVal {
             case LE.NUM:   return NumVal?.ToString() ?? "NIL";
             case LE.T:     return "T";
             case LE.ERR:   s.Append("Error: ").Append(ErrVal); break;
+            case LE.ATOM:  s.Append(':').Append(SymVal); break;
             case LE.SYM:   s.Append(SymVal); break;
             case LE.STR:   return StrAsString();
+            case LE.HASH:  return HashValue!.ToQexpr().ToStr();
             case LE.SEXPR: return ExprAsString('(', ')');
             case LE.QEXPR: return ExprAsString('{', '}');
         }
@@ -296,15 +346,18 @@ public class LVal {
     
         switch (ValType) {
             case LE.T:   return true;   // we already checked that the Types are the same for these, so we are good.
-            case LE.NUM: return (NumVal!.CompareTo(y.NumVal) == 0);    
+            case LE.NUM: return (NumVal!.CompareTo(y.NumVal) == 0);
             case LE.ERR: return (ErrVal == y.ErrVal);
-            case LE.SYM: return (SymVal == y.SymVal);    
-            case LE.STR: return (StrVal == y.StrVal);    
+            case LE.ATOM:
+            case LE.SYM: return (SymVal == y.SymVal);
+            case LE.STR: return (StrVal == y.StrVal);
             case LE.FUN: 
                 if (BuiltinVal != null || y.BuiltinVal != null) {
                     return BuiltinVal == y.BuiltinVal;
                 }
                 return (Formals!.Equals(y.Formals) && Body!.Equals(y.Body));
+
+            case LE.HASH: return base.Equals(o);  // TODO: do a memberwise check?
 
             case LE.QEXPR:
             case LE.SEXPR:
@@ -328,20 +381,22 @@ public class LVal {
         // TODO: include Cells
     }
 
-    private static string LEName(LE t) {
+    public static string LEName(LE t) {
         switch(t) {
             case LE.FUN: return "Function";
             case LE.NUM: return "Number";
             case LE.ERR: return "Error";
+            case LE.ATOM: return "Atom";
             case LE.SYM: return "Symbol";
             case LE.STR: return "String";
+            case LE.HASH: return "Hash";
             case LE.SEXPR: return "S-Expression";
             case LE.QEXPR: return "Q-Expression";
             default: return "Unknown";
         }
     }
 
-    private static LVal Call(LEnv e, LVal f, LVal a) {
+    public static LVal Call(LEnv e, LVal f, LVal a) {
         if (f.BuiltinVal != null) { return f.BuiltinVal(e, a); }
         
         int given = a.Count;
@@ -357,13 +412,13 @@ public class LVal {
                 extras.Add(val);
             } else {
                 LVal sym = f.Formals.Pop(0);
-                f.Env!.Put(sym.SymVal!, val);    
+                f.Env!.Put(sym.SymVal!, val);
             }
         }
         
         f.Env!.Put("&_", extras);
-        if (f.Formals!.Count == 0) {  
-            f.Env!.Parent = e;        
+        if (f.Formals!.Count == 0) {
+            f.Env!.Parent = e;
             return Builtins.Eval(f.Env, LVal.Sexpr().Add(f.Body!.Copy()));
         } else {
             return f.Copy()!;
@@ -378,9 +433,9 @@ public class LVal {
         for (int i = 0; i < v.Count; i++) { if (v[i].IsErr) { return v.Pop(i); } }
         
         if (v.Count == 0) { return v; }  
-        if (v.Count == 1) { return v.Pop(0).Eval(e); }
-        
         LVal f = v.Pop(0);
+        if (v.Count == 0 && !f.IsFun) { return f.Eval(e); }
+        
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
         
         return LVal.Call(e, f, v);
@@ -401,7 +456,7 @@ public class LVal {
                 Parser.Token.Type.QExClose => end != '}' ? Err("QExClose without QExOpen") : null,
                 Parser.Token.Type.Number => Number(t.num!),
                 Parser.Token.Type.String => Str(t.str!),
-                Parser.Token.Type.Symbol => Sym(t.str!),
+                Parser.Token.Type.Symbol => Sym(t.str!), // inludes ATOMS and special-case symbols, like T, NIL, and EXIT
                 _ => Err($"Unknown token type {t.type}")
             };
 
@@ -411,7 +466,7 @@ public class LVal {
                 case LE.ERR: throw new Exception(val.ErrVal);
                 case LE.COMMENT: break;
                 default:
-                    exp.Cells!.Add(val);
+                    exp.Add(val);
                     break;
             }
             t = tokens.FirstOrDefault();
@@ -430,6 +485,16 @@ public class LVal {
 
     public int CompareTo(LVal v) {
         if (NumVal != null && v.NumVal != null) return NumVal.CompareTo(v.NumVal);
-        return 0;
+        if (StrVal != null && v.StrVal != null) return string.Compare(StrVal, v.StrVal, StringComparison.CurrentCulture);
+        if (SymVal != null && v.SymVal != null) return string.Compare(SymVal, v.SymVal, StringComparison.OrdinalIgnoreCase);
+        if (ErrVal != null && v.ErrVal != null) return ErrVal.CompareTo(v.ErrVal);
+        if (Count > 0 && v.Count > 0 && Count == v.Count && ValType == v.ValType) {
+            var cmp = 0;
+            for (int i = 0; cmp == 0 && i < Count; ++i) {
+                cmp = this[i].CompareTo(v[i]);
+            }
+            return cmp;
+        }
+        return ValType.CompareTo(v.ValType);
     }
 }

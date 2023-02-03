@@ -199,7 +199,8 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
     public override LVal AddTag(LVal v) {
         if (v.Count == 1 || v.IsAtom) return base.AddTag(v);
-        return AddTag(v[0], v[1]);
+        else if (v.Count == 2) return AddTag(v[0], v[1]);
+        return LVal.Err($"Failed to add tag: invalid parameters {v.ToStr()}");
     }
 
     public LVal AddTag(LVal key, LVal tag) {

@@ -479,7 +479,6 @@ public class Builtins
 
         e.Put("&0", LVal.Hash(hash.HashValue.PrivateCallProxy));
         var retVal = LVal.Call(e, f, val);
-        e.Remove("&0");
         return retVal;
     }
 

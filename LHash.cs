@@ -51,8 +51,8 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             _privateCallProxy = l;
             return;
         }
+
         // make sure entry values are copied properly
-        // LVal? thisRef = null;
         if (l.Value != null) {
             Value = new Dictionary<string, LHashEntry>();
             foreach (var kvp in l.Value) {
@@ -60,7 +60,10 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
                 if (kvp.Value.Tags != null) {
                     foreach (var t in kvp.Value.Tags) he._Add(t);
                 }
-                he.Value = kvp.Value.Value?.Copy();
+                if (kvp.Value.Value?.IsHash ?? false) {
+                    he.Value = LVal.Hash(kvp.Value.Value.HashValue!.Clone());
+                }
+                else he.Value = kvp.Value.Value?.Copy();
                 Value.Add(kvp.Key, he);
             }
         }
@@ -71,23 +74,31 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             var v = overrides;
             while (v.Count == 1) v = v[0];
 
-//Console.WriteLine($"**** Applying overrides: {v.ToStr()} ****");
-            if (v.Count > 1 && v[0].IsAtom) {
+            // check for the case where they only apply a single tag
+            if (v.Count == 0 && v.IsAtom) {
+                AddTag(v);
+            }
+            // now for if they apply updates to a single element
+            else if (v.Count > 1 && v[0].IsAtom) {
                 var key = v.Pop(0);
                 var val = v.Pop(0);
                 Put(key, val, true);
+
+                // now add any tags
                 while (v.Count > 0) AddTag(key, v.Pop(0));
             }
             else {
+                // case where there are multiple elements updated
                 while (v.Count > 0) {
                     var e = v.Pop(0);
-//Console.WriteLine($"***** Applying override: {e.ToStr()} *****");
-                    if (e.Count == 1) AddTag(e[0]);
+                    if (e.Count == 0 && e.IsAtom) AddTag(e);
+                    else if (e.Count == 1) AddTag(e[0]);
                     else {
                         var key = e.Pop(0);
                         var val = e.Pop(0);
                         var putResult = Put(key, val, true);
-                        // Console.WriteLine($"Put result: {putResult.ToStr()}");
+                        
+                        // now add any tags
                         while (e.Count > 0) AddTag(key, e.Pop(0));
                     }
                 }
@@ -164,11 +175,11 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     public LVal Put(LVal key, LVal val, bool callerIsMember = false) {
         if (_privateCallProxy != null && !callerIsMember) return ((LHash)_privateCallProxy).Put(key, val, true);
         try {
-            if (IsReadonly) return LVal.Err("#put error: cannot modify read-only hash");
+            if (IsReadonly) return LVal.Err("hash-put error: cannot modify read-only hash");
             var e = _GetEntry(key, !IsLocked);
             if (e != null) {
-                if (e.IsPrivate && !callerIsMember) return LVal.Err("#put error: cannot access private hash entry");
-                if (e.IsReadonly) return LVal.Err("#put error: cannot modify read-only hash entry");
+                if (e.IsPrivate && !callerIsMember) return LVal.Err("hash-put error: cannot access private hash entry");
+                if (e.IsReadonly) return LVal.Err("hash-put error: cannot modify read-only hash entry");
 
                 var priorValue = e.Value ?? LVal.NIL();
                 if (val.IsNIL) {
@@ -180,7 +191,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
                 return priorValue;
             }
 
-            return LVal.Err("#put error: cannot add new entries to a locked hash");
+            return LVal.Err("hash-put error: cannot add new entries to a locked hash");
         }
         catch (Exception e) {
             return LVal.Err(e.Message);
@@ -218,11 +229,11 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         try {
             var e = _GetEntry(key);
             if (e != null) {
-                if (e.IsPrivate && !callerIsMember) return LVal.Err("#get error: cannot access private hash entry");
+                if (e.IsPrivate && !callerIsMember) return LVal.Err("hash-get error: cannot access private hash entry");
                 if (e.Value != null) return e.Value.Copy();
             }
             else if (errOnNotFound) {
-                return LVal.Err("#get failed: entry not found");
+                return LVal.Err("hash-get failed: entry not found");
             }
             return LVal.NIL();
         }
@@ -239,7 +250,6 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
     public LVal AddTag(LVal key, LVal tag) {
         try {
-//            Console.WriteLine($"Adding tag {tag.ToStr()} to key {key.ToStr()}");
             var e = _GetEntry(key);
             if (e != null) {
                 return e.AddTag(tag);

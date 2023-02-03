@@ -184,7 +184,7 @@ public class LVal {
         v.HashValue = hash;
 
         // TODO: ensure the shape of the intialValues is correct, i.e. {{:1 a} {:2 b} :tag1 :tag2}
-        if (initialValues != null) Console.WriteLine($"Creating hash: initialValues = {initialValues.ToStr()}, type: {LVal.LEName(initialValues.ValType)}");
+        // if (initialValues != null) Console.WriteLine($"Creating hash: initialValues = {initialValues.ToStr()}, type: {LVal.LEName(initialValues.ValType)}");
         if (initialValues != null && initialValues.IsQExpr) {
             var entries = initialValues.Count == 1 && initialValues[0].IsQExpr ? initialValues[0].Cells : initialValues.Cells;
             if (entries != null) {

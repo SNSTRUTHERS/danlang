@@ -477,7 +477,7 @@ public class Builtins
         if (f.IsErr) return f;
         if (!f.IsFun) return LVal.Err("Second parameter to 'hash-call' must be a key to a member function");
 
-        e.Put("&0", hash);
+        e.Put("&0", LVal.Hash(hash.HashValue.PrivateCallProxy));
         var retVal = LVal.Call(e, f, val);
         e.Remove("&0");
         return retVal;

@@ -1,16 +1,23 @@
 public class TaggedValue<T> where T: class {
+    protected TaggedValue<T>? _privateCallProxy = null;
     protected static HashSet<string> _ReservedTags = new HashSet<string> {LHash.TAG_LOCKED, LHash.TAG_RO};
-    public T? Value;
+    private T? _value;
+    public T? Value {get => _privateCallProxy != null ? _privateCallProxy._value : _value; set => _value = value;}
     public HashSet<string>? Tags = null;
 
     public TaggedValue(T? val = null) {Value = val;}
-    public TaggedValue(TaggedValue<T> val) : this(val.Value) {
-        if (val.Tags != null) {
-            foreach (var t in val.Tags) _Add(t);
+    public TaggedValue(TaggedValue<T> val, bool isProxy = false) {
+        if (isProxy) _privateCallProxy = val;
+        else {
+            Value = val._value;
+            if (val.Tags != null) {
+                foreach (var t in val.Tags) _Add(t);
+            }
         }
     }
 
     protected bool _Add(string t) {
+        if (_privateCallProxy != null) return _privateCallProxy._Add(t);
         Tags = Tags ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         return Tags.Add(t);
     }
@@ -39,7 +46,8 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     public const string TAG_RO = "__read-only";
     public const string TAG_PRIV = "__private";
     public LHash() : base(new Dictionary<string, LHash.LHashEntry>()) {}
-    public LHash(LHash l, LVal? overrides = null) : base(l) {
+    public LHash(LHash l, LVal? overrides = null, bool isProxy = false) : base(l, isProxy) {
+        if (isProxy) return;
         // make sure entry values are copied properly
         foreach (var e in _Values!) {
             e.Value = e.Value?.Copy();
@@ -53,7 +61,9 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         }
     }
 
-    private Dictionary<string, LHash.LHashEntry>.ValueCollection? _Values => Value?.Values;
+    public LHash PrivateCallProxy => new LHash(this, isProxy: true);
+
+    private Dictionary<string, LHash.LHashEntry>.ValueCollection? _Values => _privateCallProxy != null ? _privateCallProxy.Value?.Values : Value?.Values;
     public LVal Values { get {
         var v = LVal.Qexpr();
         if (_Values != null)
@@ -63,7 +73,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         return v; 
     } }
 
-    private Dictionary<string, LHash.LHashEntry>.KeyCollection? _Keys => Value?.Keys;
+    private Dictionary<string, LHash.LHashEntry>.KeyCollection? _Keys => _privateCallProxy != null ? _privateCallProxy.Value?.Keys : Value?.Keys;
     public LVal Keys { get {
         var v = LVal.Qexpr();
         if (_Keys != null)
@@ -73,7 +83,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         return v; 
     } }
 
-    private bool _ContainsKey(string s) => Value?.ContainsKey(s) ?? false;
+    private bool _ContainsKey(string s) => (_privateCallProxy != null ? _privateCallProxy.Value?.ContainsKey(s) : Value?.ContainsKey(s)) ?? false;
 
     public LVal ContainsKey(LVal key) {
         try {
@@ -118,6 +128,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     }
 
     public LVal Put(LVal key, LVal val, bool callerIsMember = false) {
+        if (_privateCallProxy != null && !callerIsMember) return ((LHash)_privateCallProxy).Put(key, val, true);
         try {
             if (IsReadonly) return LVal.Err("#put error: cannot modify read-only hash");
             var e = _GetEntry(key, !IsLocked);
@@ -143,6 +154,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     }
 
     public LVal Put(LVal entry, bool callerIsMember = false) {
+        if (_privateCallProxy != null && !callerIsMember) return ((LHash)_privateCallProxy).Put(entry, true);
         if (entry.Count < 2) {
             if (entry.Count == 1 && entry[0].IsAtom && !_ContainsKey(entry[0].SymVal)) {
                 AddTag(entry[0]);
@@ -167,11 +179,12 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         return priorValue;
     }
 
-    public LVal Get(LVal key, bool errOnNotFound = false) {
+    public LVal Get(LVal key, bool errOnNotFound = false, bool callerIsMember = false) {
+        if (_privateCallProxy != null && !callerIsMember) return ((LHash)_privateCallProxy).Get(key, errOnNotFound, true);
         try {
             var e = _GetEntry(key);
             if (e != null) {
-                if (e.IsPrivate) return LVal.Err("#get error: cannot access private hash entry");
+                if (e.IsPrivate && !callerIsMember) return LVal.Err("#get error: cannot access private hash entry");
                 if (e.Value != null) return e.Value.Copy();
             }
             else if (errOnNotFound) {
@@ -196,7 +209,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             if (e != null) {
                 return e.AddTag(tag);
             }
-            return LVal.Err("#add-tag failed: entry not found");
+            return LVal.Err("hash-add-tag failed: entry not found");
         }
         catch (Exception e) {
             return LVal.Err(e.Message);
@@ -209,7 +222,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         var key = t.Pop(0);
         try {
             var e = _GetEntry(key);
-            if (e == null) return LVal.Err($"Key {key} not found when looking up key tag");
+            if (e == null) return LVal.Err($"Key {key} not found when looking up tag for hash entry");
             return e.HasTag(t.Pop(0));
         }
         catch (Exception e) {
@@ -218,6 +231,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     }
 
     public LHash Clone(LVal? overrides = null) {
+        if (_privateCallProxy != null) return new LHash((LHash)_privateCallProxy, overrides);
         return new LHash(this, overrides);
     }
 

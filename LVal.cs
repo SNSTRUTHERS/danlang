@@ -321,7 +321,7 @@ public class LVal {
             case LE.NUM:   return NumVal?.ToString() ?? "NIL";
             case LE.T:     return "T";
             case LE.ERR:   s.Append("Error: ").Append(ErrVal); break;
-            case LE.ATOM:  s.Append(':').Append(SymVal); break;
+            case LE.ATOM:
             case LE.SYM:   s.Append(SymVal); break;
             case LE.STR:   return StrAsString();
             case LE.HASH:  return HashValue!.ToQexpr().ToStr();

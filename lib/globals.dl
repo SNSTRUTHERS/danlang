@@ -20,16 +20,31 @@
 (fun {one? a}   {eq a 1})
 (def {trunc}    truncate)
 
-; Comparisons
-(fun {>= a b}   {< b a})
-(fun {<= a b}   {> b a})
-(fun {not a}    {if a {NIL} {T}})
-(def {== <> !=} eq neq neq)
-
 ; Logical operators
 (fun {xor a b} {
   and {or a b} {not (and a b)}
 })
+
+; Comparisons
+(fun {>= a b}   {not (< a b)})
+(fun {<= a b}   {not (> a b)})
+(fun {not a}    {if a {NIL} {T}})
+(def {== <> !=} eq neq neq)
+(def {=0 =1} zero? one?)
+
+; Math helper functions
+(fun {1+ n} {+ n 1})
+(fun {1- n} {- n 1})
+(fun {0> n} {>= n 0})
+(fun {0< n} {<= n 0})
+(fun {>0 n} {> n 0})
+(fun {<0 n} {< n 0})
+(fun {!=0 n} {not (zero? n)})
+(fun {!=1 n} {not (one? n)})
+(fun {square n} {* n n})
+(fun {cube n} {* n (square n)})
+(fun {recip n} {/ 1 n})
+(def {inverse} recip)
 
 ; Currying
 (fun {unpack f l}  {eval (cons f l)})
@@ -51,22 +66,22 @@
 (fun {nth n l} {
   if (zero? n)
     {fst l}
-    {nth (- n 1) (tail l)}
+    {nth (1- n) (tail l)}
 })
 
-(fun {last l} {nth (- (len l) 1) l})
+(fun {last l} {nth (1- (len l)) l})
 
 ; Take N items
 (fun {take n l} {
-  if (not (zero? n))
-    {join (head l) (take (- n 1) (tail l))}
+  if (!=0 n)
+    {join (head l) (take (1- n) (tail l))}
 })
 
 ; Drop N items
 (fun {drop n l} {
   if (zero? n)
     {l}
-    {drop (- n 1) (tail l)}
+    {drop (1- n) (tail l)}
 })
 
 ; Split at N
@@ -135,19 +150,19 @@
 ; math functions
 (fun {abs a} {
   if (num? a)
-   {if (< a 0) {- a} {a}}
+   {if (<0 a) {- a} {a}}
    {error "Cannot perform 'abs' on non-number"}
 })
 
 (fun {floor a} {
   <=> (cmp a (trunc a))
-    {< (- (trunc a) 1)}
+    {< (1- (trunc a))}
     {(trunc a)}
 })
 
 (fun {ceil a} {
   <=> (cmp a (trunc a))
-    {> (+ (trunc a) 1)}
+    {> (1+ (trunc a))}
     {(trunc a)}
 })
 
@@ -179,13 +194,13 @@
 
 (fun {odd? n} {
   if (num? n)
-    {eq (mod n 2) 1}
+    {=1 (mod n 2)}
     {error "Cannot perform 'odd?' on non-number"}
 })
 
 (fun {even? n} {
   if (num? n)
-    {eq (mod n 2) 0}
+    {=0 (mod n 2)}
     {error "Cannot perform 'even?' on non-number"}
 })
 
@@ -199,13 +214,17 @@
    {1}
    { if (even? b)
      {* (pow a (/ b 2)) (pow a (/ b 2))}
-     {* a (pow a (- b 1))}
+     {* a (pow a (1- b))}
    }
 })
 
-; Math helper functions
-(fun {1+ n} {+ n 1})
-(fun {1- n} {- n 1})
-(fun {square n} {* n n})
-(fun {cube n} {* n (square n)})
-(fun {recip n} {/ 1 n})
+; String helpers
+(fun {starts-with s sub} {=0 (index-of s sub)})
+(fun {ends-with s sub} {eq (len s) (+ (last-index-of s sub) (len sub))})
+(fun {contains s sub} {0> (index-of s sub)})
+
+; Dice
+(fun {die sides} {1+ (random sides)})
+(fun {dice sides n} {if (=0 n) {0} {+ (die sides) (dice sides (1- n))}})
+(fun {roll n d} {if (=0 n) {NIL} {cons (eval d) (roll (1- n) d)}})
+(fun {special-die sides cases} {eval (cons case (cons (die sides) cases))})

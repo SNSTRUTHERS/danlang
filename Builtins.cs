@@ -359,7 +359,7 @@ public class Builtins
     }
 
     private static LVal ToStr(LEnv e, LVal a) {
-        if (a.Count < 1) return LVal.Err("Too few parameters passed to 'to-base'");
+        if (a.Count < 1) return LVal.Err("Too few parameters passed to 'to-str'");
         if (a.Count == 2) {
             if (!a[0].IsNum) return LVal.Err("First 'to-str' parameter must be a Number");
             if (!a[1].IsStr) return LVal.Err("Second 'to-str' parameter must be a String");
@@ -367,6 +367,24 @@ public class Builtins
         }
 
         return LVal.Str(a[0].ToStr());
+    }
+
+    private static LVal Substring(LEnv e, LVal a) {
+        if (a.Count < 2) return LVal.Err("Too few parameters passed to 'substring'");
+        if (!a[0].IsStr) return LVal.Err("First 'substring' parameter must be a String");
+        if (!a[1].IsNum) return LVal.Err("Second 'substring' parameter must be a Number");
+        if (a.Count == 2) {
+            var index = (int)a[1].NumVal!.ToInt()!.num;
+            return LVal.Str(a[0].StrVal.Substring(index));
+        }
+
+        if (a.Count == 3) {
+            if (!a[2].IsNum) return LVal.Err("Third 'substring' parameter must be a Number");
+            var index = (int)a[1].NumVal!.ToInt()!.num;
+            var len = (int)a[2].NumVal!.ToInt()!.num;
+            return LVal.Str(a[0].StrVal.Substring(index, len));
+        }
+        return LVal.Err("Too many parameters passed to 'substring'");
     }
 
     private static LVal FastFib(LEnv env, LVal val) {
@@ -547,6 +565,8 @@ public class Builtins
         return HashHasTag(e, val);
     }
 
+    static private Random _rand = new Random();
+
     // Add Builtins to an Environment
     public static void AddBuiltins(LEnv e) {
         // Variable Functions
@@ -576,6 +596,8 @@ public class Builtins
 
         AddBuiltin(e, "rational.n", (e, p) => p.Count > 0 ? (p[0].IsNum ? LVal.Number(Rat.ToRat(p[0].NumVal!).num) : LVal.Err("Argument is not a number")): LVal.Err("One or more arguments required"));
         AddBuiltin(e, "rational.d", (e, p) => p.Count > 0 ? (p[0].IsNum ? LVal.Number(Rat.ToRat(p[0].NumVal!).den) : LVal.Err("Argument is not a number")): LVal.Err("One or more arguments required"));
+
+        AddBuiltin(e, "random", (e, a) => LVal.Number(_rand.NextInt64((long)(a[0].NumVal!.ToInt().num))));
  
         // Logical Funcions
         AddBuiltin(e, "and", And);
@@ -595,8 +617,11 @@ public class Builtins
         AddBuiltin(e, "load",  Load); 
         AddBuiltin(e, "error", Error);
         AddBuiltin(e, "print", Print);
+        AddBuiltin(e, "index-of", (e, a) => LVal.Number(a[0].StrVal!.IndexOf(a[1].StrVal!)));
+        AddBuiltin(e, "last-index-of", (e, a) => LVal.Number(a[0].StrVal!.LastIndexOf(a[1].StrVal!)));
+        AddBuiltin(e, "substring", Substring);
 
-        // Other numeric functions
+        // Conversion functions
         // TODO: move the bodies of these definitions to static methods with error checking
         AddBuiltin(e, "val",         (e, p) => LVal.Number(NumberParser.ParseString(p?[0].StrVal ?? "0")!));
         AddBuiltin(e, "to-fixed",    (e, p) => LVal.Number(Rat.ToRat((p[0].NumVal ?? new Int())).ToFix(p.Count > 1 ? (int)(((p[1].NumVal as Int)?.num ?? BigInteger.Zero)) : 10)));
@@ -604,6 +629,11 @@ public class Builtins
         AddBuiltin(e, "truncate",    (e, p) => LVal.Number((p[0].NumVal?.ToInt() ?? new Int())));
         AddBuiltin(e, "complex",     Complex);
         AddBuiltin(e, "to-str",      ToStr);
+        AddBuiltin(e, "to-sym",      (e, p) => p[0].IsAtom ? LVal.Sym(p[0].SymVal) : LVal.Err("Only atoms can be converted into symbols"));
+        AddBuiltin(e, "to-atom",
+            (e, p) => p[0].IsSym ? LVal.Atom(p[0].SymVal) : 
+                (p[0].IsNum ? LVal.Atom(p[0].NumVal!.ToInt().num.ToString()) : 
+                    LVal.Err("Only symbols and numbers can be converted to symbols")));
 
         // fun functions
         AddBuiltin(e, "fib",         FastFib);
@@ -643,6 +673,7 @@ public class Builtins
         AddBuiltin(e, "hash-lock", HashLock);
         AddBuiltin(e, "hash-make-const", HashMakeReadonly);
         AddBuiltin(e, "hash-make-private", HashMakePrivate);
+        AddBuiltin(e, "hash-make-not-nil", (e, a) => _HashApplyTag(e, a, LHash.TAG_NOT_NIL));
         AddBuiltin(e, "hash-tag?", HashHasTag);
         AddBuiltin(e, "hash-locked?", HashIsLocked);
         AddBuiltin(e, "hash-private?", HashIsPrivate);

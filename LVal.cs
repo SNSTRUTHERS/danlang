@@ -323,7 +323,7 @@ public class LVal {
             case LE.ERR:   s.Append("Error: ").Append(ErrVal); break;
             case LE.ATOM:
             case LE.SYM:   s.Append(SymVal); break;
-            case LE.STR:   return StrAsString();
+            case LE.STR:   return StrVal; // StrAsString();
             case LE.HASH:  return HashValue!.ToQexpr().ToStr();
             case LE.SEXPR: return ExprAsString('(', ')');
             case LE.QEXPR: return ExprAsString('{', '}');

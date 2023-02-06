@@ -64,7 +64,12 @@ public class Builtins
     }
 
     private static LVal Op(LEnv e, LVal a, string op) {
-        if (a.Cells!.Any(v => !v.IsNum)) return LVal.Err($"Non-NumVal in parameters list for '{op}'");
+        if (a.Count == 0) return LVal.Err("");
+        if (a.Cells!.Any(v => v.IsStr || v.IsAtom) && op == "+") {
+            if (a.Cells!.All(v => v.IsStr || v.IsNum || v.IsAtom)) return LVal.Str(string.Join("", a.Cells!.Select(v => v.ToStr())));
+            else return LVal.Err("All parameters to operator '+' must be atoms, strings, or numbers");
+        }
+        if (!a.Cells!.All(v => v.IsNum)) return LVal.Err($"All parameters to operator '{op}' must be numbers.");
         LVal x =  a.Pop(0);
         
         if ((op == "-") && a.Count == 0) { x.NumVal = -x.NumVal!; }
@@ -72,7 +77,12 @@ public class Builtins
         while (a.Count > 0) {  
             LVal y = a.Pop(0);
             
-            if      (op == "+") { x.NumVal = x.NumVal! + y.NumVal!; }
+            if (op == "+") { 
+                if (x.IsStr) {
+                    x.StrVal = x.StrVal + y.ToStr();
+                }
+                else x.NumVal = x.NumVal! + y.NumVal!;
+            }
             else if (op == "-") { x.NumVal = x.NumVal! - y.NumVal!; }
             else if (op == "*") { x.NumVal = x.NumVal! * y.NumVal!; }
             else if (op == "/") {

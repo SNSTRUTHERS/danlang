@@ -45,6 +45,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     public const string TAG_LOCKED = "__locked";
     public const string TAG_RO = "__read-only";
     public const string TAG_PRIV = "__private";
+    public const string TAG_NOT_NIL = "__not_nil";
     public LHash() : base(new Dictionary<string, LHash.LHashEntry>()) {}
     public LHash(LHash l, LVal? overrides = null, bool isProxy = false) {
         if (isProxy) {
@@ -140,9 +141,14 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     }
 
     public class LHashEntry : TaggedValue<LVal> {
-        static LHashEntry() => _ReservedTags.Add(TAG_PRIV);
+        static LHashEntry() {
+            _ReservedTags.Add(TAG_PRIV);
+            _ReservedTags.Add(TAG_NOT_NIL);
+        }
         public bool IsPrivate => Tags?.Contains(TAG_PRIV) ?? false;
+        public bool IsNillable => !(Tags?.Contains(TAG_NOT_NIL) ?? false);
         public bool MakePrivate => _Add(TAG_PRIV);
+        public bool MakeNotNil => _Add(TAG_NOT_NIL);
     }
 
     private string _KeyFromLVal(LVal key) => key.ValType switch {
@@ -183,8 +189,11 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
                 var priorValue = e.Value ?? LVal.NIL();
                 if (val.IsNIL) {
-                    if (!IsLocked && !e.IsLocked) RemoveEntry(key);
-                    else e.Value = null;
+                    if (e.IsNillable) {
+                        if (!IsLocked && !e.IsLocked) RemoveEntry(key);
+                        else e.Value = null;
+                    }
+                    else return LVal.Err($"Cannot set non-nillable field {key.ToStr()} to NIL.");
                 }
                 else e.Value = val.Copy();
 

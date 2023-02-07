@@ -67,27 +67,23 @@ public class Builtins
         if (a.Count == 0) return LVal.Err("");
         if (a.Cells!.Any(v => v.IsStr || v.IsAtom) && op == "+") {
             if (a.Cells!.All(v => v.IsStr || v.IsNum || v.IsAtom)) return LVal.Str(string.Join("", a.Cells!.Select(v => v.ToStr())));
-            else return LVal.Err("All parameters to operator '+' must be atoms, strings, or numbers");
+            return LVal.Err("All parameters to operator '+' must be atoms, strings, or numbers");
         }
+
         if (!a.Cells!.All(v => v.IsNum)) return LVal.Err($"All parameters to operator '{op}' must be numbers.");
+
         LVal x =  a.Pop(0);
-        
         if ((op == "-") && a.Count == 0) { x.NumVal = -x.NumVal!; }
-        
+
         while (a.Count > 0) {  
             LVal y = a.Pop(0);
             
-            if (op == "+") { 
-                if (x.IsStr) {
-                    x.StrVal = x.StrVal + y.ToStr();
-                }
-                else x.NumVal = x.NumVal! + y.NumVal!;
-            }
-            else if (op == "-") { x.NumVal = x.NumVal! - y.NumVal!; }
-            else if (op == "*") { x.NumVal = x.NumVal! * y.NumVal!; }
+            if (op == "+")      x.NumVal = x.NumVal! + y.NumVal!;
+            else if (op == "-") x.NumVal = x.NumVal! - y.NumVal!;
+            else if (op == "*") x.NumVal = x.NumVal! * y.NumVal!;
             else if (op == "/") {
                 if (y.NumVal!.ToInt().num == 0) {
-                    x = LVal.Err("Division By Zero.");
+                    x = LVal.Err("Division by zero.");
                     break;
                 }
                 x.NumVal = x.NumVal! / y.NumVal;

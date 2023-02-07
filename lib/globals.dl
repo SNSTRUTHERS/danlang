@@ -218,6 +218,35 @@
    }
 })
 
+; Min/max
+(fun {helper-min n rest} {
+  if (not rest) n {
+    if (< (fst n) (fst (head rest)))
+      {helper-min n (tail rest)}
+      {helper-min (head rest) (tail rest)}
+  }
+})
+
+(fun {min l} {
+  if l
+    {helper-min (head l) (tail l)}
+    {NIL}
+})
+
+(fun {helper-max n rest} {
+  if (not rest) n {
+    if (> (fst n) (fst (head rest)))
+      {helper-max n (tail rest)}
+      {helper-max (head rest) (tail rest)}
+  }
+})
+
+(fun {max l} {
+  if l
+    {helper-max (head l) (tail l)}
+    {NIL}
+})
+
 ; String helpers
 (fun {starts-with s sub} {=0 (index-of s sub)})
 (fun {ends-with s sub} {eq (len s) (+ (last-index-of s sub) (len sub))})

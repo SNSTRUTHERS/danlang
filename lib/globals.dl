@@ -101,10 +101,12 @@
 (fun {split n l} {list (take n l) (drop n l)})
 
 ; is x in l?
-(fun {elem x l} {
+(fun {elem? x l} {
   if l
-    {if (eq x (fst l)) {T} {elem x (tail l)}}
+    {if (eq x (fst l)) {T} {elem? x (tail l)}}
 })
+
+(fun {contains? l x} {elem? x l})
 
 ; do a number of items and return value of the last one
 (fun {do} {if &_ {last &_}})

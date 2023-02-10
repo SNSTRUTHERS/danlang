@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Text;
 
 public class LVal {
-    public enum LE { ERR, T, NUM, ATOM, SYM, STR, FUN, SEXPR, QEXPR, HASH, COMMENT, EXIT };
+    public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, COMMENT, EXIT };
 
     public LE ValType;
     public LEnv? Env = null;
@@ -27,6 +27,7 @@ public class LVal {
     public bool IsErr => ValType == LE.ERR;
     public bool IsExit => ValType == LE.EXIT;
     public bool IsStr => ValType == LE.STR;
+    public bool IsChar => ValType == LE.CHAR;
     public bool IsSExpr => ValType == LE.SEXPR;
     public bool IsQExpr => ValType == LE.QEXPR;
     public bool IsHash => ValType == LE.HASH;
@@ -51,8 +52,11 @@ public class LVal {
 
             case LE.NUM: x.NumVal = NumVal; break;
             case LE.ERR: x.ErrVal = ErrVal; break;
+
             case LE.ATOM:
             case LE.SYM: x.SymVal = SymVal; break;
+
+            case LE.CHAR:
             case LE.STR: x.StrVal = StrVal; break;
 
             case LE.SEXPR:
@@ -101,9 +105,68 @@ public class LVal {
         return v;
     }
 
+    public static LVal Character(string s) {
+        LVal v = new LVal();
+        v.ValType = LE.CHAR;
+        v.StrVal = s.ToLower().Replace("-", "") switch {
+            "backslash" or "bslash" or "bs" => "\\",
+            "backtick" or "btick" or "bt" => "`",
+            "bell" => "\b",
+            "linefeed" or "newline" or "lf" or "nl" => "\n",
+            "formfeed" or "ff" => "\f",
+            "null" => "\0",
+            "quote" or "doublequote" => "\"",
+            "return" or "carriagereturn" or "cr"=> "\r",
+            "rparen" or "rightparen" or "rp" => ")",
+            "lparen" or "leftparen" or "lp" => "(",
+            "rbrace" or "rightcurly" or "rcurly" or "rc" => "}",
+            "lbrace" or "leftcurly" or "lcurly" or "lc" => "{",
+            "rbracket" or "rightbracket" or "rb" => "]",
+            "lbracket" or "leftbracket" or "lb" => "[",
+            "slash" or "sl" => "/",
+            "space" or "sp" => " ",
+            "tab" => "\t",
+            "tick" or "singlequote"=> "'",
+            "tilde" => "~",
+            "verticalspace" or "vspace" or "vs" => "\a",
+            "verticaltab" or "vtab" or "vt" => "\v",
+            _ => s.Substring(0, 1)
+        };
+
+        return v;
+    }
+
+    public static string CharName(string s) {
+        return s switch {
+            "\\" => "bs",
+            "`" => "bt",
+            "\b" => "bell",
+            "\n" => "nl",
+            "\f" => "ff",
+            "\0" => "null",
+            "\"" => "quote",
+            "\r" => "cr",
+            ")" => "rp",
+            "(" => "lp",
+            "}" => "rc",
+            "{" => "lc",
+            "]" => "rb",
+            "[" => "lb",
+            "/" => "sl",
+            " " => "sp",
+            "\t" => "tab",
+            "'" => "tick",
+            "~" => "tilde",
+            "\a" => "vs",
+            "\v" => "vt",
+            _ => s
+        };
+    }
+
     public static LVal Sym(string s) {
         // special cases
-        if (s.StartsWith(":")) return Atom(s.Substring(1));
+        if (s.StartsWith(':')) return Atom(s.Substring(1));
+        if (s.StartsWith('\\')) return Character(s.Substring(1));
 
         s = s.ToLower();
         switch (s) {
@@ -323,6 +386,7 @@ public class LVal {
             case LE.ERR:   s.Append("Error: ").Append(ErrVal); break;
             case LE.ATOM:  s.Append(':').Append(SymVal); break;
             case LE.SYM:   s.Append(SymVal); break;
+            case LE.CHAR:   s.Append('\\').Append(CharName(StrVal)); break;
             case LE.STR:   s.Append('"').Append(StrVal).Append('"'); break;
             case LE.HASH:  return HashValue!.ToQexpr().ToStr();
             case LE.SEXPR: return ExprAsString('(', ')');
@@ -349,6 +413,7 @@ public class LVal {
             case LE.ERR: return (ErrVal == y.ErrVal);
             case LE.ATOM:
             case LE.SYM: return (SymVal == y.SymVal);
+            case LE.CHAR:
             case LE.STR: return (StrVal == y.StrVal);
             case LE.FUN: 
                 if (BuiltinVal != null || y.BuiltinVal != null) {
@@ -387,6 +452,7 @@ public class LVal {
             case LE.ERR: return "Error";
             case LE.ATOM: return "Atom";
             case LE.SYM: return "Symbol";
+            case LE.CHAR: return "Character";
             case LE.STR: return "String";
             case LE.HASH: return "Hash";
             case LE.SEXPR: return "S-Expression";

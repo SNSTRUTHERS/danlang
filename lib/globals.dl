@@ -46,8 +46,8 @@
 ; math helper functions
 (fun {1+ n}     {+ n 1})
 (fun {1- n}     {- n 1})
-(fun {0> n}     {>= n 0})
-(fun {0< n}     {<= n 0})
+(fun {>=0 n}    {>= n 0})
+(fun {<=0 n}    {<= n 0})
 (fun {>0 n}     {> n 0})
 (fun {<0 n}     {< n 0})
 (fun {!=0 n}    {not (zero? n)})
@@ -106,7 +106,7 @@
     {if (eq x (fst l)) {T} {elem? x (tail l)}}
 })
 
-(fun {contains? l x} {elem? x l})
+(fun {has? l x} {elem? x l})
 
 ; do a number of items and return value of the last one
 (fun {do} {if &_ {last &_}})
@@ -134,6 +134,7 @@
 })
 
 (fun {sum s}     {foldl + 0 s})
+(fun {avg s}     {/ (sum s) (len s)})
 (fun {product p} {foldl * 1 p})
 
 (fun {min} {foldl (fn NIL {if (< &1 &2) {&1} {&2}}) (fst &_) (tail &_)})
@@ -237,12 +238,33 @@
 (fun {maximum} {apply max &1})
 
 ; String helpers
-(fun {starts-with s sub} {=0 (index-of s sub)})
-(fun {ends-with s sub} {eq (len s) (+ (last-index-of s sub) (len sub))})
-(fun {contains s sub} {0> (index-of s sub)})
+(fun {starts-with? s sub} {=0 (index-of s sub)})
+(fun {ends-with?   s sub} {eq (len s) (+ (last-index-of s sub) (len sub))})
+(fun {contains?    s sub} {>=0 (index-of s sub)})
 
 ; Dice
-(fun {die sides} {1+ (random sides)})
-(fun {dice n sides} {if (=0 n) {0} {+ (die sides) (dice (1- n) sides)}})
-(fun {roll n d} {if (=0 n) {NIL} {cons (eval d) (roll (1- n) d)}})
+(fun {die+ sides mod}    {+ 1 mod (random sides)})
+(fun {die sides}         {die+ sides 0})
+(fun {dice+ n sides mod} {if (=0 n) {mod} {+ (die sides) (dice (1- n) sides)}})
+(fun {dice n sides}      {dice+ n sides 0})
+(fun {roll n d}          {if (=0 n) {NIL} {cons (eval d) (roll (1- n) d)}})
+(fun {sumrolls d} {
+  if d {+
+   (let {do
+      (set {hd} (fst d))
+      (cond
+        { (num? hd) (die hd)}
+        { (qexpr? hd)
+          (case (len hd) 
+            { 1 (eval (cons die hd)) }
+            { 2 (eval (cons dice hd)) }
+            { 3 (eval (cons dice+ hd)) }
+        )}
+      )
+    })
+    (sumrolls (tail d))
+  }
+  {0}
+})
+
 (fun {special-die sides cases} {eval (cons case (cons (die sides) cases))})

@@ -250,7 +250,7 @@ public class LVal {
     const string str_unescapable = "abfnrtv\\\'\"";
 
     /* Function to unescape characters */
-    private static char str_unescape(char x) {
+    private static char StrUnescape(char x) {
         switch (x) {
             case 'a':  return '\a';
             case 'b':  return '\b';
@@ -321,9 +321,9 @@ public class LVal {
             case LE.NUM:   return NumVal?.ToString() ?? "NIL";
             case LE.T:     return "T";
             case LE.ERR:   s.Append("Error: ").Append(ErrVal); break;
-            case LE.ATOM:
+            case LE.ATOM:  s.Append(':').Append(SymVal); break;
             case LE.SYM:   s.Append(SymVal); break;
-            case LE.STR:   return StrVal; // StrAsString();
+            case LE.STR:   s.Append('"').Append(StrVal).Append('"'); break;
             case LE.HASH:  return HashValue!.ToQexpr().ToStr();
             case LE.SEXPR: return ExprAsString('(', ')');
             case LE.QEXPR: return ExprAsString('{', '}');
@@ -484,7 +484,7 @@ public class LVal {
 
     public int CompareTo(LVal v) {
         if (NumVal != null && v.NumVal != null) return NumVal.CompareTo(v.NumVal);
-        if (StrVal != null && v.StrVal != null) return string.Compare(StrVal, v.StrVal, StringComparison.CurrentCulture);
+        if (IsStr && v.IsStr) return string.Compare(StrVal, v.StrVal, StringComparison.CurrentCulture);
         if (SymVal != null && v.SymVal != null) return string.Compare(SymVal, v.SymVal, StringComparison.OrdinalIgnoreCase);
         if (ErrVal != null && v.ErrVal != null) return ErrVal.CompareTo(v.ErrVal);
         if (Count > 0 && v.Count > 0 && Count == v.Count && ValType == v.ValType) {
@@ -494,6 +494,6 @@ public class LVal {
             }
             return cmp;
         }
-        return ValType.CompareTo(v.ValType);
+        return string.Compare(ToStr(), v.ToStr(), StringComparison.CurrentCulture);
     }
 }

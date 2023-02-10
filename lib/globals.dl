@@ -5,54 +5,67 @@
 (def {math.phi}   1.61803_39887_49894_84820_45868_34365_63811_77203_09179_80576)
 (def {math.gamma} 0.57721_56649_01532_86061)
 
+; function definition
 (def {fun local-fun}
   (fn {a b} {def (head a) (fn (tail a) b)})
   (fn {a b} {set (head a) (fn (tail a) b)}))
 
+; join a single element to the front of a list
 (fun {cons a b}      {join (list a) b})
 
-; Helpers
-(fun {nil? a}   {eq a NIL})
-(fun {t? a}     {eq a T})
-(fun {zero? a}  {eq a 0})
-(fun {neg? a}   {< a 0})
-(fun {pos? a}   {< 0 a})
-(fun {one? a}   {eq a 1})
-(def {trunc}    truncate)
+; create a private scope
+(fun {let x} {((fn NIL x))})
 
-; Logical operators
+; composition helpers
+(fun {flip f a b} {f b a})
+(fun {ghost}      {eval &_})
+(fun {comp f g x} {f (g x)}) ; Compose
+
+; comparisons
+(fun {>= a b} {not (< a b)})
+(fun {<= a b} {not (> a b)})
+(fun {not a}  {if a {NIL} {T}})
+(fun {== a b} {eq a b})
+(fun {neg? a} {< a 0})
+(fun {pos? a} {< 0 a})
+
+(def {<> !=}  neq neq)
+
+; test helpers
+(def {nil?}   (flip == NIL))
+(def {t?}     (flip == T))
+(def {zero?}  (flip == 0))
+(def {one?}   (flip == 1))
+(def {=0 =1}  zero? one?)
+
+; logical operators
 (fun {xor a b} {
   and {or a b} {not (and a b)}
 })
 
-; Comparisons
-(fun {>= a b}   {not (< a b)})
-(fun {<= a b}   {not (> a b)})
-(fun {not a}    {if a {NIL} {T}})
-(def {== <> !=} eq neq neq)
-(def {=0 =1} zero? one?)
-
-; Math helper functions
-(fun {1+ n} {+ n 1})
-(fun {1- n} {- n 1})
-(fun {0> n} {>= n 0})
-(fun {0< n} {<= n 0})
-(fun {>0 n} {> n 0})
-(fun {<0 n} {< n 0})
-(fun {!=0 n} {not (zero? n)})
-(fun {!=1 n} {not (one? n)})
+; math helper functions
+(fun {1+ n}     {+ n 1})
+(fun {1- n}     {- n 1})
+(fun {0> n}     {>= n 0})
+(fun {0< n}     {<= n 0})
+(fun {>0 n}     {> n 0})
+(fun {<0 n}     {< n 0})
+(fun {!=0 n}    {not (zero? n)})
+(fun {!=1 n}    {not (one? n)})
 (fun {square n} {* n n})
-(fun {cube n} {* n (square n)})
-(fun {recip n} {/ 1 n})
-(def {inverse} recip)
+(fun {cube n}   {* n (square n)})
+(fun {recip n}  {/ 1 n})
 
-; Currying
+(def {inverse}  recip)
+(def {trunc}  truncate)
+
+; currying
 (fun {unpack f l}  {eval (cons f l)})
 (fun {pack f}      {f &_})
 
 (def {apply curry uncurry} unpack unpack pack)
 
-; Reverse
+; reverse
 (fun {reverse} {
   if (and {defined? {&1}} {qexpr? &1} {&1})
     {join (reverse (tail &1)) (head &1)}
@@ -71,40 +84,33 @@
 
 (fun {last l} {nth (1- (len l)) l})
 
-; Take N items
+; take n items
 (fun {take n l} {
   if (!=0 n)
     {join (head l) (take (1- n) (tail l))}
 })
 
-; Drop N items
+; drop n items
 (fun {drop n l} {
   if (zero? n)
     {l}
     {drop (1- n) (tail l)}
 })
 
-; Split at N
+; split list at N
 (fun {split n l} {list (take n l) (drop n l)})
 
+; is x in l?
 (fun {elem x l} {
   if l
     {if (eq x (fst l)) {T} {elem x (tail l)}}
 })
-
-; create a private scope
-(fun {let x} {((fn NIL x) ())})
 
 ; do a number of items and return value of the last one
 (fun {do} {if &_ {last &_}})
 
 (def {begin} do)
 (def {block} do)
-
-; helpers
-(fun {flip f a b} {f b a})
-(fun {ghost}      {eval &_})
-(fun {comp f g x} {f (g x)}) ; Compose
 
 ; map
 (fun {map f l} {
@@ -127,6 +133,9 @@
 
 (fun {sum s}     {foldl + 0 s})
 (fun {product p} {foldl * 1 p})
+
+(fun {min} {foldl (fn NIL {if (< &1 &2) {&1} {&2}}) (fst &_) (tail &_)})
+(fun {max} {foldl (fn NIL {if (> &1 &2) {&1} {&2}}) (fst &_) (tail &_)})
 
 ; Switch/Cond
 (fun {cond} {
@@ -155,15 +164,19 @@
 })
 
 (fun {floor a} {
-  <=> (cmp a (trunc a))
-    {< (1- (trunc a))}
-    {(trunc a)}
+  let {
+    do
+      (set {tr} (trunc a))
+      (<=> (cmp a tr) {< (1- tr)} {tr})
+  }
 })
 
 (fun {ceil a} {
-  <=> (cmp a (trunc a))
-    {> (1+ (trunc a))}
-    {(trunc a)}
+  let {
+    do
+     (set {tr} (trunc a))
+     (<=> (cmp a tr) {> (1+ tr)} {tr})
+  }
 })
 
 (fun {div a b} {
@@ -204,8 +217,8 @@
     {error "Cannot perform 'even?' on non-number"}
 })
 
-(fun {positive? a} {if (num? a) {> a 0} {error "Only numbers can be positive"}})
-(fun {negative? a} {if (num? a) {< a 0} {error "Only numbers can be negative"}})
+(fun {positive? a} {if (num? a) {pos? a} {error "Only numbers can be positive"}})
+(fun {negative? a} {if (num? a) {neg? a} {error "Only numbers can be negative"}})
 
 (def {+? -? 0?} positive? negative? zero?)
 
@@ -218,34 +231,8 @@
    }
 })
 
-; Min/max
-(fun {helper-min n rest} {
-  if (not rest) n {
-    if (< (fst n) (fst (head rest)))
-      {helper-min n (tail rest)}
-      {helper-min (head rest) (tail rest)}
-  }
-})
-
-(fun {min l} {
-  if l
-    {helper-min (head l) (tail l)}
-    {NIL}
-})
-
-(fun {helper-max n rest} {
-  if (not rest) n {
-    if (> (fst n) (fst (head rest)))
-      {helper-max n (tail rest)}
-      {helper-max (head rest) (tail rest)}
-  }
-})
-
-(fun {max l} {
-  if l
-    {helper-max (head l) (tail l)}
-    {NIL}
-})
+(fun {minimum} {apply min &1})
+(fun {maximum} {apply max &1})
 
 ; String helpers
 (fun {starts-with s sub} {=0 (index-of s sub)})
@@ -254,6 +241,6 @@
 
 ; Dice
 (fun {die sides} {1+ (random sides)})
-(fun {dice sides n} {if (=0 n) {0} {+ (die sides) (dice sides (1- n))}})
+(fun {dice n sides} {if (=0 n) {0} {+ (die sides) (dice (1- n) sides)}})
 (fun {roll n d} {if (=0 n) {NIL} {cons (eval d) (roll (1- n) d)}})
 (fun {special-die sides cases} {eval (cons case (cons (die sides) cases))})

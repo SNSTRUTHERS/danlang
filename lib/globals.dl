@@ -256,9 +256,9 @@
         { (num? hd) (die hd)}
         { (qexpr? hd)
           (case (len hd) 
-            { 1 (eval (cons die hd)) }
-            { 2 (eval (cons dice hd)) }
-            { 3 (eval (cons dice+ hd)) }
+            { 1 (apply die hd) }
+            { 2 (apply dice hd) }
+            { 3 (apply dice+ hd) }
         )}
       )
     })
@@ -267,4 +267,4 @@
   {0}
 })
 
-(fun {special-die sides cases} {eval (cons case (cons (die sides) cases))})
+(fun {special-die sides cases} {apply case (cons (die sides) cases)})

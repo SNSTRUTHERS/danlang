@@ -245,21 +245,23 @@
 ; Dice
 (fun {die+ sides mod}    {+ 1 mod (random sides)})
 (fun {die sides}         {die+ sides 0})
-(fun {dice+ n sides mod} {if (=0 n) {mod} {+ (die sides) (dice (1- n) sides)}})
+(fun {dice+ n sides mod} {if (=0 n) {mod} {+ (die sides) (dice+ (1- n) sides mod)}})
 (fun {dice n sides}      {dice+ n sides 0})
 (fun {roll n d}          {if (=0 n) {NIL} {cons (eval d) (roll (1- n) d)}})
 (fun {sumrolls d} {
   if d {+
-   (let {do
+    (let {
+      do
       (set {hd} (fst d))
       (cond
-        { (num? hd) (die hd)}
-        { (qexpr? hd)
+        {(num? hd) (die hd)}
+        {(qexpr? hd)
           (case (len hd) 
-            { 1 (apply die hd) }
-            { 2 (apply dice hd) }
-            { 3 (apply dice+ hd) }
-        )}
+            {1 (apply die hd)}
+            {2 (apply dice hd)}
+            {3 (apply dice+ hd)}
+          )
+        }
       )
     })
     (sumrolls (tail d))

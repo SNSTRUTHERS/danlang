@@ -76,11 +76,15 @@
 (fun {snd l} {eval (head (tail l))})
 (fun {thd l} {eval (head (tail (tail l)))})
 
+; zero-based element of list (evaluated)
 (fun {nth n l} {
   if (zero? n)
     {fst l}
     {nth (1- n) (tail l)}
 })
+
+(def {first second third fourth fifth sixth seventh eighth ninth tenth}
+  (nth 0) (nth 1) (nth 2) (nth 3) (nth 4) (nth 5) (nth 6) (nth 7) (nth 8) (nth 9))
 
 (fun {last l} {nth (1- (len l)) l})
 
@@ -106,7 +110,7 @@
     {if (eq x (fst l)) {T} {elem? x (tail l)}}
 })
 
-(fun {has? l x} {elem? x l})
+(fun {has-element? l x} {elem? x l})
 
 ; do a number of items and return value of the last one
 (fun {do} {if &_ {last &_}})

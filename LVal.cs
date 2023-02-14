@@ -287,16 +287,23 @@ public class LVal {
         // TODO: ensure the shape of the intialValues is correct, i.e. {{:1 a} {:2 b} :tag1 :tag2}
         // if (initialValues != null) Console.WriteLine($"Creating hash: initialValues = {initialValues.ToStr()}, type: {LVal.LEName(initialValues.ValType)}");
         if (initialValues != null && initialValues.IsQExpr) {
-            var entries = initialValues.Count == 1 && initialValues[0].IsQExpr ? initialValues[0].Cells : initialValues.Cells;
-            if (entries != null) {
-                foreach (var entry in entries) {
-                    if (entry.Count > 1 && e != null) {
-                        hash.Put(entry[0], entry[1].Eval(e), true);
-                        // add any tags
-                        while (entry.Count > 2) hash.AddTag(entry[0], entry.Pop(2));
-                    }
-                    else if (entry.IsAtom) hash.AddTag(entry);
+            foreach (var entry in initialValues.Cells!) {
+                if (entry.IsSExpr && e != null) {
+                    Console.WriteLine($"adding entry {entry.ToStr()}");
+                    var en = entry.Eval(e);
+                    Console.WriteLine($"entry evaluated to {en.ToStr()}");
+                    hash.Put(en[0], en[1].Eval(e), true);
+
+                    // add any tags
+                    while (en.Count > 2) hash.AddTag(en[0], en.Pop(2));
+                } else if (entry.Count > 1 && entry[0].IsAtom && e != null) {
+                    Console.WriteLine($"adding entry {entry.ToStr()}");
+                    hash.Put(entry[0], entry[1].Eval(e), true);
+
+                    // add any tags
+                    while (entry.Count > 2) hash.AddTag(entry[0], entry.Pop(2));
                 }
+                else if (entry.IsAtom) hash.AddTag(entry);
             }
         }
         return v;

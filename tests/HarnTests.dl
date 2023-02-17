@@ -1,0 +1,29 @@
+(load "harn")
+(set h (harn.create))
+
+(print)
+(print "**** Birth Attributes ****")
+(print (harn.attr-name :sp) (harn.species-name (harn.get-attr h :sp)))
+(print (harn.attr-name :sx) (harn.sex-name (harn.get-attr h :sx)))
+(do (set bd (harn.get-attr h :bd)) (print (harn.attr-name :bd) (harn.month-name (fst bd)) (snd bd)))
+(print (harn.attr-name :ss) (harn.sunsign-name (harn.get-attr h :ss)))
+(print (harn.attr-name :fr) (harn.frame-name (harn.get-attr h :fr)))
+
+(print)
+(print "**** Physical Attributes ****")
+(map
+  (fn {} {print (harn.attr-name &1) (harn.get-attr h &1)})
+  {:ht :owt :cml :str :sta :dex :agl :spd :eye :hrg :smt :tch :voi :int :aur :wil :mor :pty :dty}
+)
+; :end 
+(print (harn.attr-name :end) (harn.end h))
+
+(print)
+(print "**** Automatic Skills ****")
+(set auto-skills (map
+  (fn {} {print (harn.skill.name &1) (harn.get-oml h &1)})
+  (filter
+    (fn {} {if (harn.skill.auto &1) T NIL})
+    (hash-keys harn.skills)
+  )
+))

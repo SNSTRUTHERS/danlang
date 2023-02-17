@@ -289,15 +289,15 @@ public class LVal {
         if (initialValues != null && initialValues.IsQExpr) {
             foreach (var entry in initialValues.Cells!) {
                 if (entry.IsSExpr && e != null) {
-                    Console.WriteLine($"adding entry {entry.ToStr()}");
+                    //Console.WriteLine($"adding entry {entry.ToStr()}");
                     var en = entry.Eval(e);
-                    Console.WriteLine($"entry evaluated to {en.ToStr()}");
+                    //Console.WriteLine($"entry evaluated to {en.ToStr()}");
                     hash.Put(en[0], en[1].Eval(e), true);
 
                     // add any tags
                     while (en.Count > 2) hash.AddTag(en[0], en.Pop(2));
                 } else if (entry.Count > 1 && entry[0].IsAtom && e != null) {
-                    Console.WriteLine($"adding entry {entry.ToStr()}");
+                    //Console.WriteLine($"adding entry {entry.ToStr()}");
                     hash.Put(entry[0], entry[1].Eval(e), true);
 
                     // add any tags
@@ -322,9 +322,10 @@ public class LVal {
         return this;
     }
 
-    public LVal Pop(int i) {
+    public LVal Pop(int i, LEnv? e = null) {
         if (i >= Count) return Err($"Popping nonexistent item {i} from Expr");
         LVal x = this[i];
+        if (e != null) x = x.Eval(e);
         Cells!.RemoveAt(i);
         return x;
     }
@@ -433,7 +434,7 @@ public class LVal {
             case LE.SYM:   s.Append(SymVal); break;
             case LE.CHAR:   s.Append('\\').Append(CharName(StrVal)); break;
             case LE.STR:   s.Append('"').Append(StrVal).Append('"'); break;
-            case LE.HASH:  return HashValue!.ToQexpr().ToStr();
+            case LE.HASH:  s.Append("<hash>").Append(HashValue!.ToQexpr().ToStr()); break;
             case LE.SEXPR: return ExprAsString('(', ')');
             case LE.QEXPR: return ExprAsString('{', '}');
         }
@@ -516,7 +517,7 @@ public class LVal {
         
         while (a.Count > 0) {
             ++i;
-            LVal val = a.Pop(0);
+            LVal val = a.Pop(0, e);
             if (f.Formals!.Count == 0) {
                 f.Env!.Put($"&{i}", val);
                 extras.Add(val);
@@ -539,12 +540,8 @@ public class LVal {
         if (v == null) return null;
         if (v.Count == 0) return NIL();
 
-        for (int i = 0; i < v.Count; i++) { v.Cells![i] = v[i].Eval(e)!; }
-        for (int i = 0; i < v.Count; i++) { if (v[i].IsErr) { return v.Pop(i); } }
-        
-        if (v.Count == 0) { return v; }  
-        LVal f = v.Pop(0);
-        if (v.Count == 0 && !f.IsFun) { return f.Eval(e); }
+        LVal f = v.Pop(0, e);
+        if (v.Count == 0 && !f.IsFun) { return f; }
         
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
         

@@ -1,20 +1,17 @@
 ; Special thanks to buildyourownlisp.com for the inspiration from 'lispy'!
-
-(def {math.pi}    3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384)
-(def {math.e}     2.71828_18284_59045_23536_02874_71352_66249_77572_47093_69995)
-(def {math.phi}   1.61803_39887_49894_84820_45868_34365_63811_77203_09179_80576)
-(def {math.gamma} 0.57721_56649_01532_86061)
+(def math.pi    3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37510_58209_74944_59230_78164_06286_20899_86280_34825_34211_70679_82148_08651_32823_06647_09384)
+(def math.e     2.71828_18284_59045_23536_02874_71352_66249_77572_47093_69995)
+(def math.phi   1.61803_39887_49894_84820_45868_34365_63811_77203_09179_80576)
+(def math.gamma 0.57721_56649_01532_86061)
 
 ; function definition
-(def {fun local-fun}
-  (fn {a b} {def (head a) (fn (tail a) b)})
-  (fn {a b} {set (head a) (fn (tail a) b)}))
+(def fun       (fn {a b} {def (head a) (fn (tail a) b)}))
 
 ; join a single element to the front of a list
-(fun {cons a b}      {join (list a) b})
+(fun {cons a b} {join (list a) b})
 
 ; create a private scope
-(fun {let x} {((fn NIL x))})
+(fun {let x} {((fn {} x))})
 
 ; composition helpers
 (fun {flip f a b} {f b a})
@@ -22,25 +19,25 @@
 (fun {comp f g x} {f (g x)}) ; Compose
 
 ; comparisons
+(fun {not a}  {if a NIL T})
 (fun {>= a b} {not (< a b)})
 (fun {<= a b} {not (> a b)})
-(fun {not a}  {if a {NIL} {T}})
 (fun {== a b} {eq a b})
 (fun {neg? a} {< a 0})
 (fun {pos? a} {< 0 a})
 
-(def {<> !=}  neq neq)
+(def {<> !=} neq neq)
 
 ; test helpers
-(def {nil?}   (flip == NIL))
-(def {t?}     (flip == T))
-(def {zero?}  (flip == 0))
-(def {one?}   (flip == 1))
+(def nil?   (flip == NIL))
+(def t?     (flip == T))
+(def zero?  (flip == 0))
+(def one?   (flip == 1))
 (def {=0 =1}  zero? one?)
 
 ; logical operators
 (fun {xor a b} {
-  and {or a b} {not (and a b)}
+  and (or a b) (not (and a b))
 })
 
 ; math helper functions
@@ -56,8 +53,8 @@
 (fun {cube n}   {* n (square n)})
 (fun {recip n}  {/ 1 n})
 
-(def {inverse}  recip)
-(def {trunc}  truncate)
+(def inverse recip)
+(def trunc truncate)
 
 ; currying
 (fun {unpack f l}  {eval (cons f l)})
@@ -67,8 +64,8 @@
 
 ; reverse
 (fun {reverse} {
-  if (and {defined? {&1}} {qexpr? &1} {&1})
-    {join (reverse (tail &1)) (head &1)}
+  if (and (defined? &1) (qexpr? &1) &1)
+    (join (reverse (tail &1)) (head &1))
 })
 
 ; nth element 
@@ -79,8 +76,8 @@
 ; zero-based element of list (evaluated)
 (fun {nth n l} {
   if (zero? n)
-    {fst l}
-    {nth (1- n) (tail l)}
+    (fst l)
+    (nth (1- n) (tail l))
 })
 
 (def {first second third fourth fifth sixth seventh eighth ninth tenth}
@@ -88,17 +85,20 @@
 
 (fun {last l} {nth (1- (len l)) l})
 
+; coalescing operator to find first non-nil argument in the list
+(fun {?? a} {if a a (if &_ (apply ?? &_))})
+
 ; take n items
 (fun {take n l} {
   if (!=0 n)
-    {join (head l) (take (1- n) (tail l))}
+    (join (head l) (take (1- n) (tail l)))
 })
 
 ; drop n items
 (fun {drop n l} {
   if (zero? n)
-    {l}
-    {drop (1- n) (tail l)}
+    l
+    (drop (1- n) (tail l))
 })
 
 ; split list at N
@@ -107,73 +107,73 @@
 ; is x in l?
 (fun {elem? x l} {
   if l
-    {if (eq x (fst l)) {T} {elem? x (tail l)}}
+    (if (eq x (fst l)) T (elem? x (tail l)))
 })
 
 (fun {has-element? l x} {elem? x l})
 
 ; do a number of items and return value of the last one
-(fun {do} {if &_ {last &_}})
+(fun {do} {if &_ (last &_)})
 
-(def {begin} do)
-(def {block} do)
+(def begin do)
+(def block do)
 
 ; map
 (fun {map f l} {
   if l
-    {cons (f (fst l)) (map f (tail l))}
+    (cons (f (fst l)) (map f (tail l)))
 })
 
 ; filter
 (fun {filter f l} {
   if l
-    {join (if (f (fst l)) {head l} {NIL}) (filter f (tail l))}
+    (join (if (f (fst l)) (head l) NIL) (filter f (tail l)))
 })
 
 ; fold left
 (fun {foldl f z l} {
   if l
-    {foldl f (f z (fst l)) (tail l)}
-    {z}
+    (foldl f (f z (fst l)) (tail l))
+    z
 })
 
 (fun {sum s}     {foldl + 0 s})
 (fun {avg s}     {/ (sum s) (len s)})
 (fun {product p} {foldl * 1 p})
 
-(fun {min} {foldl (fn NIL {if (< &1 &2) {&1} {&2}}) (fst &_) (tail &_)})
-(fun {max} {foldl (fn NIL {if (> &1 &2) {&1} {&2}}) (fst &_) (tail &_)})
+(fun {min} {foldl (fn NIL {if (< &1 &2) &1 &2}) (fst &_) (tail &_)})
+(fun {max} {foldl (fn NIL {if (> &1 &2) &1 &2}) (fst &_) (tail &_)})
 
 ; Switch/Cond
 (fun {cond} {
   if &_
-    {if (fst (fst &_))
-      {snd (fst &_)}
-      {apply cond (tail &_)} }
-    {error "Selection not found"}
+    (if (fst (fst &_))
+      (snd (fst &_))
+      (apply cond (tail &_)))
+    (error "Selection not found")
 })
 
-;(def {switch} cond)
+;(def switch cond)
 
 (fun {case x} {
   if &_
-    {if (eq x (fst (fst &_)))
-       {snd (fst &_)}
-       {apply case (cons x (tail &_))}}
-    {error "Case not found"}
+    (if (eq x (fst (fst &_)))
+      (snd (fst &_))
+      (apply case (cons x (tail &_))))
+    (error "Case not found")
 })
 
 ; math functions
 (fun {abs a} {
   if (num? a)
-   {if (<0 a) {- a} {a}}
-   {error "Cannot perform 'abs' on non-number"}
+   (if (<0 a) (- a) a)
+   (error "Cannot perform 'abs' on non-number")
 })
 
 (fun {floor a} {
   let {
     do
-      (set {tr} (trunc a))
+      (set tr (trunc a))
       (<=> (cmp a tr) {< (1- tr)} {tr})
   }
 })
@@ -181,61 +181,67 @@
 (fun {ceil a} {
   let {
     do
-     (set {tr} (trunc a))
+     (set tr (trunc a))
      (<=> (cmp a tr) {> (1+ tr)} {tr})
   }
 })
 
 (fun {div a b} {
-  if (and {num? a} {num? b})
-    {trunc (/ a b)}
-    {error "Cannot perform 'div' on non-numbers"}
+  if (and (num? a) (num? b))
+    (trunc (/ a b))
+    (error "Cannot perform 'div' on non-numbers")
 })
 
 (fun {mod a b} {
-  if (and {num? a} {num? b})
-    {- a (* b (floor (/ a b)))}
-    {error "Cannot perform 'mod' on non-numbers"}
+  if (and (num? a) (num? b))
+    (- a (* b (floor (/ a b))))
+    (error "Cannot perform 'mod' on non-numbers")
 })
 
-(def {%} mod)
+(def % mod)
 
 (fun {divmod a b} {
-  if (and {num? a} {num? b})
-    {cons (div a b) (list (mod a b))}
-    {error "Cannot perform 'divmod' on non-numbers"}
+  if (and (num? a) (num? b))
+    (cons (div a b) (list (mod a b)))
+    (error "Cannot perform 'divmod' on non-numbers")
 })
 
 (fun {fdiv a b} {
-  if (and {num? a} {num? b})
-    {to-fixed (/ a b) (if (and {defined? {&3}} {num? &3}) {&3} {10})}
+  if (and (num? a) (num? b))
+    (to-fixed (/ a b) (if (and (defined? &3) (num? &3)) &3 10))
     {error "Cannot perform 'fdiv' on non-numbers"}
 })
 
+(fun {frecip n} {if (defined? &2) (fdiv 1 n &2) (fdiv 1 n)})
+(def finverse frecip)
+
 (fun {odd? n} {
   if (num? n)
-    {=1 (mod n 2)}
-    {error "Cannot perform 'odd?' on non-number"}
+    (=1 (mod n 2))
+    (error "Cannot perform 'odd?' on non-number")
 })
 
 (fun {even? n} {
   if (num? n)
-    {=0 (mod n 2)}
-    {error "Cannot perform 'even?' on non-number"}
+    (=0 (mod n 2))
+    (error "Cannot perform 'even?' on non-number")
 })
 
-(fun {positive? a} {if (num? a) {pos? a} {error "Only numbers can be positive"}})
-(fun {negative? a} {if (num? a) {neg? a} {error "Only numbers can be negative"}})
+(fun {positive? a} {if (num? a) (pos? a) (error "Only numbers can be positive")})
+(fun {negative? a} {if (num? a) (neg? a) (error "Only numbers can be negative")})
 
 (def {+? -? 0?} positive? negative? zero?)
 
 (fun {pow a b} {
-  if (zero? b)
-   {1}
-   { if (even? b)
-     {* (pow a (/ b 2)) (pow a (/ b 2))}
-     {* a (pow a (1- b))}
-   }
+  if (-? b)
+    (/ 1 (pow a (- b)))
+    (if (zero? b)
+      1
+      (if (even? b)
+        (* (pow a (/ b 2)) (pow a (/ b 2)))
+        (* a (pow a (1- b)))
+      )
+    )
 })
 
 (fun {minimum} {apply min &1})
@@ -249,14 +255,14 @@
 ; Dice
 (fun {die+ sides mod}    {+ 1 mod (random sides)})
 (fun {die sides}         {die+ sides 0})
-(fun {dice+ n sides mod} {if (=0 n) {mod} {+ (die sides) (dice+ (1- n) sides mod)}})
+(fun {dice+ n sides mod} {if (=0 n) mod (+ (die sides) (dice+ (1- n) sides mod))})
 (fun {dice n sides}      {dice+ n sides 0})
-(fun {roll n d}          {if (=0 n) {NIL} {cons (eval d) (roll (1- n) d)}})
+(fun {roll n d}          {if (=0 n) NIL (cons (eval d) (roll (1- n) d))})
 (fun {sumrolls d} {
-  if d {+
+  if d (+
     (let {
       do
-      (set {hd} (fst d))
+      (set hd (fst d))
       (cond
         {(num? hd) (die hd)}
         {(qexpr? hd)
@@ -269,8 +275,8 @@
       )
     })
     (sumrolls (tail d))
-  }
-  {0}
+  )
+  0
 })
 
 (fun {special-die sides cases} {apply case (cons (die sides) cases)})

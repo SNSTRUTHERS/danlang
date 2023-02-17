@@ -1,0 +1,565 @@
+(fun {roll-3d6} {dice 3 6})
+
+(def harn.attributes (
+  hash-create {
+    {:sp  "Species"}
+    {:sx  "Sex"}
+    {:bd  "Birthday"}
+    {:ss  "Sunsign"}
+    {:ht  "Height (inches)"}
+    {:fr  "Frame"}
+    {:owt "Optimal Weight (pounds)"}
+    {:wt  "Current Weight (pounds)"}
+    {:cml "Comeliness"}
+    {:str "Strength"}
+    {:sta "Stamina"}
+    {:dex "Dexterity"}
+    {:agl "Agility"}
+    {:spd "Speed"}
+    {:eye "Eyesight"}
+    {:hrg "Hearing"}
+    {:smt "Smell/Taste"}
+    {:tch "Touch"}
+    {:voi "Voice"}
+    {:int "Intelligence"}
+    {:aur "Aura"}
+    {:wil "Will"}
+    {:mor "Morality"}
+    {:pty "Piety"}
+    {:dty "Deity"}
+    {:end "Endurance"}
+  }
+ ))
+
+(fun {harn.attr-name} {hash-get harn.attributes &1})
+
+(fun {harn.species-attr-mod species sex attr} {
+  case species
+    {:hum (if (neq sex :f) 0 (
+      cond
+        {(eq attr :fr) -3}
+        {(eq attr :aur) 2}
+        {(eq attr :smt) 1}
+        {T 0}
+    ))}
+    {:sin (
+      cond
+        {(eq attr :fr) -2}
+        {(elem? attr {:str :sta}) 1}
+        {(elem? attr {:dex :agl :eye :hrg :smt :tch :voi}) 2}
+        {(eq attr :mor) 3}
+        {(eq attr :aur) 4}
+        {T 0}
+    )}
+    {:khu (
+      cond
+        {(eq attr :aur) -2}
+        {(elem? attr {:dex :eye :tch}) 1}
+        {(elem? attr {:sta :hrg :smt}) 2}
+        {(elem? attr {:fr :wil}) 3}
+        {(eq attr :str) 4}
+        {T 0}
+    )}
+    {:x 0}
+})
+
+(fun {harn.frame-attr-mod frame attr} {
+  if (neq attr :agl) 0 (
+    case frame
+      {:s  2}
+      {:l  1}
+      {:m  0}
+      {:h -1}
+      {:v -2}
+  )
+})
+
+(fun {harn.weight-attr-mod weight attr} {
+  if (neq attr :str) 0 (
+    cond
+      {(<= weight  20) -6}
+      {(<= weight  55) -5}
+      {(<= weight  85) -4}
+      {(<= weight 110) -3}
+      {(<= weight 130) -2}
+      {(<= weight 145) -1}
+      {(<= weight 155)  0}
+      {(<= weight 170)  1}
+      {(<= weight 190)  2}
+      {(<= weight 215)  3}
+      {(<= weight 245)  4}
+      {(<= weight 280)  5}
+      {(<= weight 320)  6}
+      {(<= weight 370)  7}
+      {(<= weight 430)  8}
+      {(<= weight 500)  9}
+      {T               10}
+  )
+})
+
+(fun {harn.medical-attr-mod med attr} {
+  cond
+    {(not med) 0}
+    {T 0}
+})
+
+(fun {harn.attr-mod species sex frame weight med attr} {
+  + (harn.species-attr-mod species sex attr)
+    (harn.frame-attr-mod frame attr)
+    (harn.weight-attr-mod weight attr)
+    (harn.medical-attr-mod med attr)
+})
+
+(fun {harn.rand-attr species sex frame weight med attr} {
+  list
+    attr
+    (max 1 (+ (roll-3d6) (harn.attr-mod species sex frame weight med attr)))
+})
+
+(fun {harn.attr-group attr} {
+  cond
+    {(elem? attr {:sp :sx :bd :ss :med}) :bir}
+    {(elem? attr {:ht :owt :fr :cml}) :app}
+    {(elem? attr {:str :sta :dex :agl :spd :eye :hrg :smt :tch :voi}) :phy}
+    {(elem? attr {:int :aur :wil :mor}) :per}
+    {(elem? attr {:dty :pty}) :rel}
+    {T :none}
+})
+
+(fun {harn.get-attributes ch} {hash-get ch :att})
+(fun {harn.get-attribute-group ch gr} {hash-get (harn.get-attributes ch) gr})
+
+(fun {harn.get-attr ch a} {hash-get (harn.get-attribute-group ch (harn.attr-group a)) a})
+
+(fun {harn.attr-avg c a1 a2 a3} {
+  trunc
+  (+ 0.5 (avg {
+    (harn.get-attr c a1)
+    (harn.get-attr c a2)
+    (harn.get-attr c a3)
+  }))
+})
+
+(fun {harn.species-name} {
+  cond
+    {:hum "Human"}
+    {:sin "Sindarin"}
+    {:khu "Khuzdul"}
+    {:x   "Other"}
+})
+
+(fun {harn.rand-species} {
+  do 
+    (set rnd (die 100))
+    (cond
+        {(<= rnd  98) :hum}
+        {(<= rnd  99) :sin}
+        {(<= rnd 100) :khu}
+        {T :x}
+    )
+})
+
+(fun {harn.sex-name} {
+  case &1
+    {:f "Female"}
+    {:m "Male"}
+    {:n "Neuter"}
+    {:a "Asexual"}
+    {:h "Hermaphrodite"}
+    {:x "Not-applicable"}
+})
+
+(fun {harn.sexuality-name} {
+  case &1
+    {:he "Heterosexual"}
+    {:ho "Homosexual"}
+    {:bi "Bi-sexual"}
+    {:na "Not-applicable"}
+})
+
+(fun {harn.rand-sex s} {
+  do 
+    (set rnd (die 100))
+    (case s
+        {:hum (if (<= rnd 48) :m :f)}
+        {:sin (if (<= rnd 45) :m :f)}
+        {:khu (if (<= rnd 75) :m :f)}
+        {:x   (if (<= rnd 50) :m :f)}
+    )
+})
+
+; Months
+(fun {harn.month-name} {
+  case &1
+    {:nuz "Nuzyael"}
+    {:peo "Peonu"}
+    {:kel "Kelen"}
+    {:nol "Nolus"}
+    {:lar "Larane"}
+    {:agr "Agrazhar"}
+    {:azu "Azura"}
+    {:hal "Halane"}
+    {:sav "Savor"}
+    {:ilv "Ilvin"}
+    {:nav "Navek"}
+    {:mor "Morgat"}
+})
+
+(fun {harn.month-of} {
+  case &1
+    {1  :nuz}
+    {2  :peo}
+    {3  :kel}
+    {4  :nol}
+    {5  :lar}
+    {6  :agr}
+    {7  :azu}
+    {8  :hal}
+    {9  :sav}
+    {10 :ilv}
+    {11 :nav}
+    {12 :mor}
+})
+
+(fun {harn.rand-month} {harn.month-of (die 12)})
+
+; *** Birthdays and Sunsigns ***
+(fun {harn.rand-birthday} {list (harn.rand-month) (die 30)})
+
+(fun {harn.sunsign-name} {
+  case &1
+    {:ula-lad "Ulandus-Lado Cusp"}
+    {:ula "Ulandus"}
+    {:ula-ara "Ulandus-Aralius Cusp"}
+    {:ara-ula "Aralius-Ulandus Cusp"}
+    {:ara "Aralius"}
+    {:ara-fen "Aralius-Feniri Cusp"}
+    {:fen-ara "Feniri-Aralius Cusp"}
+    {:fen "Feniri"}
+    {:fen-ahn "Feniri-Ahnu Cusp"}
+    {:ahn-fen "Ahnu-Feniri Cusp"}
+    {:ahn "Ahnu"}
+    {:ahn-ang "Ahnu-Angberelius Cusp"}
+    {:ang-ahn "Angberelius-Ahnu Cusp"}
+    {:ang "Angberelius"}
+    {:ang-nad "Angberelius-Nadai Cusp"}
+    {:nad-ang "Nadai-Angberelius Cusp"}
+    {:nad "Nadai"}
+    {:nad-hir "Nadai-Hirin Cusp"}
+    {:hir-nad "Hirin-Nadai Cusp"}
+    {:hir "Hirin"}
+    {:hir-tar "Hirin-Tarael Cusp"}
+    {:tar-hir "Tarael-Hirin Cusp"}
+    {:tar "Tarael"}
+    {:tar-tai "Tarael-Tai Cusp"}
+    {:tai-tar "Tai-Tarael Cusp"}
+    {:tai "Tai"}
+    {:tai-sko "Tai-Skorus Cusp"}
+    {:sko-tai "Skorus-Tai Cusp"}
+    {:sko "Skorus"}
+    {:sko-mas "Skorus-Masura Cusp"}
+    {:mas-sko "Masura-Skorus Cusp"}
+    {:mas "Masura"}
+    {:mas-lad "Masura-Lado Cusp"}
+    {:lad-mas "Lado-Masura Cusp"}
+    {:lad "Lado"}
+    {:lad-ula "Lado-Ulandus Cusp"}
+})
+
+(fun {harn.sunsign-of m d} {
+  cond
+    {(and (eq m :nuz) (>= d 2) (<= d 3)) :lad-ula}
+    {(and (eq m :nuz) (<= d 5)) :ula-lad}
+    {(or (eq m :nuz) (and (eq m :peo) (eq d 1))) :ula}
+    {(and (eq m :peo) (<= d 3)) :ula-ara}
+    {(and (eq m :peo) (<= d 5)) :ara-ula}
+    {(and (eq m :peo) (>= d 6)) :ara}
+    {(and (eq m :kel) (<= d 2)) :ara-fen}
+    {(and (eq m :kel) (<= d 4)) :fen-ara}
+    {(or (eq m :kel) (and (eq m :nol) (eq d 1))) :fen}
+    {(and (eq m :nol) (<= d 3)) :fen-ahn}
+    {(and (eq m :nol) (<= d 5)) :ahn-fen}
+    {(or (eq m :nol) (and (eq m :lar) (<= d 2))) :ahn}
+    {(and (eq m :lar) (<= d 4)) :ahn-ang}
+    {(and (eq m :lar) (<= d 6)) :ang-ahn}
+    {(or (eq m :lar) (and (eq m :agr) (<= d 4))) :ang}
+    {(and (eq m :agr) (<= d 6)) :ang-nad}
+    {(and (eq m :agr) (<= d 8)) :nad-ang}
+    {(or (eq m :agr) (and (eq m :azu) (<= d 3))) :nad}
+    {(and (eq m :azu) (<= d 5)) :nad-hir}
+    {(and (eq m :azu) (<= d 7)) :hir-nad}
+    {(or (eq m :azu) (and (eq m :hal) (<= d 2))) :hir}
+    {(and (eq m :hal) (<= d 4)) :hir-tar}
+    {(and (eq m :hal) (<= d 6)) :tar-hir}
+    {(or (eq m :hal) (and (eq m :sav) (eq d 1))) :tar}
+    {(and (eq m :sav) (<= d 3)) :tar-tai}
+    {(and (eq m :sav) (<= d 5)) :tai-tar}
+    {(eq m :sav) :tai}
+    {(and (eq m :ilv) (<= d 2)) :tai-sko}
+    {(and (eq m :ilv) (<= d 4)) :sko-tai}
+    {(eq m :ilv) :sko}
+    {(and (eq m :nav) (<= d 2)) :sko-mas}
+    {(and (eq m :nav) (<= d 4)) :mas-sko}
+    {(and (eq m :nav) (<= d 29)) :mas}
+    {(or (and (eq m :nav) (eq d 30)) (and (eq m :mor) (eq d 1))) :mas-lad}
+    {(and (eq m :mor) (<= d 3)) :lad-mas}
+    {T :lad}
+})
+
+; *** Height, Frame, Weight ***
+(fun {harn.rand-height species sex} {
+  + (dice 4 6) 
+    (case species
+      {:hum (+ (die 6) (if (eq sex :f) 48 50))}
+      {:sin (if (eq sex :f) 51 52)}
+      {:khu 40}
+    )
+})
+
+(fun {harn.frame-name} {
+  case &1
+    {:s "Scant"}
+    {:l "Light"}
+    {:m "Medium"}
+    {:h "Heavy"}
+    {:v "Massive"}
+})
+
+(fun {harn.frame-of n} {
+  cond
+    {(<= n 5) :s}
+    {(<= n 8) :l}
+    {(<= n 12) :m}
+    {(<= n 15) :h}
+    {T :v}
+})
+
+(fun {harn.rand-frame species sex} {
+  harn.frame-of 
+    (+ (dice 3 6) (harn.species-attr-mod species sex :fr))
+})
+
+(fun {harn.frame-weight-mod} {
+  case &1
+    {:s -1/5}
+    {:l -1/10}
+    {:m 0}
+    {:h 1/10}
+    {:v 1/5}
+})
+
+(fun {harn.weight height frame} {
+  trunc (+ 0.5 (
+    * (+ 1 (harn.frame-weight-mod frame))
+      (+ 75
+        (*   2 (- height 40))
+        (max 0 (- height 52))
+        (max 0 (- height 63))
+        (max 0 (- height 70))
+      )
+  ))
+})
+
+(fun {harn.rand-medical} {NIL})
+
+; *** Skills ***
+(fun {harn.new-skill a n al ssb oml auto sp} {
+  list a (hash-create (
+    list
+      {:key a}
+      {:name n}
+      {:att al}
+      (list :ssb (hash-create ssb))
+      {:oml oml}
+      {:auto auto}
+      {:sp sp}
+  ))
+})
+
+(def harn.skills (hash-create {
+    (harn.new-skill :acr "Acrobatics"  {:str :agl :agl} {{:nad 2} {:hir 1}}          1 NIL {:tumbling :trapeze :balancing})
+    (harn.new-skill :cli "Climbing"    {:str :dex :agl} {{:ula 2} {:ara 2}}          4 T   {})
+    (harn.new-skill :cnd "Condition"   {:str :sta :wil} {{:ula 1} {:lad 1}}          5 T   {})
+    (harn.new-skill :ddg "Dodge"       {:agl :agl :spd} {{:hir 1} {:tar 1} {:tai 1}} 5 T   {})
+    (harn.new-skill :ini "Initiative"  {:agl :spd :wil} {{:ahn 1} {:ang 1} {:nad 1}} 5 T   {})
+    (harn.new-skill :dan "Dancing"     {:dex :agl :agl} {{:tar 2} {:hir 1} {:tai 1}} 2 NIL {"Different dance styles or dances"})
+    (harn.new-skill :jmp "Jumping"     {:str :agl :spd} {{:nad 2} {:hir 2}}          4 T   {:high :long})
+    (harn.new-skill :leg "Legerdemain" {:dex :tch :tch} {{:sko 2} {:tai 2} {:tar 2}} 1 NIL {:purse-cutting :prestidigitation :pocket-picking})
+    (harn.new-skill :mob "Mobility"    {:agl :spd :spd} {{:hir 1} {:tar 1}}          5 T   {})
+    (harn.new-skill :sea "Seamanship"  {:str :dex :agl} {{:lad 3} {:sko 1} {:mas 1}} 1 NIL {})
+    (harn.new-skill :ski "Skiing"      {:str :dex :agl} {{:lad 1} {:sko 1} {:mas 2}} 1 NIL {})
+    (harn.new-skill :stl "Stealth"     {:agl :tch :wil} {{:hir 2} {:tar 2} {:tai 2}} 3 T   {})
+    (harn.new-skill :swi "Swimming"    {:str :sta :agl} {{:sko 1} {:mas 3} {:lad 3}} 1 NIL {:free-style :breast :back :butterfly :diving})
+    (harn.new-skill :thr "Throwing"    {:str :dex :eye} {{:hir 2} {:tar 1} {:nad 1}} 4 T   {})
+    (harn.new-skill :una "Unarmed"     {:str :dex :agl} {{:mas 2} {:lad 2} {:ula 2} {:ahn 1} {:nad 1}} 3 T {"Martial arts styles"})
+
+    (harn.new-skill :rid "Riding"      {:dex :agl :wil} {{:ula 1} {:ara 1}}          1 NIL {:horse :pony :dragon})
+    (harn.new-skill :shd "Shields"     {:str :dex :agl} {{:lad 3} {:sko 1} {:mas 1}} 3 NIL {:tower :kite :knight :round :buckler})
+    (harn.new-skill :kni "Knives"      {:dex :tch :eye} {{:ang 2} {:nad 2}}          3 NIL {:dagger :knife :taburi :keltan})
+    (harn.new-skill :ssw "Shortswords" {:str :dex :dex} {{:ang 3} {:nad 1} {:ahn 1}} 3 NIL {:longknife :shortsword :mankar :falchion})
+    (harn.new-skill :lsw "Longswords"  {:str :str :dex} {{:ang 3} {:nad 1} {:ahn 1}} 3 NIL {:broadsword :mang :estoc :bastard-sword :battlesword})
+    (harn.new-skill :clu "Clubs"       {:str :dex :dex} {{:ula 1} {:ara 1}}          4 NIL {:club :mace :morningstar :maul})
+    (harn.new-skill :axe "Axes"        {:str :dex :dex} {{:ahn 1} {:fen 1} {:ang 1}} 2 NIL {:sickle :shorkana :hatchet :handaxe})
+    (harn.new-skill :bax "Battleaxes"  {:str :str :dex} {{:ahn 1} {:fen 1} {:ang 1} {:nad 1}} 2 NIL {:battleaxe :warhammer})
+    (harn.new-skill :fla "Flails"      {:dex :dex :tch} {{:hir 1} {:tar 1} {:nad 1}} 1 NIL {:nachakas :grainflail :ball-and-chain :warflail})
+    (harn.new-skill :whi "Whips"       {:dex :dex :tch} {{:hir 1} {:nad 1}}          1 NIL {:whip :cat-o-nine-tails :isagara})
+    (harn.new-skill :net "Nets"        {:dex :tch :tch} {{:mas 1} {:sko 1} {:lad 1}} 1 NIL {:net :blanket})
+    (harn.new-skill :sta "Staves"      {:str :dex :eye} {{:ara 1} {:fen 1} {:ula 1}} 2 NIL {:javelin :staff :spear :trident :lance})
+    (harn.new-skill :pol "Polearms"    {:str :dex :dex} {{:ang 1} {:ara 1}}          2 NIL {:glaive :bill :poleaxe :falcastra :pike})
+
+    (harn.new-skill :bow "Bows"        {:str :dex :eye} {{:hir 1} {:tar 1} {:nad 1}} 2 NIL {:longbow :shortbow})
+    (harn.new-skill :blo "Blowgun"     {:sta :eye :tch} {{:hir 2} {:tar 1} {:nad 1}} 4 NIL {})
+    (harn.new-skill :slg "Slings"      {:dex :dex :tch} {{:hir 1} {:tar 1} {:nad 1}} 1 NIL {:sling :staffsling})
+    (harn.new-skill :xbo "Crossbow"    {:dex :eye :tch} {{:hir 1} {:ula 1} {:fen 1}} 3 NIL {})
+
+    (harn.new-skill :act "Acting"      {:agl :voi :int} {{:tar 1} {:tai 1}}          1 NIL {:theater :politics})
+    (harn.new-skill :awa "Awareness"   {:eye :hrg :smt} {{:hir 2} {:tar 2}}          4 NIL {})
+    (harn.new-skill :int "Intrigue"    {:int :aur :wil} {{:tai 1} {:tar 1} {:sko 1}} 3 T   {})
+    (harn.new-skill :lov "Lovecraft"   {:cml :tch :voi} {{:mas 1} {:ang 1}}          3 NIL {})
+    (harn.new-skill :mus "Musiciain"   {:dex :hrg :tch} {{:mas 1} {:ang 1}}          1 NIL {"Each instrument or classes, i.e. stringed, wind, etc."})
+    (harn.new-skill :ora "Oratory"     {:cml :voi :int} {{:tar 1}}                   2 T   {})
+    (harn.new-skill :rhe "Rhetoric"    {:voi :int :wil} {{:tai 1} {:tar 1} {:sko 1}} 3 T   {})
+    (harn.new-skill :sng "Singing"     {:hrg :voi :voi} {{:mas 1}}                   3 T   {:opera})
+}))
+
+(fun {harn.get-skill sk}  {hash-get harn.skills sk})
+(fun {harn.skill.name sk} {hash-get (harn.get-skill sk) :name})
+(fun {harn.skill.att sk}  {hash-get (harn.get-skill sk) :att})
+(fun {harn.skill.ssb sk}  {hash-get (harn.get-skill sk) :ssb})
+(fun {harn.skill.oml sk}  {hash-get (harn.get-skill sk) :oml})
+(fun {harn.skill.auto sk} {hash-get (harn.get-skill sk) :auto})
+(fun {harn.skill.sp sk}   {hash-get (hash.get-skill sk) :sp})
+
+; *********************************
+; *** Create a new HM character ***
+; *********************************
+(fun {harn.create} {
+  do
+    (set params (hash-create (if (defined? &1) &1 NIL)))
+    (set p (fn {} {?? (hash-get params &1) &2}))
+    (set sp (p :sp (harn.rand-species)))
+    (set sx (p :sx (harn.rand-sex sp)))
+    (set bd (p :bd (harn.rand-birthday)))
+    (set ss (harn.sunsign-of (fst bd) (snd bd)))
+    (set ht (p :ht (harn.rand-height sp sx)))
+    (set fr (p :fr (harn.rand-frame sp sx)))
+    (set wt (harn.weight ht fr))
+    (set med (harn.rand-medical sp))
+    (set new-attr (fn {a} {list a (p a (snd (harn.rand-attr sp sx fr wt med a)))}))
+    (set agl (new-attr :agl))
+    
+    (set ch (hash-create {
+      {:att (hash-create {
+        {:bir (hash-create {
+            {:sp  sp}
+            {:sx  sx}
+            {:bd  bd}
+            {:ss  ss}
+            {:med med}
+        })}
+        {:fam (hash-create {
+            (list :sr  (harn.rand-sibling-rank))
+            (list :est (harn.rand-estrangement))
+            (list :ch  (harn.rand-clanhead))
+        })}
+        {:app (hash-create {
+            {:ht  ht}
+            {:fr  fr}
+            {:owt wt}
+            (new-attr :cml)
+        })}
+        {:phy (hash-create {
+            (new-attr :str)
+            (new-attr :sta)
+            (new-attr :dex)
+            (agl)
+            (list :spd (max 1 (+ (snd agl) -5 (die 9))))
+            (new-attr :eye)
+            (new-attr :hrg)
+            (new-attr :smt)
+            (new-attr :tch)
+            (new-attr :voi)
+        })}
+        {:per (hash-create {
+            (new-attr :int)
+            (new-attr :aur)
+            (new-attr :wil)
+            (new-attr :mor)
+        })}
+        {:rel (hash-create {
+            (list :pty (p :pty (dice 5 6)))
+            (list :dty (p :dty "<None chosen>"))
+        })}
+      })}
+    }))
+    ch
+})
+
+; Character Skill Helpers
+(def harn.ss  (flip harn.get-attr :ss))
+(fun {atom-str a} {substring (to-str a) 1})
+
+(fun {harn.get-ssb ch sk} {
+  do
+    (set ssb (harn.skill.ssb sk))
+    (set ss  (to-str (harn.ss ch)))
+    (set v   (map 
+               (fn {} {hash-get ssb &1})
+               (filter
+                 (fn {} {if (contains? ss (atom-str &1)) &1})
+                 (hash-keys ssb)
+               )
+    ))
+    (if v (minimum v) 0)
+})
+
+(fun {harn.get-sb ch sk} {
+  do
+    (set att (harn.skill.att sk))
+    (set b (harn.attr-avg ch (fst att) (snd att) (thd att)))
+    (+ b (harn.get-ssb ch sk))
+})
+
+(fun {harn.get-oml ch sk} {
+  * (harn.skill.oml sk) (harn.get-sb ch sk)
+})
+
+; Helpers
+(fun {harn.end c} {harn.attr-avg c :str :sta :wil})
+
+(def harn.str (flip harn.get-attr :str))
+(def harn.sta (flip harn.get-attr :sta))
+(def harn.dex (flip harn.get-attr :dex))
+(def harn.agl (flip harn.get-attr :agl))
+(def harn.eye (flip harn.get-attr :eye))
+(def harn.hrg (flip harn.get-attr :hrg))
+(def harn.smt (flip harn.get-attr :smt))
+(def harn.tch (flip harn.get-attr :tch))
+(def harn.voi (flip harn.get-attr :voi))
+(def harn.int (flip harn.get-attr :int))
+(def harn.aur (flip harn.get-attr :aur))
+(def harn.wil (flip harn.get-attr :wil))
+(def harn.mor (flip harn.get-attr :mor))
+(def harn.cml (flip harn.get-attr :cml))
+(def harn.fr  (flip harn.get-attr :fr))
+(def harn.ht  (flip harn.get-attr :ht))
+(def harn.owt (flip harn.get-attr :owt))
+(def harn.pty (flip harn.get-attr :pty))
+(def harn.dty (flip harn.get-attr :dty))
+
+(fun {harn.size c} {
+  do
+    (set wt (harn.wt c))
+    (cond
+      {(<= wt 65) 1}
+      {(<= wt 75) 2}
+      {(<= wt 90) 3}
+      {(<= wt 110) 4}
+      {(<= wt 135) 5}
+      {(<= wt 165) 6}
+      {(<= wt 200) 7}
+      {(<= wt 240) 8}
+      {(<= wt 285) 9}
+      {T 10}
+    )
+})

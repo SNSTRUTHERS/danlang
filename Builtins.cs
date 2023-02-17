@@ -8,9 +8,23 @@ public class Builtins
         e.Put(k.SymVal!, v);
     }
 
+    private static void AddBuiltinEvaluated(LEnv e, string name, Func<LEnv, LVal, LVal> func) {
+        LVal k = LVal.Sym(name);
+        var f = (LEnv env, LVal a) => {
+            for (int i = 0; i < a.Count; i++) {
+                var ev = a[i].Eval(env)!;
+                if (ev.IsErr) return ev;
+                a.Cells![i] = ev;
+            }
+            return func(env, a);
+        };
+        LVal v = LVal.Builtin(f);
+        e.Put(k.SymVal!, v);
+    }
+
     private static LVal Lambda(LEnv e, LVal a) {
-        LVal formals = a.Pop(0);
-        LVal body = a.Pop(0);        
+        LVal formals = a.Pop(0, e);
+        LVal body = a.Pop(0, e);
         return LVal.Lambda(formals, body);
     }
 
@@ -21,79 +35,104 @@ public class Builtins
     }
 
     private static LVal Head(LEnv e, LVal a) {
-        LVal v = a.Pop(0);  
-        while (v.Count > 1) v.Pop(1);
-        return v;
+        var v = a.Pop(0, e);
+        var ret = LVal.Qexpr();
+        ret.Add(v.Pop(0));
+        return ret;
     }
 
     private static LVal Tail(LEnv e, LVal a) {
-        LVal v = a.Pop(0);  
+        LVal v = a.Pop(0, e);
         v.Pop(0);
         return v;
     }
 
     private static LVal Init(LEnv e, LVal a) {
         if (a == null || a.Count == 0) return LVal.NIL();
-        LVal v = a.Pop(0);
+        var v = a.Pop(0, e);
         v.Pop(v.Count - 1);
         return v;
     }
 
     private static LVal End(LEnv e, LVal a) {
-        LVal v = a.Pop(0);  
-        while (v.Count > 1) v.Pop(0);
-        return v;
+        if (a == null || a.Count == 0) return LVal.NIL();
+        var v = a.Pop(0, e);
+        v = v.Pop(v.Count - 1);
+        var ret = LVal.Qexpr();
+        ret.Add(v);
+        return ret;
     }
 
     public static LVal Eval(LEnv e, LVal a) {
-        if (a.Count != 1 || !a[0].IsQExpr) return LVal.Err("Invalid parameter(s) passed to 'eval'");
-        LVal x =  a.Pop(0);
+        if (a.Count != 1) return LVal.Err("Incorrect number of parameters passed to 'eval'");
+        LVal x =  a.Pop(0, e);
+        if (!x.IsQExpr) return LVal.Err("Incorrect parameter passed to 'eval'.  Expected QExpr.");
         x.ValType = LVal.LE.SEXPR;
         return x.Eval(e)!;
     }
 
     private static LVal Join(LEnv e, LVal a) {
-        if (a.Cells!.Any(v => !v.IsQExpr)) return LVal.Err("Non-QExpr in parameters list for 'join'");
-        LVal x =  a.Pop(0);
-        
+        if (a.Count == 0) return LVal.Err("Invalid number of parameters passed to 'join'");
+
+        LVal? x = null;
         while (a.Count > 0) {
-            LVal y = a.Pop(0);
-            x = x.Join(y);
+            var y = a.Pop(0, e);
+            if (!y.IsQExpr) return LVal.Err("Invalid parameter passed to 'join'.  Expected QExpr.");
+            else if (x == null) x = y;
+            else x = x.Join(y);
         }
-        return x;
+        return x!;
     }
 
     private static LVal Op(LEnv e, LVal a, string op) {
-        if (a.Count == 0) return LVal.Err("");
-        if (a.Cells!.Any(v => v.IsStr || v.IsAtom) && op == "+") {
-            if (a.Cells!.All(v => v.IsStr || v.IsNum || v.IsAtom)) return LVal.Str(string.Join("", a.Cells!.Select(v => v.ToStr())));
-            return LVal.Err("All parameters to operator '+' must be atoms, strings, or numbers");
-        }
+        LVal? x = null;
+        while (a.Count > 0) {
+            LVal y = a.Pop(0, e);
+            if (y.IsErr) return y;
+            if (!y.IsNum) return LVal.Err($"All parameters to operator '{op}' must be numbers.");
+            if (x == null) {
+                // special negation case
+                if (a.Count == 0 && op == "-") {
+                    y.NumVal = -y.NumVal!;
+                    return y;
+                }
 
-        if (!a.Cells!.All(v => v.IsNum)) return LVal.Err($"All parameters to operator '{op}' must be numbers.");
+                // not negation? Just set x to y and continue;
+                x = y;
+                continue;
+            }
 
-        LVal x =  a.Pop(0);
-        if ((op == "-") && a.Count == 0) { x.NumVal = -x.NumVal!; }
-
-        while (a.Count > 0) {  
-            LVal y = a.Pop(0);
-            
-            if (op == "+")      x.NumVal = x.NumVal! + y.NumVal!;
-            else if (op == "-") x.NumVal = x.NumVal! - y.NumVal!;
+            if (op == "-") x.NumVal = x.NumVal! - y.NumVal!;
             else if (op == "*") x.NumVal = x.NumVal! * y.NumVal!;
             else if (op == "/") {
-                if (y.NumVal!.ToInt().num == 0) {
-                    x = LVal.Err("Division by zero.");
-                    break;
+                if (y.NumVal! == Num.Zero) {
+                    return LVal.Err("Division by zero.");
                 }
-                x.NumVal = x.NumVal! / y.NumVal;
+                x.NumVal = x.NumVal! / y.NumVal!;
             }
         }
 
-        return x;
+        // If no arguments were passed, return 0 for "-", and 1 otherwise
+        return x ?? LVal.Number(op == "-" ? BigInteger.Zero : BigInteger.One);
     }
 
-    private static LVal Add(LEnv e, LVal a) { return Op(e, a, "+"); }
+    private static LVal Add(LEnv e, LVal a) {
+        LVal Plus(LVal a, LVal b) {
+            if (a.IsNum && b.IsNum) {
+                a.NumVal = a.NumVal! + b.NumVal!;
+                return a;
+            }
+            return LVal.Str((a.ToStr() + b.ToStr()).Replace("\"\"", ""));
+        }
+        LVal? x = null;
+        while (a.Count > 0) {
+            LVal y = a.Pop(0, e);
+            if (y.IsErr) return y;
+            if (x == null) x = y;
+            else  x = Plus(x, y);
+        }
+        return x ?? LVal.Number(BigInteger.Zero);
+    }
     private static LVal Sub(LEnv e, LVal a) { return Op(e, a, "-"); }
     private static LVal Mul(LEnv e, LVal a) { return Op(e, a, "*"); }
     private static LVal Div(LEnv e, LVal a) { return Op(e, a, "/"); }
@@ -101,12 +140,20 @@ public class Builtins
     private static LVal Var(LEnv e, LVal a, string func) {
         //if (a.Count == 0 || !a.IsQExpr) return LVal.Err($"Invalid parameter(s) passed to '{func}'");
         LVal syms = a.Pop(0);
+        if (syms.IsSym) {
+            var x = LVal.Qexpr();
+            x.Add(syms);
+            syms = x;
+        }
+        else if (syms.IsSExpr) syms = syms.Eval(e);
+
         if (syms.Cells!.Any(v => !v.IsSym)) return LVal.Err($"'{func}' cannot define non-symbols");
+
         if (syms.Count != a.Count) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected {syms.Count}, got {a.Count}");
             
         while (syms.Count > 0 && a.Count > 0) {
             var symbol = syms.Pop(0).SymVal!;
-            var value = a.Pop(0).Eval(e);
+            var value = a.Pop(0, e);
             if (func == "def") { e.Def(symbol, value) ; }
             if (func == "set") { e.Put(symbol, value); } 
         }
@@ -133,9 +180,9 @@ public class Builtins
     private static LVal Cmp(LEnv e, LVal a, string op) {
         if (a.Count != 2) return LVal.Err($"Too few parameters passed to '{op}'");
         bool r = false;
-        if (op == "eq")       r =  a[0].Equals(a[1]);
-        else if (op == "neq") r = !a[0].Equals(a[1]);
-        else if (op == "cmp") return LVal.Number(a[0].CompareTo(a[1]));
+        if (op == "eq")       r =  a.Pop(0, e).Equals(a.Pop(0, e));
+        else if (op == "neq") r = !a.Pop(0, e).Equals(a.Pop(0, e));
+        else if (op == "cmp") return LVal.Number(a.Pop(0, e).CompareTo(a.Pop(0, e)));
 
         return LVal.Bool(r);
     }
@@ -148,31 +195,21 @@ public class Builtins
         if (a.Count < 2) return LVal.Err("'if' supplied too few parameters");
 
         // Actual logical check; all non-NIL expressions evaluate to T in the 'if' context
-        if (!a[0].IsNIL) {
-            var vT = a.Pop(1);
-            if (!vT.IsQExpr) return LVal.Err("'if' body elements must be QExpr");
-            vT.ValType = LVal.LE.SEXPR;
-            return vT.Eval(e)!;
+        var t = a.Pop(0, e);
+        if (!t.IsNIL) {
+            return a.Pop(0, e);
         }
 
         // if no else, so return NIL
-        if (a.Count == 2) return LVal.NIL();
-
-        var vF = a.Pop(2);
-
-        if (!vF.IsQExpr) return LVal.Err("'if' body elements must be QExpr");
-        vF.ValType = LVal.LE.SEXPR;
-        return vF.Eval(e);
+        if (a.Count == 1) return LVal.NIL();
+        return a.Pop(1, e);
     }
 
     private static LVal And(LEnv e, LVal a) {
         if (a.Count < 2) return LVal.Err("'and' supplied too few parameters");
-        if (a.Cells!.Any(c => !c.IsQExpr)) return LVal.Err("'and' can only operate on QExprs");
 
         while (a.Count > 0) {
-            var b = a.Pop(0);
-            b.ValType = LVal.LE.SEXPR;
-            var la = b.Eval(e);
+            var la = a.Pop(0, e);
             if (la.IsNIL) return la;
         }
         return LVal.Bool(true);
@@ -180,36 +217,31 @@ public class Builtins
 
     private static LVal Or(LEnv e, LVal a) {
         if (a.Count < 2) return LVal.Err("'or' supplied too few parameters");
-        if (a.Cells!.Any(c => !c.IsQExpr)) return LVal.Err("'or' can only operate on QExprs");
         while (a.Count > 0) {
-            var b = a.Pop(0);
-            b.ValType = LVal.LE.SEXPR;
-            var la = b.Eval(e);
+            var la = a.Pop(0, e);
             if (!la.IsNIL) return LVal.Bool(true);
         }
         return LVal.Bool(false);
     }
-
-    private static Num IntZero = new Int(BigInteger.Zero);
 
     private static LVal SpaceShip(LEnv e, LVal a) {
         bool IsMatch(Num n, LVal l) {
             if (l.Count == 1) return true;
             switch (l[0].SymVal) {
                 case "=":
-                    return n.CompareTo(IntZero) == 0;
+                    return n.CompareTo(Num.Zero) == 0;
                 case "<>": // not equal
-                    return n.CompareTo(IntZero) != 0;
+                    return n.CompareTo(Num.Zero) != 0;
                 case ">":
-                    return n.CompareTo(IntZero) > 0;
+                    return n.CompareTo(Num.Zero) > 0;
                 case "<":
-                    return n.CompareTo(IntZero) < 0;
+                    return n.CompareTo(Num.Zero) < 0;
                 case ">=": // greater than or equal
                 case "=>":
-                    return n.CompareTo(IntZero) >= 0;
+                    return n.CompareTo(Num.Zero) >= 0;
                 case "<=": // less than or equal
                 case "=<":
-                    return n.CompareTo(IntZero) <= 0;
+                    return n.CompareTo(Num.Zero) <= 0;
                 default:
                     throw new InvalidOperationException($"Unknown comparison test {l[0].SymVal}");
             }
@@ -220,7 +252,7 @@ public class Builtins
 
         for (var i = 1; i < a.Count; ++i) if (!a[i].IsQExpr) return LVal.Err("Operator '<=>' received one or more invalid case blocks (not QExpr)");
 
-        var cmpVal = a.Pop(0);
+        var cmpVal = a.Pop(0, e);
         if (!cmpVal.IsNum) return LVal.Err("First parameter to '<=>' must evaluate to a Number");
 
         // TODO: check the structure of the "cases" to ensure that there is no duplication, that the first one always has a compare value, and only the last one has no comparator
@@ -232,7 +264,7 @@ public class Builtins
                 var c = a.Pop(0);
                 if (a.Count != 0 && c.Count < 2) return LVal.Err("All but last body block of a '<=>' operator must have comparator");
                 try {
-                    if (IsMatch(cmp, c)) return c.Pop(c.Count - 1).Eval(e);
+                    if (IsMatch(cmp, c)) return c.Pop(c.Count - 1, e);
                 } catch (InvalidOperationException ex) {
                     return LVal.Err(ex.Message);
                 }
@@ -249,7 +281,7 @@ public class Builtins
         
         /* Open file and check it exists */
         while (a.Count > 0) {
-            var v = a.Pop(0);
+            var v = a.Pop(0, e);
             var filename = v.StrVal!;
             if (!File.Exists(filename)) {
                 if (!filename.EndsWith(".dl")) filename += ".dl";
@@ -270,7 +302,7 @@ public class Builtins
 
             if (expr != null && !expr.IsErr) {
                 while (expr.Count > 0) {
-                    LVal x = expr.Pop(0).Eval(e)!;
+                    LVal x = expr.Pop(0, e);
                     if (x.IsErr) { x.Println(); }
                 }
             } else {
@@ -282,26 +314,28 @@ public class Builtins
         return LVal.NIL();
     }
 
-    private static LVal Print(LEnv e, LVal a) {  
-        for (int i = 0; i < a.Count; i++) {
-            a[i].Print(); Console.Write(' ');
+    private static LVal Print(LEnv e, LVal a) {
+        var pre = "";
+        while (a.Count > 0) {
+            Console.Write(pre);
+            pre = " ";
+            a.Pop(0, e).Print();
         }
         Console.Write('\n');
         return LVal.NIL();
     }
 
     private static LVal Error(LEnv e, LVal a) {
-        // LASSERT_NUM("error", a, 1);
-        // LASSERT_TYPE("error", a, 0, LE.STR);
-        return LVal.Err(a[0].StrVal!);  
+        return LVal.Err(a.Pop(0).StrVal!);
     }
 
     private static LVal IsType(LVal a, LVal.LE type) {
-        return LVal.Bool(a[0].ValType == type);
+        return LVal.Bool(a.Pop(0).ValType == type);
     }
 
     private static LVal IsNumber(LEnv e, LVal a) => IsType(a, LVal.LE.NUM);
     private static LVal IsString(LEnv e, LVal a) => IsType(a, LVal.LE.STR);
+    private static LVal IsChar(LEnv e, LVal a) => IsType(a, LVal.LE.CHAR);
     private static LVal IsAtom(LEnv e, LVal a) => IsType(a, LVal.LE.ATOM);
     private static LVal IsSymbol(LEnv e, LVal a) => IsType(a, LVal.LE.SYM);
     private static LVal IsFunc(LEnv e, LVal a) => IsType(a, LVal.LE.FUN);
@@ -313,6 +347,7 @@ public class Builtins
     private static LVal IsExpr(LEnv e, LVal a) {
         switch (a[0].ValType) {
             case LVal.LE.STR:
+            case LVal.LE.CHAR:
             case LVal.LE.NUM:
             case LVal.LE.T:
             case LVal.LE.SYM:
@@ -330,35 +365,38 @@ public class Builtins
         if (a[0].NumVal is Int i && !(i is Fix) && !(i is Rat)) return LVal.Bool(true);
         return LVal.Bool(false);
     }
-    private static LVal IsFix(LEnv _, LVal a) {
+    private static LVal IsFix(LEnv e, LVal a) {
         if (a.Count != 1) return LVal.Err("'fixed?' requires 1 parameter");
-        if (!a[0].IsNum) return LVal.Err("Parameter passed to 'fixed?' is not a Number");
-        return LVal.Bool(a[0].NumVal is  Fix);
+        var v = a.Pop(0, e);
+        if (!v.IsNum) return LVal.Err("Parameter passed to 'fixed?' is not a Number");
+        return LVal.Bool(v.NumVal is Fix);
     }
-    private static LVal IsRat(LEnv _, LVal a) {
+    private static LVal IsRat(LEnv e, LVal a) {
         if (a.Count != 1) return LVal.Err("'rational?' requires 1 parameter");
+        var v = a.Pop(0, e);
         if (!a[0].IsNum) return LVal.Err("Parameter passed to 'rational?' is not a Number");
         return LVal.Bool(a[0].NumVal is  Rat);
     }
 
-    private static LVal IsComplex(LEnv _, LVal a) {
+    private static LVal IsComplex(LEnv e, LVal a) {
         if (a.Count != 1) return LVal.Err("'complex?' requires 1 parameter");
-        if (!a[0].IsNum) return LVal.Err("Parameter passed to 'complex?' is not a Number");
-        if (a[0].NumVal is Comp) return LVal.Bool(true);
-        return LVal.Bool(false);
+        var v = a.Pop(0, e);
+        if (!v.IsNum) return LVal.Err("Parameter passed to 'complex?' is not a Number");
+        return LVal.Bool(v.NumVal is Comp);
     }
     private static LVal IsZero(LEnv e, LVal a) {
         if (a.Count != 1) return LVal.Err("'zero?' requires 1 parameter");
-        if (!a[0].IsNum) return LVal.Err("Parameter passed to 'zero?' is not a Number");
-        return LVal.Bool(a[0].NumVal == IntZero);
+        var v = a.Pop(0, e);
+        if (!v.IsNum) return LVal.Err("Parameter passed to 'zero?' is not a Number");
+        return LVal.Bool(v.NumVal == Num.Zero);
     }
 
     private static LVal Complex(LEnv e, LVal a) {
         if (a.Count != 2) return LVal.Err("Too few parameters passed to 'complex'");
         if (a.Cells!.Any(c => !c.IsNum)) return LVal.Err("One or more parameters passed to 'complex' is not a Number");
 
-        if (a.Pop(0).NumVal is Int r) {
-            if (a.Pop(0).NumVal is Int i) return LVal.Number(new Comp(r, i));
+        if (a.Pop(0, e).NumVal is Int r) {
+            if (a.Pop(0, e).NumVal is Int i) return LVal.Number(new Comp(r, i));
             return LVal.Err("Imaginary part of complex must be an int, a rational, or a fixed");
         }
         return LVal.Err("Real part of complex must be an int, a rational, or a fixed");
@@ -397,11 +435,12 @@ public class Builtins
     }
 
     private static LVal Split(LEnv e, LVal a) {
-        if (a.Count < 1) return LVal.Err("Too few parameters passed to 'split'");
-        if (!a[0].IsStr) return LVal.Err("First 'split' parameter must be a string");
+        if (a.Count < 1) return LVal.Err("Too few parameters passed to 'str-split'");
+        var str = a.Pop(0, e);
+        if (!str.IsStr) return LVal.Err("First 'str-split' parameter must be a string");
 
         // if only one param, add the default whitespace separator list
-        if (a.Count == 1) {
+        if (a.Count == 0) {
             var q = LVal.Qexpr();
             q.Add(LVal.Str(" "));
             q.Add(LVal.Str("\t"));
@@ -409,16 +448,17 @@ public class Builtins
             q.Add(LVal.Str("\r"));
             a.Add(q);
         }
-        
-        if (!(a[1].IsStr || a[1].IsQExpr) || (a[1].IsQExpr && (a[1].Count == 0 || !a[1].Cells!.All(c => c.IsStr))))
-            return LVal.Err("Second 'split' parameter must be a list of strings or a single string");
+
+        var sep = a.Pop(0, e);
+        if (!(sep.IsStr || sep.IsQExpr) || (sep.IsQExpr && (sep.Count == 0 || !sep.Cells!.All(c => c.IsStr))))
+            return LVal.Err("Second 'str-split' parameter must be a list of strings or a single string");
+
+        string[] separators = sep.IsStr ? 
+            new [] {sep.StrVal} :
+            sep.Cells!.Select(c => c.StrVal).ToArray();
 
         var ret = LVal.Qexpr();
-        string[] separators = Array.Empty<string>();
-        if (a[1].IsStr) separators = new [] {a[1].StrVal};
-        else separators = a[1].Cells!.Select(c => c.StrVal).ToArray();
-
-        foreach (var s in a[0].StrVal.Split(separators, StringSplitOptions.None)) ret.Add(LVal.Str(s));
+        foreach (var s in str.StrVal.Split(separators, StringSplitOptions.None)) ret.Add(LVal.Str(s));
         return ret;
     }
 
@@ -481,34 +521,36 @@ public class Builtins
 
     // Hash functions
     private static LVal HashCreate(LEnv e, LVal val) {
-        if (val.Count > 0) return LVal.Hash(val.Pop(0), e);
+        if (val.Count > 0) return LVal.Hash(val.Pop(0, e), e);
         return LVal.Hash();
     }
 
-    private static LVal HashGet(LEnv _, LVal val) {
+    private static LVal HashGet(LEnv e, LVal val) {
         if (val.Count < 2) return LVal.Err("'hash-get' requires two parameters");
         if (val.Count > 2) return LVal.Err($"Too many parameters passed to 'hash-get'.  Expected 2, got {val.Count}");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
+        if (hash.IsNIL) return LVal.NIL();
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-get' must be a hash");
 
-        var key = val.Pop(0);
+        var key = val.Pop(0, e);
         return hash.HashValue!.Get(key);
     }
 
     private static LVal HashPut(LEnv e, LVal val) {
         if (val.Count < 2) return LVal.Err("'hash-put' requires two or more parameters");
-        var hash = val.Pop(0);
+
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-put' must be a hash");
 
         if (val.Count == 1) {
-            var p = val.Pop(0);
+            var p = val.Pop(0, e);
             if (p.Count == 2) return hash.HashValue!.Put(p[0], p[1].Eval(e));
             return hash.HashValue!.Put(p);
         }
 
         var ret = LVal.Qexpr();
         while (val.Count > 0) {
-            var v = val.Pop(0);
+            var v = val.Pop(0, e);
             if (v.Count == 2) {
                 ret.Add(hash.HashValue!.Put(v[0], v[1].Eval(e)));
             }
@@ -520,38 +562,38 @@ public class Builtins
 
     private static LVal ToHash(LEnv e, LVal val) {
         if (val.Count < 1) return LVal.Err("'to#' requires one parameters");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsQExpr) return LVal.Err("First parameter to 'to#' must be a QExpr");
         return LVal.Hash(val, e);
     }
 
-    private static LVal FromHash(LEnv _, LVal val) {
+    private static LVal FromHash(LEnv e, LVal val) {
         if (val.Count < 1) return LVal.Err("'from#' requires one parameters");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'from#' must be a hash");
         return hash.HashValue!.ToQexpr();
     }
 
-    private static LVal HashHasKey(LEnv _, LVal val) {
+    private static LVal HashHasKey(LEnv e, LVal val) {
         if (val.Count < 2) return LVal.Err("'hash-key?' requires two parameters");
         if (val.Count > 2) return LVal.Err($"Too many parameters passed to 'hash-key?'.  Expected 2, got {val.Count}");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-key?' must be a hash");
 
-        var key = val.Pop(0);
+        var key = val.Pop(0, e);
         return hash.HashValue!.ContainsKey(key);
     }
 
-    private static LVal HashKeys(LEnv _, LVal val) {
+    private static LVal HashKeys(LEnv e, LVal val) {
         if (val.Count < 1) return LVal.Err("'hash-keys' requires one parameter");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-keys' must be a hash");
         return hash.HashValue!.Keys;
     }
 
-    private static LVal HashValues(LEnv _, LVal val) {
+    private static LVal HashValues(LEnv e, LVal val) {
         if (val.Count < 1) return LVal.Err("'hash-values' requires one parameter");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-values' must be a hash");
         return hash.HashValue!.Values;
     }
@@ -559,9 +601,9 @@ public class Builtins
     private static LVal HashCall(LEnv e, LVal val) {
         // TODO: check the parameters
         if (val.Count < 2) return LVal.Err("'hash-call' requires two parameters");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-call' must be a hash");
-        var fKey = val.Pop(0);
+        var fKey = val.Pop(0, e);
 
         var f = hash.HashValue!.Get(fKey);
         if (f.IsErr) return f;
@@ -572,22 +614,22 @@ public class Builtins
         return retVal;
     }
 
-    private static LVal HashClone(LEnv _, LVal val) {
+    private static LVal HashClone(LEnv e, LVal val) {
         if (val.Count < 1) return LVal.Err("'hash-clone' requires one parameters");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-clone' must be a hash");
         return LVal.Hash(hash.HashValue!.Clone(val));
     }
 
-    private static LVal HashAddTag(LEnv _, LVal val) {
+    private static LVal HashAddTag(LEnv e, LVal val) {
         if (val.Count < 2) return LVal.Err("'hash-add-tag' requires two or more parameters");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-add-tag' must be a hash");
 
-        if (val.Count == 1) return hash.HashValue!.AddTag(val[0]);
+        if (val.Count == 1) return hash.HashValue!.AddTag(val.Pop(0, e));
 
         var ret = LVal.Qexpr();
-        while (val.Count > 0) ret.Add(hash.HashValue!.AddTag(val.Pop(0)));
+        while (val.Count > 0) ret.Add(hash.HashValue!.AddTag(val.Pop(0, e)));
 
         return ret;
     }
@@ -596,10 +638,10 @@ public class Builtins
         var a = LVal.Atom(tag);
         if (val.Count > 1) {
             var v = LVal.Qexpr();
-            v.Add(val.Pop(0));
+            v.Add(val.Pop(0, e));
             while (val.Count > 0) {
                 var q = LVal.Qexpr();
-                q.Add(val.Pop(0));
+                q.Add(val.Pop(0, e));
                 q.Add(a);
                 v.Add(q);
             }
@@ -609,13 +651,13 @@ public class Builtins
         return HashAddTag(e, val);
     }
 
-    private static LVal HashHasTag(LEnv _, LVal val) {
+    private static LVal HashHasTag(LEnv e, LVal val) {
         if (val.Count < 2) return LVal.Err("'hash-tag?' requires two parameters");
         if (val.Count > 2) return LVal.Err($"Too many parameters passed to 'hash-tag?'.  Expected 2, got {val.Count}");
-        var hash = val.Pop(0);
+        var hash = val.Pop(0, e);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-tag?' must be a hash");
 
-        return hash.HashValue!.HasTag(val.Pop(0));
+        return hash.HashValue!.HasTag(val.Pop(0, e));
     }
 
     private static LVal HashIsLocked(LEnv e, LVal val) {
@@ -643,20 +685,20 @@ public class Builtins
         AddBuiltin(e, "set", Put);
         
         // list functions
-        AddBuiltin(e, "list", List);
-        AddBuiltin(e, "head", Head);
-        AddBuiltin(e, "tail", Tail);
-        AddBuiltin(e, "init", Init);
-        AddBuiltin(e, "end",  End);
-        AddBuiltin(e, "join", Join);
-        AddBuiltin(e, "eval", Eval);
-        AddBuiltin(e, "len",  (e, a) => a[0].ValType switch { 
+        AddBuiltinEvaluated(e, "list", List);
+        AddBuiltinEvaluated(e, "head", Head);
+        AddBuiltinEvaluated(e, "tail", Tail);
+        AddBuiltinEvaluated(e, "init", Init);
+        AddBuiltinEvaluated(e, "end",  End);
+        AddBuiltinEvaluated(e, "join", Join);
+        AddBuiltinEvaluated(e, "eval", Eval);
+        AddBuiltinEvaluated(e, "len",  (e, a) => a[0].ValType switch { 
             LVal.LE.QEXPR => LVal.Number(a[0].Count),
             LVal.LE.STR   => LVal.Number(a[0].StrVal.Length),
             _             => LVal.Err("'len' requires parameter of type string or list")
         });
-        AddBuiltin(e, "item-at", ItemAt);
-        AddBuiltin(e, "subset", Subset);
+        AddBuiltinEvaluated(e, "item-at", ItemAt);
+        AddBuiltinEvaluated(e, "subset", Subset);
 
         // math functions
         AddBuiltin(e, "+", Add);
@@ -664,15 +706,15 @@ public class Builtins
         AddBuiltin(e, "*", Mul);
         AddBuiltin(e, "/", Div);
 
-        AddBuiltin(e, "rational.n", (e, a) => a.Count > 0 ?
+        AddBuiltinEvaluated(e, "rational.n", (e, a) => a.Count > 0 ?
             (a[0].IsNum ? LVal.Number(Rat.ToRat(a[0].NumVal!).num) : LVal.Err("Argument is not a number")) :
             LVal.Err("One or more arguments required"));
 
-        AddBuiltin(e, "rational.d", (e, a) => a.Count > 0 ?
+        AddBuiltinEvaluated(e, "rational.d", (e, a) => a.Count > 0 ?
             (a[0].IsNum ? LVal.Number(Rat.ToRat(a[0].NumVal!).den) : LVal.Err("Argument is not a number")) :
             LVal.Err("One or more arguments required"));
 
-        AddBuiltin(e, "random",     (e, a) => LVal.Number(_rand.NextInt64((long)(a[0].NumVal!.ToInt().num))));
+        AddBuiltin(e, "random",     (e, a) => LVal.Number(_rand.NextInt64((long)(a.Pop(0, e).NumVal!.ToInt().num))));
  
         // logical funcions
         AddBuiltin(e, "and", And);
@@ -689,51 +731,52 @@ public class Builtins
         AddBuiltin(e, "<=>", SpaceShip);
 
         // string functions
-        AddBuiltin(e, "load",  Load); 
-        AddBuiltin(e, "error", Error);
-        AddBuiltin(e, "print", Print);
-        AddBuiltin(e, "index-of",      (e, a) => LVal.Number(a[0].StrVal!.IndexOf(a[1].StrVal!)));
-        AddBuiltin(e, "last-index-of", (e, a) => LVal.Number(a[0].StrVal!.LastIndexOf(a[1].StrVal!)));
-        AddBuiltin(e, "substring", Substring);
-        AddBuiltin(e, "char-at",   CharAt);
+        AddBuiltinEvaluated(e, "load",  Load); 
+        AddBuiltinEvaluated(e, "error", Error);
+        AddBuiltinEvaluated(e, "print", Print);
+        AddBuiltin(e, "index-of",      (e, a) => LVal.Number(a.Pop(0, e).StrVal!.IndexOf(a.Pop(0, e).StrVal!)));
+        AddBuiltin(e, "last-index-of", (e, a) => LVal.Number(a.Pop(0, e).StrVal!.LastIndexOf(a.Pop(0, e).StrVal!)));
+        AddBuiltinEvaluated(e, "substring", Substring);
+        AddBuiltinEvaluated(e, "char-at",   CharAt);
         AddBuiltin(e, "str-split", Split);
 
         // conversion functions
         // TODO: move the bodies of these definitions to static methods with error checking
-        AddBuiltin(e, "val",         (e, a) => LVal.Number(NumberParser.ParseString(a?[0].StrVal ?? "0")!));
-        AddBuiltin(e, "to-fixed",    (e, a) => LVal.Number(Rat.ToRat((a[0].NumVal ?? new Int())).ToFix(a.Count > 1 ? (int)(((a[1].NumVal as Int)?.num ?? BigInteger.Zero)) : 10)));
-        AddBuiltin(e, "to-rational", (e, a) => LVal.Number(Rat.ToRat(a[0].NumVal!)));
-        AddBuiltin(e, "truncate",    (e, a) => LVal.Number((a[0].NumVal?.ToInt() ?? new Int())));
+        AddBuiltinEvaluated(e, "val",         (e, a) => LVal.Number(NumberParser.ParseString(a?[0].StrVal ?? "0")!));
+        AddBuiltinEvaluated(e, "to-fixed",    (e, a) => LVal.Number(Rat.ToRat((a[0].NumVal ?? new Int())).ToFix(a.Count > 1 ? (int)(((a[1].NumVal as Int)?.num ?? BigInteger.Zero)) : 10)));
+        AddBuiltin(e, "to-rational", (e, a) => LVal.Number(Rat.ToRat(a.Pop(0, e).NumVal!)));
+        AddBuiltin(e, "truncate",    (e, a) => LVal.Number((a.Pop(0, e).NumVal?.ToInt() ?? new Int())));
         AddBuiltin(e, "complex",     Complex);
-        AddBuiltin(e, "to-str",      ToStr);
+        AddBuiltinEvaluated(e, "to-str",      ToStr);
         AddBuiltin(e, "to-sym",      (e, a) => a[0].IsAtom ? LVal.Sym(a[0].SymVal) : LVal.Err("Only atoms can be converted into symbols"));
-        AddBuiltin(e, "to-atom",
+        AddBuiltinEvaluated(e, "to-atom",
             (e, a) => a[0].IsSym ? LVal.Atom(a[0].SymVal) : 
                 (a[0].IsNum ? LVal.Atom(a[0].NumVal!.ToInt().num.ToString()) : 
                     LVal.Err("Only symbols and numbers can be converted to atoms")));
 
         // fun functions
-        AddBuiltin(e, "fib",       FastFib);
+        AddBuiltinEvaluated(e, "fib",       FastFib);
 
         // helper
-        AddBuiltin(e, "defined?",  (e, a) => LVal.Bool(a.Count > 0 && a[0].IsQExpr && a[0].Cells!.All(pp => pp.IsSym && e.ContainsKey(pp.SymVal))));
+        AddBuiltin(e, "defined?",  (e, a) => LVal.Bool((a[0].IsT || (a[0].IsSym && e.ContainsKey(a[0].SymVal))) || (a.Count > 0 && a[0].IsQExpr && a[0].Cells!.All(pp => pp.IsT || (pp.IsSym && e.ContainsKey(pp.SymVal))))));
 
         // type checking
-        AddBuiltin(e, "t?",        IsT);
-        AddBuiltin(e, "nil?",      IsNIL);
-        AddBuiltin(e, "num?",      IsNumber);
-        AddBuiltin(e, "fixed?",    IsFix);
-        AddBuiltin(e, "rational?", IsRat);
-        AddBuiltin(e, "int?",      IsInt);
-        AddBuiltin(e, "complex?",  IsComplex);
-        AddBuiltin(e, "atom?",     IsAtom);
+        AddBuiltinEvaluated(e, "t?",        IsT);
+        AddBuiltinEvaluated(e, "nil?",      IsNIL);
+        AddBuiltinEvaluated(e, "num?",      IsNumber);
+        AddBuiltinEvaluated(e, "fixed?",    IsFix);
+        AddBuiltinEvaluated(e, "rational?", IsRat);
+        AddBuiltinEvaluated(e, "int?",      IsInt);
+        AddBuiltinEvaluated(e, "complex?",  IsComplex);
+        AddBuiltinEvaluated(e, "atom?",     IsAtom);
         AddBuiltin(e, "symbol?",   IsSymbol);
-        AddBuiltin(e, "string?",   IsString);
-        AddBuiltin(e, "func?",     IsFunc);
-        AddBuiltin(e, "error?",    IsError);
-        AddBuiltin(e, "expr?",     IsExpr);
-        AddBuiltin(e, "qexpr?",    IsQExpr);
-        AddBuiltin(e, "sexpr?",    IsSExpr);
+        AddBuiltinEvaluated(e, "string?",   IsString);
+        AddBuiltinEvaluated(e, "char?",     IsChar);
+        AddBuiltinEvaluated(e, "function?", IsFunc);
+        AddBuiltinEvaluated(e, "error?",    IsError);
+        AddBuiltinEvaluated(e, "expr?",     IsExpr);
+        AddBuiltinEvaluated(e, "qexpr?",    IsQExpr);
+        AddBuiltinEvaluated(e, "sexpr?",    IsSExpr);
 
         // Hash functions
         AddBuiltin(e, "hash-create",  HashCreate);

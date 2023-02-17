@@ -11,6 +11,8 @@ public static class NumExtensions
 public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> {
     protected Num() {}
 
+    public static Num Zero = new Int(BigInteger.Zero);
+
     public static Num operator-(Num n) {
         return n switch {
             Comp c => -c,

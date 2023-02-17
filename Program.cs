@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-public class Program {
+﻿public class Program {
     public static readonly int MAJOR_VERSION = 0;
     public static readonly int MINOR_VERSION = 1;
 

@@ -29,7 +29,7 @@ public class Parser {
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
-            {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"}, {'|', "join"},
+            {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"}, {'|', "join"}, {'#', "hash-create"},
             {'~', "format"}, {'=', "set"}, {':', "def"}, {'@', "fn"}, {'!', "eval"}, {'?', "if"}
         };
 
@@ -145,21 +145,23 @@ public class Parser {
             }
         }
 
-        Token lexNumber() {
+        IEnumerable<Token> lexNumber() {
             var sb = new StringBuilder();
-            while (peekInt() != -1 && !Char.IsWhiteSpace(peek()) && !"})".Contains(peek())) sb.Append(next());
+            while (peekInt() != -1 && !Char.IsWhiteSpace(peek()) && !"})".Contains(peek())) {
+                var c = next();
+                if (c == '#' && peek() == '(') return lexSymbol(c);
+                sb.Append(c);
+            }
             var num = NumberParser.ParseString(sb.ToString());
-            if (num == null) return symbol(sb.ToString());
-            return new Token {type = Token.Type.Number, num = num, raw = sb.ToString()};
+            if (num == null) return new [] {symbol(sb.ToString())};
+            return new[] {new Token {type = Token.Type.Number, num = num, raw = sb.ToString()}};
         }
 
         IEnumerable<Token> Lex() {
             var i = 0;
             while ((i = peekInt()) != -1) {
                 var c = (char)i;
-                if (Char.IsWhiteSpace(c)) {
-                    next();
-                }
+                if (Char.IsWhiteSpace(c)) next();
                 else if (Char.IsControl(c)) {
                     yield return error("Control sequences not allowed");
                     next();
@@ -168,18 +170,12 @@ public class Parser {
                     yield return error("Non-ASCII character outside of string literal");
                     next();
                 }
-                else if (c ==';')
-                    yield return lexComment();
-                else if (c =='(' || c == ')' || c == '{' || c == '}') {
-                    yield return lexParen();
-                }
+                else if (c ==';') yield return lexComment();
+                else if (c =='(' || c == ')' || c == '{' || c == '}') yield return lexParen();
                 else if (((c >= '0' && c <= '9') || c == '+' || c == '-' || c == '#'))
-                    yield return lexNumber();
-                else if (c == '"')
-                    yield return lexString();
-                else  {
-                    foreach (var t in lexSymbol()) yield return t;
-                }
+                    foreach (var t in lexNumber()) yield return t;
+                else if (c == '"') yield return lexString();
+                else foreach (var t in lexSymbol()) yield return t;
             }
         }
 
@@ -189,11 +185,11 @@ public class Parser {
             if (t.type == Token.Type.QExOpen) parens += '}';
             if (t.type == Token.Type.SExClose) {
                 if (parens.EndsWith(')')) parens = parens.Remove(parens.Length - 1);
-                else yield return error("Closed a SExpr without opening");
+                else yield return error($"Closed a SExpr without opening: {parens}");
             }
             if (t.type == Token.Type.QExClose) {
                 if (parens.EndsWith('}')) parens = parens.Remove(parens.Length - 1);
-                else yield return error("Closed a QExpr without opening");
+                else yield return error($"Closed a QExpr without opening: {parens}");
             }
             yield return t;
         }

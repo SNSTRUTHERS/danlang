@@ -441,6 +441,30 @@ public class LVal {
         return s.ToString();
     }
 
+    public string Serialize() {
+        var sb = new StringBuilder();
+        if (IsHash) return HashValue!.Serialize();
+        if (IsQExpr) sb.Append('{');
+        else if (IsSExpr) sb.Append('(');
+
+        var i = 0;
+        var pre = "";
+        if (Count > 0) {
+            sb.Append(pre).Append(Cells![i++].Serialize());
+            pre = "\n";
+        }
+        else {
+            if (IsErr) sb.Append("error ").Append(ErrVal);
+            else sb.Append(ToStr());
+        }
+
+        if (IsHash) sb.Append("}");
+
+        if (IsQExpr) sb.Append('}');
+        else if (IsSExpr) sb.Append(')');
+        return sb.ToString();
+    }
+
     public void Print() {
         Console.Write(ToStr());
     }

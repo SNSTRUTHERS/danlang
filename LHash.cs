@@ -1,3 +1,5 @@
+using System.Text;
+
 public class TaggedValue<T> where T: class {
     protected TaggedValue<T>? _privateCallProxy = null;
     protected static HashSet<string> _ReservedTags = new HashSet<string> {LHash.TAG_LOCKED, LHash.TAG_RO};
@@ -149,6 +151,18 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         public bool IsNillable => !(Tags?.Contains(TAG_NOT_NIL) ?? false);
         public bool MakePrivate => _Add(TAG_PRIV);
         public bool MakeNotNil => _Add(TAG_NOT_NIL);
+
+        public void Serialize(string key, string pre, StringBuilder sb) {
+            sb.Append(pre).Append("{:").Append(key).Append(' ');
+            sb.Append(Value?.Serialize() ?? "NIL");
+
+            if (Tags != null) {
+                foreach (var t in Tags) {
+                    sb.Append(" :").Append(t);
+                }
+            }
+            sb.Append('}');
+        }
     }
 
     private string _KeyFromLVal(LVal key) => key.ValType switch {
@@ -287,6 +301,25 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     public LHash Clone(LVal? overrides = null) {
         if (_privateCallProxy != null) return new LHash((LHash)_privateCallProxy, overrides);
         return new LHash(this, overrides);
+    }
+
+    public string Serialize() {
+        var sb = new StringBuilder();
+        sb.Append("(hash-create {");
+        var pre = "";
+        foreach (var k in _Keys!) {
+            Value![k].Serialize(k, pre, sb);
+            pre = " ";
+        }
+
+        if (Tags != null) {
+            foreach (var t in Tags) {
+                sb.Append(pre).Append(':').Append(t);
+                pre = " ";
+            }
+        }
+
+        return sb.Append("})").ToString();
     }
 
     public LVal ToQexpr() {

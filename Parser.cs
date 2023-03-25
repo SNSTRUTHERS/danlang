@@ -57,8 +57,8 @@ public class Parser {
                     '(' => Token.Type.SExOpen,
                     ')' => Token.Type.SExClose,
                     '{' => Token.Type.QExOpen,
-                    '}'  => Token.Type.QExClose,
-                    _ => Token.Type.Error
+                    '}' => Token.Type.QExClose,
+                    _   => Token.Type.Error
                 }
             };
 

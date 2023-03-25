@@ -1,24 +1,24 @@
-(set {h} (hash-create))
+=({h} (hash-create))
 (hash-put h {:a "Hello, World!"}) ; add a single item
-(hash-put h {:b 10} {:f (fn {} {hash-get &0 :a})})
+(hash-put h {:b 10} {:f @({} {hash-get &0 :a})})
 (hash-get h :a)
 (hash-make-private h :a)
 (print (hash-get h :a)) ; get an error
 (print (hash-call h :f)) ; get the same value, but this time it works!
 
-(set {h-clone}
+=({h-clone}
   (hash-clone h {
     {:a "Hello, Clone World!"}
     {:b 15}
   })
 )
 
-(if (eq (hash-call h-clone :f) "Hello, Clone World!")
+?((eq (hash-call h-clone :f) "Hello, Clone World!")
   {print "Clone worked!"}
   {error "Clone failed :("}
 )
 
-(if (eq (hash-call h :f) "Hello, World!")
+?((eq (hash-call h :f) "Hello, World!")
   {print "Clone didn't corrupt the original!"}
   {error "Clone corrupted the original :("}
 )
@@ -27,8 +27,8 @@
 (hash-put h-clone {
   :h (hash-create {
     {:a 100 :__private}
-    {:a-get (fn {}  {hash-get &0 :a})}
-    {:a-put (fn {v} {hash-put &0 {:a v}})}
+    {:a-get @({}  {hash-get &0 :a})}
+    {:a-put @({v} {hash-put &0 {:a v}})}
   })
 })
 
@@ -37,13 +37,13 @@
 (print (hash-put (hash-get h-clone :h) :a 1000)) ; should fail
 (print (hash-call (hash-get h-clone :h) :a-put 1000)) ; should work
 
-(set {h-clone2} (hash-clone h-clone))
+=({h-clone2} (hash-clone h-clone))
 (print (hash-get (hash-get h-clone2 :h) :a)) ; should still fail
 (print (hash-call (hash-get h-clone2 :h) :a-get)) ; should work
 (print (hash-call (hash-get h-clone2 :h) :a-put 2000)) ; should work
 
 ; test that the cloned child hashes are distinct
-(if
+?(
   (and
     (eq (hash-call (hash-get h-clone  :h) :a-get) 1000)
     (eq (hash-call (hash-get h-clone2 :h) :a-get) 2000)

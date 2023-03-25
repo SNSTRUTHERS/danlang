@@ -1,6 +1,6 @@
 (fun {roll-3d6} {dice 3 6})
 
-(def harn.attributes
+:(harn.attributes
   #({
     {:sp  "Species"}
     {:sx  "Sex"}
@@ -35,7 +35,7 @@
 
 (fun {harn.species-attr-mod species sex attr} {
   case species
-    {:hum (if (neq sex :f) 0 (
+    {:hum ?((neq sex :f) 0 (
       cond
         {(eq attr :fr) -3}
         {(eq attr :aur) 2}
@@ -150,7 +150,7 @@
 
 (fun {harn.rand-species} {
   do 
-    (set rnd (die 100))
+    =(rnd (die 100))
     (cond
         {(<= rnd  98) :hum}
         {(<= rnd  99) :sin}
@@ -179,12 +179,12 @@
 
 (fun {harn.rand-sex s} {
   do 
-    (set rnd (die 100))
+    =(rnd (die 100))
     (case s
-        {:hum (if (<= rnd 48) :m :f)}
-        {:sin (if (<= rnd 45) :m :f)}
-        {:khu (if (<= rnd 75) :m :f)}
-        {:x   (if (<= rnd 50) :m :f)}
+        {:hum ?((<= rnd 48) :m :f)}
+        {:sin ?((<= rnd 45) :m :f)}
+        {:khu ?((<= rnd 75) :m :f)}
+        {:x   ?((<= rnd 50) :m :f)}
     )
 })
 
@@ -312,8 +312,8 @@
 (fun {harn.rand-height species sex} {
   + (dice 4 6) 
     (case species
-      {:hum (+ (die 6) (if (eq sex :f) 48 50))}
-      {:sin (if (eq sex :f) 51 52)}
+      {:hum (+ (die 6) ?((eq sex :f) 48 50))}
+      {:sin ?((eq sex :f) 51 52)}
       {:khu 40}
     )
 })
@@ -371,14 +371,14 @@
       {:key a}
       {:name n}
       {:att al}
-      (list :ssb #(ssb))
+      '(:ssb #(ssb))
       {:oml oml}
       {:auto auto}
       {:sp sp}
   ))
 })
 
-(def harn.skills #({
+:(harn.skills #({
   (harn.new-skill :acr "Acrobatics"  {:str :agl :agl} {{:nad 2} {:hir 1}}          1 NIL {:tumbling :trapeze :balancing})
   (harn.new-skill :cli "Climbing"    {:str :dex :agl} {{:ula 2} {:ara 2}}          4 T   {})
   (harn.new-skill :cnd "Condition"   {:str :sta :wil} {{:ula 1} {:lad 1}}          5 T   {})
@@ -433,27 +433,27 @@
 (fun {harn.skill.sp   sk}     {hash-get (hash.get-skill-info sk) :sp})
 
 ; Character Skill Helpers
-(def harn.ss  (flip harn.get-attr :ss))
+:(harn.ss  (flip harn.get-attr :ss))
 (fun {atom-str a} {substring (to-str a) 1})
 
 (fun {harn.get-ssb ch sk} {
   do
-    (set ssb (harn.skill.ssb sk))
-    (set ss  (to-str (harn.ss ch)))
-    (set v   (map 
-               (fn {} {hash-get ssb &1})
+    =(ssb (harn.skill.ssb sk))
+    =(ss  (to-str (harn.ss ch)))
+    =(v   (map 
+               @({} {hash-get ssb &1})
                (filter
-                 (fn {} {if (contains? ss (atom-str &1)) &1})
+                 @({} {if (contains? ss (atom-str &1)) &1})
                  (hash-keys ssb)
                )
     ))
-    (if v (maximum v) 0)
+    ?(v (maximum v) 0)
 })
 
 (fun {harn.get-sb ch sk} {
   do
-    (set att (harn.skill.att sk))
-    (set b (harn.attr-avg ch (fst att) (snd att) (thd att)))
+    =(att (harn.skill.att sk))
+    =(b (harn.attr-avg ch (fst att) (snd att) (thd att)))
     (+ b (harn.get-ssb ch sk))
 })
 
@@ -471,12 +471,12 @@
 
 (fun {harn.put-ml ch sk v} {
   do
-    (if (not (hash-key? ch :ml)) (hash-put ch {:ml (hash-create)}))
-    (hash-put (hash-get ch :ml) (list sk v))
+    ?((not (hash-key? ch :ml)) (hash-put ch {:ml #()}))
+    (hash-put (hash-get ch :ml) '(sk v))
 })
 
 (fun {harn.open-skill ch sk} {
-  (set oml (harn.get-oml ch sk))
+  =(oml (harn.get-oml ch sk))
   (harn.put-ml ch sk oml)
 })
 
@@ -485,11 +485,11 @@
 ; **********************
 (fun {harn.get-volatiles ch} {
   do
-    (if (not (hash-key? ch :v)) (hash-put ch {:v (hash-create)}))
+    ?((not (hash-key? ch :v)) (hash-put ch {:v #()}))
     (hash-get ch :v)
 })
 
-(def harn.valid-volatiles {:bl :dp :eq :fp :inj})
+:(harn.valid-volatiles {:bl :dp :eq :fp :inj})
 (fun {harn.valid-volatile? v} {elem? v harn.valid-volatiles})
 
 (fun {harn.volatile-default v} {
@@ -507,9 +507,9 @@
 (fun {harn.ensure-volatile ch v} {
   if (harn.valid-volatile? v)
     (do
-      (set vol (harn.get-volatiles ch))
-      (if (not (hash-key? vol v)) 
-        (hash-put vol (list v (harn.volatile-default v)))
+      =(vol (harn.get-volatiles ch))
+      ?((not (hash-key? vol v)) 
+        (hash-put vol '(v (harn.volatile-default v)))
       )
     )
     (error "Invalid volatile")
@@ -523,12 +523,12 @@
 
 (fun {harn.put-volatile ch v newvalue} {
   if (harn.valid-volatile? v)
-    (hash-put (harn.get-volatiles ch) (list v newvalue))
+    (hash-put (harn.get-volatiles ch) '(v newvalue))
     (error "Invalid volatile")
 })
 
 ; get/increase/decrease available development rolls for a character
-(def harn.get-dp (flip harn.get-volatile :dp))
+:(harn.get-dp (flip harn.get-volatile :dp))
 
 (fun {harn.put-dp ch newdp} {
   harn.put-volatile ch :dp newdp
@@ -536,27 +536,27 @@
 
 (fun {harn.inc-dp ch i} {
   do
-    (set dp (harn.get-dp ch))
+    =(dp (harn.get-dp ch))
     (harn.put-dp ch (+ dp i))
 })
 
-(def harn.dp++ (flip harn.inc-dp 1))
+:(harn.dp++ (flip harn.inc-dp 1))
 
 (fun {harn.dec-dp ch i} {
   harn.inc-dp ch (- i)
 })
 
-(def harn.dp-- (flip harn.dec-dp 1))
+:(harn.dp-- (flip harn.dec-dp 1))
 
 ; apply a development roll to a skill to try and increase ML
 (fun {harn.apply-dr ch sk} {
   if (positive? (harn.get-dp ch))
     (do
-      (set ml (harn.get-ml ch sk))
-      (set si (harn.get-si ch sk))
-      (if (> (+ 100 si) ml)
+      =(ml (harn.get-ml ch sk))
+      =(si (harn.get-si ch sk))
+      ?((> (+ 100 si) ml)
         (do
-          (if
+          ?(
             (> (+ si (die 100)) ml)
             (do (harn.put-ml ch sk (1+ ml)) (print (harn.skill.name sk) "ML was improved to" (1+ ml)))
             (print (harn.skill.name sk) "ML was not improved")
@@ -571,7 +571,7 @@
 })
 
 ; get equipment list
-(def harn.get-eq (flip harn.get-volatile :eq))
+:(harn.get-eq (flip harn.get-volatile :eq))
 
 (fun {harn.new-equipment a n wt sk c} {
   list a #((
@@ -583,7 +583,7 @@
   ))
 })
 
-(def harn.equipment #({
+:(harn.equipment #({
   (harn.new-equipment)
 }))
 
@@ -596,15 +596,15 @@
 ; get-load sum of weight of all equipment carried
 (fun {harn.get-load ch} {
   do
-    (set e (harn.get-eq ch))
-    (sum (map (fn {} (harn.equipment.wt &1)) e))
+    =(e (harn.get-eq ch))
+    (sum (map @({} (harn.equipment.wt &1)) e))
 })
 
 ; get-ip sum of all injury points
 (fun {harn.get-ip} {
   do
-    (set inj (harn.get-injuries ch))
-    (sum (map (fn {} (harn.injury.il &1)) inj))
+    =(inj (harn.get-injuries ch))
+    (sum (map @({} (harn.injury.il &1)) inj))
 })
 
 ; get-fp fatigue points
@@ -616,7 +616,7 @@
 ; get-ep encumbrance penalty
 (fun {harn.get-ep ch} {
   do
-    (set ld (harn.get-load ch))
+    =(ld (harn.get-load ch))
     (div ld (harn.end ch))
 })
 
@@ -628,20 +628,20 @@
 ; *********************************
 (fun {harn.create} {
   do
-    (set params #((if (defined? &1) &1 NIL)))
-    (set p (fn {} {?? (hash-get params &1) &2}))
-    (set sp (p :sp (harn.rand-species)))
-    (set sx (p :sx (harn.rand-sex sp)))
-    (set bd (p :bd (harn.rand-birthday)))
-    (set ss (harn.sunsign-of (fst bd) (snd bd)))
-    (set ht (p :ht (harn.rand-height sp sx)))
-    (set fr (p :fr (harn.rand-frame sp sx)))
-    (set wt (harn.weight ht fr))
-    (set med (harn.rand-medical sp))
-    (set new-attr (fn {a} {list a (p a (snd (harn.rand-attr sp sx fr wt med a)))}))
-    (set agl (new-attr :agl))
+    =(params #(?((defined? &1) &1 NIL)))
+    =(p @({} {?? (hash-get params &1) &2}))
+    =(sp (p :sp (harn.rand-species)))
+    =(sx (p :sx (harn.rand-sex sp)))
+    =(bd (p :bd (harn.rand-birthday)))
+    =(ss (harn.sunsign-of (fst bd) (snd bd)))
+    =(ht (p :ht (harn.rand-height sp sx)))
+    =(fr (p :fr (harn.rand-frame sp sx)))
+    =(wt (harn.weight ht fr))
+    =(med (harn.rand-medical sp))
+    =(new-attr @({a} {list a (p a (snd (harn.rand-attr sp sx fr wt med a)))}))
+    =(agl (new-attr :agl))
     
-    (set ch #({
+    =(ch #({
       {:att #({
         {:bir #({
           {:sp  sp}
@@ -651,9 +651,9 @@
           {:med med}
         })}
         {:fam #({
-          (list :sr  (harn.rand-sibling-rank))
-          (list :est (harn.rand-estrangement))
-          (list :ch  (harn.rand-clanhead))
+          '(:sr  (harn.rand-sibling-rank))
+          '(:est (harn.rand-estrangement))
+          '(:ch  (harn.rand-clanhead))
         })}
         {:app #({
           {:ht  ht}
@@ -666,7 +666,7 @@
           (new-attr :sta)
           (new-attr :dex)
           (agl)
-          (list :spd (max 1 (+ (snd agl) -5 (die 9))))
+          '(:spd (max 1 (+ (snd agl) -5 (die 9))))
           (new-attr :eye)
           (new-attr :hrg)
           (new-attr :smt)
@@ -680,8 +680,8 @@
           (new-attr :mor)
         })}
         {:rel #({
-          (list :pty (p :pty (dice 5 6)))
-          (list :dty (p :dty "<None chosen>"))
+          '(:pty (p :pty (dice 5 6)))
+          '(:dty (p :dty "<None chosen>"))
         })}
       })}
     }))
@@ -690,11 +690,11 @@
     (harn.get-volatiles ch)
 
     ; add automatic skills
-    (hash-put ch {:ml (hash-create)})
+    (hash-put ch {:ml #()})
     (map
-      (fn {} {do (set ml (harn.get-oml ch &1)) (harn.put-ml ch &1 ml) (list &1 ml)})
+      @({} {do =(ml (harn.get-oml ch &1)) (harn.put-ml ch &1 ml) '(&1 ml)})
       (filter
-        (fn {} {harn.skill.auto &1})
+        @({} {harn.skill.auto &1})
         (hash-keys harn.skills)
       )
     )
@@ -706,33 +706,33 @@
 ; Helpers
 (fun {harn.end c} {harn.attr-avg c :str :sta :wil})
 
-(def harn.fr  (flip harn.get-attr :fr))
-(def harn.ht  (flip harn.get-attr :ht))
-(def harn.owt (flip harn.get-attr :owt))
-(def harn.cml (flip harn.get-attr :cml))
+:(harn.fr  (flip harn.get-attr :fr))
+:(harn.ht  (flip harn.get-attr :ht))
+:(harn.owt (flip harn.get-attr :owt))
+:(harn.cml (flip harn.get-attr :cml))
 
-(def harn.str (flip harn.get-attr :str))
-(def harn.sta (flip harn.get-attr :sta))
-(def harn.dex (flip harn.get-attr :dex))
-(def harn.agl (flip harn.get-attr :agl))
-(def harn.spd (flip harn.get-attr :spd))
-(def harn.eye (flip harn.get-attr :eye))
-(def harn.hrg (flip harn.get-attr :hrg))
-(def harn.smt (flip harn.get-attr :smt))
-(def harn.tch (flip harn.get-attr :tch))
+:(harn.str (flip harn.get-attr :str))
+:(harn.sta (flip harn.get-attr :sta))
+:(harn.dex (flip harn.get-attr :dex))
+:(harn.agl (flip harn.get-attr :agl))
+:(harn.spd (flip harn.get-attr :spd))
+:(harn.eye (flip harn.get-attr :eye))
+:(harn.hrg (flip harn.get-attr :hrg))
+:(harn.smt (flip harn.get-attr :smt))
+:(harn.tch (flip harn.get-attr :tch))
 
-(def harn.voi (flip harn.get-attr :voi))
-(def harn.int (flip harn.get-attr :int))
-(def harn.aur (flip harn.get-attr :aur))
-(def harn.wil (flip harn.get-attr :wil))
-(def harn.mor (flip harn.get-attr :mor))
+:(harn.voi (flip harn.get-attr :voi))
+:(harn.int (flip harn.get-attr :int))
+:(harn.aur (flip harn.get-attr :aur))
+:(harn.wil (flip harn.get-attr :wil))
+:(harn.mor (flip harn.get-attr :mor))
 
-(def harn.pty (flip harn.get-attr :pty))
-(def harn.dty (flip harn.get-attr :dty))
+:(harn.pty (flip harn.get-attr :pty))
+:(harn.dty (flip harn.get-attr :dty))
 
 (fun {harn.size c} {
   do
-    (set wt (harn.wt c))
+    =(wt (harn.wt c))
     (cond
       {(<= wt  65) 1}
       {(<= wt  75) 2}

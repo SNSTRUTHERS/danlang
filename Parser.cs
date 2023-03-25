@@ -30,7 +30,8 @@ public class Parser {
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
             {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"}, {'|', "join"}, {'#', "hash-create"},
-            {'~', "format"}, {'=', "set"}, {':', "def"}, {'@', "fn"}, {'!', "eval"}, {'?', "if"}
+            {'~', "format"}, {'=', "set"}, {':', "def"}, {'@', "fn"}, {'!', "eval"}, {'?', "if"},
+            {'<', "hash-get"}, {'>', "hash-put"}
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream, string startingParens = "") {

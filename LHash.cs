@@ -305,7 +305,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
     public string Serialize() {
         var sb = new StringBuilder();
-        sb.Append("(hash-create {");
+        sb.Append("#({");
         var pre = "";
         foreach (var k in _Keys!) {
             Value![k].Serialize(k, pre, sb);

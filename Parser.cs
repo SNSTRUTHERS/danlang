@@ -3,35 +3,31 @@ using System.Text;
 public class Parser {
     public record Token {
         public enum Type {
-            EOF = '\0',
-            Error = '!',
-            More = '>',
-            QExOpen = '{',
+            EOF      = '\0',
+            Error    = '!',
+            More     = '>',
+            QExOpen  = '{',
             QExClose = '}',
-            SExOpen = '(',
+            SExOpen  = '(',
             SExClose = ')',
-            Symbol = '$',
-            Number = '#',
-            String = '@',
-            Comment = ';'
+            Symbol   = '$',
+            Number   = '#',
+            String   = '@',
+            Comment  = ';'
         }
 
         public Type type;
-
         public string? str;
-
         public string? raw;
-
         public Num? num;
-
         public string parens = "";
     }
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
-            {'\'', "list"}, {'^', "head"}, {'$', "tail"}, {'.', "apply"}, {'|', "join"}, {'#', "hash-create"},
-            {'~', "format"}, {'=', "set"}, {':', "def"}, {'@', "fn"}, {'!', "eval"}, {'?', "if"},
-            {'<', "hash-get"}, {'>', "hash-put"}
+            {'\'', "list"},   {'^', "head"},     {'$', "tail"},     {'.', "apply"},       {'|', "join"},
+            {'~',  "format"}, {'=', "set"},      {':', "def"},      {'@', "fn"},          {'!', "eval"},
+            {'?',  "if"},     {'<', "hash-get"}, {'>', "hash-put"}, {'#', "hash-create"}
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream, string startingParens = "") {
@@ -42,14 +38,17 @@ public class Parser {
 
         bool isNumberSeparator(int c, char? numBase = null) =>
             numBase != null && (c == '/' || c == '.' || numBase switch {
-                'd' or 'D'=> c == '+' || c == '-' || c == '.' || c == 'e' || c == 'E',
-                _ => false
+                'd' or 'D'=> c == '+' || 
+                             c == '-' ||
+                             c == 'e' ||
+                             c == 'E',
+                _         => false
             });
 
         bool isTerminator(int c, char? numBase = null) => c == -1 || Char.IsWhiteSpace((char)c) || c == ')' || c == '}' || isNumberSeparator(c, numBase);
 
-        Token error(String reason, String? raw = null) => new Token { type = Token.Type.Error, str = reason, raw = raw };
-        Token symbol(String sym, String? raw = null) => new Token { type = Token.Type.Symbol, str = sym, raw = raw ?? sym };
+        Token error(String reason, String? raw = null) => new Token { type = Token.Type.Error,  str = reason, raw = raw };
+        Token symbol(String sym,   String? raw = null) => new Token { type = Token.Type.Symbol, str = sym,    raw = raw ?? sym };
         Token paren(char p, string? str = null) => 
             new Token { 
                 raw = str ?? p.ToString(),

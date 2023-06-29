@@ -29,11 +29,12 @@
 :({<> !=} neq neq)
 
 ; test helpers
-:(nil?   (flip == NIL))
-:(t?     (flip == T))
-:(zero?  (flip == 0))
-:(one?   (flip == 1))
+:(nil?   (== NIL))
+:(t?     (== T))
+:(zero?  (== 0))
+:(one?   (== 1))
 :({=0 =1}  zero? one?)
+:({0? 1?}  zero? one?)
 
 ; logical operators
 (fun {xor a b} {
@@ -280,3 +281,13 @@
 })
 
 (fun {special-die sides cases} {apply case (cons (die sides) cases)})
+
+; open ended dice rolls
+(fun {oe-die+ sides mod} {
+  do
+  =(rl (die+ sides 0))
+  ?((eq rl sides) (+ sides (oe-die+ sides mod)) (+ rl mod))
+})
+(fun {oe-die sides}         {oe-die+ sides 0})
+(fun {oe-dice+ n sides mod} {if (=0 n) mod (+ (oe-die sides) (oe-dice+ (1- n) sides mod))})
+(fun {oe-dice n sides}      {oe-dice+ n sides 0})

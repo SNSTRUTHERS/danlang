@@ -25,9 +25,9 @@ public class Parser {
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
-            {'\'', "list"},   {'^', "head"},     {'$', "tail"},     {'.', "apply"},       {'|', "join"},
-            {'~',  "format"}, {'=', "set"},      {':', "def"},      {'@', "fn"},          {'!', "eval"},
-            {'?',  "if"},     {'<', "hash-get"}, {'>', "hash-put"}, {'#', "hash-create"}
+            {'\'', "list"},   {'^', "head"},        {'$', "tail"},     {'.', "apply"},    {'|', "join"},
+            {'~',  "format"}, {'=', "set"},         {':', "def"},      {'@', "fn"},       {'!', "eval"},
+            {'?',  "if"},     {'#', "hash-create"}, {'<', "hash-get"}, {'>', "hash-put"}, {'*', "hash-call"}
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream, string startingParens = "") {
@@ -128,7 +128,7 @@ public class Parser {
 
         IEnumerable<Token> lexSymbol(char? pref = null) {
             char prefix = pref ?? next();
-            if (peek() == '(' && LParenPrefixes.Keys.Contains(prefix)) {
+            if ((peek() == '(' || peek() == '{') && LParenPrefixes.Keys.Contains(prefix)) {
                 var raw = $"{prefix}(";
                 yield return lexParen();
                 yield return symbol(LParenPrefixes[prefix], raw);

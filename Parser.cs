@@ -25,7 +25,7 @@ public class Parser {
 
     private static readonly Dictionary<char,string> LParenPrefixes = // @"'#,>:./~*=";
         new Dictionary<char, string> {
-            {'\'', "list"},   {'^', "head"},        {'$', "tail"},     {'.', "apply"},    {'|', "join"},
+            {'\'', "list"},   {'^', "head"},        {'$', "tail"},     {'.', "unpack"},    {'|', "join"},
             {'~',  "format"}, {'=', "set"},         {':', "def"},      {'@', "fn"},       {'!', "eval"},
             {'?',  "if"},     {'#', "hash-create"}, {'<', "hash-get"}, {'>', "hash-put"}, {'*', "hash-call"}
         };

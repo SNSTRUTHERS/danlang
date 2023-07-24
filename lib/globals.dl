@@ -244,8 +244,8 @@
   )
 })
 
-(fun {minimum} {apply min &1})
-(fun {maximum} {apply max &1})
+(fun {minimum} .{min &1})
+(fun {maximum} .{max &1})
 
 ; String helpers
 (fun {starts-with? s sub} {=0 (index-of s sub)})
@@ -279,7 +279,7 @@
   0
 })
 
-(fun {special-die sides cases} {apply case (cons (die sides) cases)})
+(fun {special-die sides cases} .{case (cons (die sides) cases)})
 
 ; open ended dice rolls
 (fun {oe-die+ sides mod} {

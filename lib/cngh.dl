@@ -2,7 +2,7 @@
 :(cngh.__local #({{:name "<unnamed>"}}))
 
 ; *** Debugging output ***
-(fun {cngh.output} {apply print &_})
+(fun {cngh.output} .{print &_})
 
 ; manipulating the local parameter store
 (fun {cngh.get-local attr} {?? <(cngh.__local attr) ?((?defined &1) &1 NIL)})

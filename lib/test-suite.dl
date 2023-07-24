@@ -1,1 +1,1 @@
-(fun {assert a b err} {if (eq a b) {T} {do (print err) NIL}})
+(fun {assert a b err} ?{(eq a b) {T} {do (print err) NIL}})

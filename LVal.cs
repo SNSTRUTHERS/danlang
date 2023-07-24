@@ -1,9 +1,8 @@
-using System.ComponentModel;
 using System.Numerics;
 using System.Text;
 
 public class LVal {
-    public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, COMMENT, EXIT };
+    public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, STREAM, COMMENT, EXIT };
 
     public LE ValType;
     public LEnv? Env = null;
@@ -15,6 +14,7 @@ public class LVal {
     public string SymVal = string.Empty;
     public string StrVal = string.Empty;
     public LHash? HashValue = null;
+    public LStream? StreamValue = null;
     public List<LVal>? Cells = null;
 
     public int Count => Cells?.Count ?? 0;
@@ -31,11 +31,12 @@ public class LVal {
     public bool IsSExpr => ValType == LE.SEXPR;
     public bool IsQExpr => ValType == LE.QEXPR;
     public bool IsHash => ValType == LE.HASH;
+    public bool IsStream => ValType == LE.STREAM;
     public bool IsComment => ValType == LE.COMMENT;
 
     //  Hashes
     public LVal Copy() {
-        if (IsHash) return this;
+        if (IsHash || IsStream) return this;
         LVal x = new LVal();
         x.ValType = ValType;
         switch (ValType) {
@@ -74,13 +75,8 @@ public class LVal {
         return v;
     }
 
-    public static LVal NIL() {
-        return Qexpr();
-    }
-
-    public static LVal Bool(bool b) {
-        return b ? T() : NIL();
-    }
+    public static LVal NIL() => Qexpr();
+    public static LVal Bool(bool b) => b ? T() : NIL();
 
     public static LVal Number(int x) => Number(new Int(x));
     public static LVal Number(BigInteger x) => Number(new Int(x));
@@ -277,7 +273,6 @@ public class LVal {
         v.HashValue = hash;
         return v;
     }
-
     public static LVal Hash(LVal? initialValues = null, LEnv? e = null) {
         LVal v = new LVal();
         v.ValType = LE.HASH;
@@ -308,6 +303,14 @@ public class LVal {
         }
         return v;
     }
+
+    public static LVal Stream(LStream stream) {
+        LVal v = new LVal();
+        v.ValType = LE.STREAM;
+        v.StreamValue = stream;
+        return v;
+    }
+    public static LVal Stream(Stream stream) => Stream(new LStream(stream));
 
     // Helper methods
     public LVal Add(LVal x) {
@@ -442,8 +445,9 @@ public class LVal {
     }
 
     public string Serialize() {
-        var sb = new StringBuilder();
         if (IsHash) return HashValue!.Serialize();
+
+        var sb = new StringBuilder();
         if (IsQExpr) sb.Append('{');
         else if (IsSExpr) sb.Append('(');
 
@@ -452,13 +456,10 @@ public class LVal {
         if (Count > 0) {
             sb.Append(pre).Append(Cells![i++].Serialize());
             pre = "\n";
-        }
-        else {
+        } else {
             if (IsErr) sb.Append("error ").Append(ErrVal);
             else sb.Append(ToStr());
         }
-
-        if (IsHash) sb.Append("}");
 
         if (IsQExpr) sb.Append('}');
         else if (IsSExpr) sb.Append(')');
@@ -515,21 +516,21 @@ public class LVal {
         // TODO: include Cells
     }
 
-    public static string LEName(LE t) {
-        switch(t) {
-            case LE.FUN: return "Function";
-            case LE.NUM: return "Number";
-            case LE.ERR: return "Error";
-            case LE.ATOM: return "Atom";
-            case LE.SYM: return "Symbol";
-            case LE.CHAR: return "Character";
-            case LE.STR: return "String";
-            case LE.HASH: return "Hash";
-            case LE.SEXPR: return "S-Expression";
-            case LE.QEXPR: return "Q-Expression";
-            default: return "Unknown";
-        }
-    }
+    public static string LEName(LE t) =>
+        t switch {
+            LE.FUN => "Function",
+            LE.NUM => "Number",
+            LE.ERR => "Error",
+            LE.ATOM => "Atom",
+            LE.SYM => "Symbol",
+            LE.CHAR => "Character",
+            LE.STR => "String",
+            LE.HASH => "Hash",
+            LE.STREAM => "Stream",
+            LE.SEXPR => "S-Expression",
+            LE.QEXPR => "Q-Expression",
+            _ => "Unknown"
+        };
 
     public static LVal Call(LEnv e, LVal f, LVal a) {
         if (f.BuiltinVal != null) { return f.BuiltinVal(e, a); }

@@ -31,7 +31,7 @@
   })
 )
 
-(fun {harn.attr-name} {hash-get harn.attributes &1})
+(fun {harn.attr-name} <{harn.attributes &1})
 
 (fun {harn.species-attr-mod species sex attr} {
   case species
@@ -110,10 +110,9 @@
     (harn.medical-attr-mod med attr)
 })
 
-(fun {harn.rand-attr species sex frame weight med attr} {
-  list
-    attr
-    (max 1 (+ (roll-3d6) (harn.attr-mod species sex frame weight med attr)))
+(fun {harn.rand-attr species sex frame weight med attr} '{
+  attr
+  (max 1 (+ (roll-3d6) (harn.attr-mod species sex frame weight med attr)))
 })
 
 (fun {harn.attr-group attr} {
@@ -126,10 +125,10 @@
     {T :none}
 })
 
-(fun {harn.get-attributes ch} {hash-get ch :att})
-(fun {harn.get-attribute-group ch gr} {hash-get (harn.get-attributes ch) gr})
+(fun {harn.get-attributes ch} <{ch :att})
+(fun {harn.get-attribute-group ch gr} <{(harn.get-attributes ch) gr})
 
-(fun {harn.get-attr ch a} {hash-get (harn.get-attribute-group ch (harn.attr-group a)) a})
+(fun {harn.get-attr ch a} <{(harn.get-attribute-group ch (harn.attr-group a)) a})
 
 (fun {harn.attr-avg c a1 a2 a3} {
   trunc
@@ -226,7 +225,7 @@
 ; ******************************
 ; *** Birthdays and Sunsigns ***
 ; ******************************
-(fun {harn.rand-birthday} {list (harn.rand-month) (die 30)})
+(fun {harn.rand-birthday} '{(harn.rand-month) (die 30)})
 
 (fun {harn.sunsign-name} {
   case &1
@@ -365,16 +364,15 @@
 (fun {harn.rand-medical} {NIL})
 
 ; *** Skills ***
-(fun {harn.new-skill a n al ssb oml auto sp} {
-  list a #((
-    list
-      {:key a}
-      {:name n}
-      {:att al}
-      '(:ssb #(ssb))
-      {:oml oml}
-      {:auto auto}
-      {:sp sp}
+(fun {harn.new-skill a n al ssb oml auto sp} '{
+  a #('(
+    {:key a}
+    {:name n}
+    {:att al}
+    '(:ssb #(ssb))
+    {:oml oml}
+    {:auto auto}
+    {:sp sp}
   ))
 })
 
@@ -424,13 +422,13 @@
   (harn.new-skill :sng "Singing"     {:hrg :voi :voi} {{:mas 1}}                   3 T   {:opera})
 }))
 
-(fun {harn.get-skill-info sk} {hash-get harn.skills sk})
-(fun {harn.skill.name sk}     {hash-get (harn.get-skill-info sk) :name})
-(fun {harn.skill.att  sk}     {hash-get (harn.get-skill-info sk) :att})
-(fun {harn.skill.ssb  sk}     {hash-get (harn.get-skill-info sk) :ssb})
-(fun {harn.skill.oml  sk}     {hash-get (harn.get-skill-info sk) :oml})
-(fun {harn.skill.auto sk}     {hash-get (harn.get-skill-info sk) :auto})
-(fun {harn.skill.sp   sk}     {hash-get (hash.get-skill-info sk) :sp})
+(fun {harn.get-skill-info sk} <{harn.skills sk})
+(fun {harn.skill.name sk}     <{(harn.get-skill-info sk) :name})
+(fun {harn.skill.att  sk}     <{(harn.get-skill-info sk) :att})
+(fun {harn.skill.ssb  sk}     <{(harn.get-skill-info sk) :ssb})
+(fun {harn.skill.oml  sk}     <{(harn.get-skill-info sk) :oml})
+(fun {harn.skill.auto sk}     <{(harn.get-skill-info sk) :auto})
+(fun {harn.skill.sp   sk}     <{(harn.get-skill-info sk) :sp})
 
 ; Character Skill Helpers
 :(harn.ss  (flip harn.get-attr :ss))
@@ -441,9 +439,9 @@
     =(ssb (harn.skill.ssb sk))
     =(ss  (to-str (harn.ss ch)))
     =(v   (map 
-               @({} {hash-get ssb &1})
+               @({} <{ssb &1})
                (filter
-                 @({} {if (contains? ss (atom-str &1)) &1})
+                 @({} ?{(contains? ss (atom-str &1)) &1})
                  (hash-keys ssb)
                )
     ))
@@ -461,9 +459,7 @@
   * (harn.skill.oml sk) (harn.get-sb ch sk)
 })
 
-(fun {harn.get-ml ch sk} {
-  hash-get (hash-get ch :ml) sk
-})
+(fun {harn.get-ml ch sk} <{<(ch :ml) sk})
 
 (fun {harn.get-si ch sk} {
   div (harn.get-ml ch sk) 10
@@ -471,8 +467,8 @@
 
 (fun {harn.put-ml ch sk v} {
   do
-    ?((not (hash-key? ch :ml)) (hash-put ch {:ml #()}))
-    (hash-put (hash-get ch :ml) '(sk v))
+    ?((not (hash-key? ch :ml)) >(ch {:ml #()}))
+    >(<(ch :ml) '(sk v))
 })
 
 (fun {harn.open-skill ch sk} {
@@ -485,8 +481,8 @@
 ; **********************
 (fun {harn.get-volatiles ch} {
   do
-    ?((not (hash-key? ch :v)) (hash-put ch {:v #()}))
-    (hash-get ch :v)
+    ?((not (hash-key? ch :v)) >(ch {:v #()}))
+    <(ch :v)
 })
 
 :(harn.valid-volatiles {:bl :dp :eq :fp :inj})
@@ -509,7 +505,7 @@
     (do
       =(vol (harn.get-volatiles ch))
       ?((not (hash-key? vol v)) 
-        (hash-put vol '(v (harn.volatile-default v)))
+        >(vol '(v (harn.volatile-default v)))
       )
     )
     (error "Invalid volatile")
@@ -518,12 +514,12 @@
 (fun {harn.get-volatile ch v} {
   do
     (harn.ensure-volatile ch v)
-    (hash-get (harn.get-volatiles ch) v)
+    <((harn.get-volatiles ch) v)
 })
 
 (fun {harn.put-volatile ch v newvalue} {
   if (harn.valid-volatile? v)
-    (hash-put (harn.get-volatiles ch) '(v newvalue))
+    >((harn.get-volatiles ch) '(v newvalue))
     (error "Invalid volatile")
 })
 
@@ -573,13 +569,12 @@
 ; get equipment list
 :(harn.get-eq (flip harn.get-volatile :eq))
 
-(fun {harn.new-equipment a n wt sk c} {
-  list a #((
-    list
-      {:name n}
-      {:wt wt}
-      {:sk sk}
-      {:cost c}
+(fun {harn.new-equipment a n wt sk c} '{
+  a #('(
+    {:name n}
+    {:wt wt}
+    {:sk sk}
+    {:cost c}
   ))
 })
 
@@ -587,9 +582,9 @@
   (harn.new-equipment)
 }))
 
-(fun {harn.get-equipment-info e} {hash-get harn.equipment e})
+(fun {harn.get-equipment-info e} <{harn.equipment e})
 
-(fun {harn.equipment.wt} {hash-get (harn.get-equipment-info &1) :wt})
+(fun {harn.equipment.wt} <{(harn.get-equipment-info &1) :wt})
 
 (fun {harn.get-eq ch} {harn.get-volatile ch :eq})
 
@@ -629,7 +624,7 @@
 (fun {harn.create} {
   do
     =(params #(?((defined? &1) &1 NIL)))
-    =(p @({} {?? (hash-get params &1) &2}))
+    =(p @({} {?? <(params &1) &2}))
     =(sp (p :sp (harn.rand-species)))
     =(sx (p :sx (harn.rand-sex sp)))
     =(bd (p :bd (harn.rand-birthday)))
@@ -638,7 +633,7 @@
     =(fr (p :fr (harn.rand-frame sp sx)))
     =(wt (harn.weight ht fr))
     =(med (harn.rand-medical sp))
-    =(new-attr @({a} {list a (p a (snd (harn.rand-attr sp sx fr wt med a)))}))
+    =(new-attr @({a} '{a (p a (snd (harn.rand-attr sp sx fr wt med a)))}))
     =(agl (new-attr :agl))
     
     =(ch #({
@@ -690,7 +685,7 @@
     (harn.get-volatiles ch)
 
     ; add automatic skills
-    (hash-put ch {:ml #()})
+    >(ch {:ml #()})
     (map
       @({} {do =(ml (harn.get-oml ch &1)) (harn.put-ml ch &1 ml) '(&1 ml)})
       (filter

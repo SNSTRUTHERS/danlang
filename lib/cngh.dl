@@ -1,0 +1,30 @@
+:(cngh.__games #({{:hosted #()} {:joined #()}}))
+:(cngh.__local #({{:name "<unnamed>"}}))
+
+; *** Debugging output ***
+(fun {cngh.output} .{print &_})
+
+; manipulating the local parameter store
+(fun {cngh.get-local attr} {?? <(cngh.__local attr) ?((?defined &1) &1 NIL)})
+(fun {cngh.put-local attr val} >{cngh.__local {attr val}})
+(fun {cngh.del-local attr} {cngh.put-local attr NIL})
+
+; server
+(fun {cngh.new-server name} #{{{:name name}}})
+(fun {cngh.start-server} {cngh.put-local :server (cngh.new-server (cngh.get-local :name "<unnamed>"))})
+(fun {cngh.stop-server} {do (cngh.output "shutting down local game server...") (cngh.del-local :server)})
+(fun {cngh.ensure-server} ?{(nil? (cngh.get-local :server)) (cngh.create-server)}
+(fun {cngh.init name} >{cngh.__local {:name name}})
+(fun {cngh.next-game-id} {do =(id (cngh.get-local :next-game-id 1)) (cngh.put-local :next-game-id (1+ id)) id})
+(fun {cngh.create-game name pub} #{{{:name name} ?(pub :__public :__private)}})
+(fun {cngh.host-game name pub} {
+  do
+    (cngh.ensure-server)
+    >(<(cngh.__games :hosted) '((cngh.next-game-id) (cngh.create-game name pub)))
+})
+
+; join a game
+(fun {cngh.join-game host id} {})
+(fun {cngh.disconnect-game id} {cngh.output id "disconnected"})
+(fun {cngh.leave-game id} {do (cngh.disconnect-game id) (hash-put cngh.__games {id NIL})})
+(fun {cngh.list-games} ?{(?defined &1) (cngh.list-remote-games &1) (cngh.output chgn.__games)})

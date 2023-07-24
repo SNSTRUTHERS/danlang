@@ -1,6 +1,6 @@
 using System.Text;
 using System.Numerics;
-using System.Threading;
+
 public class Builtins
 { 
     private static void AddBuiltin(LEnv e, string name, Func<LEnv, LVal, LVal> func) {
@@ -118,13 +118,15 @@ public class Builtins
     }
 
     private static LVal Add(LEnv e, LVal a) {
-        LVal Plus(LVal a, LVal b) {
-            if (a.IsNum && b.IsNum) {
-                a.NumVal = a.NumVal! + b.NumVal!;
-                return a;
+        LVal Plus(LVal v1, LVal v2) {
+            if (v1.IsNum && v2.IsNum) {
+                v1.NumVal = v1.NumVal! + v2.NumVal!;
+                return v1;
             }
-            return LVal.Str((a.ToStr() + b.ToStr()).Replace("\"\"", ""));
+
+            return LVal.Str((v1.ToStr() + v2.ToStr()).Replace("\"\"", ""));
         }
+
         LVal? x = null;
         while (a.Count > 0) {
             LVal y = a.Pop(0, e);
@@ -132,6 +134,7 @@ public class Builtins
             if (x == null) x = y;
             else  x = Plus(x, y);
         }
+
         return x ?? LVal.Number(BigInteger.Zero);
     }
     private static LVal Sub(LEnv e, LVal a) { return Op(e, a, "-"); }

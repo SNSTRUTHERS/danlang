@@ -101,8 +101,10 @@
   (drop (1- n) $(l))
 })
 
+:(skip drop)
+
 ; split list at N
-(fun {split n l} {list (take n l) (drop n l)})
+(fun {split n l} '{(take n l) (drop n l)})
 
 ; is x in l?
 (fun {elem? x l} ?{
@@ -252,27 +254,56 @@
 (fun {ends-with?   s sub} {eq (len s) (+ (last-index-of s sub) (len sub))})
 (fun {contains?    s sub} {>=0 (index-of s sub)})
 
+; Repeat
+(fun {repeat n d} ?{(=0 n) NIL (cons !(d) (roll (1- n) d))})
+:(times repeat)
+
 ; Dice
 (fun {die+ sides mod}    {+ 1 mod (random sides)})
 (fun {die sides}         {die+ sides 0})
+
+(fun {d3+ m} {die+ 3 m})
+(fun {d3} {d3+ 0})
+(fun {d4+ m} {die+ 4 m})
+(fun {d4} {d4+ 0})
+(fun {d6+ m} {die+ 6 m})
+(fun {d6} {d6+ 0})
+(fun {d8+ m} {die+ 8 m})
+(fun {d8} {d8+ 0})
+(fun {d10} {die+ 10 0})
+(fun {d10} {d10+ 0})
+(fun {d12+ m} {die+ 12 m})
+(fun {d12} {d12+ 0})
+(fun {d20+ m} {die+ 20 m})
+(fun {d20} {d20+ 0})
+(fun {d24+ m} {die+ 24 m})
+(fun {d24} {d24+ 0})
+(fun {d30+ m} {die+ 30 0})
+(fun {d30} {d30+ 0})
+(fun {d60+ m} {die+ 60 m})
+(fun {d60} {d60+ 0})
+(fun {d100+ m} {die+ 100 m})
+(fun {d100} {d100+ 0})
+
 (fun {dice+ n sides mod} ?{(=0 n) mod (+ (die sides) (dice+ (1- n) sides mod))})
 (fun {dice n sides}      {dice+ n sides 0})
-(fun {roll n d}          ?{(=0 n) NIL (cons !(d) (roll (1- n) d))})
+:(roll repeat)
 (fun {sumrolls d} ?{
-  d (+
+  d
+  (+
     (let {
       do
-      =(hd (fst d))
-      (cond
-        {(num? hd) (die hd)}
-        {(qexpr? hd)
-          (case (len hd) 
-            {1 .(die hd)}
-            {2 .(dice hd)}
-            {3 .(dice+ hd)}
-          )
-        }
-      )
+        =(hd (fst d))
+        (cond
+          {(num? hd) (die hd)}
+          {(qexpr? hd)
+            (case (len hd) 
+              {1 .(die hd)}
+              {2 .(dice hd)}
+              {3 .(dice+ hd)}
+            )
+          }
+        )
     })
     (sumrolls $(d))
   )
@@ -284,9 +315,74 @@
 ; open ended dice rolls
 (fun {oe-die+ sides mod} {
   do
-  =(rl (die+ sides 0))
-  ?((eq rl sides) (+ sides (oe-die+ sides mod)) (+ rl mod))
+    =(rl (die+ sides 0))
+    ?((eq rl sides) (+ sides (oe-die+ sides mod)) (+ rl mod))
 })
 (fun {oe-die sides}         {oe-die+ sides 0})
 (fun {oe-dice+ n sides mod} ?{(=0 n) mod (+ (oe-die sides) (oe-dice+ (1- n) sides mod))})
 (fun {oe-dice n sides}      {oe-dice+ n sides 0})
+
+; sort and related
+(fun {in?} ?{&2 (or (eq &1 (fst &2)) (in? &1 $(&2)))})
+(fun {remove-fst f l} ?{
+  l
+  (do
+    =(hd (fst l))
+    =(tl $(l))
+    ?(
+      (eq f hd)
+      tl
+      ?(
+        tl
+        (cons hd (remove-fst f tl))
+      )
+    )
+  )
+})
+
+(fun {remove-min} {remove-fst .(min &1) &1})
+(fun {remove-max} {remove-fst .(max &1) &1})
+
+(fun {remove-all f l} ?{
+  l
+  (do
+    =(hd (fst l))
+    =(tl $(l))
+    ?(
+      (eq f hd)
+      (remove-all f tl)
+      ?(
+        tl
+        (cons hd (remove-all f tl))
+      )
+    )
+  )
+})
+
+(fun {sort} ?{&1 (cons .(min &1) (sort (remove-min &1)))})
+(fun {sort-desc} ?{&1 (cons .(max &1) (sort-desc (remove-max &1)))})
+
+(fun {best-of n l} {take n (sort-desc l)})
+(fun {worst-of n l} {take n (sort l)})
+
+:({top bottom} best-of worst-of)
+
+(fun {between?} ?{(< &1 &2) (and (>= &3 &1) (<= &3 &2)) (between? &2 &1 &3)})
+:(><? between?)
+(fun {not-between?} {not (between? &1 &2 &3)})
+:(!><? not-between?)
+
+(fun {all-between?} ?{&3 (and (between? &1 &2 (fst &3)) (all-between? &1 &2 $(&3))) T})
+:(*><? all-between?)
+
+(fun {all-not-between?} ?{&3 (and (not-between? &1 &2 (fst &3)) (all-not-between? &1 &2 $(&3))) T})
+:(*!><? all-not-between?)
+
+(fun {not-all-between?} {not (all-between? &1 &2 &3)})
+:(!*><? not-all-between?)
+
+(fun {best-of-rolls a b f} {best-of a (roll b f)})
+(fun {worst-of-rolls a b f} {worst-of a (roll b f)})
+
+(fun {dnd-attr-rolls} ?{(defined? &1) (roll &1 {do =(rls (sort-desc (roll 8 {sum (best-of-rolls 3 4 {d6})}))) |((take 5 rls) (skip 7 rls))}) (dnd-attr-rolls 1)})
+(fun {dnd-attr-rolls-detailed} ?{(defined? &1) (roll &1 {do =(rls (sort-desc (roll 8 {do =(rs (sort-desc (roll 4 {d6}))) '((sum (take 3 rs)) rs)}))) |((take 5 rls) (skip 7 rls))}) (dnd-attr-rolls-detailed 1)})

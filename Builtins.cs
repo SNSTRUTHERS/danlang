@@ -810,16 +810,27 @@ public class Builtins
         // conversion functions
         // TODO: move the bodies of these definitions to static methods with error checking
         AddBuiltin(e, "val",         (e, a) => LVal.Number(NumberParser.ParseString(a.Pop(0, e).StrVal)!));
-        AddBuiltinEvaluated(e, "to-fixed",    (e, a) => LVal.Number(Rat.ToRat((a[0].NumVal ?? new Int())).ToFix(a.Count > 1 ? (int)(((a[1].NumVal as Int)?.num ?? BigInteger.Zero)) : 10)));
+        AddBuiltinEvaluated(e, "to-fixed", (e, a) => LVal.Number(Rat.ToRat((a[0].NumVal ?? new Int())).ToFix(a.Count > 1 ? (int)(((a[1].NumVal as Int)?.num ?? BigInteger.Zero)) : 10)));
         AddBuiltin(e, "to-rational", (e, a) => LVal.Number(Rat.ToRat(a.Pop(0, e).NumVal!)));
         AddBuiltin(e, "truncate",    (e, a) => LVal.Number((a.Pop(0, e).NumVal?.ToInt() ?? new Int())));
         AddBuiltin(e, "complex",     Complex);
-        AddBuiltinEvaluated(e, "to-str",      ToStr);
-        AddBuiltin(e, "to-sym",      (e, a) => a[0].IsAtom ? LVal.Sym(a[0].SymVal) : LVal.Err("Only atoms can be converted into symbols"));
+        AddBuiltinEvaluated(e, "to-str", ToStr);
+        AddBuiltin(e, "to-sym", 
+            (e, a) => {
+                var x = a.Pop(0, e);
+                if (x.IsSym)  return x;
+                if (x.IsAtom) return LVal.Sym(x.SymVal);
+                return LVal.Err("Only atoms can be converted into symbols");
+            });
+
         AddBuiltinEvaluated(e, "to-atom",
-            (e, a) => a[0].IsSym ? LVal.Atom(a[0].SymVal) : 
-                (a[0].IsNum ? LVal.Atom(a[0].NumVal!.ToInt().num.ToString()) : 
-                    LVal.Err("Only symbols and numbers can be converted to atoms")));
+            (e, a) => {
+                var x = a.Pop(0, e);
+                if (x.IsAtom) return x;
+                if (x.IsSym)  return LVal.Atom(x.SymVal);
+                if (x.IsNum)  return LVal.Atom(x.NumVal!.ToInt().num.ToString());
+                return LVal.Err("Only symbols and numbers can be converted to atoms");
+            });
 
         // fun functions
         AddBuiltin(e, "fib",       FastFib);

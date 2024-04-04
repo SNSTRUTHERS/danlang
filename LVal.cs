@@ -618,12 +618,13 @@ public class LVal {
     public int CompareTo(LVal v) {
         if (NumVal != null && v.NumVal != null) return NumVal.CompareTo(v.NumVal);
         if (IsStr && v.IsStr) return string.Compare(StrVal, v.StrVal, StringComparison.CurrentCulture);
-        if (SymVal != null && v.SymVal != null) return string.Compare(SymVal, v.SymVal, StringComparison.OrdinalIgnoreCase);
-        if (ErrVal != null && v.ErrVal != null) return ErrVal.CompareTo(v.ErrVal);
+        if (!string.IsNullOrEmpty(SymVal) && !string.IsNullOrEmpty(v.SymVal)) return string.Compare(SymVal, v.SymVal, StringComparison.OrdinalIgnoreCase);
+        if (!string.IsNullOrEmpty(ErrVal) && !string.IsNullOrEmpty(v.ErrVal)) return ErrVal.CompareTo(v.ErrVal);
         if (Count > 0 && v.Count > 0 && Count == v.Count && ValType == v.ValType) {
             var cmp = 0;
             for (int i = 0; cmp == 0 && i < Count; ++i) {
                 cmp = this[i].CompareTo(v[i]);
+                if (cmp != 0) break;
             }
             return cmp;
         }

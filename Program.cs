@@ -59,7 +59,8 @@
                 Console.WriteLine();
                 var prompt = Prompt;
                 var parens = "";
-                while (true) {
+                var loop = true;
+                while (loop) {
                     var allTokens = new List<Parser.Token>();
                     Parser.Token? last = null;
                     do {
@@ -80,8 +81,8 @@
                     var ticks = Environment.TickCount;
                     var val = expr?.Eval(e);
                     ticks = Environment.TickCount - ticks;
-                    if (val?.IsExit ?? false) break;
                     Console.Write($"{(ticks > 1000 ? $"({ticks}ms)" : "")}=> "); val?.Println();
+                    if (val?.IsExit ?? false) loop = false;
                 }
             }
             /* Supplied with list of files */

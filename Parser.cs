@@ -82,6 +82,7 @@ public class Parser {
                     if (Char.IsWhiteSpace(c)) {
                         if ((c == '\n' || c == '\r') && quoteCount == 1)
                             return error("Newlines are not allowed in regular strings", raw.ToString());
+                        if (c == '\r' && peek() == '\n') continue;  // a line's end is LF, whatever the file's
                         str.Append(c);
                     } else if (Char.IsControl(c)) {
                         return error("Control sequences not allowed", raw.ToString());
@@ -97,10 +98,37 @@ public class Parser {
                         str.Append('"', trailingQuotes);
                         trailingQuotes = 0;
                         break;
-                    case '\\':
-                        // TODO: escape sequences
-                        // str.Append("\\");
-                        // break;
+                    case '\\' when quoteCount == 1:
+                        // escape sequences, in a plain string (a here string's text is as it is)
+                        var x = nextInt();
+                        if (x == -1) return error("Incomplete string literal", raw.ToString());
+                        raw.Append((char)x);
+                        switch ((char)x) {
+                        case 'n':  str.Append('\n'); break;
+                        case 't':  str.Append('\t'); break;
+                        case 'r':  str.Append('\r'); break;
+                        case '0':  str.Append('\0'); break;
+                        case 'a':  str.Append('\a'); break;
+                        case 'b':  str.Append('\b'); break;
+                        case 'f':  str.Append('\f'); break;
+                        case 'v':  str.Append('\v'); break;
+                        case 'e':  str.Append('\x1b'); break;
+                        case '\\': str.Append('\\'); break;
+                        case '"':  str.Append('"'); break;
+                        case 'x': {
+                            var hex = "";
+                            while (hex.Length < 2 && Uri.IsHexDigit(peek())) {
+                                hex += next();
+                            }
+                            if (hex.Length == 0) return error("\\x needs a hex digit", raw.Append(hex).ToString());
+                            raw.Append(hex);
+                            str.Append((char)Convert.ToInt32(hex, 16));
+                            break;
+                        }
+                        default:
+                            return error($"Unknown escape sequence \\{(char)x}", raw.ToString());
+                        }
+                        break;
                     default:
                         str.Append(c);
                         break;

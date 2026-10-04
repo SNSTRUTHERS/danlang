@@ -4,14 +4,10 @@
 :(math.phi   1.61803_39887_49894_84820_45868_34365_63811_77203_09179_80576)
 :(math.gamma 0.57721_56649_01532_86061)
 
-; function definition
-:(fun       @({a b} :{^(a) @($(a) b)}))
+; function definition: fun, fn, fexpr, def, set, set! and let are built in
 
 ; join a single element to the front of a list
 (fun {cons a b} |{'(a) b})
-
-; create a private scope
-(fun {let x} {(@({} x))})
 
 ; composition helpers
 (fun {flip f a b} {f b a})
@@ -61,13 +57,6 @@
 
 :({apply curry uncurry} unpack unpack pack)
 
-; reverse
-(fun {reverse} ?{
-  (and (defined? &1)
-  (qexpr? &1) &1)
-  |((reverse $(&1)) ^(&1))
-})
-
 ; nth element 
 (fun {fst l} {eval ^(l)})
 (fun {snd l} {eval ^($(l))})
@@ -88,15 +77,15 @@
 ; coalescing operator to find first non-nil argument in the list
 (fun {?? a} ?{a a ?(&_ .(?? &_))})
 
-; take n items
+; take n items (as many as there are)
 (fun {take n l} ?{
-  (!=0 n)
+  (and (!=0 n) l)
   |(^(l) (take (1- n) $(l)))
 })
 
-; drop n items
+; drop n items (as many as there are)
 (fun {drop n l} ?{
-  (zero? n)
+  (or (zero? n) (nil? l))
   l
   (drop (1- n) $(l))
 })
@@ -114,9 +103,7 @@
 
 (fun {has-element? l x} {elem? x l})
 
-; do a number of items and return value of the last one
-(fun {do} ?{&_ (last &_)})
-
+; do (built in) evaluates its arguments in turn and returns the last one's value
 :(begin do)
 :(block do)
 
@@ -138,6 +125,40 @@
   (foldl f (f z (fst l)) $(l))
   z
 })
+
+; fold right
+(fun {foldr f z l} ?{
+  l
+  (f (fst l) (foldr f z $(l)))
+  z
+})
+
+; pairs of items, one from each list, as long as both have them
+(fun {zip a b} ?{
+  (and a b)
+  (cons '((fst a) (fst b)) (zip $(a) $(b)))
+  NIL
+})
+
+; is f true of any item? of every item?
+(fun {any? f l} ?{l ?((f (fst l)) T (any? f $(l))) NIL})
+(fun {all? f l} ?{l ?((f (fst l)) (all? f $(l)) NIL) T})
+
+; the first item f is true of (NIL if there's none), and how many it's true of
+(fun {find f l} ?{l ?((f (fst l)) (fst l) (find f $(l))) NIL})
+(fun {count f l} {len (filter f l)})
+
+; a list's items, and the items of the lists in it, in one list
+(fun {flatten l} ?{
+  l
+  ?((qexpr? (fst l))
+    (join (flatten (fst l)) (flatten $(l)))
+    (cons (fst l) (flatten $(l))))
+  NIL
+})
+
+; the items, each once (the first time it comes)
+(fun {distinct l} ?{l (cons (fst l) (distinct (remove-all (fst l) $(l)))) NIL})
 
 (fun {sum s}     {foldl + 0 s})
 (fun {avg s}     {/ (sum s) (len s)})
@@ -168,7 +189,7 @@
 ; math functions
 (fun {abs a} ?{
   (num? a)
-  ((<0 a) (- a) a)
+  ?((<0 a) (- a) a)
   (error "Cannot perform 'abs' on non-number")
 })
 
@@ -211,7 +232,7 @@
 (fun {fdiv a b} ?{
   (and (num? a) (num? b))
   (to-fixed (/ a b) ?((and (defined? &3) (num? &3)) &3 10))
-  {error "Cannot perform 'fdiv' on non-numbers"}
+  (error "Cannot perform 'fdiv' on non-numbers")
 })
 
 (fun {frecip n} ?{(defined? &2) (fdiv 1 n &2) (fdiv 1 n)})
@@ -251,76 +272,12 @@
 
 ; String helpers
 (fun {starts-with? s sub} {=0 (index-of s sub)})
-(fun {ends-with?   s sub} {eq (len s) (+ (last-index-of s sub) (len sub))})
+(fun {ends-with?   s sub} {and (>= (len s) (len sub)) (eq (substring s (- (len s) (len sub))) sub)})
 (fun {contains?    s sub} {>=0 (index-of s sub)})
 
-; Repeat
-(fun {repeat n d} ?{(=0 n) NIL (cons !(d) (roll (1- n) d))})
+; Repeat: a list of d's values, run n times
+(fun {repeat n d} ?{(=0 n) NIL (cons !(d) (repeat (1- n) d))})
 :(times repeat)
-
-; Dice
-(fun {die+ sides mod}    {+ 1 mod (random sides)})
-(fun {die sides}         {die+ sides 0})
-
-(fun {d3+ m} {die+ 3 m})
-(fun {d3} {d3+ 0})
-(fun {d4+ m} {die+ 4 m})
-(fun {d4} {d4+ 0})
-(fun {d6+ m} {die+ 6 m})
-(fun {d6} {d6+ 0})
-(fun {d8+ m} {die+ 8 m})
-(fun {d8} {d8+ 0})
-(fun {d10} {die+ 10 0})
-(fun {d10} {d10+ 0})
-(fun {d12+ m} {die+ 12 m})
-(fun {d12} {d12+ 0})
-(fun {d20+ m} {die+ 20 m})
-(fun {d20} {d20+ 0})
-(fun {d24+ m} {die+ 24 m})
-(fun {d24} {d24+ 0})
-(fun {d30+ m} {die+ 30 0})
-(fun {d30} {d30+ 0})
-(fun {d60+ m} {die+ 60 m})
-(fun {d60} {d60+ 0})
-(fun {d100+ m} {die+ 100 m})
-(fun {d100} {d100+ 0})
-
-(fun {dice+ n sides mod} ?{(=0 n) mod (+ (die sides) (dice+ (1- n) sides mod))})
-(fun {dice n sides}      {dice+ n sides 0})
-:(roll repeat)
-(fun {sumrolls d} ?{
-  d
-  (+
-    (let {
-      do
-        =(hd (fst d))
-        (cond
-          {(num? hd) (die hd)}
-          {(qexpr? hd)
-            (case (len hd) 
-              {1 .(die hd)}
-              {2 .(dice hd)}
-              {3 .(dice+ hd)}
-            )
-          }
-        )
-    })
-    (sumrolls $(d))
-  )
-  0
-})
-
-(fun {special-die sides cases} .{case (cons (die sides) cases)})
-
-; open ended dice rolls
-(fun {oe-die+ sides mod} {
-  do
-    =(rl (die+ sides 0))
-    ?((eq rl sides) (+ sides (oe-die+ sides mod)) (+ rl mod))
-})
-(fun {oe-die sides}         {oe-die+ sides 0})
-(fun {oe-dice+ n sides mod} ?{(=0 n) mod (+ (oe-die sides) (oe-dice+ (1- n) sides mod))})
-(fun {oe-dice n sides}      {oe-dice+ n sides 0})
 
 ; sort and related
 (fun {in?} ?{&2 (or (eq &1 (fst &2)) (in? &1 $(&2)))})
@@ -332,10 +289,7 @@
     ?(
       (eq f hd)
       tl
-      ?(
-        tl
-        (cons hd (remove-fst f tl))
-      )
+      (cons hd (remove-fst f tl))
     )
   )
 })
@@ -351,16 +305,13 @@
     ?(
       (eq f hd)
       (remove-all f tl)
-      ?(
-        tl
-        (cons hd (remove-all f tl))
-      )
+      (cons hd (remove-all f tl))
     )
   )
 })
 
-(fun {sort} ?{&1 (cons .(min &1) (sort (remove-min &1)))})
-(fun {sort-desc} ?{&1 (cons .(max &1) (sort-desc (remove-max &1)))})
+; sort is built in: (sort l), or (sort l less)
+(fun {sort-desc l} {reverse (sort l)})
 
 (fun {best-of n l} {take n (sort-desc l)})
 (fun {worst-of n l} {take n (sort l)})
@@ -380,9 +331,3 @@
 
 (fun {not-all-between?} {not (all-between? &1 &2 &3)})
 :(!*><? not-all-between?)
-
-(fun {best-of-rolls a b f} {best-of a (roll b f)})
-(fun {worst-of-rolls a b f} {worst-of a (roll b f)})
-
-(fun {dnd-attr-rolls} ?{(defined? &1) (roll &1 {do =(rls (sort-desc (roll 8 {sum (best-of-rolls 3 4 {d6})}))) |((take 5 rls) (skip 7 rls))}) (dnd-attr-rolls 1)})
-(fun {dnd-attr-rolls-detailed} ?{(defined? &1) (roll &1 {do =(rls (sort-desc (roll 8 {do =(rs (sort-desc (roll 4 {d6}))) '((sum (take 3 rs)) rs)}))) |((take 5 rls) (skip 7 rls))}) (dnd-attr-rolls-detailed 1)})

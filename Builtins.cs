@@ -26,51 +26,94 @@ public class Builtins
     private static LVal Lambda(LEnv e, LVal a) {
         LVal formals = a.Pop(0, e);
         LVal body = a.Pop(0, e);
-        return LVal.Lambda(formals, body);
+        return LVal.Lambda(formals, body, e);
+    }
+
+    // (fexpr {formals} body): a function whose arguments come unevaluated, each in a Q-expression that remembers the
+    // caller's scope, so (eval x) evaluates it there, if and when the function wants
+    private static LVal Fexpr(LEnv e, LVal a) {
+        var f = Lambda(e, a);
+        f.IsFexpr = true;
+        return f;
+    }
+
+    // (fun {name formals...} body): name defined (globally, as def does) as the function (fn {formals...} body), made
+    // here (its closure: this scope)
+    private static LVal Fun(LEnv e, LVal a) {
+        if (a.Count != 2) return LVal.Err("'fun' expects {name formals...} and a body");
+        var spec = a.Pop(0);    // (already evaluated: fun is AddBuiltinEvaluated)
+        if (spec.IsErr) return spec;
+        var body = a.Pop(0);
+        if (body.IsErr) return body;
+        if (!spec.IsQExpr || spec.Count == 0 || spec.Cells!.Any(c => !c.IsSym)) return LVal.Err("'fun' expects {name formals...} first");
+        var name = spec.Pop(0).SymVal;
+        e.Def(name, LVal.Lambda(spec, body, e));
+        return LVal.NIL();
     }
 
     public static LVal List(LEnv e, LVal a) {
         if (!a.IsSExpr) return LVal.Err("'list' can only be applied to a SExpr");
         a.ValType = LVal.LE.QEXPR;
+        a.Scope = e;
         return a;
     }
 
-    private static LVal Head(LEnv e, LVal a) {
+    // A list argument for fn: an error if it isn't one (or is empty, when it mustn't be)
+    private static LVal ListArg(LEnv e, LVal a, string fn, bool nonEmpty = false) {
+        if (a.Count == 0) return LVal.Err($"Too few parameters passed to '{fn}'");
         var v = a.Pop(0, e);
+        if (v.IsErr) return v;
+        if (!v.IsQExpr) return LVal.Err($"'{fn}' expects a QExpr");
+        if (nonEmpty && v.Count == 0) return LVal.Err($"'{fn}' passed an empty list");
+        return v;
+    }
+
+    // (A list made from another keeps the scope it was written in: Scope, which eval runs it in)
+    private static LVal Head(LEnv e, LVal a) {
+        var v = ListArg(e, a, "head", true);
+        if (v.IsErr) return v;
         var ret = LVal.Qexpr();
         ret.Add(v.Pop(0));
+        ret.Scope = v.Scope;
         return ret;
     }
 
     private static LVal Tail(LEnv e, LVal a) {
-        LVal v = a.Pop(0, e);
+        LVal v = ListArg(e, a, "tail", true);
+        if (v.IsErr) return v;
         v.Pop(0);
         return v;
     }
 
     private static LVal Init(LEnv e, LVal a) {
-        if (a == null || a.Count == 0) return LVal.NIL();
-        var v = a.Pop(0, e);
+        var v = ListArg(e, a, "init", true);
+        if (v.IsErr) return v;
         v.Pop(v.Count - 1);
         return v;
     }
 
     private static LVal End(LEnv e, LVal a) {
-        if (a == null || a.Count == 0) return LVal.NIL();
-        var v = a.Pop(0, e);
-        v = v.Pop(v.Count - 1);
+        var v = ListArg(e, a, "end", true);
+        if (v.IsErr) return v;
         var ret = LVal.Qexpr();
-        ret.Add(v);
+        ret.Add(v.Pop(v.Count - 1));
+        ret.Scope = v.Scope;
         return ret;
     }
 
-    public static LVal Eval(LEnv e, LVal a) {
-        if (a.Count != 1) return LVal.Err("Incorrect number of parameters passed to 'eval'");
+    // (eval x): a Q-expression run as code, or an expression (an fexpr's argument: an S-expression or a symbol)
+    // evaluated, in the scope it was written in (in tail position, as a function's last); anything else is itself
+    private static TailStep EvalStep(LEnv e, LVal a) {
+        if (a.Count != 1) return TailStep.Done(LVal.Err("Incorrect number of parameters passed to 'eval'"));
         LVal x =  a.Pop(0, e);
-        if (!x.IsQExpr) return LVal.Err("Incorrect parameter passed to 'eval'.  Expected QExpr.");
-        x.ValType = LVal.LE.SEXPR;
-        return x.Eval(e)!;
+        if (x.IsErr) return TailStep.Done(x);
+        var scope = x.Scope ?? e;
+        if (x.IsQExpr) x.ValType = LVal.LE.SEXPR;
+        else if (!x.IsSExpr && !x.IsSym) return TailStep.Done(x);
+        return TailStep.Next(scope, x);
     }
+
+    public static LVal Eval(LEnv e, LVal a) => EvalStep(e, a).Finish();
 
     private static LVal Join(LEnv e, LVal a) {
         if (a.Count == 0) return LVal.Err("Invalid number of parameters passed to 'join'");
@@ -78,9 +121,13 @@ public class Builtins
         LVal? x = null;
         while (a.Count > 0) {
             var y = a.Pop(0, e);
+            if (y.IsErr) return y;
             if (!y.IsQExpr) return LVal.Err("Invalid parameter passed to 'join'.  Expected QExpr.");
             else if (x == null) x = y;
-            else x = x.Join(y);
+            else {
+                x.Scope ??= y.Scope;
+                x = x.Join(y);
+            }
         }
         return x!;
     }
@@ -106,7 +153,7 @@ public class Builtins
             if (op == "-") x.NumVal = x.NumVal! - y.NumVal!;
             else if (op == "*") x.NumVal = x.NumVal! * y.NumVal!;
             else if (op == "/") {
-                if (y.NumVal! == Num.Zero) {
+                if (y.NumVal!.IsZero) {
                     return LVal.Err("Division by zero.");
                 }
                 x.NumVal = x.NumVal! / y.NumVal!;
@@ -124,7 +171,8 @@ public class Builtins
                 return v1;
             }
 
-            return LVal.Str((v1.ToStr() + v2.ToStr()).Replace("\"\"", ""));
+            // anything else: the two as print shows them, joined ("ab" for "a" and "b", or \a and \b)
+            return LVal.Str(v1.ToDisplay() + v2.ToDisplay());
         }
 
         LVal? x = null;
@@ -160,6 +208,10 @@ public class Builtins
             var value = a.Pop(0, e);
             if (func == "def") { e.Def(symbol, value); }
             if (func == "set") { e.Put(symbol, value); }
+            if (func == "set!") {
+                var r = e.Update(symbol, value);
+                if (r.IsErr) return r;
+            }
         }
         
         return LVal.NIL();
@@ -167,6 +219,7 @@ public class Builtins
 
     private static LVal Def(LEnv e, LVal a) { return Var(e, a, "def"); }
     private static LVal Put(LEnv e, LVal a) { return Var(e, a, "set"); }
+    private static LVal Update(LEnv e, LVal a) { return Var(e, a, "set!"); }
 
     private static LVal Ord(LEnv e, LVal a, string op) {
         if (a.Count != 2) return LVal.Err($"Too few parameters passed to '{op}'");
@@ -195,23 +248,41 @@ public class Builtins
     private static LVal Neq(LEnv e, LVal a) { return Cmp(e, a, "neq"); }
     private static LVal Cmp(LEnv e, LVal a) { return Cmp(e, a, "cmp"); }
 
-    private static LVal If(LEnv e, LVal a) {
-        if (a.Count < 2) return LVal.Err("'if' supplied too few parameters");
+    // (if test then [else]): then's value if test isn't NIL, else else's (NIL if there's none); the branch is in
+    // tail position
+    private static TailStep IfStep(LEnv e, LVal a) {
+        if (a.Count < 2) return TailStep.Done(LVal.Err("'if' supplied too few parameters"));
 
         // Actual logical check; all non-NIL expressions evaluate to T in the 'if' context
         var t = a.Pop(0, e);
+        if (t.IsErr) return TailStep.Done(t);
         if (!t.IsNIL) {
-            return a.Pop(0, e);
+            return TailStep.Next(e, a.Pop(0));
         }
 
         // if no else, so return NIL
-        if (a.Count == 1) return LVal.NIL();
-        return a.Pop(1, e);
+        if (a.Count == 1) return TailStep.Done(LVal.NIL());
+        return TailStep.Next(e, a.Pop(1));
+    }
+
+    // (do expr...): the expressions in turn (the first error stops them); the last one's value, in tail position
+    private static TailStep DoStep(LEnv e, LVal a) {
+        if (a.Count == 0) return TailStep.Done(LVal.NIL());
+        while (a.Count > 1) {
+            var v = a.Pop(0, e);
+            if (v.IsErr) return TailStep.Done(v);
+        }
+        return TailStep.Next(e, a.Pop(0));
+    }
+
+    // A built-in with a tail position: its step, finished when it's called anywhere else
+    private static void AddTailForm(LEnv e, string name, Func<LEnv, LVal, TailStep> step) {
+        LVal v = LVal.Builtin((env, a) => step(env, a).Finish());
+        v.TailForm = step;
+        e.Put(name, v);
     }
 
     private static LVal And(LEnv e, LVal a) {
-        if (a.Count < 2) return LVal.Err("'and' supplied too few parameters");
-
         while (a.Count > 0) {
             var la = a.Pop(0, e);
             if (la.IsNIL) return la;
@@ -220,7 +291,6 @@ public class Builtins
     }
 
     private static LVal Or(LEnv e, LVal a) {
-        if (a.Count < 2) return LVal.Err("'or' supplied too few parameters");
         while (a.Count > 0) {
             var la = a.Pop(0, e);
             if (!la.IsNIL) return LVal.Bool(true);
@@ -279,47 +349,51 @@ public class Builtins
         return LVal.NIL();
     }
 
+    // The file 'load' means by name: as it is, or with .dl added; then, for a bare name, in lib/, and in the lib/
+    // folder of danlang itself (found above the program)
+    public static string? FindFile(string name) {
+        var names = name.EndsWith(".dl") ? new[] {name} : new[] {name, name + ".dl"};
+        foreach (var n in names) if (File.Exists(n)) return n;
+        if (Path.GetFileName(name) != name) return null;
+
+        var dirs = new List<string> {"lib"};
+        for (var d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent) {
+            if (File.Exists(Path.Join(d.FullName, "lib", "globals.dl"))) {
+                dirs.Add(Path.Join(d.FullName, "lib"));
+                break;
+            }
+        }
+        foreach (var dir in dirs)
+            foreach (var n in names)
+                if (File.Exists(Path.Join(dir, n))) return Path.Join(dir, n);
+        return null;
+    }
+
     public static LVal Load(LEnv e, LVal a) {
         if (a.Count == 0) return LVal.Err("'load' supplied too few parameters");
-        if (a.Cells!.Any(c => !c.IsStr)) return LVal.Err("'load' passed non-string parameter(s)"); 
-        
-        /* Open file and check it exists */
-        LVal? lastExpr = null;
+
+        LVal lastExpr = LVal.NIL();
         while (a.Count > 0) {
             var v = a.Pop(0, e);
-            var filename = v.StrVal!;
-            if (!File.Exists(filename)) {
-                if (!filename.EndsWith(".dl")) filename += ".dl";
-                if (!File.Exists(filename)) {
-                    if (!filename.Contains(Path.PathSeparator)) filename = Path.Join("lib", filename);
-                    if (!File.Exists(filename)) return LVal.Err($"File {filename} does not exist");
-                }
-            }
+            if (v.IsErr) return v;
+            if (!v.IsStr) return LVal.Err("'load' passed non-string parameter(s)");
+            var filename = FindFile(v.StrVal!);
+            if (filename == null) return LVal.Err($"File {v.StrVal} does not exist");
 
-            using var f = File.Open(filename, FileMode.Open);
-            if (f == null) return LVal.Err($"Could not load file {filename}");
-        
-            /* Read File Contents */
-            Console.Write($"Loading '{filename}'...");
-            var input = new StreamReader(f).ReadToEnd();
+            var input = File.ReadAllText(filename);
             var tokens = Parser.Tokenize(new StringReader(input)).ToList();
-            lastExpr = LVal.ReadExprFromTokens(tokens);
+            var bad = tokens.FirstOrDefault(t => t.type == Parser.Token.Type.Error || t.type == Parser.Token.Type.More);
+            if (bad != null) return LVal.Err($"{filename}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
+            var exprs = LVal.ReadExprFromTokens(tokens)!;
 
-            if (lastExpr != null && !lastExpr.IsErr) {
-                LVal? expr = null;
-                while (lastExpr.Count > 0) {
-                    expr = lastExpr.Pop(0, e);
-                    if (expr.IsErr) { expr.Println(); }
-                }
-                lastExpr = expr;
+            // a file's expressions are top level: the global environment's
+            while (exprs.Count > 0) {
+                lastExpr = exprs.Pop(0, e.Root);
+                if (lastExpr.IsErr) return LVal.Err($"{filename}: {lastExpr.ErrVal}");
+                if (lastExpr.IsExit) throw new ExitException(lastExpr.ExitCode);
             }
-            else {
-                lastExpr?.Println();
-            }
-
-            Console.WriteLine("Complete!");
         }
-        return lastExpr ?? LVal.NIL();
+        return lastExpr;
     }
 
     public static LVal Save(LEnv e, LVal a) {
@@ -343,7 +417,7 @@ public class Builtins
             if (fi.Exists) {
                 if (s.Contains("overwrite")) fs = fi.Open(FileMode.Truncate);
                 else if (s.Contains("append")) fs = fi.Open(FileMode.Append);
-                else return LVal.Err("File exitst but neither ':append' or ':overwrite' were specified");
+                else return LVal.Err("File exitst but neither ':append' nor ':overwrite' were specified");
             } else fs = fi.OpenWrite();
 
             fs.Write(UTF8Encoding.UTF8.GetBytes(ob.Serialize()));
@@ -358,19 +432,25 @@ public class Builtins
         return LVal.NIL();
     }
 
-    private static LVal Print(LEnv e, LVal a) {
+    // The values, as print shows them (a string's text as it is), each after sep, then end, to the stream
+    private static LVal Output(LEnv e, LVal a, LStream s, string sep, string end) {
+        var sb = new StringBuilder();
         var pre = "";
         while (a.Count > 0) {
-            Console.Write(pre);
-            pre = " ";
-            a.Pop(0, e).Print();
+            sb.Append(pre).Append(a.Pop(0, e).ToDisplay());
+            pre = sep;
         }
-        Console.Write('\n');
-        return LVal.NIL();
+        return s.Write(sb.Append(end).ToString());
     }
 
+    private static LVal Print(LEnv e, LVal a) => Output(e, a, LStream.StdOut, " ", "\n");
+    private static LVal Write(LEnv e, LVal a) => Output(e, a, LStream.StdOut, "", "");
+
     private static LVal Error(LEnv e, LVal a) {
-        return LVal.Err(a.Pop(0).StrVal!);
+        if (a.Count == 0) return LVal.Err("'error' supplied too few parameters");
+        var m = a.Pop(0, e);
+        if (m.IsErr) return m;
+        return LVal.Err(m.ToDisplay());
     }
 
     private static LVal IsType(LEnv e, LVal a, LVal.LE type) {
@@ -437,7 +517,7 @@ public class Builtins
         if (a.Count != 1) return LVal.Err("'zero?' requires 1 parameter");
         var v = a.Pop(0, e);
         if (!v.IsNum) return LVal.Err("Parameter passed to 'zero?' is not a Number");
-        return LVal.Bool(v.NumVal == Num.Zero);
+        return LVal.Bool(v.NumVal!.IsZero);
     }
 
     private static LVal Complex(LEnv e, LVal a) {
@@ -454,10 +534,14 @@ public class Builtins
     private static LVal ToStr(LEnv e, LVal a) {
         if (a.Count < 1) return LVal.Err("Too few parameters passed to 'to-str'");
 
-        var n = a.Pop(0, e);
-        if (!n.IsNum) return LVal.Err("First 'to-str' parameter must be a Number");
+        var n = a.Pop(0);   // (already evaluated: to-str is AddBuiltinEvaluated)
+        if (!n.IsNum) {
+            // anything else: as print shows it
+            if (a.Count > 0) return LVal.Err("Only a Number has a base for 'to-str'");
+            return LVal.Str(n.ToDisplay());
+        }
         if (a.Count == 1) {
-            var str = a.Pop(0, e);
+            var str = a.Pop(0);
             if (!str.IsStr) return LVal.Err("Second 'to-str' parameter must be a String");
             return LVal.Str(NumberParser.ToBase(n.NumVal!, str.StrVal!));
         }
@@ -518,9 +602,15 @@ public class Builtins
     }
 
     private static LVal CharAt(LEnv e, LVal a) {
-        // TODO: convert this to return a character instead of a string once the character type is created
-        a.Add(LVal.Number(1));
-        return Substring(e, a);
+        if (a.Count != 2) return LVal.Err("'char-at' expects a String and an index");
+        var s = StrArg(e, a, "char-at");
+        if (s.IsErr) return s;
+        var i = a.Pop(0, e);
+        if (i.IsErr) return i;
+        if (!i.IsNum) return LVal.Err("Second 'char-at' parameter must be a Number");
+        var index = (int)i.NumVal!.ToInt().num;
+        if (index < 0 || index >= s.StrVal.Length) return LVal.Err($"'char-at': index {index} is outside the string");
+        return Chr(s.StrVal[index]);
     }
 
     private static LVal Subset(LEnv e, LVal a) {
@@ -557,7 +647,7 @@ public class Builtins
         if (!q.IsQExpr) return LVal.Err("First 'item-at' parameter must be a QExpr");
 
         var i = a.Pop(0, e);
-        if (i.IsNum) return LVal.Err("Second 'item-at' parameter must be a Number");
+        if (!i.IsNum) return LVal.Err("Second 'item-at' parameter must be a Number");
         var index = (int)i.NumVal!.ToInt()!.num;
         if (q.Count <= index) return LVal.Bool(false);
         return q[index].Copy();
@@ -630,7 +720,7 @@ public class Builtins
         if (val.Count < 1) return LVal.Err("'to#' requires one parameters");
         var hash = val.Pop(0, e);
         if (!hash.IsQExpr) return LVal.Err("First parameter to 'to#' must be a QExpr");
-        return LVal.Hash(val, e);
+        return LVal.Hash(hash, e);
     }
 
     private static LVal FromHash(LEnv e, LVal val) {
@@ -675,7 +765,8 @@ public class Builtins
         if (f.IsErr) return f;
         if (!f.IsFun) return LVal.Err("Second parameter to 'hash-call' must be a key to a member function");
 
-        e.Put("&0", LVal.Hash(hash.HashValue.PrivateCallProxy));
+        // &0, the hash, in the method's own scope
+        f.Env?.Put("&0", LVal.Hash(hash.HashValue.PrivateCallProxy));
         var retVal = LVal.Call(e, f, val);
         return retVal;
     }
@@ -726,29 +817,596 @@ public class Builtins
         return hash.HashValue!.HasTag(val.Pop(0, e));
     }
 
-    private static LVal HashIsLocked(LEnv e, LVal val) {
-        val.Add(LVal.Atom(LHash.TAG_LOCKED));
-        return HashHasTag(e, val);
+    // (hash-locked? h [key]), (hash-private? ...), (hash-const? ...): whether the hash, or its entry, has the tag
+    private static LVal HashHasNamedTag(LEnv e, LVal val, string fn, string tag) {
+        if (val.Count < 1 || val.Count > 2) return LVal.Err($"'{fn}' expects a hash and maybe a key");
+        var hash = val.Pop(0, e);
+        if (hash.IsErr) return hash;
+        if (!hash.IsHash) return LVal.Err($"First parameter to '{fn}' must be a hash");
+        if (val.Count == 0) return hash.HashValue!.HasTag(LVal.Atom(tag));
+        var key = val.Pop(0, e);
+        if (key.IsErr) return key;
+        var q = LVal.Qexpr();
+        q.Add(key);
+        q.Add(LVal.Atom(tag));
+        return hash.HashValue!.HasTag(q);
     }
 
-    private static LVal HashIsPrivate(LEnv e, LVal val) {
-        val.Add(LVal.Atom(LHash.TAG_PRIV));
-        return HashHasTag(e, val);
+    private static LVal HashIsLocked(LEnv e, LVal val) => HashHasNamedTag(e, val, "hash-locked?", LHash.TAG_LOCKED);
+    private static LVal HashIsPrivate(LEnv e, LVal val) => HashHasNamedTag(e, val, "hash-private?", LHash.TAG_PRIV);
+    private static LVal HashIsConst(LEnv e, LVal val) => HashHasNamedTag(e, val, "hash-const?", LHash.TAG_RO);
+
+    // ---- Helpers for the built-ins below
+
+    // A character value
+    private static LVal Chr(char c) {
+        var v = LVal.Character("x");
+        v.StrVal = c.ToString();
+        return v;
     }
 
-    private static LVal HashIsConst(LEnv e, LVal val) {
-        val.Add(LVal.Atom(LHash.TAG_RO));
-        return HashHasTag(e, val);
+    // A symbol named s, as it is (LVal.Sym reads :x as an atom, \x as a character, nil as NIL ...)
+    private static LVal PlainSym(string s) {
+        var v = LVal.Sym("x");
+        v.SymVal = s.ToLower();
+        return v;
     }
+
+    // A string argument for fn (a character counts as a string of one), evaluated; or an error
+    private static LVal StrArg(LEnv e, LVal a, string fn) {
+        if (a.Count == 0) return LVal.Err($"Too few parameters passed to '{fn}'");
+        var v = a.Pop(0, e);
+        if (v.IsErr) return v;
+        if (!v.IsStr && !v.IsChar) return LVal.Err($"'{fn}' expects a String");
+        return v;
+    }
+
+    // A number argument for fn, evaluated, as an int; or an error
+    private static LVal IntArg(LEnv e, LVal a, string fn, out int n) {
+        n = 0;
+        if (a.Count == 0) return LVal.Err($"Too few parameters passed to '{fn}'");
+        var v = a.Pop(0, e);
+        if (v.IsErr) return v;
+        if (!v.IsNum) return LVal.Err($"'{fn}' expects a Number");
+        n = (int)v.NumVal!.ToInt().num;
+        return v;
+    }
+
+    // A value run as code: a Q-expression's contents evaluated (as eval does: in the scope it was written in, or
+    // e), anything else as it is
+    private static LVal RunCode(LEnv e, LVal v) {
+        if (!v.IsQExpr) return v;
+        var x = v.Copy();
+        x.ValType = LVal.LE.SEXPR;
+        return x.Eval(v.Scope ?? e);
+    }
+
+    // An unevaluated argument evaluated: a Q-expression run as code (here), anything else evaluated
+    private static LVal EvalArg(LEnv e, LVal x) => x.IsQExpr ? RunCode(e, x) : x.Copy().Eval(e);
+
+    // f called with values as they are, not evaluated again: a function's are bound as they are, a built-in's passed
+    // through names of their own
+    public static LVal Apply(LEnv e, LVal f, params LVal[] args) {
+        if (f.BuiltinVal == null) return LVal.Apply(f.Copy(), args.ToList());
+        var env = new LEnv(e);
+        var call = LVal.Sexpr();
+        for (int i = 0; i < args.Length; i++) {
+            env.Put($"&arg{i}", args[i]);
+            call.Add(PlainSym($"&arg{i}"));
+        }
+        return LVal.Call(env, f.Copy(), call);
+    }
+
+    // ---- Control, errors and scope
+
+    // (while test body...): the body's expressions in turn, as long as test isn't NIL (a Q-expression is run as
+    // code); the last value, or NIL if the body never ran
+    private static LVal While(LEnv e, LVal a) {
+        if (a.Count < 1) return LVal.Err("'while' supplied too few parameters");
+        LVal result = LVal.NIL();
+        while (true) {
+            var t = EvalArg(e, a[0]);
+            if (t.IsErr) return t;
+            if (t.IsNIL) return result;
+            for (int i = 1; i < a.Count; i++) {
+                result = EvalArg(e, a[i]);
+                if (result.IsErr) return result;
+            }
+        }
+    }
+
+    // (try expr [handler]): expr's value; if that's an error, NIL, or the handler's value: the handler is evaluated
+    // with &err the error's message (a function is called with it).  A Q-expression is run as code
+    private static LVal Try(LEnv e, LVal a) {
+        if (a.Count < 1 || a.Count > 2) return LVal.Err("'try' expects an expression and maybe a handler");
+        var v = EvalArg(e, a[0]);
+        if (!v.IsErr) return v;
+        if (a.Count == 1) return LVal.NIL();
+        var h = new LEnv(e);
+        h.Put("&err", LVal.Str(v.ErrVal));
+        var r = EvalArg(h, a[1]);
+        if (r.IsFun) return Apply(h, r, LVal.Str(v.ErrVal));
+        return r;
+    }
+
+    // (error-message x): an error's message, or NIL if x isn't an error
+    private static LVal ErrorMessage(LEnv e, LVal a) {
+        if (a.Count != 1) return LVal.Err("'error-message' requires 1 parameter");
+        var v = a.Pop(0, e);
+        return v.IsErr ? LVal.Str(v.ErrVal) : LVal.NIL();
+    }
+
+    // (let body) or (let {{name value} ...} body...): the body in a scope of its own (a Q-expression's value run as
+    // code), the names bound in it first, each value evaluated there in turn; the last body's value, in tail position
+    private static TailStep LetStep(LEnv e, LVal a) {
+        if (a.Count == 0) return TailStep.Done(LVal.Err("'let' supplied too few parameters"));
+        var scope = new LEnv(e);
+        if (a.Count > 1) {
+            var bindings = a.Pop(0);
+            if (!bindings.IsQExpr) return TailStep.Done(LVal.Err("'let' expects a list of bindings first"));
+            foreach (var b in bindings.Cells!) {
+                if (!b.IsQExpr || b.Count < 1 || b.Count > 2 || !b[0].IsSym) return TailStep.Done(LVal.Err("A 'let' binding is {name value}"));
+                var v = b.Count == 2 ? b[1].Copy().Eval(scope) : LVal.NIL();
+                if (v.IsErr) return TailStep.Done(v);
+                scope.Put(b[0].SymVal, v);
+            }
+        }
+        while (a.Count > 1) {
+            var r = LetBody(scope, a.Pop(0));
+            if (r.IsErr) return TailStep.Done(r);
+        }
+
+        // the last: an S-expression's value, or a Q-expression run, in tail position; a name's value (run, if it's code)
+        var last = a.Pop(0);
+        if (last.IsSExpr) return TailStep.Next(scope, last);
+        if (!last.IsQExpr) {
+            last = last.Eval(scope);
+            if (!last.IsQExpr) return TailStep.Done(last);
+        }
+        var x = last.Copy();
+        x.ValType = LVal.LE.SEXPR;
+        return TailStep.Next(last.Scope ?? scope, x);
+    }
+
+    // A let's body expression: an S-expression's value, a Q-expression run, a name's value (run, if it's code)
+    private static LVal LetBody(LEnv scope, LVal x) {
+        if (x.IsSExpr) return x.Eval(scope);
+        if (x.IsQExpr) return RunCode(scope, x);
+        return RunCode(scope, x.Eval(scope));
+    }
+
+    // The loops' binding form, {name x} ({i 10}, {x list}): the name, and x evaluated; or an error
+    private static LVal LoopSpec(LEnv e, LVal spec, string fn, out string name) {
+        name = "";
+        if (spec.Count != 2 || !spec[0].IsSym) return LVal.Err($"'{fn}' expects {{name value}} or a function first");
+        name = spec[0].SymVal;
+        return spec[1].Copy().Eval(e);
+    }
+
+    // The loops' body, run with name item, in a scope of its own; an error, if one comes
+    private static LVal LoopBody(LEnv e, LVal a, string name, LVal item) {
+        var scope = new LEnv(e);
+        scope.Put(name, item);
+        for (int i = 0; i < a.Count; i++) {
+            var r = EvalArg(scope, a[i]);
+            if (r.IsErr) return r;
+        }
+        return LVal.NIL();
+    }
+
+    // (each f list), or (each {x list} body...): f called with each item (or character of a string) in turn, or the
+    // body run with x each of them; NIL (or the first error)
+    private static LVal Each(LEnv e, LVal a) {
+        if (a.Count < 2) return LVal.Err("'each' supplied too few parameters");
+        if (a[0].IsQExpr) {
+            var l = LoopSpec(e, a.Pop(0), "each", out var name);
+            if (l.IsErr) return l;
+            if (!l.IsQExpr && !l.IsStr) return LVal.Err("'each' expects a list or a String");
+            foreach (var item in l.IsStr ? l.StrVal.Select(Chr).ToList() : l.Cells!) {
+                var r = LoopBody(e, a, name, item);
+                if (r.IsErr) return r;
+            }
+            return LVal.NIL();
+        }
+        if (a.Count != 2) return LVal.Err("'each' expects a function and a list");
+        var f = a.Pop(0, e);
+        if (f.IsErr) return f;
+        if (!f.IsFun) return LVal.Err("First 'each' parameter must be a function or {name list}");
+        var lst = a.Pop(0, e);
+        if (lst.IsErr) return lst;
+        if (!lst.IsQExpr && !lst.IsStr) return LVal.Err("'each' expects a list or a String");
+        foreach (var item in lst.IsStr ? lst.StrVal.Select(Chr).ToList() : lst.Cells!) {
+            var r = Apply(e, f, item);
+            if (r.IsErr) return r;
+        }
+        return LVal.NIL();
+    }
+
+    // (dotimes n f), or (dotimes {i n} body...): f called with 0, 1 ... n-1 in turn, or the body run with i each of
+    // them; NIL (or the first error)
+    private static LVal Dotimes(LEnv e, LVal a) {
+        if (a.Count < 2) return LVal.Err("'dotimes' supplied too few parameters");
+        string? name = null;
+        LVal n;
+        LVal? f = null;
+        if (a[0].IsQExpr) {
+            n = LoopSpec(e, a.Pop(0), "dotimes", out var nm);
+            name = nm;
+        }
+        else {
+            if (a.Count != 2) return LVal.Err("'dotimes' expects a Number and a function");
+            n = a.Pop(0, e);
+            if (n.IsErr) return n;
+            f = a.Pop(0, e);
+            if (f.IsErr) return f;
+            if (!f.IsFun) return LVal.Err("Second 'dotimes' parameter must be a function");
+        }
+        if (n.IsErr) return n;
+        if (!n.IsNum) return LVal.Err("'dotimes' expects a Number");
+        var count = n.NumVal!.ToInt().num;
+        for (BigInteger i = 0; i < count; i++) {
+            var r = f != null ? Apply(e, f, LVal.Number(i)) : LoopBody(e, a, name!, LVal.Number(i));
+            if (r.IsErr) return r;
+        }
+        return LVal.NIL();
+    }
+
+    // (gensym [prefix]): a symbol no other has (g__1, g__2 ...; or prefix__1 ...)
+    private static int _gensym = 0;
+    private static LVal Gensym(LEnv e, LVal a) {
+        var prefix = "g";
+        if (a.Count > 0) {
+            var p = StrArg(e, a, "gensym");
+            if (p.IsErr) return p;
+            prefix = p.StrVal;
+        }
+        return PlainSym($"{prefix}__{++_gensym}");
+    }
+
+    // defined?: T always is; a name a call makes (&1, &_ ...) in the scopes of this call (up to its function's own),
+    // so (defined? &1) says whether this call had a first extra argument; any other name, wherever it's visible
+    private static bool IsDefined(LEnv e, LVal v) {
+        if (v.IsT) return true;
+        if (!v.IsSym) return false;
+        if (!v.SymVal.StartsWith('&')) return e.Find(v.SymVal) != null;
+        for (var s = e; s != null; s = s.Parent) {
+            if (s.ContainsKey(v.SymVal)) return true;
+            if (s.ContainsKey("&_")) break;
+        }
+        return false;
+    }
+
+    // (type-of x): an atom naming x's type
+    private static LVal TypeOf(LEnv e, LVal a) {
+        if (a.Count != 1) return LVal.Err("'type-of' requires 1 parameter");
+        var v = a.Pop(0, e);
+        return LVal.Atom(v.ValType switch {
+            LVal.LE.NUM    => "number",
+            LVal.LE.STR    => "string",
+            LVal.LE.CHAR   => "char",
+            LVal.LE.ATOM   => "atom",
+            LVal.LE.SYM    => "symbol",
+            LVal.LE.FUN    => "function",
+            LVal.LE.ERR    => "error",
+            LVal.LE.T      => "t",
+            LVal.LE.QEXPR  => "list",
+            LVal.LE.SEXPR  => "sexpr",
+            LVal.LE.HASH   => "hash",
+            LVal.LE.STREAM => "stream",
+            LVal.LE.EXIT   => "exit",
+            _              => "unknown"
+        });
+    }
+
+    // (read text): the expressions in the text, unevaluated, as a list: (eval (read "+ 1 2")) is 3
+    private static LVal Read(LEnv e, LVal a) {
+        if (a.Count != 1) return LVal.Err("'read' requires 1 parameter");
+        var s = StrArg(e, a, "read");
+        if (s.IsErr) return s;
+        var tokens = Parser.Tokenize(new StringReader(s.StrVal)).ToList();
+        var bad = tokens.FirstOrDefault(t => t.type == Parser.Token.Type.Error || t.type == Parser.Token.Type.More);
+        if (bad != null) return LVal.Err($"'read': {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
+        var x = LVal.ReadExprFromTokens(tokens)!;
+        x.ValType = LVal.LE.QEXPR;
+        return x;
+    }
+
+    // ---- Lists
+
+    // (reverse x): a list's items, or a string's characters, the other way round
+    private static LVal Reverse(LEnv e, LVal a) {
+        if (a.Count != 1) return LVal.Err("'reverse' requires 1 parameter");
+        var v = a.Pop(0, e);
+        if (v.IsErr) return v;
+        if (v.IsStr) return LVal.Str(new string(v.StrVal.Reverse().ToArray()));
+        if (!v.IsQExpr) return LVal.Err("'reverse' expects a QExpr or a String");
+        v.Cells!.Reverse();
+        return v;
+    }
+
+    // (range n), (range from to) or (range from to step): the numbers from 0 (or from) up to, not including, to; down
+    // to it, with a negative step
+    private static LVal Range(LEnv e, LVal a) {
+        if (a.Count < 1 || a.Count > 3) return LVal.Err("'range' expects 1 to 3 Numbers");
+        var n = new List<Num>();
+        while (a.Count > 0) {
+            var v = a.Pop(0, e);
+            if (v.IsErr) return v;
+            if (!v.IsNum) return LVal.Err("'range' expects Numbers");
+            n.Add(v.NumVal!);
+        }
+        var from = n.Count > 1 ? n[0] : Num.Zero;
+        var to = n.Count > 1 ? n[1] : n[0];
+        var step = n.Count > 2 ? n[2] : new Int(BigInteger.One);
+        var dir = step.CompareTo(Num.Zero);
+        if (dir == 0) return LVal.Err("'range' step cannot be 0");
+        var ret = LVal.Qexpr();
+        for (var x = from; x.CompareTo(to) * dir < 0; x = x + step) {
+            if (ret.Count >= 1000000) return LVal.Err("'range' is too long");
+            ret.Add(LVal.Number(x));
+        }
+        return ret;
+    }
+
+    // (sort list [less]): the list's items in order (the sort is stable): by cmp, or by less, a function of two
+    // items that's T when the first goes before the second
+    private static LVal Sort(LEnv e, LVal a) {
+        if (a.Count < 1 || a.Count > 2) return LVal.Err("'sort' expects a list and maybe a function");
+        var l = ListArg(e, a, "sort");
+        if (l.IsErr) return l;
+        LVal? less = null;
+        if (a.Count > 0) {
+            less = a.Pop(0, e);
+            if (less.IsErr) return less;
+            if (!less.IsFun) return LVal.Err("Second 'sort' parameter must be a function");
+        }
+        LVal? err = null;
+        bool Less(LVal x, LVal y) {
+            var r = Apply(e, less!, x, y);
+            if (r.IsErr) {
+                err ??= r;
+                return false;
+            }
+            return !r.IsNIL;
+        }
+        int Compare(LVal x, LVal y) => less == null ? x.CompareTo(y) : Less(x, y) ? -1 : Less(y, x) ? 1 : 0;
+        var sorted = l.Cells!.OrderBy(x => x, Comparer<LVal>.Create(Compare)).ToList();
+        if (err != null) return err;
+        var ret = LVal.Qexpr();
+        foreach (var x in sorted) ret.Add(x);
+        return ret;
+    }
+
+    // (index-of s sub) and (last-index-of s sub): where sub first (last) is in the string s, -1 if it isn't; or, for
+    // a list, where the item equal to sub is
+    private static LVal IndexOf(LEnv e, LVal a, bool last) {
+        var fn = last ? "last-index-of" : "index-of";
+        if (a.Count != 2) return LVal.Err($"'{fn}' expects 2 parameters");
+        var s = a.Pop(0, e);
+        if (s.IsErr) return s;
+        var x = a.Pop(0, e);
+        if (x.IsErr) return x;
+        if (s.IsQExpr) return LVal.Number(last ? s.Cells!.FindLastIndex(c => c.Equals(x)) : s.Cells!.FindIndex(c => c.Equals(x)));
+        if (!s.IsStr || !(x.IsStr || x.IsChar)) return LVal.Err($"'{fn}' expects a String and a String");
+        return LVal.Number(last ? s.StrVal.LastIndexOf(x.StrVal, StringComparison.Ordinal) : s.StrVal.IndexOf(x.StrVal, StringComparison.Ordinal));
+    }
+
+    // ---- Strings and characters
+
+    // A string made from one (a character stays a character, if the result is one)
+    private static LVal StrMap(LEnv e, LVal a, string fn, Func<string, string> f) {
+        if (a.Count != 1) return LVal.Err($"'{fn}' requires 1 parameter");
+        var s = StrArg(e, a, fn);
+        if (s.IsErr) return s;
+        var r = f(s.StrVal);
+        return s.IsChar && r.Length == 1 ? Chr(r[0]) : LVal.Str(r);
+    }
+
+    // (str-replace s old new): s with each old new
+    private static LVal StrReplace(LEnv e, LVal a) {
+        if (a.Count != 3) return LVal.Err("'str-replace' expects 3 Strings");
+        var s = StrArg(e, a, "str-replace");
+        if (s.IsErr) return s;
+        var o = StrArg(e, a, "str-replace");
+        if (o.IsErr) return o;
+        var n = StrArg(e, a, "str-replace");
+        if (n.IsErr) return n;
+        if (o.StrVal.Length == 0) return LVal.Err("'str-replace' cannot replace an empty String");
+        return LVal.Str(s.StrVal.Replace(o.StrVal, n.StrVal, StringComparison.Ordinal));
+    }
+
+    // (str-join list [sep]): the items, as print shows them, joined, sep between them
+    private static LVal StrJoin(LEnv e, LVal a) {
+        if (a.Count < 1 || a.Count > 2) return LVal.Err("'str-join' expects a list and maybe a separator");
+        var l = ListArg(e, a, "str-join");
+        if (l.IsErr) return l;
+        var sep = "";
+        if (a.Count > 0) {
+            var s = StrArg(e, a, "str-join");
+            if (s.IsErr) return s;
+            sep = s.StrVal;
+        }
+        return LVal.Str(string.Join(sep, l.Cells!.Select(c => c.ToDisplay())));
+    }
+
+    // (str-chars s): the string's characters, a list
+    private static LVal StrChars(LEnv e, LVal a) {
+        if (a.Count != 1) return LVal.Err("'str-chars' requires 1 parameter");
+        var s = StrArg(e, a, "str-chars");
+        if (s.IsErr) return s;
+        var ret = LVal.Qexpr();
+        foreach (var c in s.StrVal) ret.Add(Chr(c));
+        return ret;
+    }
+
+    // (str-pad-left s n [c]) and (str-pad-right s n [c]): s made n long with c (a space) before or after it
+    private static LVal StrPad(LEnv e, LVal a, string fn, bool left) {
+        if (a.Count < 2 || a.Count > 3) return LVal.Err($"'{fn}' expects a String, a length and maybe a character");
+        var s = StrArg(e, a, fn);
+        if (s.IsErr) return s;
+        var v = IntArg(e, a, fn, out var n);
+        if (v.IsErr) return v;
+        var c = ' ';
+        if (a.Count > 0) {
+            var p = StrArg(e, a, fn);
+            if (p.IsErr) return p;
+            if (p.StrVal.Length != 1) return LVal.Err($"'{fn}' pads with one character");
+            c = p.StrVal[0];
+        }
+        return LVal.Str(left ? s.StrVal.PadLeft(n, c) : s.StrVal.PadRight(n, c));
+    }
+
+    // (str-repeat s n): s n times
+    private static LVal StrRepeat(LEnv e, LVal a) {
+        if (a.Count != 2) return LVal.Err("'str-repeat' expects a String and a Number");
+        var s = StrArg(e, a, "str-repeat");
+        if (s.IsErr) return s;
+        var v = IntArg(e, a, "str-repeat", out var n);
+        if (v.IsErr) return v;
+        if (n < 0) return LVal.Err("'str-repeat' count cannot be negative");
+        return LVal.Str(string.Concat(Enumerable.Repeat(s.StrVal, n)));
+    }
+
+    // (format text args...): the text with each {} the next argument, as print shows it ({{ and }}: a brace)
+    private static LVal Format(LEnv e, LVal a) {
+        var f = StrArg(e, a, "format");
+        if (f.IsErr) return f;
+        var sb = new StringBuilder();
+        var s = f.StrVal;
+        for (int i = 0; i < s.Length; i++) {
+            var next = i + 1 < s.Length ? s[i + 1] : '\0';
+            if (s[i] == '{' && next == '{') { sb.Append('{'); i++; }
+            else if (s[i] == '}' && next == '}') { sb.Append('}'); i++; }
+            else if (s[i] == '{' && next == '}') {
+                if (a.Count == 0) return LVal.Err("'format' has too few arguments for its {}s");
+                var v = a.Pop(0, e);
+                if (v.IsErr) return v;
+                sb.Append(v.ToDisplay());
+                i++;
+            }
+            else sb.Append(s[i]);
+        }
+        if (a.Count > 0) return LVal.Err("'format' has more arguments than {}s");
+        return LVal.Str(sb.ToString());
+    }
+
+    // (char-code c): a character's code (or a string of one's)
+    private static LVal CharCode(LEnv e, LVal a) {
+        if (a.Count != 1) return LVal.Err("'char-code' requires 1 parameter");
+        var c = StrArg(e, a, "char-code");
+        if (c.IsErr) return c;
+        if (c.StrVal.Length != 1) return LVal.Err("'char-code' expects one character");
+        return LVal.Number(c.StrVal[0]);
+    }
+
+    // (code-char n): the character with that code
+    private static LVal CodeChar(LEnv e, LVal a) {
+        if (a.Count != 1) return LVal.Err("'code-char' requires 1 parameter");
+        var v = IntArg(e, a, "code-char", out var n);
+        if (v.IsErr) return v;
+        if (n < 0 || n > 0xFFFF) return LVal.Err($"'code-char': {n} isn't a character's code");
+        return Chr((char)n);
+    }
+
+    // alpha? digit? space? upper? lower?: whether a character is one (or every character of a string that isn't empty)
+    private static LVal CharTest(LEnv e, LVal a, string fn, Func<char, bool> test) {
+        if (a.Count != 1) return LVal.Err($"'{fn}' requires 1 parameter");
+        var s = StrArg(e, a, fn);
+        if (s.IsErr) return s;
+        return LVal.Bool(s.StrVal.Length > 0 && s.StrVal.All(test));
+    }
+
+    // ---- Output and streams
+
+    // (output-of expr...): what the expressions printed (to stdout), as a string; an error, if one is one
+    private static LVal OutputOf(LEnv e, LVal a) {
+        var saved = Console.Out;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        try {
+            while (a.Count > 0) {
+                var v = a.Pop(0, e);
+                if (v.IsErr) return v;
+            }
+        }
+        finally {
+            Console.SetOut(saved);
+        }
+        return LVal.Str(sw.ToString());
+    }
+
+    // (open path [mode]): a stream on the file: :read (the default), :write (made, or emptied first) or :append
+    private static LVal Open(LEnv e, LVal a) {
+        if (a.Count < 1 || a.Count > 2) return LVal.Err("'open' expects a path and maybe a mode");
+        var p = StrArg(e, a, "open");
+        if (p.IsErr) return p;
+        var mode = "read";
+        if (a.Count > 0) {
+            var m = a.Pop(0, e);
+            if (m.IsErr) return m;
+            if (!m.IsAtom) return LVal.Err("'open' mode must be :read, :write or :append");
+            mode = m.SymVal;
+        }
+        Stream s = mode switch {
+            "read"   => File.OpenRead(p.StrVal),
+            "write"  => File.Create(p.StrVal),
+            "append" => new FileStream(p.StrVal, FileMode.Append, FileAccess.Write),
+            _        => throw new Exception($"'open' mode must be :read, :write or :append, not :{mode}")
+        };
+        return LVal.Stream(s);
+    }
+
+    // A stream's operation: the stream, then n more arguments, evaluated
+    private static LVal StreamOp(LEnv e, LVal a, string fn, int n, Func<LStream, LVal[], LVal> op) {
+        if (a.Count != n + 1) return LVal.Err($"'{fn}' expects a stream{(n > 0 ? $" and {n} more" : "")}");
+        var s = a.Pop(0, e);
+        if (s.IsErr) return s;
+        if (!s.IsStream) return LVal.Err($"'{fn}' expects a stream");
+        var args = new LVal[n];
+        for (int i = 0; i < n; i++) {
+            args[i] = a.Pop(0, e);
+            if (args[i].IsErr) return args[i];
+        }
+        return op(s.StreamValue!, args);
+    }
+
+    // (print-to s args...) and (write-to s args...): print's and write's output, to a stream
+    private static LVal OutputTo(LEnv e, LVal a, string fn, string sep, string end) {
+        if (a.Count < 1) return LVal.Err($"'{fn}' expects a stream");
+        var s = a.Pop(0, e);
+        if (s.IsErr) return s;
+        if (!s.IsStream) return LVal.Err($"'{fn}' expects a stream first");
+        return Output(e, a, s.StreamValue!, sep, end);
+    }
+
+    // ---- Hashes
+
+    // (hash-remove h key): the entry taken out of the hash; its value, or NIL if it had none
+    private static LVal HashRemove(LEnv e, LVal val) {
+        if (val.Count != 2) return LVal.Err("'hash-remove' requires two parameters");
+        var hash = val.Pop(0, e);
+        if (hash.IsErr) return hash;
+        if (!hash.IsHash) return LVal.Err("First parameter to 'hash-remove' must be a hash");
+        var key = val.Pop(0, e);
+        if (key.IsErr) return key;
+        return hash.HashValue!.Remove(key);
+    }
+
 
     static private Random _rand = new Random();
 
     // Add Builtins to an Environment
     public static void AddBuiltins(LEnv e) {
         // variable definition functions
-        AddBuiltin(e, "fn",  Lambda); 
+        AddBuiltin(e, "fn",  Lambda);
+        AddBuiltinEvaluated(e, "fun", Fun);
         AddBuiltin(e, "def", Def);
         AddBuiltin(e, "set", Put);
+        AddBuiltin(e, "set!", Update);
+        AddTailForm(e, "let", LetStep);
+        AddTailForm(e, "do", DoStep);
+        AddBuiltin(e, "fexpr", Fexpr);
+        AddBuiltin(e, "gensym", Gensym);
         
         // list functions
         AddBuiltinEvaluated(e, "list", List);
@@ -757,14 +1415,19 @@ public class Builtins
         AddBuiltin(e, "init", Init);
         AddBuiltin(e, "end",  End);
         AddBuiltin(e, "join", Join);
-        AddBuiltin(e, "eval", Eval);
-        AddBuiltinEvaluated(e, "len",  (e, a) => a[0].ValType switch { 
+        AddTailForm(e, "eval", EvalStep);
+        AddBuiltinEvaluated(e, "len",  (e, a) => a.Count != 1 ? LVal.Err("'len' requires 1 parameter") : a[0].ValType switch {
             LVal.LE.QEXPR => LVal.Number(a[0].Count),
             LVal.LE.STR   => LVal.Number(a[0].StrVal.Length),
-            _             => LVal.Err("'len' requires parameter of type string or list")
+            LVal.LE.HASH  => LVal.Number(a[0].HashValue!.Count),
+            LVal.LE.ERR   => a[0],
+            _             => LVal.Err("'len' requires parameter of type string, list or hash")
         });
         AddBuiltin(e, "item-at", ItemAt);
         AddBuiltin(e, "subset", Subset);
+        AddBuiltin(e, "reverse", Reverse);
+        AddBuiltin(e, "range", Range);
+        AddBuiltin(e, "sort", Sort);
 
         // math functions
         AddBuiltin(e, "+", Add);
@@ -786,8 +1449,15 @@ public class Builtins
         AddBuiltin(e, "and", And);
         AddBuiltin(e, "or",  Or);
 
+        // control and errors
+        AddBuiltin(e, "while", While);
+        AddBuiltin(e, "each", Each);
+        AddBuiltin(e, "dotimes", Dotimes);
+        AddBuiltin(e, "try", Try);
+        AddBuiltin(e, "error-message", ErrorMessage);
+
         // comparison functions
-        AddBuiltin(e, "if",  If);
+        AddTailForm(e, "if", IfStep);
         AddBuiltin(e, "eq",  Eq);
         AddBuiltin(e, "neq", Neq);
 
@@ -801,42 +1471,89 @@ public class Builtins
         AddBuiltin(e, "save",  Save);
         AddBuiltin(e, "error", Error);
         AddBuiltin(e, "print", Print);
-        AddBuiltin(e, "index-of",      (e, a) => LVal.Number(a.Pop(0, e).StrVal!.IndexOf(a.Pop(0, e).StrVal!)));
-        AddBuiltin(e, "last-index-of", (e, a) => LVal.Number(a.Pop(0, e).StrVal!.LastIndexOf(a.Pop(0, e).StrVal!)));
+        AddBuiltin(e, "write", Write);
+        AddBuiltin(e, "output-of", OutputOf);
+        AddBuiltin(e, "index-of",      (e, a) => IndexOf(e, a, false));
+        AddBuiltin(e, "last-index-of", (e, a) => IndexOf(e, a, true));
         AddBuiltin(e, "substring", Substring);
         AddBuiltin(e, "char-at",   CharAt);
         AddBuiltin(e, "str-split", Split);
+        AddBuiltin(e, "str-upper", (e, a) => StrMap(e, a, "str-upper", s => s.ToUpperInvariant()));
+        AddBuiltin(e, "str-lower", (e, a) => StrMap(e, a, "str-lower", s => s.ToLowerInvariant()));
+        AddBuiltin(e, "str-trim",  (e, a) => StrMap(e, a, "str-trim", s => s.Trim()));
+        AddBuiltin(e, "str-replace", StrReplace);
+        AddBuiltin(e, "str-join", StrJoin);
+        AddBuiltin(e, "str-chars", StrChars);
+        AddBuiltin(e, "str-pad-left",  (e, a) => StrPad(e, a, "str-pad-left", true));
+        AddBuiltin(e, "str-pad-right", (e, a) => StrPad(e, a, "str-pad-right", false));
+        AddBuiltin(e, "str-repeat", StrRepeat);
+        AddBuiltin(e, "format", Format);
+        AddBuiltin(e, "char-code", CharCode);
+        AddBuiltin(e, "code-char", CodeChar);
+        AddBuiltin(e, "alpha?", (e, a) => CharTest(e, a, "alpha?", char.IsLetter));
+        AddBuiltin(e, "digit?", (e, a) => CharTest(e, a, "digit?", c => c >= '0' && c <= '9'));
+        AddBuiltin(e, "space?", (e, a) => CharTest(e, a, "space?", char.IsWhiteSpace));
+        AddBuiltin(e, "upper?", (e, a) => CharTest(e, a, "upper?", char.IsUpper));
+        AddBuiltin(e, "lower?", (e, a) => CharTest(e, a, "lower?", char.IsLower));
+
+        // reading, and streams
+        AddBuiltin(e, "read", Read);
+        AddBuiltin(e, "open", Open);
+        AddBuiltin(e, "close", (e, a) => StreamOp(e, a, "close", 0, (s, x) => s.Close()));
+        AddBuiltin(e, "read-line", (e, a) => a.Count == 0 ? LStream.StdIn.ReadLine() : StreamOp(e, a, "read-line", 0, (s, x) => s.ReadLine()));
+        AddBuiltin(e, "read-byte", (e, a) => a.Count == 0 ? LStream.StdIn.ReadByte() : StreamOp(e, a, "read-byte", 0, (s, x) => s.ReadByte()));
+        AddBuiltin(e, "read-all",  (e, a) => a.Count == 0 ? LStream.StdIn.ReadAll() : StreamOp(e, a, "read-all", 0, (s, x) => s.ReadAll()));
+        AddBuiltin(e, "seek", (e, a) => StreamOp(e, a, "seek", 1, (s, x) => s.SetPosition(x[0])));
+        AddBuiltin(e, "tell", (e, a) => StreamOp(e, a, "tell", 0, (s, x) => s.Position));
+        AddBuiltin(e, "print-to", (e, a) => OutputTo(e, a, "print-to", " ", "\n"));
+        AddBuiltin(e, "write-to", (e, a) => OutputTo(e, a, "write-to", "", ""));
+        e.Put("stdin",  LVal.Stream(LStream.StdIn));
+        e.Put("stdout", LVal.Stream(LStream.StdOut));
+        e.Put("stderr", LVal.Stream(LStream.StdErr));
 
         // conversion functions
         // TODO: move the bodies of these definitions to static methods with error checking
-        AddBuiltin(e, "val",         (e, a) => LVal.Number(NumberParser.ParseString(a.Pop(0, e).StrVal)!));
-        AddBuiltinEvaluated(e, "to-fixed", (e, a) => LVal.Number(Rat.ToRat((a[0].NumVal ?? new Int())).ToFix(a.Count > 1 ? (int)(((a[1].NumVal as Int)?.num ?? BigInteger.Zero)) : 10)));
-        AddBuiltin(e, "to-rational", (e, a) => LVal.Number(Rat.ToRat(a.Pop(0, e).NumVal!)));
-        AddBuiltin(e, "truncate",    (e, a) => LVal.Number((a.Pop(0, e).NumVal?.ToInt() ?? new Int())));
+        AddBuiltin(e, "val", (e, a) => {
+            var s = StrArg(e, a, "val");
+            if (s.IsErr) return s;
+            var n = NumberParser.ParseString(s.StrVal);
+            return n == null ? LVal.Err($"'val': \"{s.StrVal}\" isn't a number") : LVal.Number(n);
+        });
+        AddBuiltinEvaluated(e, "to-fixed", (e, a) => a.Count < 1 || !a[0].IsNum ? LVal.Err("'to-fixed' expects a Number") :
+            LVal.Number(Rat.ToRat(a[0].NumVal!).ToFix(a.Count > 1 ? (int)(((a[1].NumVal as Int)?.num ?? BigInteger.Zero)) : 10)));
+        AddBuiltinEvaluated(e, "to-rational", (e, a) => a.Count != 1 || !a[0].IsNum ? LVal.Err("'to-rational' expects a Number") :
+            LVal.Number(Rat.ToRat(a[0].NumVal!)));
+        AddBuiltinEvaluated(e, "truncate", (e, a) => a.Count != 1 || !a[0].IsNum ? LVal.Err("'truncate' expects a Number") :
+            LVal.Number(a[0].NumVal!.ToInt()));
         AddBuiltin(e, "complex",     Complex);
         AddBuiltinEvaluated(e, "to-str", ToStr);
-        AddBuiltin(e, "to-sym", 
+        // (repr x): x as the REPL shows it (a string in quotes, with escapes), an error too ("Error: ...")
+        AddBuiltin(e, "repr", (e, a) => a.Count != 1 ? LVal.Err("'repr' requires 1 parameter") : LVal.Str(a.Pop(0, e).ToStr()));
+        AddBuiltin(e, "to-sym",
             (e, a) => {
                 var x = a.Pop(0, e);
                 if (x.IsSym)  return x;
                 if (x.IsAtom) return LVal.Sym(x.SymVal);
-                return LVal.Err("Only atoms can be converted into symbols");
+                if (x.IsStr)  return PlainSym(x.StrVal);
+                return LVal.Err("Only atoms and strings can be converted into symbols");
             });
 
         AddBuiltinEvaluated(e, "to-atom",
             (e, a) => {
-                var x = a.Pop(0, e);
+                var x = a.Pop(0);
                 if (x.IsAtom) return x;
                 if (x.IsSym)  return LVal.Atom(x.SymVal);
                 if (x.IsNum)  return LVal.Atom(x.NumVal!.ToInt().num.ToString());
-                return LVal.Err("Only symbols and numbers can be converted to atoms");
+                if (x.IsStr)  return LVal.Atom(x.StrVal);
+                return LVal.Err("Only symbols, strings and numbers can be converted to atoms");
             });
 
         // fun functions
         AddBuiltin(e, "fib",       FastFib);
 
         // helper
-        AddBuiltin(e, "defined?",  (e, a) => LVal.Bool((a[0].IsT || (a[0].IsSym && e.ContainsKey(a[0].SymVal))) || (a.Count > 0 && a[0].IsQExpr && a[0].Cells!.All(pp => pp.IsT || (pp.IsSym && e.ContainsKey(pp.SymVal))))));
+        AddBuiltin(e, "defined?",  (e, a) => LVal.Bool(a.Count > 0 && (IsDefined(e, a[0]) || (a[0].IsQExpr && a[0].Cells!.All(pp => IsDefined(e, pp))))));
+        AddBuiltin(e, "type-of",   TypeOf);
 
         // type checking
         AddBuiltin(e, "t?",        IsT);
@@ -867,6 +1584,7 @@ public class Builtins
         AddBuiltin(e, "hash-values",  HashValues);
         AddBuiltin(e, "hash-call",    HashCall);
         AddBuiltin(e, "hash-clone",   HashClone);
+        AddBuiltin(e, "hash-remove",  HashRemove);
         AddBuiltin(e, "hash-add-tag", HashAddTag);
         AddBuiltin(e, "hash-lock",         (e, a) => _HashApplyTag(e, a, LHash.TAG_LOCKED));
         AddBuiltin(e, "hash-make-const",   (e, a) => _HashApplyTag(e, a, LHash.TAG_RO));

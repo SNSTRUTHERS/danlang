@@ -82,7 +82,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
                 AddTag(v);
             }
             // now for if they apply updates to a single element
-            else if (v.Count > 1 && v[0].IsAtom) {
+            else if (v.Count > 1 && IsKey(v[0])) {
                 var key = v.Pop(0);
                 var val = v.Pop(0);
                 Put(key, val, true);
@@ -126,10 +126,12 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         var v = LVal.Qexpr();
         if (_Keys != null)
             foreach (var k in _Keys) {
-                v.Add(LVal.Atom(k));
+                v.Add(KeyToLVal(k));
             }
         return v; 
     } }
+
+    public int Count => (_privateCallProxy != null ? _privateCallProxy.Value?.Count : Value?.Count) ?? 0;
 
     private bool _ContainsKey(string s) => (_privateCallProxy != null ? _privateCallProxy.Value?.ContainsKey(s) : Value?.ContainsKey(s)) ?? false;
 
@@ -153,7 +155,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         public bool MakeNotNil => _Add(TAG_NOT_NIL);
 
         public void Serialize(string key, string pre, StringBuilder sb) {
-            sb.Append(pre).Append("{:").Append(key).Append(' ');
+            sb.Append(pre).Append('{').Append(KeyToLVal(key).ToStr()).Append(' ');
             sb.Append(Value?.Serialize() ?? "NIL");
 
             if (Tags != null) {
@@ -165,12 +167,21 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         }
     }
 
-    private string _KeyFromLVal(LVal key) => key.ValType switch {
+    // A key, as the dictionary keeps it: an atom's name; a string after a '"', a number after a '#' (so each comes back
+    // as what it was: KeyToLVal)
+    private static string _KeyFromLVal(LVal key) => key.ValType switch {
             LVal.LE.ATOM => key.SymVal!,
-            // LVal.LE.STR  => key.StrVal!, // may need a ToAtom() for strings
-            LVal.LE.NUM  => key.NumVal!.ToInt().ToString()!,
+            LVal.LE.STR  => "\"" + key.StrVal!,
+            LVal.LE.NUM  => "#" + key.NumVal!.ToInt().ToString()!,
             _            => throw new Exception($"Unsupported key type {LVal.LEName(key.ValType)}")
         };
+
+    public static LVal KeyToLVal(string k) =>
+        k.StartsWith('"') ? LVal.Str(k.Substring(1)) :
+        k.StartsWith('#') ? LVal.Number(System.Numerics.BigInteger.Parse(k.Substring(1))) :
+        LVal.Atom(k);
+
+    public static bool IsKey(LVal key) => key.IsAtom || key.IsStr || key.IsNum;
 
     private LHashEntry? _GetEntry(LVal key, bool create = false) {
         LHashEntry? e = null;
@@ -190,6 +201,39 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     private bool RemoveEntry(LVal key) {
         var k = _KeyFromLVal(key);
         return Value?.Remove(k) ?? false;
+    }
+
+    // hash-remove: the entry taken out; its value, or NIL if there was none
+    public LVal Remove(LVal key, bool callerIsMember = false) {
+        if (_privateCallProxy != null && !callerIsMember) return ((LHash)_privateCallProxy).Remove(key, true);
+        try {
+            if (IsReadonly) return LVal.Err("hash-remove error: cannot modify read-only hash");
+            var e = _GetEntry(key);
+            if (e == null) return LVal.NIL();
+            if (e.IsPrivate && !callerIsMember) return LVal.Err("hash-remove error: cannot access private hash entry");
+            if (IsLocked || e.IsReadonly) return LVal.Err("hash-remove error: cannot remove an entry from a locked hash");
+            var priorValue = e.Value ?? LVal.NIL();
+            RemoveEntry(key);
+            return priorValue;
+        }
+        catch (Exception e) {
+            return LVal.Err(e.Message);
+        }
+    }
+
+    // Equal hashes: the same keys, with equal values
+    public bool EqualTo(LHash h) {
+        var a = _privateCallProxy != null ? _privateCallProxy.Value : Value;
+        var b = h._privateCallProxy != null ? h._privateCallProxy.Value : h.Value;
+        if (a == null || b == null) return a == b;
+        if (a.Count != b.Count) return false;
+        foreach (var kvp in a) {
+            if (!b.TryGetValue(kvp.Key, out var other)) return false;
+            var x = kvp.Value.Value ?? LVal.NIL();
+            var y = other.Value ?? LVal.NIL();
+            if (!x.Equals(y)) return false;
+        }
+        return true;
     }
 
     public LVal Put(LVal key, LVal val, bool callerIsMember = false) {
@@ -224,7 +268,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     public LVal Put(LVal entry, bool callerIsMember = false) {
         if (_privateCallProxy != null && !callerIsMember) return ((LHash)_privateCallProxy).Put(entry, true);
         if (entry.Count < 2) {
-            if (entry.Count == 1 && entry[0].IsAtom && !_ContainsKey(entry[0].SymVal)) {
+            if (entry.Count == 1 && entry[0].IsAtom && !_ContainsKey(_KeyFromLVal(entry[0]))) {
                 AddTag(entry[0]);
             }
             return LVal.NIL();
@@ -284,7 +328,9 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         }
     }
 
+    // A tag of the hash's (an atom, or {tag}), or of an entry's ({key tag})
     public override LVal HasTag(LVal t) {
+        if (t.IsAtom) return base.HasTag(t);
         if (t.Count == 1) return base.HasTag(t[0]);
 
         var key = t.Pop(0);
@@ -326,7 +372,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         LVal v = LVal.Qexpr();
         foreach (var k in _Keys!) {
             var e = LVal.Qexpr();
-            e.Add(LVal.Atom(k));
+            e.Add(KeyToLVal(k));
             var entry = Value![k];
             e.Add(entry.Value?.ValType switch {
                 null => LVal.NIL(),

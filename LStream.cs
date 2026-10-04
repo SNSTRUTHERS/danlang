@@ -93,4 +93,19 @@ public class LStream
         }
         return LVal.NIL();
     }
+
+    // Bytes as they are: a string's characters, each one byte (0-255)
+    public LVal WriteBytes(string s) {
+        if (!IsOutput) return LVal.Err("Cannot write this stream");
+        if (_out != null) {
+            _out.Write(s);
+            _out.Flush();
+        }
+        else {
+            var bytes = s.Select(c => (byte)c).ToArray();
+            _stm!.Write(bytes, 0, bytes.Length);
+            _stm.Flush();
+        }
+        return LVal.NIL();
+    }
 }

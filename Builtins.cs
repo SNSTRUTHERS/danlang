@@ -1,7 +1,7 @@
 using System.Text;
 using System.Numerics;
 
-public class Builtins
+public partial class Builtins
 { 
     private static void AddBuiltin(LEnv e, string name, Func<LEnv, LVal, LVal> func) {
         LVal k = LVal.Sym(name);
@@ -378,7 +378,7 @@ public class Builtins
             if (v.IsErr) return v;
             if (!v.IsStr) return LVal.Err("'load' passed non-string parameter(s)");
             var filename = FindFile(v.StrVal!);
-            if (filename == null) return LVal.Err($"File {v.StrVal} does not exist");
+            if (filename == null) return SysErr("noent", v.StrVal);
 
             var input = File.ReadAllText(filename);
             var tokens = Parser.Tokenize(new StringReader(input)).ToList();
@@ -446,11 +446,19 @@ public class Builtins
     private static LVal Print(LEnv e, LVal a) => Output(e, a, LStream.StdOut, " ", "\n");
     private static LVal Write(LEnv e, LVal a) => Output(e, a, LStream.StdOut, "", "");
 
+    // (error message [code]): an error, with a code (an atom), if it's given one
     private static LVal Error(LEnv e, LVal a) {
-        if (a.Count == 0) return LVal.Err("'error' supplied too few parameters");
+        if (a.Count == 0 || a.Count > 2) return LVal.Err("'error' expects a message and maybe a code");
         var m = a.Pop(0, e);
         if (m.IsErr) return m;
-        return LVal.Err(m.ToDisplay());
+        string? code = null;
+        if (a.Count > 0) {
+            var c = a.Pop(0, e);
+            if (c.IsErr) return c;
+            if (!c.IsAtom) return LVal.Err("An error's code must be an atom");
+            code = c.SymVal;
+        }
+        return LVal.Err(m.ToDisplay(), code);
     }
 
     private static LVal IsType(LEnv e, LVal a, LVal.LE type) {
@@ -916,7 +924,8 @@ public class Builtins
     }
 
     // (try expr [handler]): expr's value; if that's an error, NIL, or the handler's value: the handler is evaluated
-    // with &err the error's message (a function is called with it).  A Q-expression is run as code
+    // with &err the error's message and &code its code (an atom, or NIL; a function is called with the message).  A
+    // Q-expression is run as code
     private static LVal Try(LEnv e, LVal a) {
         if (a.Count < 1 || a.Count > 2) return LVal.Err("'try' expects an expression and maybe a handler");
         var v = EvalArg(e, a[0]);
@@ -924,6 +933,7 @@ public class Builtins
         if (a.Count == 1) return LVal.NIL();
         var h = new LEnv(e);
         h.Put("&err", LVal.Str(v.ErrVal));
+        h.Put("&code", v.ErrCode != null ? LVal.Atom(v.ErrCode) : LVal.NIL());
         var r = EvalArg(h, a[1]);
         if (r.IsFun) return Apply(h, r, LVal.Str(v.ErrVal));
         return r;
@@ -1347,13 +1357,19 @@ public class Builtins
             if (!m.IsAtom) return LVal.Err("'open' mode must be :read, :write or :append");
             mode = m.SymVal;
         }
-        Stream s = mode switch {
-            "read"   => File.OpenRead(p.StrVal),
-            "write"  => File.Create(p.StrVal),
-            "append" => new FileStream(p.StrVal, FileMode.Append, FileAccess.Write),
-            _        => throw new Exception($"'open' mode must be :read, :write or :append, not :{mode}")
-        };
-        return LVal.Stream(s);
+        if (mode != "read" && mode != "write" && mode != "append") return LVal.Err($"'open' mode must be :read, :write or :append, not :{mode}");
+        if (Directory.Exists(p.StrVal)) return SysErr("isdir", p.StrVal);
+        try {
+            Stream s = mode switch {
+                "read"   => File.OpenRead(p.StrVal),
+                "write"  => File.Create(p.StrVal),
+                _        => new FileStream(p.StrVal, FileMode.Append, FileAccess.Write),
+            };
+            return LVal.Stream(s);
+        }
+        catch (Exception ex) {
+            return SysErr(ex, p.StrVal);
+        }
     }
 
     // A stream's operation: the stream, then n more arguments, evaluated
@@ -1455,6 +1471,11 @@ public class Builtins
         AddBuiltin(e, "dotimes", Dotimes);
         AddBuiltin(e, "try", Try);
         AddBuiltin(e, "error-message", ErrorMessage);
+        AddBuiltin(e, "error-code", (e, a) => {
+            if (a.Count != 1) return LVal.Err("'error-code' requires 1 parameter");
+            var v = a.Pop(0, e);
+            return v.IsErr && v.ErrCode != null ? LVal.Atom(v.ErrCode) : LVal.NIL();
+        });
 
         // comparison functions
         AddTailForm(e, "if", IfStep);
@@ -1585,6 +1606,9 @@ public class Builtins
         AddBuiltin(e, "hash-call",    HashCall);
         AddBuiltin(e, "hash-clone",   HashClone);
         AddBuiltin(e, "hash-remove",  HashRemove);
+
+        // the system: files, programs, the environment, the clock, bits and bytes (SystemBuiltins.cs)
+        AddSystemBuiltins(e);
         AddBuiltin(e, "hash-add-tag", HashAddTag);
         AddBuiltin(e, "hash-lock",         (e, a) => _HashApplyTag(e, a, LHash.TAG_LOCKED));
         AddBuiltin(e, "hash-make-const",   (e, a) => _HashApplyTag(e, a, LHash.TAG_RO));

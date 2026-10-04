@@ -279,6 +279,15 @@
 (fun {repeat n d} ?{(=0 n) NIL (cons !(d) (repeat (1- n) d))})
 :(times repeat)
 
+; Libraries: (use "name") loads lib/name.dl (on the Hydra, /lib/hylang/name.hl) once; NIL, or the error that
+; stopped it (then it isn't counted as loaded)
+(def {used} {})
+(fun {use name} ?{
+  (elem? name used)
+  NIL
+  (do (load name) (set! {used} (cons name used)) NIL)
+})
+
 ; sort and related
 (fun {in?} ?{&2 (or (eq &1 (fst &2)) (in? &1 $(&2)))})
 (fun {remove-fst f l} ?{

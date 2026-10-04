@@ -34,6 +34,7 @@ public class LVal {
     public Num? NumVal = null;
     public Func<LEnv, LVal, LVal>? BuiltinVal = null;
     public string ErrVal = string.Empty;
+    public string? ErrCode = null;
     public string SymVal = string.Empty;
     public string StrVal = string.Empty;
     public LHash? HashValue = null;
@@ -78,7 +79,7 @@ public class LVal {
                 break;
 
             case LE.NUM: x.NumVal = NumVal; break;
-            case LE.ERR: x.ErrVal = ErrVal; break;
+            case LE.ERR: x.ErrVal = ErrVal; x.ErrCode = ErrCode; break;
             case LE.EXIT: x.ExitCode = ExitCode; break;
 
             case LE.ATOM:
@@ -115,10 +116,12 @@ public class LVal {
         return v;
     }
 
-    public static LVal Err(string errStr) {
+    // An error: its message, and its code, if it has one (an atom's name: the Hydra's error codes, noent ...)
+    public static LVal Err(string errStr, string? code = null) {
         LVal v = new LVal();
-        v.ValType = LE.ERR;  
+        v.ValType = LE.ERR;
         v.ErrVal = errStr;
+        v.ErrCode = code;
         return v;
     }
 

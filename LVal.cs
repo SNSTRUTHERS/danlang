@@ -1,11 +1,34 @@
 using System.Numerics;
 using System.Text;
 
+// (exit code): thrown to the top (Program), past every built-in
+public class ExitException : Exception {
+    public int Code;
+    public ExitException(int code) : base($"exit {code}") => Code = code;
+}
+
+// A built-in's step in tail position (LVal.TailForm): its value, or the expression to evaluate next, and where
+public struct TailStep {
+    public LVal? Value;
+    public LEnv? Env;
+    public LVal? Expr;
+    public static TailStep Done(LVal v) => new TailStep { Value = v };
+    public static TailStep Next(LEnv e, LVal x) => new TailStep { Env = e, Expr = x };
+
+    // The step finished, outside tail position: the expression evaluated, if there is one
+    public LVal Finish() => Expr == null ? Value! : Expr.Eval(Env!);
+}
+
 public class LVal {
-    public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, STREAM, COMMENT, EXIT };
+    public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, STREAM, COMMENT, EXIT, TAIL };
 
     public LE ValType;
-    public LEnv? Env = null;
+    public LEnv? Env = null;        // a lambda's own scope: the arguments given it so far
+    public LEnv? Closure = null;    // a lambda's: the scope it was made in, its calls' parent (lexical scope)
+    public bool IsFexpr = false;    // a lambda's: its arguments come unevaluated, each a Q-expression (fexpr)
+    public LEnv? Scope = null;      // a Q-expression's: the scope it was written in, where eval runs it
+    public Func<LEnv, LVal, TailStep>? TailForm = null;    // a built-in's, if it has a tail position (if, do ...)
+    public int ExitCode = 0;
     public LVal? Formals = null;
     public LVal? Body = null;
     public Num? NumVal = null;
@@ -43,9 +66,12 @@ public class LVal {
             case LE.FUN:
                 if (BuiltinVal != null) {
                     x.BuiltinVal = BuiltinVal;
+                    x.TailForm = TailForm;
                 } else {
                     x.BuiltinVal = null;
                     x.Env = Env?.Copy();
+                    x.Closure = Closure;
+                    x.IsFexpr = IsFexpr;
                     x.Formals = Formals?.Copy();
                     x.Body = Body?.Copy();
                 }
@@ -53,6 +79,7 @@ public class LVal {
 
             case LE.NUM: x.NumVal = NumVal; break;
             case LE.ERR: x.ErrVal = ErrVal; break;
+            case LE.EXIT: x.ExitCode = ExitCode; break;
 
             case LE.ATOM:
             case LE.SYM: x.SymVal = SymVal; break;
@@ -65,6 +92,7 @@ public class LVal {
                 x.Cells = Cells?.Select(c => c.Copy()).ToList();
                 break;
         }
+        x.Scope = Scope;
         return x;
     }
 
@@ -230,11 +258,12 @@ public class LVal {
         return v;
     }
 
-    public static LVal Lambda(LVal formals, LVal body) {
+    public static LVal Lambda(LVal formals, LVal body, LEnv? closure = null) {
         LVal v = new LVal();
-        v.ValType = LE.FUN;  
-        v.BuiltinVal = null;  
-        v.Env = new LEnv();  
+        v.ValType = LE.FUN;
+        v.BuiltinVal = null;
+        v.Env = new LEnv();
+        v.Closure = closure;
         v.Formals = formals;
         v.Body = body;
         return v;
@@ -261,9 +290,10 @@ public class LVal {
         return v;
     }
 
-    public static LVal Exit() {
+    public static LVal Exit(int code = 0) {
         LVal v = new LVal();
         v.ValType = LE.EXIT;
+        v.ExitCode = code;
         return v;
     }
 
@@ -291,7 +321,7 @@ public class LVal {
 
                     // add any tags
                     while (en.Count > 2) hash.AddTag(en[0], en.Pop(2));
-                } else if (entry.Count > 1 && entry[0].IsAtom && e != null) {
+                } else if (entry.Count > 1 && LHash.IsKey(entry[0]) && e != null) {
                     //Console.WriteLine($"adding entry {entry.ToStr()}");
                     hash.Put(entry[0], entry[1].Eval(e), true);
 
@@ -379,11 +409,12 @@ public class LVal {
     }
 
     /* List of possible escapable characters */
-    const string StrEscapable = "\a\b\f\n\r\t\v\\\'\"";
+    const string StrEscapable = "\0\a\b\f\n\r\t\v\\\"";
 
     /* Function to escape characters */
     private static string StrEscape(char x) {
         switch (x) {
+            case '\0': return "\\0";
             case '\a': return "\\a";
             case '\b': return "\\b";
             case '\f': return "\\f";
@@ -436,13 +467,21 @@ public class LVal {
             case LE.ATOM:  s.Append(':').Append(SymVal); break;
             case LE.SYM:   s.Append(SymVal); break;
             case LE.CHAR:   s.Append('\\').Append(CharName(StrVal)); break;
-            case LE.STR:   s.Append('"').Append(StrVal).Append('"'); break;
+            case LE.STR:   return StrAsString();
             case LE.HASH:  s.Append("<hash>").Append(HashValue!.ToQexpr().ToStr()); break;
+            case LE.STREAM: s.Append("<stream>"); break;
+            case LE.EXIT:  s.Append("exit"); break;
             case LE.SEXPR: return ExprAsString('(', ')');
             case LE.QEXPR: return ExprAsString('{', '}');
         }
         return s.ToString();
     }
+
+    // The value as print shows it: a string's or a character's text as it is, anything else as ToStr has it
+    public string ToDisplay() => ValType switch {
+        LE.STR or LE.CHAR => StrVal,
+        _ => ToStr()
+    };
 
     public string Serialize() {
         if (IsHash) return HashValue!.Serialize();
@@ -451,11 +490,12 @@ public class LVal {
         if (IsQExpr) sb.Append('{');
         else if (IsSExpr) sb.Append('(');
 
-        var i = 0;
         var pre = "";
         if (Count > 0) {
-            sb.Append(pre).Append(Cells![i++].Serialize());
-            pre = "\n";
+            foreach (var c in Cells!) {
+                sb.Append(pre).Append(c.Serialize());
+                pre = " ";
+            }
         } else {
             if (IsErr) sb.Append("error ").Append(ErrVal);
             else sb.Append(ToStr());
@@ -492,7 +532,7 @@ public class LVal {
                 }
                 return (Formals!.Equals(y.Formals) && Body!.Equals(y.Body));
 
-            case LE.HASH: return base.Equals(o);  // TODO: do a memberwise check?
+            case LE.HASH: return ReferenceEquals(HashValue, y.HashValue) || HashValue!.EqualTo(y.HashValue!);
 
             case LE.QEXPR:
             case LE.SEXPR:
@@ -532,32 +572,141 @@ public class LVal {
             _ => "Unknown"
         };
 
-    public static LVal Call(LEnv e, LVal f, LVal a) {
-        if (f.BuiltinVal != null) { return f.BuiltinVal(e, a); }
-        
-        int given = a.Count;
-        int total = f.Formals!.Count;
-        int i = 0;
-        var extras = Qexpr();
-        
+    // How deep calls may nest (a call in tail position doesn't count: it takes its caller's place); deeper is an
+    // error, not the host's stack overflowing (Program runs the interpreter on a thread with a stack big enough)
+    public const int MaxDepth = 10000;
+    [ThreadStatic] private static int _depth;
+
+    // A built-in called: an exception it throws comes back as an error value (but exit's)
+    private static LVal CallBuiltin(LEnv e, LVal f, LVal a) {
+        try {
+            return f.BuiltinVal!(e, a);
+        }
+        catch (ExitException) { throw; }
+        catch (Exception ex) {
+            return LVal.Err(ex.Message);
+        }
+    }
+
+    // A function's arguments: evaluated in e, left to right (the first error stops them: err); or, for an fexpr,
+    // each as it is, the expression the caller wrote, remembering e (its Scope), so (eval x) evaluates it there
+    private static List<LVal> Args(LEnv e, LVal f, LVal a, out LVal? err) {
+        err = null;
+        var vals = new List<LVal>();
         while (a.Count > 0) {
-            ++i;
-            LVal val = a.Pop(0, e);
-            if (f.Formals!.Count == 0) {
-                f.Env!.Put($"&{i}", val);
-                extras.Add(val);
-            } else {
-                LVal sym = f.Formals.Pop(0);
-                f.Env!.Put(sym.SymVal!, val);
+            if (f.IsFexpr) {
+                var x = a.Pop(0);
+                x.Scope = e;
+                vals.Add(x);
+            }
+            else {
+                var v = a.Pop(0, e);
+                if (v.IsErr) {
+                    err = v;
+                    break;
+                }
+                vals.Add(v);
             }
         }
-        
-        f.Env!.Put("&_", extras);
-        if (f.Formals!.Count == 0) {
-            f.Env!.Parent = e;
-            return Builtins.Eval(f.Env, LVal.Sexpr().Add(f.Body!.Copy()));
-        } else {
-            return f.Copy()!;
+        return vals;
+    }
+
+    public static LVal Call(LEnv e, LVal f, LVal a) {
+        if (f.BuiltinVal != null) return CallBuiltin(e, f, a);
+        var vals = Args(e, f, a, out var err);
+        if (err != null) return err;
+        return Apply(f, vals);
+    }
+
+    // A function (a copy of its own, which this changes) applied to values: they're bound in its own scope, the
+    // formals first, then &1, &2 ... and &_ for the rest; if it has all it needs, its body runs there, with the scope
+    // the function was made in as its parent (lexical scope); if not, it's the function with those bound (partial
+    // application).  A call in the body's tail position comes back as a TAIL value and runs here, in its place
+    public static LVal Apply(LVal f, List<LVal> vals) {
+        if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
+        ++_depth;
+        try {
+            while (true) {
+                if (!f.IsFexpr) {
+                    var err = vals.FirstOrDefault(v => v.IsErr);
+                    if (err != null) return err;
+                }
+
+                int i = 0;
+                var extras = Qexpr();
+                foreach (var val in vals) {
+                    ++i;
+                    if (f.Formals!.Count == 0) {
+                        f.Env!.Put($"&{i}", val);
+                        extras.Add(val);
+                    } else {
+                        LVal sym = f.Formals.Pop(0);
+                        f.Env!.Put(sym.SymVal!, val);
+                    }
+                }
+
+                f.Env!.Put("&_", extras);
+                if (f.Formals!.Count > 0) return f.Copy();
+
+                if (!f.Body!.IsQExpr) return LVal.Err("A function's body must be a QExpr");
+                f.Env.Parent = f.Closure;
+                var body = f.Body.Copy();
+                body.ValType = LE.SEXPR;
+                var r = EvalTail(f.Env, body);
+                if (r.ValType != LE.TAIL) return r;
+                f = r.TailFn!;
+                vals = r.TailArgs!;
+            }
+        }
+        finally {
+            --_depth;
+        }
+    }
+
+    public LVal? TailFn = null;         // a TAIL value's function ...
+    public List<LVal>? TailArgs = null; //   and its arguments
+
+    // (exit code): the program ends with that status
+    private static LVal ExitWith(LEnv e, LVal v) {
+        var code = v.Pop(0, e);
+        if (code.IsErr) return code;
+        if (!code.IsNum) return LVal.Err("'exit' expects a Number");
+        throw new ExitException((int)code.NumVal!.ToInt().num);
+    }
+
+    // An expression evaluated in a function body's tail position: a call to a function there comes back as a TAIL
+    // value, for Apply to run in the caller's place; a built-in with a tail position (if, do, let, eval) goes on with
+    // the expression there
+    private static LVal EvalTail(LEnv e, LVal v) {
+        while (true) {
+            if (!v.IsSExpr) return v.Eval(e);
+            if (v.Count == 0) return NIL();
+
+            LVal f = v.Pop(0, e);
+            if (f.IsErr) return f;
+            if (f.IsExit && v.Count > 0) return ExitWith(e, v);
+            if (v.Count == 0 && !f.IsFun) return f;
+            if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
+
+            if (f.BuiltinVal != null) {
+                if (f.TailForm == null) return CallBuiltin(e, f, v);
+                TailStep step;
+                try {
+                    step = f.TailForm(e, v);
+                }
+                catch (ExitException) { throw; }
+                catch (Exception ex) {
+                    return LVal.Err(ex.Message);
+                }
+                if (step.Expr == null) return step.Value!;
+                e = step.Env!;
+                v = step.Expr;
+                continue;
+            }
+
+            var vals = Args(e, f, v, out var err);
+            if (err != null) return err;
+            return new LVal { ValType = LE.TAIL, TailFn = f, TailArgs = vals };
         }
     }
 
@@ -566,10 +715,12 @@ public class LVal {
         if (v.Count == 0) return NIL();
 
         LVal f = v.Pop(0, e);
+        if (f.IsErr) return f;
+        if (f.IsExit && v.Count > 0) return ExitWith(e, v);
         if (v.Count == 0 && !f.IsFun) { return f; }
-        
+
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
-        
+
         return LVal.Call(e, f, v);
     }
 
@@ -610,14 +761,16 @@ public class LVal {
     public LVal Eval(LEnv e) {
         if (IsSym) return e.Get(SymVal!);
         if (IsSExpr) return EvalSExpr(e, this)!;
-        
-        // Print();
+
+        // A Q-expression remembers the scope it's written in: eval runs it there (so code passed to a function runs
+        // where it was written, and a function's own variables are its alone)
+        if (IsQExpr && Scope == null) Scope = e;
         return this;
     }
 
     public int CompareTo(LVal v) {
         if (NumVal != null && v.NumVal != null) return NumVal.CompareTo(v.NumVal);
-        if (IsStr && v.IsStr) return string.Compare(StrVal, v.StrVal, StringComparison.CurrentCulture);
+        if ((IsStr || IsChar) && (v.IsStr || v.IsChar)) return Math.Sign(string.CompareOrdinal(StrVal, v.StrVal));
         if (!string.IsNullOrEmpty(SymVal) && !string.IsNullOrEmpty(v.SymVal)) return string.Compare(SymVal, v.SymVal, StringComparison.OrdinalIgnoreCase);
         if (!string.IsNullOrEmpty(ErrVal) && !string.IsNullOrEmpty(v.ErrVal)) return ErrVal.CompareTo(v.ErrVal);
         if (Count > 0 && v.Count > 0 && Count == v.Count && ValType == v.ValType) {
@@ -628,6 +781,6 @@ public class LVal {
             }
             return cmp;
         }
-        return string.Compare(ToStr(), v.ToStr(), StringComparison.CurrentCulture);
+        return Math.Sign(string.CompareOrdinal(ToStr(), v.ToStr()));
     }
 }

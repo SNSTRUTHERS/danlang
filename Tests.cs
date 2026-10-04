@@ -41,7 +41,7 @@ public static class Tests {
                             }
                             Console.WriteLine($"\t{b} => {ret}");
                             var val = Parser.Tokenize(new StringReader(ret)).ToArray().First().num;
-                            if (x.ToString() != val!.ToString()) Console.WriteLine($"\t\t*****MISMATCHED INPUT/OUTPUT: IN={x} => OUT={val}");
+                            if (x.CompareTo(val) != 0) Console.WriteLine($"\t\t*****MISMATCHED INPUT/OUTPUT: IN={x} => OUT={val}");
                         }
                     }
                 }

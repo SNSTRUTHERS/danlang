@@ -183,11 +183,11 @@ public class NumberParser {
     //    - = Negative Base (override default positive base)
     //    + = Positive Base (override default negative base)
     public static string ToBase(Num n, string b) {
-        var num = ToBase((n as Int)!.num, b);
+        if (n is Comp) throw new FormatException("A complex number has no form in another base");
+        if (n is Fix f && f.dec != 0) n = Num.Norm(Rat.ToRat(f));    // a fraction, in that base
+        var num = ToBase(((Int)n).num, b);
         var den = "";
-        if (n is Fix f && f.num != 0 && f.dec != 0) {
-            den = ToBase(BigInteger.Pow(10, f.dec), b);
-        } else if (n is Rat r && r.num != 0 && r.den != 1) {
+        if (n is Rat r && r.num != 0 && r.den != 1) {
             den = ToBase(r.den, b);
         }
 
@@ -200,7 +200,8 @@ public class NumberParser {
     }
 
     public static string ToBase(BigInteger n, string b) {
-        // validate incoming b
+        // validate incoming b (the # may be left off: "x" is "#x")
+        if (!b.StartsWith('#')) b = "#" + b;
         var reg = new Regex(@"^#[<>]?[+-]?(?<numberBase>([1-7]?[0-9]|80)[rR]|[" + string.Join("", Bases.Keys.Select(c => c.ToString())) +"])$", RegexOptions.IgnoreCase);
         if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
 
@@ -224,7 +225,8 @@ public class NumberParser {
         int? radix = null;
         if (baseChar == 'r') {
             var m = reg.Match(b);
-            radix = int.Parse(m.Groups["numberBase"].Captures[0].Value);
+            radix = int.Parse(m.Groups["numberBase"].Captures[0].Value.TrimEnd('r', 'R'));
+            if (radix < 2) throw new FormatException($"Invalid base specifier {b}: a radix is 2 to 80");
         }
 
         bool? negBase = null;
@@ -325,14 +327,15 @@ public class NumberParser {
 
         if (s.Contains('/')) { // is a rational
             var splits = s.Split('/');
-            if (splits.Any(sp => sp.Length == 0 || sp.Contains('.'))) return null;  // TODO: throw or have this return an LVal.Err() instead!
+            if (splits.Length != 2 || splits.Any(sp => sp.Length == 0 || sp.Contains('.'))) return null;
 
-            var num = ParseString(splits[0]) as Int;
-            var den = ParseString(splits[1]) as Int;
-            // TODO: fix this up to better handle null num/den
-            if (den?.num == BigInteger.Zero) throw new DivideByZeroException();
+            // each part an integer, or it isn't a number (1/x is a symbol)
+            var num = ParseString(splits[0]);
+            var den = ParseString(splits[1]);
+            if (num == null || den == null || num is Rat || den is Rat || num is Comp || den is Comp) return null;
+            if (den.IsZero) throw new DivideByZeroException();
 
-            return new Rat(num?.num ?? BigInteger.Zero, den?.num ?? BigInteger.One);
+            return Num.Norm(new Rat(((Int)num).num, ((Int)den).num));
         }
 
         // simple case first (it is just a normal, decimal number in while, fixed, or fractional notation, i.e. 1, 1.4, or 1/3)
@@ -383,6 +386,7 @@ public class NumberParser {
             var nbg = m.Groups["numberBase"].Captures;
             if (nbg.Count > 0 && nbg[0].Length > 0) {
                 var numberBase = int.Parse(nbg[0].Value);
+                if (numberBase < 2) return null;
                 valueChars = _customBaseStandardCharset.Substring(0, numberBase);
             }
             else {

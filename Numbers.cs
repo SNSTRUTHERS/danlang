@@ -15,7 +15,7 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
 
     public static Num operator-(Num n) {
         return n switch {
-            Comp c => -c,
+            Comp c => new Comp((Int)(-(Num)c.r), (Int)(-(Num)c.im)),
             Rat r => -r,
             Fix f => -f,
             Int i => -i,
@@ -32,69 +32,73 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
         };
     }
 
+    public bool IsZero => this switch {
+        Comp c => c.r.IsZero && c.im.IsZero,
+        Int i => i.num.IsZero,
+        _ => false
+    };
 
-    public static Num operator*(Num n, BigInteger m) {
-        if (n is Rat r) return new Rat(r.num * m, r.den);
-        if (n is Fix f) return new Fix(f.num * m, f.dec);
-        return new Int(((Int)n).num * m);
-    }
+    // A result as the simplest kind that holds it: a rational with a denominator of 1 is an integer, a complex number
+    // with no imaginary part a real one
+    public static Num Norm(Num n) => n switch {
+        Comp c when c.im.IsZero => Norm(c.r),
+        Rat r when r.den == 1 => new Int(r.num),
+        _ => n
+    };
 
-    public static Num operator+(Num n, BigInteger m) {
-        if (n is Rat r) return new Rat(r.num + (m * r.den), r.den);
-        if (n is Fix f) return new Fix(f.num + (m * BigInteger.Pow(10, f.dec)), f.dec);
-        if (n is Int i) return new Int(i.num + m);
-        else return n;
-    }
-
-    public static Num operator/(Num n, BigInteger m) {
-        if (n is Rat r) return new Rat(r.num, r.den * m);
-        if (n is Fix f) return Rat.ToRat(f) / m;
-        else return new Rat(((Int)n).num, m);
-    }
-
-    public static Num operator-(Num n, BigInteger m) {
-        return n + (-m);
-    }
+    // The arithmetic: a result is complex if either number is; else rational if either is; else fixed (decimal) if
+    // either is; else an integer.  A quotient is exact: a rational (or an integer, if it's whole), complex or not
+    public static Num operator*(Num n, BigInteger m) => n * (Num)new Int(m);
+    public static Num operator+(Num n, BigInteger m) => n + (Num)new Int(m);
+    public static Num operator/(Num n, BigInteger m) => n / (Num)new Int(m);
+    public static Num operator-(Num n, BigInteger m) => n - (Num)new Int(m);
 
     public static Num operator*(Num n, Num m) {
-        if (m is Rat r) return Rat.ToRat(n) * r;
-        if (m is Fix f) return n switch {
-            Rat r2 => r2 * Rat.ToRat(m),
-            Fix f2 => new Fix(f.num * f2.num, f.dec + f2.dec),
-            Int i => new Fix(f.num * i.num, f.dec),
-            _ => new Fix() // Complex?
-        };
-        return n * ((Int)m).num;
+        if (n is Comp || m is Comp) return Comp.Mul(Comp.Of(n), Comp.Of(m));
+        if (n is Rat || m is Rat) return Norm(Rat.ToRat(n) * Rat.ToRat(m));
+        if (n is Fix || m is Fix) {
+            var f = Fix.Of((Int)n);
+            var g = Fix.Of((Int)m);
+            return new Fix(f.num * g.num, f.dec + g.dec);
+        }
+        return new Int(((Int)n).num * ((Int)m).num);
     }
 
     public static Num operator+(Num n, Num m) {
-        if (n is Rat r) return r + Rat.ToRat(m);
-        if (m is Rat r2) return Rat.ToRat(n) + r2;
-        if (m is Fix f) return Rat.ToRat(m) + Rat.ToRat(n);
-        return n + ((Int)m).num;
+        if (n is Comp || m is Comp) return Comp.Add(Comp.Of(n), Comp.Of(m));
+        if (n is Rat || m is Rat) return Norm(Rat.ToRat(n) + Rat.ToRat(m));
+        if (n is Fix || m is Fix) return Fix.Add(Fix.Of((Int)n), Fix.Of((Int)m));
+        return new Int(((Int)n).num + ((Int)m).num);
     }
 
     public static Num operator/(Num n, Num m) {
-        if (n is Rat r) return r / Rat.ToRat(m);
-        if (m is Rat r2) return n * new Rat(r2.den, r2.num);
-        if (m is Fix f) return Rat.ToRat(n) / Rat.ToRat(m);
-        return n / ((Int)m).num;
+        if (m.IsZero) throw new DivideByZeroException("Division by zero.");
+        if (n is Comp || m is Comp) return Comp.Div(Comp.Of(n), Comp.Of(m));
+        return Norm(Rat.ToRat(n) / Rat.ToRat(m));
     }
 
-    public static Num operator-(Num n, Num m) {
-        if (m is Rat r) return -r + n;
-        if (m is Fix f) return -f + n;
-        if (m is Int i) return n - i.num;
-        return -n;
-    }
+    public static Num operator-(Num n, Num m) => n + (-m);
 
     public static Num? Parse(string? s) {
         return NumberParser.ParseString(s);
     }
 
-    public int CompareTo(Num? obj) { // TODO: do a proper implementation!
-        if (this is Int i && obj is Int i2) return i.num.CompareTo(i2.num);
-        return 0;
+    // Numbers compared by value, whatever their kinds (1/2 and 0.5 are equal); complex numbers by real part, then
+    // imaginary part
+    public int CompareTo(Num? obj) {
+        if (obj is null) return 1;
+        if (this is Comp || obj is Comp) {
+            var a = Comp.Of(this);
+            var b = Comp.Of(obj);
+            var c = a.r.CompareTo(b.r);
+            return c != 0 ? c : a.im.CompareTo(b.im);
+        }
+        if (this is Rat || obj is Rat || this is Fix || obj is Fix) {
+            var x = Rat.ToRat(this);
+            var y = Rat.ToRat(obj);
+            return (x.num * y.den).CompareTo(y.num * x.den);
+        }
+        return ((Int)this).num.CompareTo(((Int)obj).num);
     }
 
     public int CompareTo(BigInteger other) => this.CompareTo(new Int(other));
@@ -159,6 +163,15 @@ public class Fix : Int {
 
     public static Fix operator-(Fix f) {
         return new Fix(-f.num, f.dec);
+    }
+
+    // An integer as a fixed number (with no places), or the fixed number itself
+    public static Fix Of(Int i) => i as Fix ?? new Fix(i.num, 0);
+
+    // A sum, its places the more of the two's
+    public static Fix Add(Fix a, Fix b) {
+        var d = Math.Max(a.dec, b.dec);
+        return new Fix(a.num * BigInteger.Pow(10, d - a.dec) + b.num * BigInteger.Pow(10, d - b.dec), d);
     }
 }
 
@@ -228,9 +241,9 @@ public class Rat : Int {
     
     public Fix ToFix(int places = 10, Rounding round = Rounding.Truncate) {
         var mult = num > 0 ? 1 : -1;
-        num = num * mult;
-        var w = num / den;
-        var r = num % den;
+        var n = num * mult;     // (its own: this number is unchanged)
+        var w = n / den;
+        var r = n % den;
         var dec = 0;
         while (r > 0 && dec < places) {
             ++dec;
@@ -239,7 +252,7 @@ public class Rat : Int {
             r = r % den;
         }
 
-        if (r >= (den / 2)) {
+        if (r > 0 && r * 2 >= den) {
             w = round switch {
                 Rounding.RoundUp => mult > 0 ? w + 1 : w,
                 Rounding.RoundDown => mult < 0 ? w + 1 : w,
@@ -307,9 +320,26 @@ public class Comp : Num {
     public Comp(Int r, Int im) { this.r = r; this.im = im; }
 
     public override string ToString() {
-        if (im.num == BigInteger.Zero) return r.ToString();
-        if (r.num == BigInteger.Zero) return im.ToString() + 'i';
-        return $"{r.ToString()}{(im.num > 0 ? "+" : "")}{im.ToString()}i";
+        if (im.IsZero) return r.ToString();
+        if (r.IsZero) return im.ToString() + 'i';
+        return $"{r.ToString()}{(im.CompareTo(Num.Zero) > 0 ? "+" : "")}{im.ToString()}i";
+    }
+
+    // A number as a complex one (a real one with no imaginary part)
+    public static Comp Of(Num n) => n as Comp ?? new Comp((Int)n);
+
+    // The arithmetic, its parts' through Num's operators (each part is an Int, a Fix or a Rat)
+    public static Num Add(Comp a, Comp b) => Num.Norm(new Comp((Int)((Num)a.r + b.r), (Int)((Num)a.im + b.im)));
+
+    public static Num Mul(Comp a, Comp b) => Num.Norm(new Comp(
+        (Int)((Num)a.r * b.r - (Num)a.im * b.im),
+        (Int)((Num)a.r * b.im + (Num)a.im * b.r)));
+
+    public static Num Div(Comp a, Comp b) {
+        var d = (Num)b.r * b.r + (Num)b.im * b.im;
+        return Num.Norm(new Comp(
+            (Int)(((Num)a.r * b.r + (Num)a.im * b.im) / d),
+            (Int)(((Num)a.im * b.r - (Num)a.r * b.im) / d)));
     }
 
     public new static Comp? Parse(string? s) {

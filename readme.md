@@ -62,13 +62,26 @@ no newline); `repr` is a value as the REPL shows it.  Streams: `(open path [:rea
 `(output-of expr...)` is what the expressions printed.  `save` writes a value to be read back; `load` runs a file;
 `read` turns text into expressions.
 
+**The system** (what the Hydra-16 has and a PC has too, so a program runs on both).  Files: `read-file`, `read-lines`,
+`write-file`, `append-file`, `ls`, `dir` and `stat` (a hash: `:name`, `:length`, `:dir`, `:mtime`), `exists?`, `dir?`,
+`file?`, `mkdir`, `remove`, `rename`, `copy-file`, `cd`, `cwd`, `glob` (rc's `*`, `?` and `[...]`).  Programs: `run`
+(its exit code), `sh` and `sh-out` (a line for the shell, with input if it's given), `spawn`, `wait`, `kill`,
+`pid`.  The environment: `env`, `setenv`, `unsetenv`.  The clock: `time` (seconds since 2000, as the Hydra counts),
+`date`, `date-parts`, `seconds-of`, `ticks` and `tick-rate` (200 a second), `sleep` (seconds, a fraction too).
+Bits and bytes: `bit-and`, `bit-or`, `bit-xor`, `bit-not`, `shl`, `shr`, `bit?`, `hex`, `bin`, `lo`, `hi`, `word`,
+`bytes`, `from-bytes`, `read-bytes`, `write-bytes`.  A failure is the Hydra's error: its text after the name it's
+about (`x: not found`) and its code, `(error-code e)` (`:noent`, `:exist`, `:notempty` ...; a program's own errors can
+have one: `(error "msg" :code)`; a `try` handler has it as `&code`).  `(platform)` and `(hydra?)` say where it runs.
+
 **The library.**  `lib/globals.dl`, loaded first: list functions, folds, `cond` and `case`, math and string helpers,
-`sort-desc`, `best-of` ...  `lib/dice.dl` (`(load "dice")`): dice for games.  `lib/harn.dl` and `lib/cngh.dl` are
+`sort-desc`, `best-of`, `use` (a library loaded once: `(use "dice")`) ...  `lib/dice.dl`: dice for games.
+`lib/screen.dl`: the terminal's screen (`cls`, `at`, `color`, `bold`, `cursor-off` ...).  `lib/harn.dl` and `lib/cngh.dl` are
 example programs.
 
 ## The regression suite
 
 `tests/regress/`: `run.dl` loads `harness.dl` (`check`, `check-error`: fexprs) and then each test file: `reader`,
-`eval`, `scope`, `control`, `errors`, `lists`, `strings`, `numbers`, `hashes`, `types`, `io` and `library`.  Every
+`eval`, `scope`, `control`, `errors`, `lists`, `strings`, `numbers`, `hashes`, `types`, `io`, `system`, `bits` and
+`library`.  Every
 built-in and every library function has checks; a new one should too.  The suite is in danlang itself, so another
 implementation of the language (hylang, on the Hydra-16) can run it as it is.

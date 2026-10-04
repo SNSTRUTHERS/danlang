@@ -198,3 +198,21 @@
 (check (between? 1 6 (special-die 6 {{1 1} {2 2} {3 3} {4 4} {5 5} {6 6}})) T)
 (check (len (best-of-rolls 2 3 {d6})) 2)
 (check (len (worst-of-rolls 2 3 {d6})) 2)
+
+; use: a library loaded once
+(check (use "screen") NIL)
+(check (elem? "screen" used) T)
+(check (use "screen") NIL)
+(check-error (use "no-such-library"))
+(check (elem? "no-such-library" used) NIL)
+
+; the screen (lib/screen.dl): ANSI's sequences
+(check (output-of (cls)) "\e[2J\e[H")
+(check (output-of (at 5 2)) "\e[2;5H")
+(check (output-of (color :red)) "\e[31m")
+(check (output-of (color :white :blue)) "\e[37;44m")
+(check-error (color :purple))
+(check-error (color :red :purple))
+(check (output-of (bold) (plain)) "\e[1m\e[0m")
+(check (output-of (clear-line)) "\e[K")
+(check (output-of (cursor-off) (cursor-on)) "\e[?25l\e[?25h")

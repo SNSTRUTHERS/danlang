@@ -38,8 +38,12 @@ is allowed.  A space is ASCII's (space, tab, LF, VT, FF, CR); a control characte
 `dollars` `ds`; `percentsign` `percent` `mod` `modulo` `modulus` `pc`; `caret` `uparrow`; `amp` `and` `ampersand`;
 `pipe` `or` `vbar` `verticalbar` `vb`; `star` `splat` `mult` `st`; `gt` `greater` `greaterthan`; `lt` `less`
 `lessthan`; `comma`; `colon`; `semicolon` `semi` `sc`; `dot` `period` `point`; `qmark` `question` `questionmark`
-`qm`; `underbar` `ub` `underscore`; `minus` `hyphen` `dash` `sub` `subtract`; `plus` `add`.  A character prints by
-its first name here (`\bell`, `\lf`, `\space` ...), or as itself.
+`qm`; `underbar` `ub` `underscore`; `minus` `hyphen` `dash` `sub` `subtract`; `plus` `add`; `escape` `esc`;
+`delete` `del`.  A character with a name prints by one of them: `\backslash` `\backtick` `\bell` `\backspace` `\lf`
+`\ff` `\null` `\quote` `\cr` `\rparen` `\lparen` `\rcurly` `\lcurly` `\rbracket` `\lbracket` `\slash` `\space` `\tab`
+`\tick` `\tilde` `\vtab` `\bang` `\at` `\hash` `\dollar` `\percent` `\caret` `\amp` `\pipe` `\star` `\gt` `\lt`
+`\comma` `\colon` `\semicolon` `\dot` `\qmark` `\underbar` `\minus` `\plus` `\escape` `\delete`; any other as itself
+(`\a`).
 
 **The shorthand.**  A prefix right before `(` or `{` is the function it names, put first, as a C-style call:
 `?(c a b)` is `(if c a b)`, and `?{c a b}` is `{if c a b}` (a function's body).
@@ -76,8 +80,11 @@ digit first: `k` (27: `ZYX...N0AB...M`), `y` (53: `zy...a0AB...Z`).  A word that
 is a symbol (`1+`, `1/x`).
 
 **Reader errors.**  An unclosed or wrongly closed bracket (`(1 2]`), an unknown escape or character name, a line's
-end in a plain string, a control character, non-ASCII outside a string, `1/0`, `$(`, and a name or number right
-against an opening bracket (`f(x)`, `<(h k)`, `x[1]`).  At the REPL, an unclosed bracket asks for another line.
+end in a plain string, a control character, non-ASCII outside a string (in a word too: `a\x01b`), `1/0`, `$(`, and a
+name or number right against an opening bracket (`f(x)`, `<(h k)`, `x[1]`, `+#(a)`: a prefix is a word's first
+character).  At the REPL, an unclosed bracket or here string asks for another line (the open closers shown,
+innermost last: `\t}) <`), the lines so far read again with it; an error ends the expression at once; the input's
+end in one is the error `missing }`.
 
 ## 2. Values
 
@@ -119,7 +126,7 @@ strings and characters.
 
 | Value | `repr` | `print` |
 | --- | --- | --- |
-| A string | `"a\nb"`, escaped | Its text |
+| A string | `"a\nb"`, escaped so it reads back (`\0 \a \b \f \n \r \t \v \e \\ \"`, other control characters `\xHH`; bytes past ASCII as they are) | Its text |
 | A character | `\a`, `\space` | The character |
 | A number | `42`, `1.5`, `7/2`, `1+2i`, `1i` | The same |
 | An atom, a symbol | `:a`, `a` | The same |

@@ -57,6 +57,11 @@ public class Parser {
         Token? glued(string name) =>
             isOpener(peekInt()) ? error($"'{name}' touches '{peek()}': put a space between them", name) : null;
 
+        // A byte that's never in a word, as it's never outside a string: a control character, or one past ASCII (its
+        // error; null for any other)
+        string? notInWord(int c) =>
+            c < 0 ? null : isControl(c) ? "Control sequences not allowed" : c > 127 ? "Non-ASCII character outside of string literal" : null;
+
         Token error(String reason, String? raw = null) => new Token { type = Token.Type.Error,  str = reason, raw = raw };
         Token symbol(String sym,   String? raw = null) => new Token { type = Token.Type.Symbol, str = sym,    raw = raw ?? sym };
         Token paren(char p, string? str = null) => 
@@ -148,6 +153,8 @@ public class Parser {
                 return new Token { type = Token.Type.String, str = str.ToString(), raw = raw.ToString() };
             }
 
+            // the text's end in a here string: more is wanted, as for an open bracket (at the REPL, another line)
+            if (quoteCount > 1) return new Token { type = Token.Type.More, parens = new string('"', quoteCount), raw = raw.ToString() };
             return error("Incomplete string literal", raw.ToString());
         }
 
@@ -177,7 +184,14 @@ public class Parser {
             else if (prefix == '$' && !isTerminator(peekInt())) {
                 // $name: the environment's variable, (env "name"), its name's case kept
                 var name = new StringBuilder();
-                while (!isTerminator(peekInt())) name.Append(next());
+                while (!isTerminator(peekInt())) {
+                    if (notInWord(peekInt()) is string m) {
+                        next();
+                        yield return error(m);
+                        yield break;
+                    }
+                    name.Append(next());
+                }
                 yield return paren('(', $"${name}");
                 yield return symbol("env", "");
                 yield return new Token { type = Token.Type.String, str = name.ToString(), raw = "" };
@@ -194,6 +208,11 @@ public class Parser {
                 str.Append(prefix);
 
                 while (!isTerminator(peekInt())) {
+                    if (notInWord(peekInt()) is string m) {
+                        next();
+                        yield return error(m);
+                        yield break;
+                    }
                     str.Append(next());
                 }
 
@@ -212,14 +231,25 @@ public class Parser {
                 if (isOpener(peekInt())) {
                     // a digit set of its own, #[...] (after #, and < > = + -): to its ], part of the number
                     if (peek() == '[' && System.Text.RegularExpressions.Regex.IsMatch(sb.ToString(), @"^[+-]?#[<>]?=?[+-]?$")) {
-                        while (peekInt() != -1 && peek() != ']') sb.Append(next());
+                        while (peekInt() != -1 && peek() != ']') {
+                            if (notInWord(peekInt()) is string m) {
+                                next();
+                                return new[] {error(m)};
+                            }
+                            sb.Append(next());
+                        }
                         if (peekInt() != -1) sb.Append(next());
                         continue;
                     }
                     break;
                 }
+                if (notInWord(peekInt()) is string bad) {
+                    next();
+                    return new[] {error(bad)};
+                }
                 var c = next();
-                if (c == '#' && (peek() == '(' || peek() == '{')) return lexSymbol(c);
+                // (# is a prefix only as a word's first: +#(a) is the word +# against a bracket)
+                if (c == '#' && sb.Length == 0 && (peek() == '(' || peek() == '{')) return lexSymbol(c);
                 sb.Append(c);
             }
             var g = glued(sb.ToString());
@@ -268,6 +298,11 @@ public class Parser {
 
         var parens = startingParens;
         foreach (var t in Lex()) {
+            if (t.type == Token.Type.More) {
+                // (a here string open at the end: its quotes the last closer wanted)
+                parens += t.parens;
+                break;
+            }
             if (t.type == Token.Type.SExOpen) parens += t.raw == "[" ? ']' : ')';
             if (t.type == Token.Type.QExOpen) parens += '}';
             if (t.type == Token.Type.SExClose) {

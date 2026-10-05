@@ -77,15 +77,16 @@ public class Program {
             }
         }
 
-        // the REPL
+        // the REPL: a line, and more lines while a bracket or a here string is open, the text so far read again with
+        // each (so a here string goes on over lines, and an error ends the expression at once)
         e.Put("args", LVal.Qexpr());
         Console.WriteLine($"DanLang Version {MAJOR_VERSION}.{MINOR_VERSION}");
         Console.WriteLine("Type 'exit' to Exit\n");
         var prompt = Prompt;
-        var parens = "";
         while (true) {
-            var allTokens = new List<Parser.Token>();
-            Parser.Token? last = null;
+            var text = new StringBuilder();
+            var tokens = new List<Parser.Token>();
+            var parens = "";
             var eof = false;
             var cancelled = false;
             do {
@@ -95,34 +96,34 @@ public class Program {
                     // Ctrl-C at the prompt: the line given up, a new prompt
                     LVal.Interrupted = false;
                     Console.WriteLine();
-                    parens = "";
                     cancelled = true;
                     break;
                 }
                 if (line == null) {
+                    // the input's end: exit, or, in an open expression, what it's missing
                     eof = true;
+                    if (parens.Length > 0) {
+                        tokens = new List<Parser.Token> { new Parser.Token { type = Parser.Token.Type.Error, str = $"missing {parens}" } };
+                        break;
+                    }
                     line = "exit";
                 }
-                var tokens = Parser.Tokenize(new StringReader(line), parens).ToList();
-                last = tokens.LastOrDefault();
-                if (last == null) continue;
-
-                if (last.type == Parser.Token.Type.More && !eof) {
-                    parens = last.parens;
-                    tokens.RemoveAt(tokens.Count - 1);
-                } else parens = "";
-
-                allTokens.AddRange(tokens);
+                text.Append(line).Append('\n');
+                tokens = Parser.Tokenize(new StringReader(text.ToString())).ToList();
+                var last = tokens.Last();
+                var failed = tokens.Any(tk => tk.type == Parser.Token.Type.Error);
+                parens = last.type == Parser.Token.Type.More && !failed ? last.parens : "";
             } while (parens.Length > 0);
             if (cancelled) continue;
 
             try {
-                var bad = allTokens.FirstOrDefault(tk => tk.type == Parser.Token.Type.Error);
+                var bad = tokens.FirstOrDefault(tk => tk.type == Parser.Token.Type.Error);
                 if (bad != null) {
                     Console.WriteLine($"=> Error: {bad.str}");
+                    if (eof) return 0;
                     continue;
                 }
-                var expr = LVal.ReadExprFromTokens(allTokens.ToList());
+                var expr = LVal.ReadExprFromTokens(tokens);
                 LVal.Interrupted = false;
                 var ticks = Environment.TickCount;
                 var val = expr?.Eval(e);

@@ -195,6 +195,8 @@ public class LVal {
             "underbar" or "ub" or "underscore" => "_",
             "minus" or "hyphen" or "dash" or "sub" or "subtract" => "-",
             "plus" or "add" => "+",
+            "escape" or "esc" => "\x1b",
+            "delete" or "del" => "\x7f",
             _ => null
         };
     }
@@ -241,6 +243,8 @@ public class LVal {
             "_" => "underbar",
             "-" => "minus",
             "+" => "plus",
+            "\x1b" => "escape",
+            "\x7f" => "delete",
             _ => s
         };
     }
@@ -410,7 +414,7 @@ public class LVal {
     }
 
     /* List of possible escapable characters */
-    const string StrEscapable = "\0\a\b\f\n\r\t\v\\\"";
+    const string StrEscapable = "\0\a\b\f\n\r\t\v\x1b\\\"";
 
     /* Function to escape characters */
     private static string StrEscape(char x) {
@@ -423,6 +427,7 @@ public class LVal {
             case '\r': return "\\r";
             case '\t': return "\\t";
             case '\v': return "\\v";
+            case '\x1b': return "\\e";
             case '\\': return "\\\\";
             case '\'': return "\\\'";
             case '\"': return "\\\"";
@@ -430,6 +435,8 @@ public class LVal {
         return "";
     }
 
+    // A string as it's written, so it reads back as itself: escapes for the control characters (\xHH for those
+    // without a letter), its other bytes as they are
     private string StrAsString() {
         var s = new StringBuilder();
         s.Append('"');
@@ -438,6 +445,8 @@ public class LVal {
             if (StrEscapable.Contains(c)) {
                 /* If the character is escapable then escape it */
                 s.Append(StrEscape(c));
+            } else if (c < ' ' || c == 127) {
+                s.Append($"\\x{(int)c:X2}");
             } else {
                 /* Otherwise print character as it is */
                 s.Append(c);

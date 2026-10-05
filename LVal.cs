@@ -33,6 +33,11 @@ public class LVal {
     public LVal? Body = null;
     public Num? NumVal = null;
     public Func<LEnv, LVal, LVal>? BuiltinVal = null;
+    public string? BuiltinName = null;  // a built-in's name ...
+    public int MinArgs = 0;             //   the arguments it needs (fewer: partial application) ...
+    public int MaxArgs = int.MaxValue;  //   the most it takes (more: an error) ...
+    public bool IsSpecial = false;      //   a special form (its arguments as they're written): never partial ...
+    public List<LVal>? Bound = null;    //   and, partially applied, the values given it so far
     public string ErrVal = string.Empty;
     public string? ErrCode = null;
     public string SymVal = string.Empty;
@@ -68,6 +73,11 @@ public class LVal {
                 if (BuiltinVal != null) {
                     x.BuiltinVal = BuiltinVal;
                     x.TailForm = TailForm;
+                    x.BuiltinName = BuiltinName;
+                    x.MinArgs = MinArgs;
+                    x.MaxArgs = MaxArgs;
+                    x.IsSpecial = IsSpecial;
+                    x.Bound = Bound == null ? null : new List<LVal>(Bound);
                 } else {
                     x.BuiltinVal = null;
                     x.Env = Env?.Copy();
@@ -454,7 +464,10 @@ public class LVal {
         switch (ValType) {
             case LE.FUN:
                 if (BuiltinVal != null) {
-                    return "<builtin>";
+                    if (Bound == null) return "<builtin>";
+                    s.Append("<function>(").Append(BuiltinName);      // (Partially applied: the call so far)
+                    foreach (var b in Bound) s.Append(' ').Append(b.ToStr());
+                    s.Append(')');
                 } else {
                     s.Append("<function>(fn ")
                         .Append(Formals!.ToStr())
@@ -531,7 +544,10 @@ public class LVal {
             case LE.STR: return (StrVal == y.StrVal);
             case LE.FUN: 
                 if (BuiltinVal != null || y.BuiltinVal != null) {
-                    return BuiltinVal == y.BuiltinVal;
+                    if (BuiltinVal != y.BuiltinVal) return false;
+                    var bx = Bound ?? new List<LVal>();
+                    var by = y.Bound ?? new List<LVal>();
+                    return bx.Count == by.Count && bx.Zip(by).All(p => p.First.Equals(p.Second));
                 }
                 return (Formals!.Equals(y.Formals) && Body!.Equals(y.Body));
 
@@ -614,8 +630,45 @@ public class LVal {
         return vals;
     }
 
+    // A built-in's arguments checked against what it takes: more than its most is an error; fewer than it needs (a
+    // function's, not a special form's), the built-in with those given, their values kept, waiting for the rest
+    // (partial application); a partial built-in's values go first, through names of their own.  OUT: the call's value,
+    // if that's it (null: the call goes on, with e and a)
+    private static LVal? BuiltinArgs(ref LEnv e, LVal f, ref LVal a) {
+        int bound = f.Bound?.Count ?? 0, n = bound + a.Count;
+        if (n > f.MaxArgs)
+            return Err($"'{f.BuiltinName}' takes {(f.MaxArgs == f.MinArgs ? "" : "at most ")}{f.MaxArgs} argument{(f.MaxArgs == 1 ? "" : "s")}, not {n}");
+        if (n < f.MinArgs && !f.IsSpecial) {
+            var p = f.Copy();
+            p.Bound ??= new List<LVal>();
+            while (a.Count > 0) {
+                var v = a.Pop(0, e);
+                if (v.IsErr) return v;
+                p.Bound.Add(v);
+            }
+            return p;
+        }
+        if (bound > 0) {
+            var env = new LEnv(e);
+            var call = Sexpr();
+            for (int i = 0; i < bound; i++) {
+                env.Put($"&bound{i}", f.Bound![i]);
+                call.Add(new LVal { ValType = LE.SYM, SymVal = $"&bound{i}" });
+            }
+            while (a.Count > 0) call.Add(a.Pop(0));
+            e = env;
+            a = call;
+        }
+        return null;
+    }
+
+    // Whether a function's body takes extra arguments: it names &_ or &1, &2 ...
+    private static bool TakesExtras(LVal v) =>
+        (v.IsSym && (v.SymVal == "&_" || (v.SymVal.Length > 1 && v.SymVal[0] == '&' && v.SymVal.Skip(1).All(char.IsDigit))))
+        || (v.Cells != null && v.Cells.Any(TakesExtras));
+
     public static LVal Call(LEnv e, LVal f, LVal a) {
-        if (f.BuiltinVal != null) return CallBuiltin(e, f, a);
+        if (f.BuiltinVal != null) return BuiltinArgs(ref e, f, ref a) ?? CallBuiltin(e, f, a);
         var vals = Args(e, f, a, out var err);
         if (err != null) return err;
         return Apply(f, vals);
@@ -650,6 +703,10 @@ public class LVal {
 
                 f.Env!.Put("&_", extras);
                 if (f.Formals!.Count > 0) return f.Copy();
+                if (extras.Count > 0 && !TakesExtras(f.Body!)) {
+                    var takes = vals.Count - extras.Count;
+                    return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
+                }
 
                 if (!f.Body!.IsQExpr) return LVal.Err("A function's body must be a QExpr");
                 f.Env.Parent = f.Closure;
@@ -692,6 +749,8 @@ public class LVal {
             if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
 
             if (f.BuiltinVal != null) {
+                var done = BuiltinArgs(ref e, f, ref v);
+                if (done != null) return done;
                 if (f.TailForm == null) return CallBuiltin(e, f, v);
                 TailStep step;
                 try {

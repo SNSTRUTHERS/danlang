@@ -3,9 +3,80 @@ using System.Numerics;
 
 public partial class Builtins
 { 
+    // What each built-in takes: the arguments it needs (given fewer, it's partially applied: a function waiting for
+    // the rest) and the most it takes (given more, an error).  A special form takes its arguments as they're written,
+    // or its own way: it's never partially applied
+    private const int Any = int.MaxValue;
+    private static readonly Dictionary<string, (int Min, int Max)> Arity = new() {
+        ["fn"] = (2, 2), ["fun"] = (2, 2), ["def"] = (1, Any), ["set"] = (1, Any), ["set!"] = (1, Any),
+        ["let"] = (1, Any), ["do"] = (0, Any), ["fexpr"] = (2, 2), ["gensym"] = (0, 1),
+        ["list"] = (0, Any), ["head"] = (1, 1), ["tail"] = (1, 1), ["init"] = (1, 1), ["end"] = (1, 1),
+        ["join"] = (1, Any), ["eval"] = (1, 1), ["len"] = (1, 1), ["item-at"] = (2, 2), ["subset"] = (2, 3),
+        ["reverse"] = (1, 1), ["range"] = (1, 3), ["sort"] = (1, 2),
+        ["+"] = (0, Any), ["-"] = (0, Any), ["*"] = (0, Any), ["/"] = (0, Any),
+        ["rational.n"] = (1, 1), ["rational.d"] = (1, 1), ["random"] = (1, 1),
+        ["and"] = (0, Any), ["or"] = (0, Any), ["while"] = (1, Any), ["each"] = (2, Any), ["dotimes"] = (2, Any),
+        ["try"] = (1, 2), ["error-message"] = (1, 1), ["error-code"] = (1, 1), ["if"] = (2, 3),
+        ["eq"] = (2, 2), ["neq"] = (2, 2), [">"] = (2, 2), ["<"] = (2, 2), ["cmp"] = (2, 2), ["<=>"] = (1, Any),
+        ["load"] = (1, Any), ["save"] = (1, Any), ["error"] = (1, 2), ["print"] = (0, Any), ["write"] = (0, Any),
+        ["output-of"] = (0, Any), ["index-of"] = (2, 2), ["last-index-of"] = (2, 2), ["substring"] = (2, 3),
+        ["char-at"] = (2, 2), ["str-split"] = (1, 2), ["str-upper"] = (1, 1), ["str-lower"] = (1, 1),
+        ["str-trim"] = (1, 1), ["str-replace"] = (3, 3), ["str-join"] = (1, 2), ["str-chars"] = (1, 1),
+        ["str-pad-left"] = (2, 3), ["str-pad-right"] = (2, 3), ["str-repeat"] = (2, 2), ["format"] = (1, Any),
+        ["char-code"] = (1, 1), ["code-char"] = (1, 1), ["alpha?"] = (1, 1), ["digit?"] = (1, 1),
+        ["space?"] = (1, 1), ["upper?"] = (1, 1), ["lower?"] = (1, 1),
+        ["read"] = (1, 1), ["open"] = (1, 2), ["close"] = (1, 1), ["read-line"] = (0, 1), ["read-byte"] = (0, 1),
+        ["read-all"] = (0, 1), ["seek"] = (2, 2), ["tell"] = (1, 1), ["print-to"] = (1, Any), ["write-to"] = (1, Any),
+        ["val"] = (1, 1), ["to-fixed"] = (1, 2), ["to-rational"] = (1, 1), ["truncate"] = (1, 1),
+        ["complex"] = (2, 2), ["to-str"] = (1, 2), ["repr"] = (1, 1), ["to-sym"] = (1, 1), ["to-atom"] = (1, 1),
+        ["fib"] = (1, 1), ["defined?"] = (0, 1), ["type-of"] = (1, 1),
+        ["t?"] = (1, 1), ["nil?"] = (1, 1), ["num?"] = (1, 1), ["fixed?"] = (1, 1), ["rational?"] = (1, 1),
+        ["int?"] = (1, 1), ["complex?"] = (1, 1), ["atom?"] = (1, 1), ["symbol?"] = (1, 1), ["string?"] = (1, 1),
+        ["char?"] = (1, 1), ["function?"] = (1, 1), ["error?"] = (1, 1), ["expr?"] = (0, 1), ["qexpr?"] = (1, 1),
+        ["sexpr?"] = (1, 1),
+        ["hash-create"] = (0, 1), ["hash-get"] = (2, 2), ["hash-put"] = (2, Any), ["to#"] = (1, 1), ["from#"] = (1, 1),
+        ["hash-key?"] = (2, 2), ["hash-keys"] = (1, 1), ["hash-values"] = (1, 1), ["hash-call"] = (2, Any),
+        ["hash-clone"] = (1, Any), ["hash-remove"] = (2, 2), ["hash-add-tag"] = (2, Any), ["hash-lock"] = (1, Any),
+        ["hash-make-const"] = (1, Any), ["hash-make-private"] = (1, Any), ["hash-make-not-nil"] = (1, Any),
+        ["hash-tag?"] = (2, 2), ["hash-locked?"] = (1, 2), ["hash-private?"] = (1, 2), ["hash-const?"] = (1, 2),
+        // (The system's: SystemBuiltins.cs)
+        ["read-file"] = (1, 1), ["read-lines"] = (1, 1), ["write-file"] = (1, Any), ["append-file"] = (1, Any),
+        ["ls"] = (0, 1), ["dir"] = (0, 1), ["stat"] = (1, 1), ["exists?"] = (1, 1), ["dir?"] = (1, 1),
+        ["file?"] = (1, 1), ["mkdir"] = (1, 1), ["remove"] = (1, 1), ["rename"] = (2, 2), ["copy-file"] = (2, 2),
+        ["cd"] = (0, 1), ["cwd"] = (0, 0), ["glob"] = (1, 1), ["run"] = (1, Any), ["sh"] = (1, 2), ["sh-out"] = (1, 2),
+        ["spawn"] = (1, Any), ["wait"] = (1, 1), ["kill"] = (1, 1), ["pid"] = (0, 0), ["env"] = (0, 1),
+        ["setenv"] = (2, 2), ["unsetenv"] = (1, 1), ["time"] = (0, 0), ["date"] = (0, 1), ["date-parts"] = (0, 1),
+        ["seconds-of"] = (3, 6), ["ticks"] = (0, 0), ["tick-rate"] = (0, 0), ["sleep"] = (1, 1),
+        ["bit-and"] = (1, Any), ["bit-or"] = (1, Any), ["bit-xor"] = (1, Any), ["bit-not"] = (1, 1),
+        ["shl"] = (2, 2), ["shr"] = (2, 2), ["bit?"] = (2, 2), ["hex"] = (1, 2), ["bin"] = (1, 2), ["lo"] = (1, 1),
+        ["hi"] = (1, 1), ["word"] = (2, 2), ["bytes"] = (1, 1), ["from-bytes"] = (1, 1), ["read-bytes"] = (2, 2),
+        ["write-bytes"] = (2, 2), ["platform"] = (0, 0), ["hydra?"] = (0, 0),
+        // (The library's: LibraryBuiltins.cs)
+        ["not"] = (1, 1), ["=="] = (2, 2), [">="] = (2, 2), ["<="] = (2, 2), ["neg?"] = (1, 1), ["pos?"] = (1, 1),
+        ["zero?"] = (1, 1), ["one?"] = (1, 1), ["1+"] = (1, 1), ["1-"] = (1, 1), ["abs"] = (1, 1), ["cons"] = (2, 2),
+        ["fst"] = (1, 1), ["snd"] = (1, 1), ["thd"] = (1, 1), ["nth"] = (2, 2), ["last"] = (1, 1), ["take"] = (2, 2),
+        ["drop"] = (2, 2), ["elem?"] = (2, 2), ["in?"] = (2, 2), ["map"] = (2, 2), ["filter"] = (2, 2),
+        ["foldl"] = (3, 3), ["foldr"] = (3, 3), ["any?"] = (2, 2), ["all?"] = (2, 2), ["find"] = (2, 2),
+        ["count"] = (2, 2), ["sum"] = (1, 1), ["product"] = (1, 1), ["min"] = (1, Any), ["max"] = (1, Any),
+    };
+    private static readonly HashSet<string> Special = new() {
+        "def", "set", "set!", "let", "do", "eval", "if", "and", "or", "while", "each", "dotimes", "try", "<=>",
+        "output-of", "defined?", "expr?",
+    };
+
+    // A built-in, its name and what it takes (Arity) on it
+    private static LVal Described(LVal v, string name) {
+        if (!Arity.TryGetValue(name, out var ar)) throw new Exception($"The built-in '{name}' has no Arity");
+        v.BuiltinName = name;
+        v.MinArgs = ar.Min;
+        v.MaxArgs = ar.Max;
+        v.IsSpecial = Special.Contains(name);
+        return v;
+    }
+
     private static void AddBuiltin(LEnv e, string name, Func<LEnv, LVal, LVal> func) {
         LVal k = LVal.Sym(name);
-        LVal v = LVal.Builtin(func);
+        LVal v = Described(LVal.Builtin(func), name);
         e.Put(k.SymVal!, v);
     }
 
@@ -19,7 +90,7 @@ public partial class Builtins
             }
             return func(env, a);
         };
-        LVal v = LVal.Builtin(f);
+        LVal v = Described(LVal.Builtin(f), name);
         e.Put(k.SymVal!, v);
     }
 
@@ -277,7 +348,7 @@ public partial class Builtins
 
     // A built-in with a tail position: its step, finished when it's called anywhere else
     private static void AddTailForm(LEnv e, string name, Func<LEnv, LVal, TailStep> step) {
-        LVal v = LVal.Builtin((env, a) => step(env, a).Finish());
+        LVal v = Described(LVal.Builtin((env, a) => step(env, a).Finish()), name);
         v.TailForm = step;
         e.Put(name, v);
     }
@@ -530,10 +601,14 @@ public partial class Builtins
 
     private static LVal Complex(LEnv e, LVal a) {
         if (a.Count != 2) return LVal.Err("Too few parameters passed to 'complex'");
-        if (a.Cells!.Any(c => !c.IsNum)) return LVal.Err("One or more parameters passed to 'complex' is not a Number");
+        var re = a.Pop(0, e);
+        if (re.IsErr) return re;
+        var im = a.Pop(0, e);
+        if (im.IsErr) return im;
+        if (!re.IsNum || !im.IsNum) return LVal.Err("One or more parameters passed to 'complex' is not a Number");
 
-        if (a.Pop(0, e).NumVal is Int r) {
-            if (a.Pop(0, e).NumVal is Int i) return LVal.Number(new Comp(r, i));
+        if (re.NumVal is Int r) {
+            if (im.NumVal is Int i) return LVal.Number(new Comp(r, i));
             return LVal.Err("Imaginary part of complex must be an int, a rational, or a fixed");
         }
         return LVal.Err("Real part of complex must be an int, a rational, or a fixed");
@@ -1618,5 +1693,8 @@ public partial class Builtins
         AddBuiltin(e, "hash-locked?",  HashIsLocked);
         AddBuiltin(e, "hash-private?", HashIsPrivate);
         AddBuiltin(e, "hash-const?",   HashIsConst);
+
+        // the library's most used functions
+        AddLibraryBuiltins(e);
     }
 }

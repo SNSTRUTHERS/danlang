@@ -37,3 +37,5 @@
 (check-error (to-str 1 "#q?"))
 (check-error (to-str 1 "#1r"))
 (check-error (substring "abc" 5))
+(check-error (def 1 2) "'def' cannot define non-symbols")
+(check-error (set "x" 2) "'set' cannot define non-symbols")

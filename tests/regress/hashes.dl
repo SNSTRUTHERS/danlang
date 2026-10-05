@@ -28,6 +28,16 @@
 (check (hash-put hs {:x 1} {:y 2}) {NIL NIL})
 (hash-put hs {:a NIL})
 (check (hash-key? hs :a) NIL)
+; an entry's value is evaluated, with tags after it or without; a tag is an atom
+(def {hv} (hash-create))
+(hash-put hv {:p (+ 1 2)})
+(hash-put hv {:q (+ 1 2) :t})
+(check <(hv :p) 3)
+(check <(hv :q) 3)
+(check (hash-tag? hv {:q :t}) T)
+(check-error (hash-put hv {:r 1 2}))
+(check (hash-key? hv :r) NIL)
+(check-error (hash-add-tag hv 5))
 
 ; remove
 (check (hash-remove hs :b) 6)
@@ -65,6 +75,10 @@
 (check (hash-locked? hl) T)
 (check-error (hash-put hl {:new 1}))
 (check (hash-put hl {:a 2}) 1)
+; a clone keeps the hash's own tags (applied after its overrides)
+(check (hash-locked? (hash-clone hl)) T)
+(check <((hash-clone hl {:b 3}) :b) 3)
+(check-error (hash-put (hash-clone hl) {:new 1}))
 (def {hc} #({{:a 1}}))
 (hash-make-const hc)
 (check (hash-const? hc) T)

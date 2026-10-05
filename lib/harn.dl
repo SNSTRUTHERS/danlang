@@ -142,7 +142,7 @@
 })
 
 (fun {harn.species-name} {
-  cond
+  case &1
     {:hum "Human"}
     {:sin "Sindarin"}
     {:khu "Khuzdul"}

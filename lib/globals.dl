@@ -131,9 +131,10 @@
   }
 })
 
+; div and mod: the quotient rounded down (toward minus infinity, as mod has it), so (+ (* b (div a b)) (mod a b)) is a
 (fun {div a b} ?{
   (and (num? a) (num? b))
-  (trunc (/ a b))
+  (floor (/ a b))
   (error "Cannot perform 'div' on non-numbers")
 })
 
@@ -177,14 +178,18 @@
 
 :({+? -? 0?} positive? negative? zero?)
 
+; a to the power b, a whole number
 (fun {pow a b} ?{
-  (-? b)
-  (/ 1 (pow a (- b)))
-  ?((zero? b)
-    1
-    ?((even? b)
-      (* (pow a (/ b 2)) (pow a (/ b 2)))
-      (* a (pow a (1- b)))
+  (not (eq b (trunc b)))
+  (error "'pow' takes a whole number as its power")
+  ?((-? b)
+    (/ 1 (pow a (- b)))
+    ?((zero? b)
+      1
+      ?((even? b)
+        (* (pow a (/ b 2)) (pow a (/ b 2)))
+        (* a (pow a (1- b)))
+      )
     )
   )
 })
@@ -249,7 +254,7 @@
 
 :({top bottom} best-of worst-of)
 
-(fun {between?} ?{(< &1 &2) (and (>= &3 &1) (<= &3 &2)) (between? &2 &1 &3)})
+(fun {between?} ?{(<= &1 &2) (and (>= &3 &1) (<= &3 &2)) (between? &2 &1 &3)})
 :(><? between?)
 (fun {not-between?} {not (between? &1 &2 &3)})
 :(!><? not-between?)

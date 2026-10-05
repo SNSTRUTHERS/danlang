@@ -2,7 +2,8 @@ Work in progress LISP-inspired language.
 
 ## Running it
 
-    dotnet run                      the REPL (lib/globals.dl loaded first; exit, or Ctrl-Z, to leave)
+    dotnet run                      the REPL (lib/globals.dl loaded first; exit, or Ctrl-Z, to leave; Ctrl-C stops
+                                    what's running, an error: interrupted, :intr)
     dotnet run -- file.dl a b       a program: file.dl run, args {"file.dl" "a" "b"}; its status 0, 1 after an
                                     error (shown on stderr), or (exit n)'s
     dotnet run -- tests/regress/run.dl
@@ -18,9 +19,10 @@ Work in progress LISP-inspired language.
 Q-expression: a list, data until `eval` runs it as code.  `;` starts a comment.  Strings are `"..."` with escapes
 (`\n \t \r \0 \a \b \f \v \e \\ \" \xHH`), or here strings, opened and closed by the same odd number of quotes
 (`"""say "hi" """`), whose text is as it is (a line's end is LF).  `\name` is a character (`\a`, `\space`,
-`\lparen` ...), `:name` an atom; names are case-insensitive.  `T` is true; `NIL`, the empty list, is false (and is
-the only false value).  A prefix before `(` or `{` is a shorthand: `'` list, `^` head, `$` tail, `.` unpack, `|` join,
-`=` set, `:` def, `@` fn, `!` eval, `?` if, `#` hash-create, `<` hash-get, `>` hash-put, `*` hash-call, `~` format.
+`\lparen`, `\bell` ...; a name it doesn't know is an error), `:name` an atom; names are case-insensitive.  `T` is
+true; `NIL`, the empty list, is false (and is the only false value).  A prefix before `(` or `{` is a shorthand: `'`
+list, `^` head, `$` tail, `.` unpack, `|` join, `=` set, `:` def, `@` fn, `!` eval, `?` if, `#` hash-create, `<`
+hash-get, `>` hash-put, `*` hash-call, `~` format.
 
 **Functions.**  `(fn {x y} {body})` makes one; `(fun {name x y} {body})` defines one.  Given fewer arguments than it
 has formals, a function is partially applied (`((add 1) 2)` is 3, for an `add` of two), and so is a built-in given
@@ -34,7 +36,8 @@ so closures keep theirs (`(fun {make-adder n} {fn {x} {+ x n}})`).  A Q-expressi
 written in, and `eval` runs it there: code passed to a function (`cond`'s clauses, `repeat`'s body) sees the
 variables where it was written.  `(def {x} v)` defines globally; `(set {x} v)` (`=(x v)`) binds in the current
 scope; `(set! {x} v)` changes the nearest binding of `x`, wherever it is.  `(let {{a 1} {b (+ a 1)}} body...)` binds
-in a scope of its own, in turn; `(let {code})` runs code in one.
+in a scope of its own, in turn; `(let {code})` runs code in one (a Q-expression written there; a name's value is
+itself, a list too).
 
 **Tail calls.**  A call in tail position (a function's last expression, through `if`, `do`, `let` and `eval`)
 takes its caller's place, so a tail-recursive loop runs in constant space.  Other calls nest 10,000 deep at most:
@@ -46,18 +49,24 @@ expr's value, or, if that's an error, the handler's, evaluated with `&err` the m
 with it); `(try expr)` is NIL then.  `(error-message e)` is an error's message.  Built-ins and fexprs get errors as
 values (`error?`, `type-of`).
 
-**Control.**  `if`, `and`, `or` (short-circuited), `<=>` (on a number's sign), `do`, `while`, `(each f list)` or
-`(each {x list} body...)`, `(dotimes n f)` or `(dotimes {i n} body...)`, `(range [from] to [step])`; `map`,
-`filter`, `foldl`, `foldr`, `any?`, `all?`, `find`, `count` (built in) and the library's `cond`, `case` and the rest.
+**Control.**  `if`, `and`, `or` (short-circuited: the value that decided them, `(or x 0)` x unless it's NIL),
+`<=>` (on a number's sign, any number of cases), `do`, `while`, `(each f list)` or `(each {x list} body...)`,
+`(dotimes n f)` or `(dotimes {i n} body...)`, `(range [from] to [step])`; `map`, `filter`, `foldl`, `foldr`, `any?`,
+`all?`, `find`, `count` (built in) and the library's `cond`, `case` and the rest.
 A list's items (`fst`, `nth`, `last` ... and what passes them on, as `map`) are as they're written, not evaluated.
 
 **Data.**  Numbers: integers of any size, fixed decimals (`3.14159_26535`), rationals (`720/84`), complex numbers,
 and many bases (`#xff`, `#b101`, `#16rFF`, balanced and negative ones; `(to-str n "x")`).  A sum or product is
 complex if either number is, else rational, else fixed, else an integer; a quotient is exact (a rational, or an
-integer when it's whole).  Strings (`+` joins, `substring`, `str-split`, `str-join`, `format`, `str-upper` ...),
-characters (`char-code`, `code-char`, `alpha?` ...), atoms, symbols (`to-sym`, `gensym`), lists, and hashes (keys
-are atoms, strings or integers; tags make them or their entries private, locked, read-only or not NIL; functions
-in them are methods, `hash-call` giving them `&0`, the hash).  `type-of` names a value's type.
+integer when it's whole; `(/ x)` is 1/x).  Strings (`+` joins a string, first, and anything after it as print shows
+it, `(+ "n=" 5)`; with anything else first, `+` adds numbers only; `substring`, `str-split`, `str-join`, `format`,
+`str-upper` ...), characters (`char-code`, `code-char`, `alpha?` ...), atoms, symbols (`to-sym`, `gensym`), lists,
+and hashes (keys are atoms, strings or integers; tags make them or their entries private, locked, read-only or not
+NIL; functions in them are methods, `hash-call` giving them `&0`, the hash).  `type-of` names a value's type; `num?`,
+`int?`, `string?` and the other type tests are NIL for anything else.  `cmp`, `<`, `>` and `sort` order every kind of
+value: numbers, characters, strings, atoms, symbols, lists, T, then the rest, each by its value.  An index outside a
+list or a string (`nth`, `item-at`, `subset`, `substring`, `char-at`) is an error; a count past its end takes what
+there is.
 
 **Input and output.**  `print` (a string's text as it is, spaces between, a newline after) and `write` (no spaces,
 no newline); `repr` is a value as the REPL shows it.  Streams: `(open path [:read | :write | :append])`, `close`,

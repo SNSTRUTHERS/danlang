@@ -27,7 +27,7 @@ public class TaggedValue<T> where T: class {
     public virtual LVal AddTag(LVal t) {
 //        Console.WriteLine($"Adding tag {t.SymVal}");
         if (t.IsAtom) return LVal.Bool(_Add(t.SymVal));
-        return LVal.Bool(false);
+        return LVal.Err($"A tag must be an atom, not {t.ToStr()}");
     }
 
     public virtual LVal HasTag(LVal t) {
@@ -107,6 +107,9 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
                 }
             }
         }
+
+        // the hash's own tags (locked, read-only ...): after the overrides, which they'd stop
+        if (l.Tags != null) foreach (var t in l.Tags) _Add(t);
     }
 
     public LHash PrivateCallProxy => new LHash(this, isProxy: true);
@@ -273,6 +276,9 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             }
             return LVal.NIL();
         }
+
+        for (int i = 2; i < entry.Count; ++i)
+            if (!entry[i].IsAtom) return LVal.Err($"A tag must be an atom, not {entry[i].ToStr()}");
 
         var priorValue = Put(entry[0], entry[1], callerIsMember);
         if (!priorValue.IsErr) {

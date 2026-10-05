@@ -41,6 +41,11 @@
     private const int StackSize = 512 * 1024 * 1024;
 
     public static int Main(string[] args) {
+        // Ctrl-C stops what's running (LVal.Interrupted), not danlang
+        Console.CancelKeyPress += (s, a) => {
+            a.Cancel = true;
+            LVal.Interrupted = true;
+        };
         var code = 0;
         var t = new Thread(() => code = Run(args), StackSize);
         t.Start();
@@ -106,9 +111,18 @@
                 var allTokens = new List<Parser.Token>();
                 Parser.Token? last = null;
                 var eof = false;
+                var cancelled = false;
                 do {
                     Console.Write(parens.Length > 0 ? $"\t{parens} <" : prompt);
                     var line = Console.ReadLine();
+                    if (line == null && LVal.Interrupted) {
+                        // Ctrl-C at the prompt: the line given up, a new prompt
+                        LVal.Interrupted = false;
+                        Console.WriteLine();
+                        parens = "";
+                        cancelled = true;
+                        break;
+                    }
                     if (line == null) {
                         eof = true;
                         line = "exit";
@@ -124,6 +138,7 @@
 
                     allTokens.AddRange(tokens);
                 } while (parens.Length > 0);
+                if (cancelled) continue;
 
                 try {
                     var bad = allTokens.FirstOrDefault(tk => tk.type == Parser.Token.Type.Error);
@@ -132,6 +147,7 @@
                         continue;
                     }
                     var expr = LVal.ReadExprFromTokens(allTokens.ToList());
+                    LVal.Interrupted = false;
                     var ticks = Environment.TickCount;
                     var val = expr?.Eval(e);
                     ticks = Environment.TickCount - ticks;

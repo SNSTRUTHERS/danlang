@@ -935,8 +935,9 @@ public partial class Builtins
     // An unevaluated argument evaluated: a Q-expression run as code (here), anything else evaluated
     private static LVal EvalArg(LEnv e, LVal x) => x.IsQExpr ? RunCode(e, x) : x.Copy().Eval(e);
 
-    // f called with values as they are, not evaluated again
+    // f called with values as they are, not evaluated again; anything but a function is the evaluator's error
     public static LVal Apply(LEnv e, LVal f, params LVal[] args) {
+        if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LVal.LEName(f.ValType)}, Expected {LVal.LEName(LVal.LE.FUN)}.");
         if (f.BuiltinVal == null) return LVal.Apply(f.Copy(), args.ToList());
         return LVal.ApplyBuiltin(e, f, args.ToList());
     }

@@ -134,15 +134,15 @@
 
 (fun {harn.attr-avg c a1 a2 a3} {
   trunc
-  (+ 0.5 (avg {
+  (+ 0.5 (avg '(
     (harn.get-attr c a1)
     (harn.get-attr c a2)
     (harn.get-attr c a3)
-  }))
+  )))
 })
 
 (fun {harn.species-name} {
-  cond
+  case &1
     {:hum "Human"}
     {:sin "Sindarin"}
     {:khu "Khuzdul"}
@@ -363,7 +363,7 @@
   ))
 })
 
-(fun {harn.rand-medical} {NIL})
+(fun {harn.rand-medical sp} {NIL})
 
 ; *** Skills ***
 (fun {harn.new-skill a n al ssb oml auto sp} '{

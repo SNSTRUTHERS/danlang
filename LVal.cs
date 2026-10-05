@@ -33,6 +33,11 @@ public class LVal {
     public LVal? Body = null;
     public Num? NumVal = null;
     public Func<LEnv, LVal, LVal>? BuiltinVal = null;
+    public string? BuiltinName = null;  // a built-in's name ...
+    public int MinArgs = 0;             //   the arguments it needs (fewer: partial application) ...
+    public int MaxArgs = int.MaxValue;  //   the most it takes (more: an error) ...
+    public bool IsSpecial = false;      //   a special form (its arguments as they're written): never partial ...
+    public List<LVal>? Bound = null;    //   and, partially applied, the values given it so far
     public string ErrVal = string.Empty;
     public string? ErrCode = null;
     public string SymVal = string.Empty;
@@ -68,6 +73,11 @@ public class LVal {
                 if (BuiltinVal != null) {
                     x.BuiltinVal = BuiltinVal;
                     x.TailForm = TailForm;
+                    x.BuiltinName = BuiltinName;
+                    x.MinArgs = MinArgs;
+                    x.MaxArgs = MaxArgs;
+                    x.IsSpecial = IsSpecial;
+                    x.Bound = Bound == null ? null : new List<LVal>(Bound);
                 } else {
                     x.BuiltinVal = null;
                     x.Env = Env?.Copy();
@@ -100,7 +110,6 @@ public class LVal {
     public static LVal T() {
         LVal v = new LVal();
         v.ValType = LE.T;
-        v.NumVal = new Int(BigInteger.One);
         return v;
     }
 
@@ -132,13 +141,22 @@ public class LVal {
         return v;
     }
 
+    // A character, \x or \name (a name CharOf knows)
     public static LVal Character(string s) {
         LVal v = new LVal();
         v.ValType = LE.CHAR;
-        v.StrVal = s.ToLower().Replace("-", "") switch {
+        v.StrVal = CharOf(s) ?? throw new ArgumentException($"Unknown character name \\{s}");
+        return v;
+    }
+
+    // The character a name names: one character itself, or a name for one; null if it isn't one
+    public static string? CharOf(string s) {
+        if (s.Length == 1) return s;
+        return s.ToLower().Replace("-", "") switch {
             "backslash" or "bslash" or "bs" => "\\",
             "backtick" or "btick" or "bt" => "`",
-            "bell" => "\b",
+            "bell" => "\a",
+            "backspace" or "bksp" => "\b",
             "linefeed" or "newline" or "lf" or "nl" => "\n",
             "formfeed" or "ff" => "\f",
             "null" => "\0",
@@ -155,11 +173,10 @@ public class LVal {
             "tab" => "\t",
             "tick" or "singlequote"=> "'",
             "tilde" => "~",
-            "verticalspace" or "vspace" or "vs" => "\a",
-            "verticaltab" or "vtab" or "vt" => "\v",
+            "verticaltab" or "vtab" or "vt" or "verticalspace" or "vspace" or "vs" => "\v",
             "bang" or "warning" or "exclaim" or "exclamation" or "exclamationpoint" => "!",
             "at" => "@",
-            "poundsign" or "pound" or "hash" or "lb" => "#",
+            "poundsign" or "pound" or "hash" => "#",
             "dollarsign" or "dollar" or "dollars" or "ds" => "$",
             "percentsign" or "percent" or "mod" or "modulo" or "modulus" or "pc" => "%",
             "caret" or "uparrow" => "^",
@@ -171,22 +188,21 @@ public class LVal {
             "comma" => ",",
             "colon" => ":",
             "semicolon" or "semi" or "sc" => ";",
-            "dot" or "peroid" or "point" => ".",
+            "dot" or "period" or "point" => ".",
             "qmark" or "question" or "questionmark" or "qm" => "?",
             "underbar" or "ub" or "underscore" => "_",
             "minus" or "hyphen" or "dash" or "sub" or "subtract" => "-",
             "plus" or "add" => "+",
-            _ => s.Substring(0, 1)
+            _ => null
         };
-
-        return v;
     }
 
     public static string CharName(string s) {
         return s switch {
             "\\" => "backslash",
             "`" => "backtick",
-            "\b" => "bell",
+            "\a" => "bell",
+            "\b" => "backspace",
             "\n" => "lf",
             "\f" => "ff",
             "\0" => "null",
@@ -203,7 +219,6 @@ public class LVal {
             "\t" => "tab",
             "'" => "tick",
             "~" => "tilde",
-            "\a" => "vspace",
             "\v" => "vtab",
             "!" => "bang",
             "@" => "at",
@@ -454,7 +469,10 @@ public class LVal {
         switch (ValType) {
             case LE.FUN:
                 if (BuiltinVal != null) {
-                    return "<builtin>";
+                    if (Bound == null) return "<builtin>";
+                    s.Append("<function>(").Append(BuiltinName);      // (Partially applied: the call so far)
+                    foreach (var b in Bound) s.Append(' ').Append(b.ToStr());
+                    s.Append(')');
                 } else {
                     s.Append("<function>(fn ")
                         .Append(Formals!.ToStr())
@@ -531,7 +549,10 @@ public class LVal {
             case LE.STR: return (StrVal == y.StrVal);
             case LE.FUN: 
                 if (BuiltinVal != null || y.BuiltinVal != null) {
-                    return BuiltinVal == y.BuiltinVal;
+                    if (BuiltinVal != y.BuiltinVal) return false;
+                    var bx = Bound ?? new List<LVal>();
+                    var by = y.Bound ?? new List<LVal>();
+                    return bx.Count == by.Count && bx.Zip(by).All(p => p.First.Equals(p.Second));
                 }
                 return (Formals!.Equals(y.Formals) && Body!.Equals(y.Body));
 
@@ -550,13 +571,20 @@ public class LVal {
         return false;
     }
 
+    // (Equal values have equal hashes: a number's is its value's, whatever its kind, as Equals has it)
     public override int GetHashCode() {
         return ValType.GetHashCode()
             ^ StrVal.GetHashCode()
             ^ ErrVal.GetHashCode()
             ^ (SymVal?.GetHashCode() ?? 0)
-            ^ (NumVal?.ToString()?.GetHashCode() ?? 0);
+            ^ (NumVal != null ? NumHash(NumVal) : 0);
         // TODO: include Cells
+    }
+
+    private static int NumHash(Num n) {
+        if (n is Comp c) return c.im.IsZero ? NumHash(c.r) : HashCode.Combine(NumHash(c.r), NumHash(c.im));
+        var r = Rat.ToRat(n);
+        return HashCode.Combine(r.num, r.den);
     }
 
     public static string LEName(LE t) =>
@@ -580,8 +608,15 @@ public class LVal {
     public const int MaxDepth = 10000;
     [ThreadStatic] private static int _depth;
 
+    // Ctrl-C was pressed (Program's handler sets it, the REPL clears it): each call, and each loop's step, stops with
+    // the error "interrupted" (:intr) till then
+    public static volatile bool Interrupted;
+    public static LVal? CheckInterrupt() => Interrupted ? Builtins.SysErr("intr") : null;
+
     // A built-in called: an exception it throws comes back as an error value (but exit's)
     private static LVal CallBuiltin(LEnv e, LVal f, LVal a) {
+        var intr = CheckInterrupt();
+        if (intr != null) return intr;
         try {
             return f.BuiltinVal!(e, a);
         }
@@ -614,8 +649,45 @@ public class LVal {
         return vals;
     }
 
+    // A built-in's arguments checked against what it takes: more than its most is an error; fewer than it needs (a
+    // function's, not a special form's), the built-in with those given, their values kept, waiting for the rest
+    // (partial application); a partial built-in's values go first, through names of their own.  OUT: the call's value,
+    // if that's it (null: the call goes on, with e and a)
+    private static LVal? BuiltinArgs(ref LEnv e, LVal f, ref LVal a) {
+        int bound = f.Bound?.Count ?? 0, n = bound + a.Count;
+        if (n > f.MaxArgs)
+            return Err($"'{f.BuiltinName}' takes {(f.MaxArgs == f.MinArgs ? "" : "at most ")}{f.MaxArgs} argument{(f.MaxArgs == 1 ? "" : "s")}, not {n}");
+        if (n < f.MinArgs && !f.IsSpecial) {
+            var p = f.Copy();
+            p.Bound ??= new List<LVal>();
+            while (a.Count > 0) {
+                var v = a.Pop(0, e);
+                if (v.IsErr) return v;
+                p.Bound.Add(v);
+            }
+            return p;
+        }
+        if (bound > 0) {
+            var env = new LEnv(e);
+            var call = Sexpr();
+            for (int i = 0; i < bound; i++) {
+                env.Put($"&bound{i}", f.Bound![i]);
+                call.Add(new LVal { ValType = LE.SYM, SymVal = $"&bound{i}" });
+            }
+            while (a.Count > 0) call.Add(a.Pop(0));
+            e = env;
+            a = call;
+        }
+        return null;
+    }
+
+    // Whether a function's body takes extra arguments: it names &_ or &1, &2 ...
+    private static bool TakesExtras(LVal v) =>
+        (v.IsSym && (v.SymVal == "&_" || (v.SymVal.Length > 1 && v.SymVal[0] == '&' && v.SymVal.Skip(1).All(char.IsDigit))))
+        || (v.Cells != null && v.Cells.Any(TakesExtras));
+
     public static LVal Call(LEnv e, LVal f, LVal a) {
-        if (f.BuiltinVal != null) return CallBuiltin(e, f, a);
+        if (f.BuiltinVal != null) return BuiltinArgs(ref e, f, ref a) ?? CallBuiltin(e, f, a);
         var vals = Args(e, f, a, out var err);
         if (err != null) return err;
         return Apply(f, vals);
@@ -630,6 +702,8 @@ public class LVal {
         ++_depth;
         try {
             while (true) {
+                var intr = CheckInterrupt();
+                if (intr != null) return intr;
                 if (!f.IsFexpr) {
                     var err = vals.FirstOrDefault(v => v.IsErr);
                     if (err != null) return err;
@@ -650,6 +724,10 @@ public class LVal {
 
                 f.Env!.Put("&_", extras);
                 if (f.Formals!.Count > 0) return f.Copy();
+                if (extras.Count > 0 && !TakesExtras(f.Body!)) {
+                    var takes = vals.Count - extras.Count;
+                    return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
+                }
 
                 if (!f.Body!.IsQExpr) return LVal.Err("A function's body must be a QExpr");
                 f.Env.Parent = f.Closure;
@@ -682,6 +760,8 @@ public class LVal {
     // the expression there
     private static LVal EvalTail(LEnv e, LVal v) {
         while (true) {
+            var intr = CheckInterrupt();
+            if (intr != null) return intr;
             if (!v.IsSExpr) return v.Eval(e);
             if (v.Count == 0) return NIL();
 
@@ -692,6 +772,8 @@ public class LVal {
             if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
 
             if (f.BuiltinVal != null) {
+                var done = BuiltinArgs(ref e, f, ref v);
+                if (done != null) return done;
                 if (f.TailForm == null) return CallBuiltin(e, f, v);
                 TailStep step;
                 try {
@@ -771,19 +853,46 @@ public class LVal {
         return this;
     }
 
+    // The order of values (cmp, <, >, sort): one for all of them, by kind first (numbers, characters, strings, atoms,
+    // symbols, lists, T, functions, hashes, streams, errors), then by value: numbers by value (whatever their kinds),
+    // characters and strings by their codes, atoms and symbols by name, lists item by item (a shorter one first, when
+    // it's the start of the other).  Equal values (Equals) are in the same place
     public int CompareTo(LVal v) {
-        if (NumVal != null && v.NumVal != null) return NumVal.CompareTo(v.NumVal);
-        if ((IsStr || IsChar) && (v.IsStr || v.IsChar)) return Math.Sign(string.CompareOrdinal(StrVal, v.StrVal));
-        if (!string.IsNullOrEmpty(SymVal) && !string.IsNullOrEmpty(v.SymVal)) return string.Compare(SymVal, v.SymVal, StringComparison.OrdinalIgnoreCase);
-        if (!string.IsNullOrEmpty(ErrVal) && !string.IsNullOrEmpty(v.ErrVal)) return ErrVal.CompareTo(v.ErrVal);
-        if (Count > 0 && v.Count > 0 && Count == v.Count && ValType == v.ValType) {
-            var cmp = 0;
-            for (int i = 0; cmp == 0 && i < Count; ++i) {
-                cmp = this[i].CompareTo(v[i]);
-                if (cmp != 0) break;
-            }
-            return cmp;
+        int Rank(LVal x) => x.ValType switch {
+            LE.NUM => 0, LE.CHAR => 1, LE.STR => 2, LE.ATOM => 3, LE.SYM => 4, LE.QEXPR => 5, LE.SEXPR => 6,
+            LE.T => 7, LE.FUN => 8, LE.HASH => 9, LE.STREAM => 10, LE.ERR => 11, _ => 12
+        };
+        var kind = Rank(this).CompareTo(Rank(v));
+        if (kind != 0) return Math.Sign(kind);
+        switch (ValType) {
+            case LE.NUM:   return Math.Sign(NumVal!.CompareTo(v.NumVal));
+            case LE.CHAR:
+            case LE.STR:   return Math.Sign(string.CompareOrdinal(StrVal, v.StrVal));
+            case LE.ATOM:
+            case LE.SYM:   return Math.Sign(string.CompareOrdinal(SymVal, v.SymVal));
+            case LE.ERR:   return Math.Sign(string.CompareOrdinal(ErrVal, v.ErrVal));
+            case LE.T:     return 0;
+            case LE.QEXPR:
+            case LE.SEXPR:
+                for (int i = 0; i < Count && i < v.Count; ++i) {
+                    var cmp = this[i].CompareTo(v[i]);
+                    if (cmp != 0) return cmp;
+                }
+                return Math.Sign(Count.CompareTo(v.Count));
+            case LE.HASH:
+                if (Equals(v)) return 0;
+                break;
+            case LE.STREAM:
+                if (ReferenceEquals(StreamValue, v.StreamValue)) return 0;
+                return Math.Sign(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(StreamValue)
+                    .CompareTo(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(v.StreamValue)));
+            case LE.FUN:
+                if (Equals(v)) return 0;
+                if (BuiltinVal != null && v.BuiltinVal != null && BuiltinName != v.BuiltinName)
+                    return Math.Sign(string.CompareOrdinal(BuiltinName, v.BuiltinName));
+                break;
         }
+        // (two different functions or hashes: as they print)
         return Math.Sign(string.CompareOrdinal(ToStr(), v.ToStr()));
     }
 }

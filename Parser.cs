@@ -169,7 +169,10 @@ public class Parser {
                     str.Append(next());
                 }
 
-                yield return symbol(str.ToString());
+                // a character: \x, or \name, a name it knows
+                if (prefix == '\\' && LVal.CharOf(str.ToString().Substring(1)) == null)
+                    yield return error(str.Length == 1 ? "A character needs a name" : $"Unknown character name {str}", str.ToString());
+                else yield return symbol(str.ToString());
             }
         }
 
@@ -177,10 +180,16 @@ public class Parser {
             var sb = new StringBuilder();
             while (peekInt() != -1 && !Char.IsWhiteSpace(peek()) && !"})".Contains(peek())) {
                 var c = next();
-                if (c == '#' && peek() == '(') return lexSymbol(c);
+                if (c == '#' && (peek() == '(' || peek() == '{')) return lexSymbol(c);
                 sb.Append(c);
             }
-            var num = NumberParser.ParseString(sb.ToString());
+            Num? num;
+            try {
+                num = NumberParser.ParseString(sb.ToString());
+            }
+            catch (DivideByZeroException) {
+                return new[] {error($"Division by zero: {sb}", sb.ToString())};
+            }
             if (num == null) return new [] {symbol(sb.ToString())};
             return new[] {new Token {type = Token.Type.Number, num = num, raw = sb.ToString()}};
         }

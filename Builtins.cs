@@ -89,16 +89,22 @@ public partial class Builtins
         e.Put(k.SymVal!, v);
     }
 
-    private static LVal Lambda(LEnv e, LVal a) {
+    private static LVal Lambda(LEnv e, LVal a) => Made(e, a, "fn");
+
+    // A function made here (its closure: this scope): its formals a list of symbols, its body a list, or an error
+    private static LVal Made(LEnv e, LVal a, string fn) {
         LVal formals = a.Pop(0);
         LVal body = a.Pop(0);
+        if (!formals.IsQExpr || (formals.Cells ?? new List<LVal>()).Any(c => !c.IsSym)) return LVal.Err($"'{fn}' expects a list of symbols first");
+        if (!body.IsQExpr) return LVal.Err($"'{fn}' expects a QExpr body");
         return LVal.Lambda(formals, body, e);
     }
 
     // (fexpr {formals} body): a function whose arguments come unevaluated, each in a Q-expression that remembers the
     // caller's scope, so (eval x) evaluates it there, if and when the function wants
     private static LVal Fexpr(LEnv e, LVal a) {
-        var f = Lambda(e, a);
+        var f = Made(e, a, "fexpr");
+        if (f.IsErr) return f;
         f.IsFexpr = true;
         return f;
     }
@@ -111,6 +117,7 @@ public partial class Builtins
         var body = a.Pop(0);
         if (body.IsErr) return body;
         if (!spec.IsQExpr || spec.Count == 0 || spec.Cells!.Any(c => !c.IsSym)) return LVal.Err("'fun' expects {name formals...} first");
+        if (!body.IsQExpr) return LVal.Err("'fun' expects a QExpr body");
         var name = spec.Pop(0).SymVal;
         e.Def(name, LVal.Lambda(spec, body, e));
         return LVal.NIL();

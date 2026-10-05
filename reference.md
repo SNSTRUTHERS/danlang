@@ -196,7 +196,7 @@ end takes what there is; a negative count is an error.
 
 | Built-in | Value |
 | --- | --- |
-| `(fn {formals} {body})` | A function (section 3) |
+| `(fn {formals} {body})` | A function (section 3); its formals a list of symbols and its body a list, or an error as it's made |
 | `(fexpr {formals} {body})` | A function whose arguments come as they're written |
 | `(fun {name formals...} {body})` | NIL: `name` defined globally as `(fn {formals...} {body})` |
 | `(def names values...)`, `(set ...)`, `(set! ...)` | NIL; special (section 3) |

@@ -509,7 +509,8 @@ public class LVal {
                 sb.Append(pre).Append(c.Serialize());
                 pre = " ";
             }
-        } else {
+        } else if (!IsQExpr && !IsSExpr) {
+            // (an empty list is its brackets alone, {} or (), so it reads back as itself)
             if (IsErr) sb.Append("error ").Append(ErrVal);
             else sb.Append(ToStr());
         }

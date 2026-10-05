@@ -59,7 +59,7 @@
 (save {1 "a\tb" :c {2}} io-tmp :overwrite)
 (check (load io-tmp) {1 "a\tb" :c {2}})
 (save #({{:a 1} {"b" {2 3}}}) io-tmp :overwrite)
-(check <((load io-tmp) "b") {2 3})
+(check ((load io-tmp) "b") {2 3})
 (check-error (save 1 io-tmp))
 (save 2 io-tmp :append)
 (check (load io-tmp) 2)

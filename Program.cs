@@ -1,39 +1,8 @@
-﻿public class Program {
+using System.Text;
+
+public class Program {
     public static readonly int MAJOR_VERSION = 0;
     public static readonly int MINOR_VERSION = 2;
-
-    private static void PrintTokens(IEnumerable<Parser.Token> tokens) {
-        Parser.Token? priorToken = null;
-        var indentLevel = 0;
-        var tokArray = tokens.ToList();
-        foreach (var tok in tokArray) {
-            if (priorToken != null) {
-                Console.Write(priorToken.type switch {
-                    Parser.Token.Type.Number or Parser.Token.Type.String or Parser.Token.Type.Symbol =>
-                        tok.type != Parser.Token.Type.SExClose ? " " : "",
-                    Parser.Token.Type.Comment => "\n",
-                    _ => "" });
-            }
-
-            if (tok.type == Parser.Token.Type.SExOpen && indentLevel > 0) {
-                if (priorToken?.type != Parser.Token.Type.SExClose) Console.WriteLine();
-                Console.Write(new String(' ', 2 * indentLevel));
-            }
-
-            if (tok.type == Parser.Token.Type.SExClose) {
-                --indentLevel;
-                if (priorToken?.type == Parser.Token.Type.SExClose && indentLevel > 0)
-                    Console.Write(new String(' ', 2 * indentLevel));
-            }
-
-            Console.Write(tok.raw);
-            if (tok.type == Parser.Token.Type.SExOpen) ++indentLevel;
-            if (tok.type == Parser.Token.Type.SExClose) {
-                Console.WriteLine();
-            }
-            priorToken = tok;
-        }
-    }
 
     private const string Prompt = "danlang>";
 
@@ -46,11 +15,26 @@
             a.Cancel = true;
             LVal.Interrupted = true;
         };
+        ConsoleBytes();
         var code = 0;
         var t = new Thread(() => code = Run(args), StackSize);
         t.Start();
         t.Join();
         return code;
+    }
+
+    // A character is a byte (0-255), as on the Hydra: the console is read and written a byte a character (Latin-1,
+    // which maps each byte to the character with its code), and the terminal is told UTF-8, so UTF-8 text shows as
+    // itself while danlang sees its bytes
+    private static void ConsoleBytes() {
+        try {
+            Console.InputEncoding = Encoding.UTF8;
+            Console.OutputEncoding = Encoding.UTF8;
+        }
+        catch (IOException) { }     // (no console: input or output redirected)
+        Console.SetIn(new StreamReader(Console.OpenStandardInput(), Encoding.Latin1));
+        Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Encoding.Latin1) { AutoFlush = true });
+        Console.SetError(new StreamWriter(Console.OpenStandardError(), Encoding.Latin1) { AutoFlush = true });
     }
 
     // An environment with the built-ins and the standard library (lib/globals.dl)
@@ -67,109 +51,92 @@
     private static int Run(string[] args) {
         var (files, config) = Config.ParseCommandLine(args);
 
-        switch (config.mode) {
-        case Config.Mode.RunTests:
-            Tests.TestNumbers();
-            Tests.TestTokens();
-            return 0;
+        LEnv e;
+        try {
+            e = NewEnv();
+        }
+        catch (ExitException x) {
+            return x.Code;
+        }
 
-        // case Config.Mode.Compile:
-        default:
-            LEnv e;
+        // a file to run
+        if (files.Length >= 1) {
+            var argv = LVal.Qexpr();
+            foreach (var f in files) argv.Add(LVal.Str(Builtins.FromHost(f)));
+            e.Put("args", argv);
             try {
-                e = NewEnv();
+                var x = Builtins.Load(e, LVal.Sexpr().Add(LVal.Str(Builtins.FromHost(files[0]))));
+                if (x.IsErr) {
+                    Console.Error.WriteLine(x.ToStr());
+                    return 1;
+                }
+                return 0;
             }
             catch (ExitException x) {
                 return x.Code;
             }
+        }
 
-            /* Supplied a file to run */
-            if (files.Length >= 1) {
-                var argv = LVal.Qexpr();
-                foreach (var f in files) argv.Add(LVal.Str(f));
-                e.Put("args", argv);
-                try {
-                    var x = Builtins.Load(e, LVal.Sexpr().Add(LVal.Str(files[0])));
-                    if (x.IsErr) {
-                        Console.Error.WriteLine(x.ToStr());
-                        return 1;
-                    }
-                    return 0;
-                }
-                catch (ExitException x) {
-                    return x.Code;
-                }
-            }
-
-            /* Interactive Prompt */
-            e.Put("args", LVal.Qexpr());
-            Console.WriteLine($"DanLang Version {MAJOR_VERSION}.{MINOR_VERSION}");
-            Console.WriteLine("Type 'exit' to Exit\n");
-            var prompt = Prompt;
-            var parens = "";
-            while (true) {
-                var allTokens = new List<Parser.Token>();
-                Parser.Token? last = null;
-                var eof = false;
-                var cancelled = false;
-                do {
-                    Console.Write(parens.Length > 0 ? $"\t{parens} <" : prompt);
-                    var line = Console.ReadLine();
-                    if (line == null && LVal.Interrupted) {
-                        // Ctrl-C at the prompt: the line given up, a new prompt
-                        LVal.Interrupted = false;
-                        Console.WriteLine();
-                        parens = "";
-                        cancelled = true;
-                        break;
-                    }
-                    if (line == null) {
-                        eof = true;
-                        line = "exit";
-                    }
-                    var tokens = Parser.Tokenize(new StringReader(line), parens).ToList();
-                    last = tokens.LastOrDefault();
-                    if (last == null) continue;
-
-                    if (last.type == Parser.Token.Type.More && !eof) {
-                        parens = last.parens;
-                        tokens.RemoveAt(tokens.Count - 1);
-                    } else parens = "";
-
-                    allTokens.AddRange(tokens);
-                } while (parens.Length > 0);
-                if (cancelled) continue;
-
-                try {
-                    var bad = allTokens.FirstOrDefault(tk => tk.type == Parser.Token.Type.Error);
-                    if (bad != null) {
-                        Console.WriteLine($"=> Error: {bad.str}");
-                        continue;
-                    }
-                    var expr = LVal.ReadExprFromTokens(allTokens.ToList());
+        // the REPL
+        e.Put("args", LVal.Qexpr());
+        Console.WriteLine($"DanLang Version {MAJOR_VERSION}.{MINOR_VERSION}");
+        Console.WriteLine("Type 'exit' to Exit\n");
+        var prompt = Prompt;
+        var parens = "";
+        while (true) {
+            var allTokens = new List<Parser.Token>();
+            Parser.Token? last = null;
+            var eof = false;
+            var cancelled = false;
+            do {
+                Console.Write(parens.Length > 0 ? $"\t{parens} <" : prompt);
+                var line = Console.ReadLine();
+                if (line == null && LVal.Interrupted) {
+                    // Ctrl-C at the prompt: the line given up, a new prompt
                     LVal.Interrupted = false;
-                    var ticks = Environment.TickCount;
-                    var val = expr?.Eval(e);
-                    ticks = Environment.TickCount - ticks;
-                    Console.Write($"{(ticks > 1000 ? $"({ticks}ms)" : "")}=> "); val?.Println();
-                    if (val?.IsExit ?? false) return val.ExitCode;
+                    Console.WriteLine();
+                    parens = "";
+                    cancelled = true;
+                    break;
                 }
-                catch (ExitException x) {
-                    return x.Code;
+                if (line == null) {
+                    eof = true;
+                    line = "exit";
                 }
-                catch (Exception x) {
-                    Console.WriteLine($"=> Error: {x.Message}");
+                var tokens = Parser.Tokenize(new StringReader(line), parens).ToList();
+                last = tokens.LastOrDefault();
+                if (last == null) continue;
+
+                if (last.type == Parser.Token.Type.More && !eof) {
+                    parens = last.parens;
+                    tokens.RemoveAt(tokens.Count - 1);
+                } else parens = "";
+
+                allTokens.AddRange(tokens);
+            } while (parens.Length > 0);
+            if (cancelled) continue;
+
+            try {
+                var bad = allTokens.FirstOrDefault(tk => tk.type == Parser.Token.Type.Error);
+                if (bad != null) {
+                    Console.WriteLine($"=> Error: {bad.str}");
+                    continue;
                 }
-                if (eof) return 0;
+                var expr = LVal.ReadExprFromTokens(allTokens.ToList());
+                LVal.Interrupted = false;
+                var ticks = Environment.TickCount;
+                var val = expr?.Eval(e);
+                ticks = Environment.TickCount - ticks;
+                Console.Write($"{(ticks > 1000 ? $"({ticks}ms)" : "")}=> "); val?.Println();
+                if (val?.IsExit ?? false) return val.ExitCode;
             }
+            catch (ExitException x) {
+                return x.Code;
+            }
+            catch (Exception x) {
+                Console.WriteLine($"=> Error: {x.Message}");
+            }
+            if (eof) return 0;
         }
     }
-
-    static string? readline(string prompt) {
-        Console.Write(prompt);
-        return Console.ReadLine();
-    }
-
-    static void add_history(string? unused) {}
-    /* Lisp Value */
 }

@@ -18,6 +18,12 @@ public partial class Builtins
         {"eof", "end of file"}, {"srch", "no such task"}, {"child", "no such child"},
     };
 
+    // Text between danlang and the host: danlang's characters are bytes (0-255), the host's text UTF-16, so a host's
+    // string (a file's name, the environment's, an error's message) comes in as its UTF-8 bytes, a character each, and
+    // danlang's goes out as the text those bytes are in UTF-8
+    public static string FromHost(string s) => Encoding.Latin1.GetString(Encoding.UTF8.GetBytes(s));
+    public static string ToHost(string s) => Encoding.UTF8.GetString(Encoding.Latin1.GetBytes(s));
+
     // The Hydra's error: "name: text", and its code
     public static LVal SysErr(string code, string? name = null) =>
         LVal.Err((name != null ? name + ": " : "") + SysErrors[code], code);
@@ -32,16 +38,15 @@ public partial class Builtins
         IOException io when io.HResult == unchecked((int)0x80070091) => SysErr("notempty", name),
         IOException => SysErr("io", name),
         ArgumentException => SysErr("inval", name),
-        _ => LVal.Err(ex.Message)
+        _ => LVal.Err(FromHost(ex.Message))
     };
 
     // A system operation: its n arguments evaluated (strings for the paths, or anything op takes), then op; an
     // exception is the Hydra's error, about the first argument
-    private static LVal SysOp(LEnv e, LVal a, string fn, int min, int max, Func<LVal[], LVal> op) {
-        if (a.Count < min || a.Count > max) return LVal.Err($"'{fn}' expects {(min == max ? $"{min}" : $"{min} to {max}")} parameters");
+    private static LVal SysOp(LEnv e, LVal a, string fn, Func<LVal[], LVal> op) {
         var args = new LVal[a.Count];
         for (int i = 0; i < args.Length; i++) {
-            args[i] = a.Pop(0, e);
+            args[i] = a.Pop(0);
             if (args[i].IsErr) return args[i];
         }
         try {
@@ -53,10 +58,10 @@ public partial class Builtins
         }
     }
 
-    // A path argument: a string (or a symbol's or atom's name)
+    // A path argument: a string (or a symbol's or atom's name), as the host has it
     private static string PathOf(LVal v, string fn) {
-        if (v.IsStr) return v.StrVal;
-        if (v.IsAtom || v.IsSym) return v.SymVal;
+        if (v.IsStr) return ToHost(v.StrVal);
+        if (v.IsAtom || v.IsSym) return ToHost(v.SymVal);
         throw new ArgumentException($"'{fn}' expects a path");
     }
 
@@ -69,9 +74,9 @@ public partial class Builtins
     // A file's stat record, as a hash: :name, :length, :dir (T for a directory), :mtime (seconds since 2000)
     private static LVal StatOf(string path) {
         FileSystemInfo fi = Directory.Exists(path) ? new DirectoryInfo(path) : new FileInfo(path);
-        if (!fi.Exists) return SysErr("noent", path);
+        if (!fi.Exists) return SysErr("noent", FromHost(path));
         var h = new LHash();
-        h.Put(LVal.Atom("name"), LVal.Str(fi.Name == "" ? path : fi.Name));
+        h.Put(LVal.Atom("name"), LVal.Str(FromHost(fi.Name == "" ? path : fi.Name)));
         h.Put(LVal.Atom("length"), LVal.Number(fi is FileInfo f ? f.Length : 0));
         h.Put(LVal.Atom("dir"), LVal.Bool(fi is DirectoryInfo));
         h.Put(LVal.Atom("mtime"), LVal.Number(new BigInteger(SecondsOf(fi.LastWriteTime))));
@@ -175,6 +180,8 @@ public partial class Builtins
             UseShellExecute = false,
             RedirectStandardInput = input != null,
             RedirectStandardOutput = takeOutput,
+            StandardInputEncoding = input != null ? Encoding.Latin1 : null,
+            StandardOutputEncoding = takeOutput ? Encoding.Latin1 : null,
         };
         foreach (var arg in args) psi.ArgumentList.Add(arg);
         var p = Process.Start(psi) ?? throw new FileNotFoundException();
@@ -189,7 +196,7 @@ public partial class Builtins
     private static (string, string[]) Shell(string line) =>
         OperatingSystem.IsWindows() ? ("cmd.exe", new[] {"/c", line}) : ("/bin/sh", new[] {"-c", line});
 
-    private static string ArgText(LVal v) => v.ToDisplay();
+    private static string ArgText(LVal v) => ToHost(v.ToDisplay());
 
     // ---- The clock
 
@@ -212,14 +219,17 @@ public partial class Builtins
 
     // ---- Bits and bytes
 
-    // An integer argument (a fixed number with no places counts)
+    // An integer argument (a number equal to one counts: 2.0)
     private static BigInteger IntOf(LVal v, string what) {
-        if (v.IsNum && v.NumVal is Int i && !(v.NumVal is Rat) && !(v.NumVal is Fix f && f.dec != 0)) return i.num;
+        if (v.IsNum && !(v.NumVal is Comp)) {
+            var r = Rat.ToRat(v.NumVal!);
+            if (r.den == 1) return r.num;
+        }
         throw new ArgumentException($"{what} must be an integer");
     }
 
     private static LVal Bits(LEnv e, LVal a, string fn, BigInteger start, Func<BigInteger, BigInteger, BigInteger> op) =>
-        SysOp(e, a, fn, 1, int.MaxValue, x => LVal.Number(x.Select(v => IntOf(v, $"'{fn}''s argument")).Aggregate(op)));
+        SysOp(e, a, fn, x => LVal.Number(x.Select(v => IntOf(v, $"'{fn}''s argument")).Aggregate(op)));
 
     // An integer's digits in base b (upper case), at least width of them; a - before a negative one's
     private static string Digits(BigInteger n, int b, int width) {
@@ -257,152 +267,152 @@ public partial class Builtins
 
     public static void AddSystemBuiltins(LEnv e) {
         // ---- files and directories
-        AddBuiltin(e, "read-file", (e, a) => SysOp(e, a, "read-file", 1, 1, x => {
+        AddBuiltin(e, "read-file", (e, a) => SysOp(e, a, "read-file", x => {
             var p = PathOf(x[0], "read-file");
-            if (Directory.Exists(p)) return SysErr("isdir", p);
-            return LVal.Str(File.ReadAllText(p));
+            if (Directory.Exists(p)) return SysErr("isdir", FromHost(p));
+            return LVal.Str(File.ReadAllText(p, Encoding.Latin1));
         }));
-        AddBuiltin(e, "read-lines", (e, a) => SysOp(e, a, "read-lines", 1, 1, x => {
+        AddBuiltin(e, "read-lines", (e, a) => SysOp(e, a, "read-lines", x => {
             var p = PathOf(x[0], "read-lines");
-            if (Directory.Exists(p)) return SysErr("isdir", p);
-            return Lines(File.ReadAllText(p));
+            if (Directory.Exists(p)) return SysErr("isdir", FromHost(p));
+            return Lines(File.ReadAllText(p, Encoding.Latin1));
         }));
-        AddBuiltin(e, "write-file", (e, a) => SysOp(e, a, "write-file", 1, int.MaxValue, x => {
-            File.WriteAllText(PathOf(x[0], "write-file"), Texts(x, 1));
+        AddBuiltin(e, "write-file", (e, a) => SysOp(e, a, "write-file", x => {
+            File.WriteAllText(PathOf(x[0], "write-file"), Texts(x, 1), Encoding.Latin1);
             return LVal.NIL();
         }));
-        AddBuiltin(e, "append-file", (e, a) => SysOp(e, a, "append-file", 1, int.MaxValue, x => {
-            File.AppendAllText(PathOf(x[0], "append-file"), Texts(x, 1));
+        AddBuiltin(e, "append-file", (e, a) => SysOp(e, a, "append-file", x => {
+            File.AppendAllText(PathOf(x[0], "append-file"), Texts(x, 1), Encoding.Latin1);
             return LVal.NIL();
         }));
-        AddBuiltin(e, "ls", (e, a) => SysOp(e, a, "ls", 0, 1, x => StrList(Names(x.Length > 0 ? PathOf(x[0], "ls") : "."))));
-        AddBuiltin(e, "dir", (e, a) => SysOp(e, a, "dir", 0, 1, x => {
+        AddBuiltin(e, "ls", (e, a) => SysOp(e, a, "ls", x => StrList(Names(x.Length > 0 ? PathOf(x[0], "ls") : ".").Select(FromHost))));
+        AddBuiltin(e, "dir", (e, a) => SysOp(e, a, "dir", x => {
             var p = x.Length > 0 ? PathOf(x[0], "dir") : ".";
             var l = LVal.Qexpr();
             foreach (var n in Names(p)) l.Add(StatOf(File.Exists(p) ? p : Path.Join(p, n)));
             return l;
         }));
-        AddBuiltin(e, "stat", (e, a) => SysOp(e, a, "stat", 1, 1, x => StatOf(PathOf(x[0], "stat"))));
-        AddBuiltin(e, "exists?", (e, a) => SysOp(e, a, "exists?", 1, 1, x => {
+        AddBuiltin(e, "stat", (e, a) => SysOp(e, a, "stat", x => StatOf(PathOf(x[0], "stat"))));
+        AddBuiltin(e, "exists?", (e, a) => SysOp(e, a, "exists?", x => {
             var p = PathOf(x[0], "exists?");
             return LVal.Bool(File.Exists(p) || Directory.Exists(p));
         }));
-        AddBuiltin(e, "dir?", (e, a) => SysOp(e, a, "dir?", 1, 1, x => LVal.Bool(Directory.Exists(PathOf(x[0], "dir?")))));
-        AddBuiltin(e, "file?", (e, a) => SysOp(e, a, "file?", 1, 1, x => LVal.Bool(File.Exists(PathOf(x[0], "file?")))));
-        AddBuiltin(e, "mkdir", (e, a) => SysOp(e, a, "mkdir", 1, 1, x => {
+        AddBuiltin(e, "dir?", (e, a) => SysOp(e, a, "dir?", x => LVal.Bool(Directory.Exists(PathOf(x[0], "dir?")))));
+        AddBuiltin(e, "file?", (e, a) => SysOp(e, a, "file?", x => LVal.Bool(File.Exists(PathOf(x[0], "file?")))));
+        AddBuiltin(e, "mkdir", (e, a) => SysOp(e, a, "mkdir", x => {
             var p = PathOf(x[0], "mkdir");
-            if (File.Exists(p) || Directory.Exists(p)) return SysErr("exist", p);
+            if (File.Exists(p) || Directory.Exists(p)) return SysErr("exist", FromHost(p));
             var parent = Path.GetDirectoryName(Path.GetFullPath(p));
-            if (parent != null && !Directory.Exists(parent)) return SysErr("noent", p);
+            if (parent != null && !Directory.Exists(parent)) return SysErr("noent", FromHost(p));
             Directory.CreateDirectory(p);
             return LVal.NIL();
         }));
-        AddBuiltin(e, "remove", (e, a) => SysOp(e, a, "remove", 1, 1, x => {
+        AddBuiltin(e, "remove", (e, a) => SysOp(e, a, "remove", x => {
             var p = PathOf(x[0], "remove");
             if (Directory.Exists(p)) {
-                if (Directory.EnumerateFileSystemEntries(p).Any()) return SysErr("notempty", p);
+                if (Directory.EnumerateFileSystemEntries(p).Any()) return SysErr("notempty", FromHost(p));
                 Directory.Delete(p);
             }
             else if (File.Exists(p)) File.Delete(p);
-            else return SysErr("noent", p);
+            else return SysErr("noent", FromHost(p));
             return LVal.NIL();
         }));
-        AddBuiltin(e, "rename", (e, a) => SysOp(e, a, "rename", 2, 2, x => {
+        AddBuiltin(e, "rename", (e, a) => SysOp(e, a, "rename", x => {
             var from = PathOf(x[0], "rename");
             var to = PathOf(x[1], "rename");
-            if (!File.Exists(from) && !Directory.Exists(from)) return SysErr("noent", from);
-            if (File.Exists(to) || Directory.Exists(to)) return SysErr("exist", to);
+            if (!File.Exists(from) && !Directory.Exists(from)) return SysErr("noent", FromHost(from));
+            if (File.Exists(to) || Directory.Exists(to)) return SysErr("exist", FromHost(to));
             if (Directory.Exists(from)) Directory.Move(from, to);
             else File.Move(from, to);
             return LVal.NIL();
         }));
-        AddBuiltin(e, "copy-file", (e, a) => SysOp(e, a, "copy-file", 2, 2, x => {
+        AddBuiltin(e, "copy-file", (e, a) => SysOp(e, a, "copy-file", x => {
             var from = PathOf(x[0], "copy-file");
-            if (Directory.Exists(from)) return SysErr("isdir", from);
+            if (Directory.Exists(from)) return SysErr("isdir", FromHost(from));
             File.Copy(from, PathOf(x[1], "copy-file"), true);
             return LVal.NIL();
         }));
-        AddBuiltin(e, "cd", (e, a) => SysOp(e, a, "cd", 0, 1, x => {
+        AddBuiltin(e, "cd", (e, a) => SysOp(e, a, "cd", x => {
             var p = x.Length > 0 ? PathOf(x[0], "cd") : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!Directory.Exists(p)) return SysErr(File.Exists(p) ? "notdir" : "noent", p);
+            if (!Directory.Exists(p)) return SysErr(File.Exists(p) ? "notdir" : "noent", FromHost(p));
             Environment.CurrentDirectory = p;
             return LVal.NIL();
         }));
-        AddBuiltin(e, "cwd", (e, a) => SysOp(e, a, "cwd", 0, 0, x => LVal.Str(Environment.CurrentDirectory.Replace('\\', '/'))));
-        AddBuiltin(e, "glob", (e, a) => SysOp(e, a, "glob", 1, 1, x => StrList(Glob(PathOf(x[0], "glob")))));
+        AddBuiltin(e, "cwd", (e, a) => SysOp(e, a, "cwd", x => LVal.Str(FromHost(Environment.CurrentDirectory.Replace('\\', '/')))));
+        AddBuiltin(e, "glob", (e, a) => SysOp(e, a, "glob", x => StrList(Glob(PathOf(x[0], "glob")).Select(FromHost))));
 
         // ---- programs and the shell
-        AddBuiltin(e, "run", (e, a) => SysOp(e, a, "run", 1, int.MaxValue, x => {
+        AddBuiltin(e, "run", (e, a) => SysOp(e, a, "run", x => {
             var p = StartProgram(PathOf(x[0], "run"), x.Skip(1).Select(ArgText), null, false);
             p.WaitForExit();
             return LVal.Number(p.ExitCode);
         }));
-        AddBuiltin(e, "sh", (e, a) => SysOp(e, a, "sh", 1, 2, x => {
-            var (prog, args) = Shell(x[0].ToDisplay());
+        AddBuiltin(e, "sh", (e, a) => SysOp(e, a, "sh", x => {
+            var (prog, args) = Shell(ToHost(x[0].ToDisplay()));
             var p = StartProgram(prog, args, x.Length > 1 ? x[1].ToDisplay() : null, false);
             p.WaitForExit();
             return LVal.Number(p.ExitCode);
         }));
-        AddBuiltin(e, "sh-out", (e, a) => SysOp(e, a, "sh-out", 1, 2, x => {
-            var (prog, args) = Shell(x[0].ToDisplay());
+        AddBuiltin(e, "sh-out", (e, a) => SysOp(e, a, "sh-out", x => {
+            var (prog, args) = Shell(ToHost(x[0].ToDisplay()));
             var p = StartProgram(prog, args, x.Length > 1 ? x[1].ToDisplay() : null, true);
             var output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
             return LVal.Str(output.Replace("\r\n", "\n"));
         }));
-        AddBuiltin(e, "spawn", (e, a) => SysOp(e, a, "spawn", 1, int.MaxValue, x => {
+        AddBuiltin(e, "spawn", (e, a) => SysOp(e, a, "spawn", x => {
             var p = StartProgram(PathOf(x[0], "spawn"), x.Skip(1).Select(ArgText), null, false);
             _spawned[p.Id] = p;
             return LVal.Number(p.Id);
         }));
-        AddBuiltin(e, "wait", (e, a) => SysOp(e, a, "wait", 1, 1, x => {
+        AddBuiltin(e, "wait", (e, a) => SysOp(e, a, "wait", x => {
             var id = (int)IntOf(x[0], "A task");
             if (!_spawned.TryGetValue(id, out var p)) return SysErr("child", x[0].ToDisplay());
             p.WaitForExit();
             _spawned.Remove(id);
             return LVal.Number(p.ExitCode);
         }));
-        AddBuiltin(e, "kill", (e, a) => SysOp(e, a, "kill", 1, 1, x => {
+        AddBuiltin(e, "kill", (e, a) => SysOp(e, a, "kill", x => {
             var id = (int)IntOf(x[0], "A task");
             if (!_spawned.TryGetValue(id, out var p)) return SysErr("srch", x[0].ToDisplay());
             p.Kill();
             return LVal.NIL();
         }));
-        AddBuiltin(e, "pid", (e, a) => SysOp(e, a, "pid", 0, 0, x => LVal.Number(Environment.ProcessId)));
+        AddBuiltin(e, "pid", (e, a) => SysOp(e, a, "pid", x => LVal.Number(Environment.ProcessId)));
 
         // ---- the environment
-        AddBuiltin(e, "env", (e, a) => SysOp(e, a, "env", 0, 1, x => {
+        AddBuiltin(e, "env", (e, a) => SysOp(e, a, "env", x => {
             if (x.Length == 0) {
                 var h = new LHash();
                 foreach (System.Collections.DictionaryEntry kv in Environment.GetEnvironmentVariables())
-                    h.Put(LVal.Str((string)kv.Key), LVal.Str((string?)kv.Value ?? ""));
+                    h.Put(LVal.Str(FromHost((string)kv.Key)), LVal.Str(FromHost((string?)kv.Value ?? "")));
                 return LVal.Hash(h);
             }
             var v = Environment.GetEnvironmentVariable(PathOf(x[0], "env"));
-            return v == null ? LVal.NIL() : LVal.Str(v);
+            return v == null ? LVal.NIL() : LVal.Str(FromHost(v));
         }));
-        AddBuiltin(e, "setenv", (e, a) => SysOp(e, a, "setenv", 2, 2, x => {
+        AddBuiltin(e, "setenv", (e, a) => SysOp(e, a, "setenv", x => {
             var v = x[1].IsQExpr ? string.Join(" ", x[1].Cells!.Select(c => c.ToDisplay())) : x[1].ToDisplay();
-            Environment.SetEnvironmentVariable(PathOf(x[0], "setenv"), v);
+            Environment.SetEnvironmentVariable(PathOf(x[0], "setenv"), ToHost(v));
             return LVal.NIL();
         }));
-        AddBuiltin(e, "unsetenv", (e, a) => SysOp(e, a, "unsetenv", 1, 1, x => {
+        AddBuiltin(e, "unsetenv", (e, a) => SysOp(e, a, "unsetenv", x => {
             Environment.SetEnvironmentVariable(PathOf(x[0], "unsetenv"), null);
             return LVal.NIL();
         }));
 
         // ---- the clock
-        AddBuiltin(e, "time", (e, a) => SysOp(e, a, "time", 0, 0, x => LVal.Number(new BigInteger(SecondsOf(DateTime.Now)))));
-        AddBuiltin(e, "date", (e, a) => SysOp(e, a, "date", 0, 1, x => LVal.Str(TimeArg(x, 0).ToString("yyyy-MM-dd HH:mm:ss"))));
-        AddBuiltin(e, "date-parts", (e, a) => SysOp(e, a, "date-parts", 0, 1, x => DateParts(TimeArg(x, 0))));
-        AddBuiltin(e, "seconds-of", (e, a) => SysOp(e, a, "seconds-of", 3, 6, x => {
+        AddBuiltin(e, "time", (e, a) => SysOp(e, a, "time", x => LVal.Number(new BigInteger(SecondsOf(DateTime.Now)))));
+        AddBuiltin(e, "date", (e, a) => SysOp(e, a, "date", x => LVal.Str(TimeArg(x, 0).ToString("yyyy-MM-dd HH:mm:ss"))));
+        AddBuiltin(e, "date-parts", (e, a) => SysOp(e, a, "date-parts", x => DateParts(TimeArg(x, 0))));
+        AddBuiltin(e, "seconds-of", (e, a) => SysOp(e, a, "seconds-of", x => {
             var n = x.Select(v => (int)IntOf(v, "A date's part")).ToArray();
             var t = new DateTime(n[0], n[1], n[2], n.Length > 3 ? n[3] : 0, n.Length > 4 ? n[4] : 0, n.Length > 5 ? n[5] : 0);
             return LVal.Number(new BigInteger(SecondsOf(t)));
         }));
-        AddBuiltin(e, "ticks", (e, a) => SysOp(e, a, "ticks", 0, 0, x => LVal.Number((int)(_clock.ElapsedMilliseconds * TickHz / 1000 % 32768))));
-        AddBuiltin(e, "tick-rate", (e, a) => SysOp(e, a, "tick-rate", 0, 0, x => LVal.Number(TickHz)));
-        AddBuiltin(e, "sleep", (e, a) => SysOp(e, a, "sleep", 1, 1, x => {
+        AddBuiltin(e, "ticks", (e, a) => SysOp(e, a, "ticks", x => LVal.Number((int)(_clock.ElapsedMilliseconds * TickHz / 1000 % 32768))));
+        AddBuiltin(e, "tick-rate", (e, a) => SysOp(e, a, "tick-rate", x => LVal.Number(TickHz)));
+        AddBuiltin(e, "sleep", (e, a) => SysOp(e, a, "sleep", x => {
             if (!x[0].IsNum || x[0].NumVal!.CompareTo(Num.Zero) < 0) return LVal.Err("'sleep' expects a number of seconds");
             var r = Rat.ToRat(x[0].NumVal!);
             Thread.Sleep((int)(r.num * 1000 / r.den));
@@ -413,20 +423,20 @@ public partial class Builtins
         AddBuiltin(e, "bit-and", (e, a) => Bits(e, a, "bit-and", BigInteger.MinusOne, (p, q) => p & q));
         AddBuiltin(e, "bit-or",  (e, a) => Bits(e, a, "bit-or", BigInteger.Zero, (p, q) => p | q));
         AddBuiltin(e, "bit-xor", (e, a) => Bits(e, a, "bit-xor", BigInteger.Zero, (p, q) => p ^ q));
-        AddBuiltin(e, "bit-not", (e, a) => SysOp(e, a, "bit-not", 1, 1, x => LVal.Number(-IntOf(x[0], "'bit-not''s argument") - 1)));
-        AddBuiltin(e, "shl", (e, a) => SysOp(e, a, "shl", 2, 2, x => LVal.Number(IntOf(x[0], "'shl''s number") << (int)IntOf(x[1], "'shl''s count"))));
-        AddBuiltin(e, "shr", (e, a) => SysOp(e, a, "shr", 2, 2, x => LVal.Number(IntOf(x[0], "'shr''s number") >> (int)IntOf(x[1], "'shr''s count"))));
-        AddBuiltin(e, "bit?", (e, a) => SysOp(e, a, "bit?", 2, 2, x => LVal.Bool(!((IntOf(x[0], "'bit?''s number") >> (int)IntOf(x[1], "'bit?''s bit")) & 1).IsZero)));
-        AddBuiltin(e, "hex", (e, a) => SysOp(e, a, "hex", 1, 2, x => LVal.Str(Digits(IntOf(x[0], "'hex''s number"), 16, x.Length > 1 ? (int)IntOf(x[1], "A width") : 1))));
-        AddBuiltin(e, "bin", (e, a) => SysOp(e, a, "bin", 1, 2, x => LVal.Str(Digits(IntOf(x[0], "'bin''s number"), 2, x.Length > 1 ? (int)IntOf(x[1], "A width") : 1))));
-        AddBuiltin(e, "lo", (e, a) => SysOp(e, a, "lo", 1, 1, x => LVal.Number(IntOf(x[0], "'lo''s number") & 255)));
-        AddBuiltin(e, "hi", (e, a) => SysOp(e, a, "hi", 1, 1, x => LVal.Number((IntOf(x[0], "'hi''s number") >> 8) & 255)));
-        AddBuiltin(e, "word", (e, a) => SysOp(e, a, "word", 2, 2, x => LVal.Number((IntOf(x[0], "A low byte") & 255) + 256 * (IntOf(x[1], "A high byte") & 255))));
-        AddBuiltin(e, "bytes", (e, a) => SysOp(e, a, "bytes", 1, 1, x => {
+        AddBuiltin(e, "bit-not", (e, a) => SysOp(e, a, "bit-not", x => LVal.Number(-IntOf(x[0], "'bit-not''s argument") - 1)));
+        AddBuiltin(e, "shl", (e, a) => SysOp(e, a, "shl", x => LVal.Number(IntOf(x[0], "'shl''s number") << (int)IntOf(x[1], "'shl''s count"))));
+        AddBuiltin(e, "shr", (e, a) => SysOp(e, a, "shr", x => LVal.Number(IntOf(x[0], "'shr''s number") >> (int)IntOf(x[1], "'shr''s count"))));
+        AddBuiltin(e, "bit?", (e, a) => SysOp(e, a, "bit?", x => LVal.Bool(!((IntOf(x[0], "'bit?''s number") >> (int)IntOf(x[1], "'bit?''s bit")) & 1).IsZero)));
+        AddBuiltin(e, "hex", (e, a) => SysOp(e, a, "hex", x => LVal.Str(Digits(IntOf(x[0], "'hex''s number"), 16, x.Length > 1 ? (int)IntOf(x[1], "A width") : 1))));
+        AddBuiltin(e, "bin", (e, a) => SysOp(e, a, "bin", x => LVal.Str(Digits(IntOf(x[0], "'bin''s number"), 2, x.Length > 1 ? (int)IntOf(x[1], "A width") : 1))));
+        AddBuiltin(e, "lo", (e, a) => SysOp(e, a, "lo", x => LVal.Number(IntOf(x[0], "'lo''s number") & 255)));
+        AddBuiltin(e, "hi", (e, a) => SysOp(e, a, "hi", x => LVal.Number((IntOf(x[0], "'hi''s number") >> 8) & 255)));
+        AddBuiltin(e, "word", (e, a) => SysOp(e, a, "word", x => LVal.Number((IntOf(x[0], "A low byte") & 255) + 256 * (IntOf(x[1], "A high byte") & 255))));
+        AddBuiltin(e, "bytes", (e, a) => SysOp(e, a, "bytes", x => {
             if (!x[0].IsStr && !x[0].IsChar) return LVal.Err("'bytes' expects a String");
             return BytesOf(x[0].StrVal);
         }));
-        AddBuiltin(e, "from-bytes", (e, a) => SysOp(e, a, "from-bytes", 1, 1, x => LVal.Str(StringOfBytes(x[0], "from-bytes"))));
+        AddBuiltin(e, "from-bytes", (e, a) => SysOp(e, a, "from-bytes", x => LVal.Str(StringOfBytes(x[0], "from-bytes"))));
         AddBuiltin(e, "read-bytes", (e, a) => StreamOp(e, a, "read-bytes", 1, (s, x) => {
             var n = IntOf(x[0], "A count");
             var l = LVal.Qexpr();

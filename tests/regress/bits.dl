@@ -49,7 +49,7 @@
 (def {bt-s} (open bt-f :write))
 (write-bytes bt-s {0 1 255 10})
 (close bt-s)
-(check <((stat bt-f) :length) 4)
+(check ((stat bt-f) :length) 4)
 (def {bt-s} (open bt-f))
 (check (read-bytes bt-s 3) {0 1 255})
 (check (read-bytes bt-s 5) {10})

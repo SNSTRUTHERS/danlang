@@ -1,11 +1,4 @@
 public record Config {
-    public enum Mode {
-        Compile,
-        RunTests
-    }
-
-    public Mode mode = Mode.Compile;
-
     private class CommandLineReader {
         private string[] args;
         private int index;
@@ -87,10 +80,6 @@ public record Config {
             Environment.Exit(0);
             return true;
         }),
-        new('t', "run-tests", "Runs the test suite", (reader, config) => {
-            config.mode = Config.Mode.RunTests;
-            return true;
-        }),
         new("version", "Print version/vendor information and exit", (reader, config) => {
             Console.WriteLine($"danlang");
             Console.WriteLine("  authors:   Daniel & Simon Struthers");
@@ -136,7 +125,7 @@ public record Config {
                         Environment.Exit(1);
                     }
 
-                    var reader = new CommandLineReader(args, i, j == arg.Length - 1 ? null : arg.Substring(j + 2));
+                    var reader = new CommandLineReader(args, i, j == arg.Length - 1 ? null : arg.Substring(j + 1));
                     if (!short_opts[ch].callback(reader, config)) {
                         Environment.Exit(1);
                     } else if (reader.Index > i) {

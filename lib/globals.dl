@@ -10,7 +10,7 @@
 
 ; composition helpers
 (fun {flip f a b} {f b a})
-(fun {ghost}      !{&_})
+(fun {ghost}      {eval &_})
 (fun {comp f g x} {f (g x)}) ; Compose
 
 ; comparisons: not, ==, >=, <=, neg? and pos? are built in
@@ -39,7 +39,7 @@
 :(trunc truncate)
 
 ; currying
-(fun {unpack f l}  !{(cons f l)})
+(fun {unpack f l}  {eval (cons f l)})
 (fun {pack f}      {f &_})
 
 :({apply curry uncurry} unpack unpack pack)
@@ -57,7 +57,7 @@
 :(skip drop)
 
 ; split list at N
-(fun {split n l} '{(take n l) (drop n l)})
+(fun {split n l} {[(take n l) (drop n l)]})
 
 ; is x in l? (elem? x l) is built in
 
@@ -72,7 +72,7 @@
 ; pairs of items, one from each list, as long as both have them
 (fun {zip a b} ?{
   (and a b)
-  (cons '((fst a) (fst b)) (zip $(a) $(b)))
+  (cons [(fst a) (fst b)] (zip (tail a) (tail b)))
   NIL
 })
 
@@ -82,24 +82,24 @@
 (fun {flatten l} ?{
   l
   ?((qexpr? (fst l))
-    (join (flatten (fst l)) (flatten $(l)))
-    (cons (fst l) (flatten $(l))))
+    (join (flatten (fst l)) (flatten (tail l)))
+    (cons (fst l) (flatten (tail l))))
   NIL
 })
 
 ; the items, each once (the first time it comes)
-(fun {distinct l} ?{l (cons (fst l) (distinct (remove-all (fst l) $(l)))) NIL})
+(fun {distinct l} ?{l (cons (fst l) (distinct (remove-all (fst l) (tail l)))) NIL})
 
 ; sum, product, min and max are built in
 (fun {avg s}     {/ (sum s) (len s)})
 
 ; Switch/Cond
-; a clause's test and value run where the clause was written (each the first of a list, made code: eval ^(...))
+; a clause's test and value run where the clause was written (each the first of a list, made code: eval (head ...))
 (fun {cond} ?{
   &_
-  ?((eval ^((fst &_)))
-    (eval ^($((fst &_))))
-    .(cond $(&_)))
+  ?((eval (head (fst &_)))
+    (eval (head (tail (fst &_))))
+    .(cond (tail &_)))
   (error "Selection not found")
 })
 
@@ -107,9 +107,9 @@
 
 (fun {case x} ?{
   &_
-  ?((eq x (eval ^((fst &_))))
-    (eval ^($((fst &_))))
-    .(case (cons x $(&_))))
+  ?((eq x (eval (head (fst &_))))
+    (eval (head (tail (fst &_))))
+    .(case (cons x (tail &_))))
   (error "Case not found")
 })
 
@@ -154,11 +154,11 @@
 
 (fun {fdiv a b} ?{
   (and (num? a) (num? b))
-  (to-fixed (/ a b) ?((and (defined? &3) (num? &3)) &3 10))
+  (to-fixed (/ a b) ?((and (defined? &1) (num? &1)) &1 10))
   (error "Cannot perform 'fdiv' on non-numbers")
 })
 
-(fun {frecip n} ?{(defined? &2) (fdiv 1 n &2) (fdiv 1 n)})
+(fun {frecip n} ?{(defined? &1) (fdiv 1 n &1) (fdiv 1 n)})
 :(finverse frecip)
 
 (fun {odd? n} ?{
@@ -203,7 +203,7 @@
 (fun {contains?    s sub} {>=0 (index-of s sub)})
 
 ; Repeat: a list of d's values, run n times
-(fun {repeat n d} ?{(=0 n) NIL (cons !(d) (repeat (1- n) d))})
+(fun {repeat n d} ?{(=0 n) NIL (cons (eval d) (repeat (1- n) d))})
 :(times repeat)
 
 ; Libraries: (use "name") loads lib/name.dl (on the Hydra, /lib/hylang/name.hl) once; NIL, or the error that
@@ -221,7 +221,7 @@
   l
   (do
     =(hd (fst l))
-    =(tl $(l))
+    =(tl (tail l))
     ?(
       (eq f hd)
       tl
@@ -237,7 +237,7 @@
   l
   (do
     =(hd (fst l))
-    =(tl $(l))
+    =(tl (tail l))
     ?(
       (eq f hd)
       (remove-all f tl)
@@ -259,10 +259,10 @@
 (fun {not-between?} {not (between? &1 &2 &3)})
 :(!><? not-between?)
 
-(fun {all-between?} ?{&3 (and (between? &1 &2 (fst &3)) (all-between? &1 &2 $(&3))) T})
+(fun {all-between?} ?{&3 (and (between? &1 &2 (fst &3)) (all-between? &1 &2 (tail &3))) T})
 :(*><? all-between?)
 
-(fun {all-not-between?} ?{&3 (and (not-between? &1 &2 (fst &3)) (all-not-between? &1 &2 $(&3))) T})
+(fun {all-not-between?} ?{&3 (and (not-between? &1 &2 (fst &3)) (all-not-between? &1 &2 (tail &3))) T})
 :(*!><? all-not-between?)
 
 (fun {not-all-between?} {not (all-between? &1 &2 &3)})

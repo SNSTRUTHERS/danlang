@@ -9,27 +9,34 @@ Work in progress LISP-inspired language.
     dotnet run -- tests/regress/run.dl
                                     the regression suite (from danlang's folder): each file's checks, then the
                                     count; status 1 if any failed
-    dotnet run -- -t                the C# tests of numbers in every base, and of the tokenizer
 
 `load` finds `name`, `name.dl`, or, for a bare name, `lib/name.dl` (here, then beside danlang itself).
 
 ## The language
 
+In brief, below; `reference.md` is the whole of it, every built-in's arguments, value and errors: the specification
+the regression suite checks, for this interpreter and for hylang on the Hydra-16.
+
 **Syntax.**  `(...)` is an S-expression, evaluated: its first item is called with the rest.  `{...}` is a
-Q-expression: a list, data until `eval` runs it as code.  `;` starts a comment.  Strings are `"..."` with escapes
-(`\n \t \r \0 \a \b \f \v \e \\ \" \xHH`), or here strings, opened and closed by the same odd number of quotes
-(`"""say "hi" """`), whose text is as it is (a line's end is LF).  `\name` is a character (`\a`, `\space`,
-`\lparen`, `\bell` ...; a name it doesn't know is an error), `:name` an atom; names are case-insensitive.  `T` is
-true; `NIL`, the empty list, is false (and is the only false value).  A prefix before `(` or `{` is a shorthand: `'`
-list, `^` head, `$` tail, `.` unpack, `|` join, `=` set, `:` def, `@` fn, `!` eval, `?` if, `#` hash-create, `<`
-hash-get, `>` hash-put, `*` hash-call, `~` format.
+Q-expression: a list, data until `eval` runs it as code.  `[a b c]` is a list of the values, `(list a b c)`.  `;`
+starts a comment.  Strings are `"..."` with escapes (`\n \t \r \0 \a \b \f \v \e \\ \" \xHH`), or here strings,
+opened and closed by the same odd number of quotes (`"""say "hi" """`), whose text is as it is (a line's end is LF).
+A character is a byte (0-255), and text is bytes: UTF-8 text is its bytes (`(len "é")` is 2), and files and the
+console are read and written as they are.  `\name` is a character (`\a`, `\space`, `\lparen`, `\(`, `\bell` ...; a
+name it doesn't know is an error), `:name` an atom; names are case-insensitive.  `T` is true; `NIL`, the empty
+list, is false (and is the only false value).  `$name` is `(env "name")`, the environment's variable (its name's
+case kept; NIL if there's none).  A name against an opening bracket (`f(x)`) is an error.
+
+**The shorthand.**  A prefix right before `(` or `{` is the function it names, the call's first item, as a C-style
+call: `?(c a b)` is `(if c a b)`, `?{c a b}` the function body `{if c a b}`.  The prefixes: `?` if, `=` set, `:`
+def, `#` hash-create, `@` fn, `.` unpack, `~` format.
 
 **Functions.**  `(fn {x y} {body})` makes one; `(fun {name x y} {body})` defines one.  Given fewer arguments than it
 has formals, a function is partially applied (`((add 1) 2)` is 3, for an `add` of two), and so is a built-in given
-fewer than it needs (`((eq 1) 1)` is T; not a special form, as `if` or `let`).  Extra arguments are `&1`, `&2` ...
-(by position) and `&_` (a list of them), for a function whose body names them; given more arguments than it takes,
-a function or a built-in is an error.  `(fexpr {x} {body})` makes a function whose arguments come as they're
-written, unevaluated; `(eval x)` evaluates one where it was written.
+fewer than it needs (`((eq 1) 1)` is T; not a special form, as `if` or `let`).  Extra arguments, those past the
+formals, are `&1`, `&2` ... (the first extra is `&1`) and `&_` (a list of them), for a function whose body names
+them; given more arguments than it takes, a function or a built-in is an error.  `(fexpr {x} {body})` makes a
+function whose arguments come as they're written, unevaluated; `(eval x)` evaluates one where it was written.
 
 **Scope is lexical.**  A function sees its own variables and those of the scope it was made in, never its caller's,
 so closures keep theirs (`(fun {make-adder n} {fn {x} {+ x n}})`).  A Q-expression remembers the scope it was
@@ -62,11 +69,13 @@ integer when it's whole; `(/ x)` is 1/x).  Strings (`+` joins a string, first, a
 it, `(+ "n=" 5)`; with anything else first, `+` adds numbers only; `substring`, `str-split`, `str-join`, `format`,
 `str-upper` ...), characters (`char-code`, `code-char`, `alpha?` ...), atoms, symbols (`to-sym`, `gensym`), lists,
 and hashes (keys are atoms, strings or integers; tags make them or their entries private, locked, read-only or not
-NIL; functions in them are methods, `hash-call` giving them `&0`, the hash).  `type-of` names a value's type; `num?`,
-`int?`, `string?` and the other type tests are NIL for anything else.  `cmp`, `<`, `>` and `sort` order every kind of
-value: numbers, characters, strings, atoms, symbols, lists, T, then the rest, each by its value.  An index outside a
-list or a string (`nth`, `item-at`, `subset`, `substring`, `char-at`) is an error; a count past its end takes what
-there is.
+NIL).  A hash is called to look a key up: `(h :k)` is the value at `:k`; a function there is a method, applied to
+the arguments that follow with `&0` the hash (`(obj :add 3)`; fewer than its formals: partially applied), and
+`hash-call` does the same.  `type-of` names a value's type; `num?`, `int?`, `string?` and the other type tests are
+NIL for anything else.  `cmp`, `<`, `>` and `sort` order every kind of value: numbers, characters, strings, atoms,
+symbols, lists, T, then the rest, each by its value.  An index or a count is a whole number (`2.0` too); an index
+outside a list or a string (`nth`, `item-at`, `subset`, `substring`, `char-at`) is an error, and a count past its end
+takes what there is.
 
 **Input and output.**  `print` (a string's text as it is, spaces between, a newline after) and `write` (no spaces,
 no newline); `repr` is a value as the REPL shows it.  Streams: `(open path [:read | :write | :append])`, `close`,

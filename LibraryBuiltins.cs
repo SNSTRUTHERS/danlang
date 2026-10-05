@@ -13,12 +13,19 @@ public partial class Builtins
 
     // The list's item n (a number: 0 on), as it's written; past the list's end, or before it, an error
     private static LVal Nth(LVal n, LVal l, string fn) {
-        if (!n.IsNum) return LVal.Err($"'{fn}' expects a Number and a list");
+        var w = Whole(n, fn, "an index", out var i);
+        if (w.IsErr) return w;
         var items = Items(l);
         if (items == null) return LVal.Err($"'{fn}' expects a list");
-        if (n.NumVal!.CompareTo(Num.Zero) < 0 || n.NumVal.CompareTo(new Int(items.Count)) >= 0)
-            return LVal.Err("'nth': the list has no such item");
-        return items[(int)n.NumVal.ToInt().num].Copy();
+        if (i < 0 || i >= items.Count) return LVal.Err("'nth': the list has no such item");
+        return items[(int)i].Copy();
+    }
+
+    // take's and drop's count: a whole number, 0 or more; or an error
+    private static LVal Count(LVal n, string fn, out BigInteger k) {
+        var w = Whole(n, fn, "a count", out k);
+        if (w.IsErr) return w;
+        return k < 0 ? LVal.Err($"'{fn}': a count can't be negative") : w;
     }
 
     private static void AddLibraryBuiltins(LEnv e) {
@@ -26,24 +33,24 @@ public partial class Builtins
         LVal zero = LVal.Number(BigInteger.Zero), one = LVal.Number(BigInteger.One);
 
         // logic, comparison and arithmetic
-        AddBuiltinEvaluated(e, "not",  (e, a) => LVal.Bool(a[0].IsNIL));
-        AddBuiltinEvaluated(e, "==",   (e, a) => Apply(e, eq, a[0], a[1]));
-        AddBuiltinEvaluated(e, ">=",   (e, a) => Not(Apply(e, lt, a[0], a[1])));
-        AddBuiltinEvaluated(e, "<=",   (e, a) => Not(Apply(e, gt, a[0], a[1])));
-        AddBuiltinEvaluated(e, "neg?", (e, a) => Apply(e, lt, a[0], zero));
-        AddBuiltinEvaluated(e, "pos?", (e, a) => Apply(e, lt, zero, a[0]));
-        AddBuiltinEvaluated(e, "zero?", (e, a) => Apply(e, eq, zero, a[0]));
-        AddBuiltinEvaluated(e, "one?", (e, a) => Apply(e, eq, one, a[0]));
-        AddBuiltinEvaluated(e, "1+",   (e, a) => Apply(e, plus, a[0], one));
-        AddBuiltinEvaluated(e, "1-",   (e, a) => Apply(e, minus, a[0], one));
-        AddBuiltinEvaluated(e, "abs",  (e, a) => {
+        AddBuiltin(e, "not",  (e, a) => LVal.Bool(a[0].IsNIL));
+        AddBuiltin(e, "==",   (e, a) => Apply(e, eq, a[0], a[1]));
+        AddBuiltin(e, ">=",   (e, a) => Not(Apply(e, lt, a[0], a[1])));
+        AddBuiltin(e, "<=",   (e, a) => Not(Apply(e, gt, a[0], a[1])));
+        AddBuiltin(e, "neg?", (e, a) => Apply(e, lt, a[0], zero));
+        AddBuiltin(e, "pos?", (e, a) => Apply(e, lt, zero, a[0]));
+        AddBuiltin(e, "zero?", (e, a) => Apply(e, eq, zero, a[0]));
+        AddBuiltin(e, "one?", (e, a) => Apply(e, eq, one, a[0]));
+        AddBuiltin(e, "1+",   (e, a) => Apply(e, plus, a[0], one));
+        AddBuiltin(e, "1-",   (e, a) => Apply(e, minus, a[0], one));
+        AddBuiltin(e, "abs",  (e, a) => {
             if (!a[0].IsNum) return LVal.Err("Cannot perform 'abs' on non-number");
             var neg = Apply(e, lt, a[0], zero);
             return neg.IsErr ? neg : neg.IsNIL ? a[0] : Apply(e, minus, a[0]);
         });
 
         // lists: an item as it's written
-        AddBuiltinEvaluated(e, "cons", (e, a) => {
+        AddBuiltin(e, "cons", (e, a) => {
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'cons' expects a list second");
             var q = LVal.Qexpr();
@@ -51,43 +58,32 @@ public partial class Builtins
             foreach (var c in items) q.Add(c.Copy());
             return q;
         });
-        AddBuiltinEvaluated(e, "fst",  (e, a) => Nth(zero, a[0], "fst"));
-        AddBuiltinEvaluated(e, "snd",  (e, a) => Nth(one, a[0], "snd"));
-        AddBuiltinEvaluated(e, "thd",  (e, a) => Nth(LVal.Number(new BigInteger(2)), a[0], "thd"));
-        AddBuiltinEvaluated(e, "nth",  (e, a) => Nth(a[0], a[1], "nth"));
-        AddBuiltinEvaluated(e, "last", (e, a) => {
+        AddBuiltin(e, "fst",  (e, a) => Nth(zero, a[0], "fst"));
+        AddBuiltin(e, "snd",  (e, a) => Nth(one, a[0], "snd"));
+        AddBuiltin(e, "thd",  (e, a) => Nth(LVal.Number(new BigInteger(2)), a[0], "thd"));
+        AddBuiltin(e, "nth",  (e, a) => Nth(a[0], a[1], "nth"));
+        AddBuiltin(e, "last", (e, a) => {
             var items = Items(a[0]);
             if (items == null) return LVal.Err("'last' expects a list");
             return Nth(LVal.Number(new BigInteger(items.Count - 1)), a[0], "last");
         });
-        // take, drop: n of them (n counted down to 0: n not a whole number, or negative, is all of them)
-        AddBuiltinEvaluated(e, "take", (e, a) => {
+        // take, drop: the first n items, or all but them (n a whole number, 0 or more; past the end, all of them)
+        AddBuiltin(e, "take", (e, a) => {
+            var w = Count(a[0], "take", out var k);
+            if (w.IsErr) return w;
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'take' expects a list");
             var q = LVal.Qexpr();
-            if (items.Count == 0) return q;
-            if (!a[0].IsNum) return LVal.Err("'take' expects a Number and a list");
-            var k = a[0].NumVal!;
-            foreach (var c in items) {
-                if (k.CompareTo(Num.Zero) == 0) break;
-                q.Add(c.Copy());
-                k = k - BigInteger.One;
-            }
+            foreach (var c in items.Take(k < items.Count ? (int)k : items.Count)) q.Add(c.Copy());
             return q;
         });
-        AddBuiltinEvaluated(e, "drop", (e, a) => {
+        AddBuiltin(e, "drop", (e, a) => {
+            var w = Count(a[0], "drop", out var k);
+            if (w.IsErr) return w;
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'drop' expects a list");
-            if (items.Count == 0) return a[1];
-            if (!a[0].IsNum) return LVal.Err("'drop' expects a Number and a list");
-            var k = a[0].NumVal!;
-            int i = 0;
-            while (i < items.Count && k.CompareTo(Num.Zero) != 0) {
-                i++;
-                k = k - BigInteger.One;
-            }
             var q = LVal.Qexpr();
-            for (; i < items.Count; i++) q.Add(items[i].Copy());
+            foreach (var c in items.Skip(k < items.Count ? (int)k : items.Count)) q.Add(c.Copy());
             return q;
         });
         LVal Elem(LVal x, LVal l, string fn) {
@@ -95,11 +91,11 @@ public partial class Builtins
             if (items == null) return LVal.Err($"'{fn}' expects a list");
             return LVal.Bool(items.Any(c => x.Equals(c)));
         }
-        AddBuiltinEvaluated(e, "elem?", (e, a) => Elem(a[0], a[1], "elem?"));
-        AddBuiltinEvaluated(e, "in?",   (e, a) => Elem(a[0], a[1], "in?"));
+        AddBuiltin(e, "elem?", (e, a) => Elem(a[0], a[1], "elem?"));
+        AddBuiltin(e, "in?",   (e, a) => Elem(a[0], a[1], "in?"));
 
         // f over a list's items: each applied in turn (the first error, the value)
-        AddBuiltinEvaluated(e, "map", (e, a) => {
+        AddBuiltin(e, "map", (e, a) => {
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'map' expects a function and a list");
             var q = LVal.Qexpr();
@@ -110,7 +106,7 @@ public partial class Builtins
             }
             return q;
         });
-        AddBuiltinEvaluated(e, "filter", (e, a) => {
+        AddBuiltin(e, "filter", (e, a) => {
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'filter' expects a function and a list");
             var q = LVal.Qexpr();
@@ -121,7 +117,7 @@ public partial class Builtins
             }
             return q;
         });
-        AddBuiltinEvaluated(e, "foldl", (e, a) => {
+        AddBuiltin(e, "foldl", (e, a) => {
             var items = Items(a[2]);
             if (items == null) return LVal.Err("'foldl' expects a function, a value and a list");
             var acc = a[1];
@@ -131,7 +127,7 @@ public partial class Builtins
             }
             return acc;
         });
-        AddBuiltinEvaluated(e, "foldr", (e, a) => {
+        AddBuiltin(e, "foldr", (e, a) => {
             var items = Items(a[2]);
             if (items == null) return LVal.Err("'foldr' expects a function, a value and a list");
             var acc = a[1];
@@ -153,10 +149,10 @@ public partial class Builtins
             }
             return end();
         }
-        AddBuiltinEvaluated(e, "any?",  (e, a) => Test(a[0], a[1], "any?", (c, r) => r.IsNIL ? null : LVal.Bool(true), LVal.NIL));
-        AddBuiltinEvaluated(e, "all?",  (e, a) => Test(a[0], a[1], "all?", (c, r) => r.IsNIL ? LVal.NIL() : null, () => LVal.Bool(true)));
-        AddBuiltinEvaluated(e, "find",  (e, a) => Test(a[0], a[1], "find", (c, r) => r.IsNIL ? null : c.Copy(), LVal.NIL));
-        AddBuiltinEvaluated(e, "count", (e, a) => {
+        AddBuiltin(e, "any?",  (e, a) => Test(a[0], a[1], "any?", (c, r) => r.IsNIL ? null : LVal.Bool(true), LVal.NIL));
+        AddBuiltin(e, "all?",  (e, a) => Test(a[0], a[1], "all?", (c, r) => r.IsNIL ? LVal.NIL() : null, () => LVal.Bool(true)));
+        AddBuiltin(e, "find",  (e, a) => Test(a[0], a[1], "find", (c, r) => r.IsNIL ? null : c.Copy(), LVal.NIL));
+        AddBuiltin(e, "count", (e, a) => {
             int n = 0;
             var r = Test(a[0], a[1], "count", (c, x) => { if (!x.IsNIL) n++; return null; }, LVal.NIL);
             return r.IsErr ? r : LVal.Number(new BigInteger(n));
@@ -173,8 +169,8 @@ public partial class Builtins
             }
             return acc;
         }
-        AddBuiltinEvaluated(e, "sum",     (e, a) => Fold(plus, zero, a[0], "sum"));
-        AddBuiltinEvaluated(e, "product", (e, a) => Fold(times, one, a[0], "product"));
+        AddBuiltin(e, "sum",     (e, a) => Fold(plus, zero, a[0], "sum"));
+        AddBuiltin(e, "product", (e, a) => Fold(times, one, a[0], "product"));
         LVal Least(LVal by, LVal a) {
             var acc = a[0];
             for (int i = 1; i < a.Count; i++) {
@@ -184,7 +180,7 @@ public partial class Builtins
             }
             return acc;
         }
-        AddBuiltinEvaluated(e, "min", (e, a) => Least(lt, a));
-        AddBuiltinEvaluated(e, "max", (e, a) => Least(gt, a));
+        AddBuiltin(e, "min", (e, a) => Least(lt, a));
+        AddBuiltin(e, "max", (e, a) => Least(gt, a));
     }
 }

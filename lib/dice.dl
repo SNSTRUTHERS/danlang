@@ -47,7 +47,7 @@
           }
         )
     })
-    (sumrolls $(d))
+    (sumrolls (tail d))
   )
   0
 })
@@ -81,7 +81,7 @@
   (roll &1 {do
     take 6 (sort-desc (roll 8 {do
       =(rs (sort-desc (roll 4 {d6})))
-      '((sum (take 3 rs)) rs)
+      [(sum (take 3 rs)) rs]
     }))
   })
   (dnd-attr-rolls-detailed 1)

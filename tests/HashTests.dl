@@ -1,10 +1,10 @@
 =(h #())
->(h {:a "Hello, World!"}) ; add a single item
->(h {:b 10} {:f @({} <{&0 :a})})
-<(h :a)
+(hash-put h {:a "Hello, World!"}) ; add a single item
+(hash-put h {:b 10} {:f @({} {&0 :a})})
+(h :a)
 (hash-make-private h :a)
-(print <(h :a)) ; get an error
-(print *(h :f)) ; get the same value, but this time it works!
+(print (h :a)) ; get an error
+(print (h :f)) ; get the same value, but this time it works!
 
 =(h-clone
   (hash-clone h {
@@ -13,40 +13,40 @@
   })
 )
 
-?((eq *(h-clone :f) "Hello, Clone World!")
+?((eq (h-clone :f) "Hello, Clone World!")
   {print "Clone worked!"}
   {error "Clone failed :("}
 )
 
-?((eq *(h :f) "Hello, World!")
+?((eq (h :f) "Hello, World!")
   {print "Clone didn't corrupt the original!"}
   {error "Clone corrupted the original :("}
 )
 
 ; clone of hash with child hash
->(h-clone {
+(hash-put h-clone {
   :h #({
     {:a 100 :__private}
-    {:a-get @({}  <{&0 :a})}
-    {:a-put @({v} >{&0 {:a v}})}
+    {:a-get @({}  {&0 :a})}
+    {:a-put @({v} {hash-put &0 {:a v}})}
   })
 })
 
-(print <(<(h-clone :h) :a)) ; should fail
-(print *(<(h-clone :h) :a-get)) ; should work
-(print >(<(h-clone :h) :a 1000)) ; should fail
-(print *(<(h-clone :h) :a-put 1000)) ; should work
+(print ((h-clone :h) :a)) ; should fail
+(print ((h-clone :h) :a-get)) ; should work
+(print (hash-put (h-clone :h) :a 1000)) ; should fail
+(print ((h-clone :h) :a-put 1000)) ; should work
 
 =(h-clone2 (hash-clone h-clone))
-(print <(<(h-clone2 :h) :a)) ; should still fail
-(print *(<(h-clone2 :h) :a-get)) ; should work
-(print *(<(h-clone2 :h) :a-put 2000)) ; should work
+(print ((h-clone2 :h) :a)) ; should still fail
+(print ((h-clone2 :h) :a-get)) ; should work
+(print ((h-clone2 :h) :a-put 2000)) ; should work
 
 ; test that the cloned child hashes are distinct
 ?(
   (and
-    (eq *(<(h-clone  :h) :a-get) 1000)
-    (eq *(<(h-clone2 :h) :a-get) 2000)
+    (eq ((h-clone  :h) :a-get) 1000)
+    (eq ((h-clone2 :h) :a-get) 2000)
   )
   {print "Child clone worked"}
   {error "Child clone failed"}

@@ -19,10 +19,10 @@
 (fun {color fg} {do
   =(f (index-of screen.colors fg))
   ?((< f 0) (error (format "{} isn't a colour" fg)) NIL)
-  ?((defined? &2)
+  ?((defined? &1)
     (do
-      =(b (index-of screen.colors &2))
-      ?((< b 0) (error (format "{} isn't a colour" &2)) (screen.csi (format "{};{}m" (+ 30 f) (+ 40 b)))))
+      =(b (index-of screen.colors &1))
+      ?((< b 0) (error (format "{} isn't a colour" &1)) (screen.csi (format "{};{}m" (+ 30 f) (+ 40 b)))))
     (screen.csi (format "{}m" (+ 30 f))))
 })
 

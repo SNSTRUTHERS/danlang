@@ -37,6 +37,7 @@ public class LVal {
     public int MinArgs = 0;             //   the arguments it needs (fewer: partial application) ...
     public int MaxArgs = int.MaxValue;  //   the most it takes (more: an error) ...
     public bool IsSpecial = false;      //   a special form (its arguments as they're written): never partial ...
+    public bool TakesErrors = false;    //   given an error as a value, not stopped by it (error?, type-of ...) ...
     public List<LVal>? Bound = null;    //   and, partially applied, the values given it so far
     public string ErrVal = string.Empty;
     public string? ErrCode = null;
@@ -77,6 +78,7 @@ public class LVal {
                     x.MinArgs = MinArgs;
                     x.MaxArgs = MaxArgs;
                     x.IsSpecial = IsSpecial;
+                    x.TakesErrors = TakesErrors;
                     x.Bound = Bound == null ? null : new List<LVal>(Bound);
                 } else {
                     x.BuiltinVal = null;
@@ -327,26 +329,27 @@ public class LVal {
         var hash = new LHash();
         v.HashValue = hash;
 
-        // TODO: ensure the shape of the intialValues is correct, i.e. {{:1 a} {:2 b} :tag1 :tag2}
-        // if (initialValues != null) Console.WriteLine($"Creating hash: initialValues = {initialValues.ToStr()}, type: {LVal.LEName(initialValues.ValType)}");
-        if (initialValues != null && initialValues.IsQExpr) {
-            foreach (var entry in initialValues.Cells!) {
-                if (entry.IsSExpr && e != null) {
-                    //Console.WriteLine($"adding entry {entry.ToStr()}");
-                    var en = entry.Eval(e);
-                    //Console.WriteLine($"entry evaluated to {en.ToStr()}");
-                    hash.Put(en[0], en[1].Eval(e), true);
-
-                    // add any tags
-                    while (en.Count > 2) hash.AddTag(en[0], en.Pop(2));
-                } else if (entry.Count > 1 && LHash.IsKey(entry[0]) && e != null) {
-                    //Console.WriteLine($"adding entry {entry.ToStr()}");
-                    hash.Put(entry[0], entry[1].Eval(e), true);
-
-                    // add any tags
-                    while (entry.Count > 2) hash.AddTag(entry[0], entry.Pop(2));
-                }
-                else if (entry.IsAtom) hash.AddTag(entry);
+        // the entries, {{key value tag...} ... tag...}: each key as it's written, each value evaluated (in e), each tag
+        // an atom; an entry that's an S-expression is evaluated first (to such a list); anything else is an error
+        if (initialValues == null) return v;
+        if (!initialValues.IsQExpr) return Err("A hash's entries are a list");
+        foreach (var item in initialValues.Cells!) {
+            if (item.IsAtom) {
+                var t = hash.AddTag(item);
+                if (t.IsErr) return t;
+                continue;
+            }
+            var entry = item.IsSExpr && e != null ? item.Eval(e) : item;
+            if (entry.IsErr) return entry;
+            if (!entry.IsQExpr || entry.Count < 2 || !LHash.IsKey(entry[0]))
+                return Err($"A hash's entry is {{key value tag...}}, not {entry.ToStr()}");
+            var value = e != null ? entry[1].Copy().Eval(e) : entry[1];
+            if (value.IsErr) return value;
+            var put = hash.Put(entry[0], value, true);
+            if (put.IsErr) return put;
+            for (int i = 2; i < entry.Count; i++) {
+                var t = hash.AddTag(entry[0], entry[i]);
+                if (t.IsErr) return t;
             }
         }
         return v;
@@ -406,26 +409,6 @@ public class LVal {
         get => (i >= 0 && Count > i) ? Cells![i] : Err($"Invalid item number {i}"); 
     }
 
-    /* Possible unescapable characters */
-    const string str_unescapable = "abfnrtv\\\'\"";
-
-    /* Function to unescape characters */
-    private static char StrUnescape(char x) {
-        switch (x) {
-            case 'a':  return '\a';
-            case 'b':  return '\b';
-            case 'f':  return '\f';
-            case 'n':  return '\n';
-            case 'r':  return '\r';
-            case 't':  return '\t';
-            case 'v':  return '\v';
-            case '\\': return '\\';
-            case '\'': return '\'';
-            case '\"': return '\"';
-        }
-        return '\0';
-    }
-
     /* List of possible escapable characters */
     const string StrEscapable = "\0\a\b\f\n\r\t\v\\\"";
 
@@ -469,9 +452,9 @@ public class LVal {
         switch (ValType) {
             case LE.FUN:
                 if (BuiltinVal != null) {
-                    if (Bound == null) return "<builtin>";
-                    s.Append("<function>(").Append(BuiltinName);      // (Partially applied: the call so far)
-                    foreach (var b in Bound) s.Append(' ').Append(b.ToStr());
+                    // (its name, and, partially applied, the values given it so far: the call so far)
+                    s.Append("<function>(").Append(BuiltinName);
+                    foreach (var b in Bound ?? new List<LVal>()) s.Append(' ').Append(b.ToStr());
                     s.Append(')');
                 } else {
                     s.Append("<function>(fn ")
@@ -600,6 +583,10 @@ public class LVal {
             LE.STREAM => "Stream",
             LE.SEXPR => "S-Expression",
             LE.QEXPR => "Q-Expression",
+            LE.T => "T",
+            LE.EXIT => "Exit",
+            LE.TAIL => "Tail call",
+            LE.COMMENT => "Comment",
             _ => "Unknown"
         };
 
@@ -622,7 +609,7 @@ public class LVal {
         }
         catch (ExitException) { throw; }
         catch (Exception ex) {
-            return LVal.Err(ex.Message);
+            return LVal.Err(Builtins.FromHost(ex.Message));
         }
     }
 
@@ -649,36 +636,50 @@ public class LVal {
         return vals;
     }
 
-    // A built-in's arguments checked against what it takes: more than its most is an error; fewer than it needs (a
-    // function's, not a special form's), the built-in with those given, their values kept, waiting for the rest
-    // (partial application); a partial built-in's values go first, through names of their own.  OUT: the call's value,
-    // if that's it (null: the call goes on, with e and a)
+    // A built-in's arguments.  A special form's are as they're written (more than it takes is an error).  An ordinary
+    // built-in's are evaluated, left to right, the first error the call's value (but for one that takes errors as
+    // values: the type tests, type-of, error-message ...), then checked as values (ValueArgs).  OUT: the call's value,
+    // if that's it (null: the call goes on, with a its values)
     private static LVal? BuiltinArgs(ref LEnv e, LVal f, ref LVal a) {
         int bound = f.Bound?.Count ?? 0, n = bound + a.Count;
-        if (n > f.MaxArgs)
-            return Err($"'{f.BuiltinName}' takes {(f.MaxArgs == f.MinArgs ? "" : "at most ")}{f.MaxArgs} argument{(f.MaxArgs == 1 ? "" : "s")}, not {n}");
-        if (n < f.MinArgs && !f.IsSpecial) {
+        if (n > f.MaxArgs) return TooMany(f, n);
+        if (f.IsSpecial) return null;
+        var vals = new List<LVal>();
+        while (a.Count > 0) {
+            var v = a.Pop(0, e);
+            if (v.IsErr && !f.TakesErrors) return v;
+            vals.Add(v);
+        }
+        return ValueArgs(f, vals, out a, false);
+    }
+
+    private static LVal TooMany(LVal f, int n) =>
+        Err($"'{f.BuiltinName}' takes {(f.MaxArgs == f.MinArgs ? "" : "at most ")}{f.MaxArgs} argument{(f.MaxArgs == 1 ? "" : "s")}, not {n}");
+
+    // An ordinary built-in's values (a partially applied one's first): more than its most is an error, an error is the
+    // call's value (as above), fewer than it needs is the built-in with those given, waiting for the rest (partial
+    // application).  A built-in may change the values it's given, so those kept or given from outside (a partial
+    // one's, vals when copy) are copies.  OUT: the call's value, if that's it (null: the call goes on, with a the values)
+    private static LVal? ValueArgs(LVal f, List<LVal> vals, out LVal a, bool copy) {
+        a = Sexpr();
+        if (f.Bound != null) foreach (var b in f.Bound) a.Add(b.Copy());
+        foreach (var v in vals) {
+            if (v.IsErr && !f.TakesErrors) return v;
+            a.Add(copy ? v.Copy() : v);
+        }
+        if (a.Count > f.MaxArgs) return TooMany(f, a.Count);
+        if (a.Count < f.MinArgs) {
             var p = f.Copy();
-            p.Bound ??= new List<LVal>();
-            while (a.Count > 0) {
-                var v = a.Pop(0, e);
-                if (v.IsErr) return v;
-                p.Bound.Add(v);
-            }
+            p.Bound = new List<LVal>(a.Cells!);
             return p;
         }
-        if (bound > 0) {
-            var env = new LEnv(e);
-            var call = Sexpr();
-            for (int i = 0; i < bound; i++) {
-                env.Put($"&bound{i}", f.Bound![i]);
-                call.Add(new LVal { ValType = LE.SYM, SymVal = $"&bound{i}" });
-            }
-            while (a.Count > 0) call.Add(a.Pop(0));
-            e = env;
-            a = call;
-        }
         return null;
+    }
+
+    // A built-in applied to values (map's f, sort's less ...), as a call of it with them would be, not evaluated again
+    public static LVal ApplyBuiltin(LEnv e, LVal f, List<LVal> vals) {
+        if (f.IsSpecial) return Err($"'{f.BuiltinName}' can't be applied to values: it's a special form");
+        return ValueArgs(f, vals, out var a, true) ?? CallBuiltin(e, f, a);
     }
 
     // Whether a function's body takes extra arguments: it names &_ or &1, &2 ...
@@ -709,13 +710,12 @@ public class LVal {
                     if (err != null) return err;
                 }
 
-                int i = 0;
+                // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
                 var extras = Qexpr();
                 foreach (var val in vals) {
-                    ++i;
                     if (f.Formals!.Count == 0) {
-                        f.Env!.Put($"&{i}", val);
                         extras.Add(val);
+                        f.Env!.Put($"&{extras.Count}", val);
                     } else {
                         LVal sym = f.Formals.Pop(0);
                         f.Env!.Put(sym.SymVal!, val);
@@ -769,6 +769,10 @@ public class LVal {
             if (f.IsErr) return f;
             if (f.IsExit && v.Count > 0) return ExitWith(e, v);
             if (v.Count == 0 && !f.IsFun) return f;
+            if (f.IsHash) {
+                f = HashAt(e, f, v);
+                if (!f.IsFun) return f;
+            }
             if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
 
             if (f.BuiltinVal != null) {
@@ -781,7 +785,7 @@ public class LVal {
                 }
                 catch (ExitException) { throw; }
                 catch (Exception ex) {
-                    return LVal.Err(ex.Message);
+                    return LVal.Err(Builtins.FromHost(ex.Message));
                 }
                 if (step.Expr == null) return step.Value!;
                 e = step.Env!;
@@ -803,10 +807,31 @@ public class LVal {
         if (f.IsErr) return f;
         if (f.IsExit && v.Count > 0) return ExitWith(e, v);
         if (v.Count == 0 && !f.IsFun) { return f; }
+        if (f.IsHash) {
+            f = HashAt(e, f, v);
+            if (!f.IsFun) return f;
+        }
 
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
 
         return LVal.Call(e, f, v);
+    }
+
+    // A hash called, (h key arg...): the value at key (its first item, v's, evaluated and taken off); a function there
+    // is a method, given back with &0 the hash (through which its private entries are had), to be applied to the
+    // arguments that follow as any function is (fewer than its formals: partially applied); anything else is the value,
+    // and arguments after it are an error
+    private static LVal HashAt(LEnv e, LVal h, LVal v) {
+        var key = v.Pop(0, e);
+        if (key.IsErr) return key;
+        var value = h.HashValue!.Get(key);
+        if (value.IsErr) return value;
+        if (value.IsFun) {
+            value.Env?.Put("&0", Hash(h.HashValue.PrivateCallProxy));
+            return value;
+        }
+        if (v.Count > 0) return Err($"{key.ToStr()} isn't a method: its value isn't a function");
+        return value;
     }
 
     public static LVal? ReadExprFromTokens(List<Parser.Token> tokens, char? end = null) {

@@ -63,6 +63,7 @@
 (check (output-of (dotimes {i 0} (write i))) "")
 (check (do =(dsum 0) (dotimes {i 5} (set! {dsum} (+ dsum i))) dsum) 10)
 (check-error (dotimes {i :a} 1))
+(check-error (dotimes {i 2.5} 1))
 
 ; range
 (check (range 5) {0 1 2 3 4})

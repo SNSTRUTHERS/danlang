@@ -195,31 +195,11 @@ public class NumberParser {
         return num;
     }
 
-    public static string ToBase(Num n, int numberBase) {
-        return "";
-    }
-
     public static string ToBase(BigInteger n, string b) {
         // validate incoming b (the # may be left off: "x" is "#x")
         if (!b.StartsWith('#')) b = "#" + b;
         var reg = new Regex(@"^#[<>]?[+-]?(?<numberBase>([1-7]?[0-9]|80)[rR]|[" + string.Join("", Bases.Keys.Select(c => c.ToString())) +"])$", RegexOptions.IgnoreCase);
         if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
-
-        // normalize b
-        var charsStart = b.IndexOf('[');
-        /*
-        string? chars = null;
-        var customCharset = false;
-        if (charsStart > 0) {
-            var charsEnd = b.IndexOf(']') - 1;
-            var numChars = charsEnd - charsStart;
-            if (numChars > 1) {
-                chars = b.Substring(charsStart + 1, numChars);
-                b = b.Remove(charsStart, numChars + 2);
-                customCharset = true;
-            }
-        }
-        */
 
         var baseChar = Char.ToLower(b.Last());
         int? radix = null;
@@ -236,16 +216,10 @@ public class NumberParser {
         bool? le = null;
         if (b.Contains('<')) le = true;
         if (b.Contains('>')) le = false;
-        
-        // TODO: Complemented base
-        // var comp = b.Contains('~');
 
         NumberParser? acc = null;
         if (radix == null) acc = new NumberParser(baseChar, negBase, le);
         else acc = new NumberParser(negBase ?? false, le ?? false, false, _customBaseStandardCharset.Substring(0, radix ?? 10));
-
-        // Console.WriteLine($"Acc: {acc}");
-        // customCharset = acc.Chars != new NumberParser(baseChar, baseMult, le, comp).Chars;
 
         // final normalize
         if (b == "#d") b = "";
@@ -286,20 +260,9 @@ public class NumberParser {
             // adjust p for the next place
             p = p / acc.Base;
 
-            try {
-                if (acc.IsLE) str.Insert(0, acc.CharFor(d));
-                else str.Append(acc.CharFor(d));
-            } catch {
-                Console.WriteLine($"*** Exception: (d:{d} b:{acc.Base} p:{p} scratch:{scratch} max:{max} min:{min})");
-            }
+            if (acc.IsLE) str.Insert(0, acc.CharFor(d));
+            else str.Append(acc.CharFor(d));
         }
-
-        /*
-        if (customCharset) {
-            if (b.Length == 0) b = "0d";
-            b = b.Insert(b.Length - 1, $"[{acc.Chars}]");
-        }
-        */
 
         str.Insert(0, b);
         if (mult < 0) str.Insert(0, '-');
@@ -390,13 +353,14 @@ public class NumberParser {
                 valueChars = _customBaseStandardCharset.Substring(0, numberBase);
             }
             else {
+                // a digit set of its own: each digit once (#[0101]... isn't a number)
                 valueChars = m.Groups["chars"].Captures[0].Value;
-                // TODO: ensure that valueChars is a unique set, and return an LVal:Err() if not
+                if (!IsUniqueSet(valueChars)) return null;
             }
 
             i = new NumberParser(negBase, le, bal, valueChars);
 
-            // TODO: check to see if all value characters match the valueChars
+            // (every character of the value a digit of the set: AddString stops at one that isn't)
             var value = m.Groups["value"].Captures[0].Value;
             var consumed = i.AddString(value);
             if (consumed != value.Length) return null;
@@ -442,6 +406,6 @@ public class NumberParser {
             }
         }
 
-        return null; // TODO: return an LVal.Err() or LVal.Sym()
+        return null;    // (not a number: the reader makes it a symbol)
     }
 }

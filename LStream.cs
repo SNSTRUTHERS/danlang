@@ -1,7 +1,7 @@
 using System.Text;
 using System.Numerics;
 
-// A stream: a file opened with 'open', or the console's stdin, stdout and stderr.  Text is read and written as UTF-8;
+// A stream: a file opened with 'open', or the console's stdin, stdout and stderr.  Text is bytes, a character each;
 // a line ends at LF (a CR before it is dropped).  The console's streams go through Console.In and Console.Out, so a
 // program's reads and the REPL's share one buffer
 public class LStream
@@ -68,7 +68,7 @@ public class LStream
         while ((b = _stm!.ReadByte()) >= 0 && b != '\n') bytes.Add((byte)b);
         if (b < 0 && bytes.Count == 0) return LVal.NIL();
         if (bytes.Count > 0 && bytes[^1] == '\r') bytes.RemoveAt(bytes.Count - 1);
-        return LVal.Str(Encoding.UTF8.GetString(bytes.ToArray()));
+        return LVal.Str(Encoding.Latin1.GetString(bytes.ToArray()));
     }
 
     // The rest of the stream, as a string ("" at the end)
@@ -77,7 +77,7 @@ public class LStream
         if (_in != null) return LVal.Str(_in.ReadToEnd());
         var ms = new MemoryStream();
         _stm!.CopyTo(ms);
-        return LVal.Str(Encoding.UTF8.GetString(ms.ToArray()));
+        return LVal.Str(Encoding.Latin1.GetString(ms.ToArray()));
     }
 
     public LVal Write(string s) {
@@ -87,7 +87,7 @@ public class LStream
             _out.Flush();
         }
         else {
-            var bytes = Encoding.UTF8.GetBytes(s);
+            var bytes = Encoding.Latin1.GetBytes(s);
             _stm!.Write(bytes, 0, bytes.Length);
             _stm.Flush();
         }

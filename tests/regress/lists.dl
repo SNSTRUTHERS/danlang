@@ -34,6 +34,8 @@
 (check-error (subset {1 2} 5))
 (check-error (subset {1 2} -1))
 (check-error (subset {1 2} 0 -1))
+(check-error (item-at {1 2} 0.5))
+(check-error (subset {1 2} 0 1.5))
 
 (check (reverse {1 2 3}) {3 2 1})
 (check (reverse {}) {})

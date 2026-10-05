@@ -105,6 +105,8 @@
 (check-error (hash-put ht 5))
 (check-error (hash-clone ht 5))
 (check-error (hash-clone ht {:c 1 2}))
+(check (from# (hash-clone (to# {{:a 1}}) {:b 2} :t {{:c 3} {:d 4}})) {{:a 1} {:b 2} {:c 3} {:d 4} :t})
+(check-error (hash-clone ht {:c 1} 5) "A hash's entry is {key value tag...}, not 5")
 (check-error (hash-tag? ht 5))
 (check-error (hash-tag? ht {:none :t}) "Key :none not found when looking up tag for hash entry")
 

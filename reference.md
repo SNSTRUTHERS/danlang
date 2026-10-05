@@ -328,7 +328,7 @@ only its methods reach), `:__not_nil` (an entry that can't be NIL).  Putting NIL
 | `(hash-remove h key)` | The entry taken out: its value, or NIL |
 | `(hash-key? h key)`, `(hash-keys h)`, `(hash-values h)` | Whether it has the key; the keys; the values |
 | `(hash-call h key x...)` | As `(h key x...)` (section 3) |
-| `(hash-clone h [overrides])` | A copy, the overrides' entries (their values as they are) and tags put, then the hash's own tags; a bad override is an error |
+| `(hash-clone h [override...])` | A copy, each override put (a tag, an entry `{key value tag...}` with its value as it is, or a list of them), then the hash's own tags; a bad override is an error |
 | `(hash-add-tag h tag...)` | A tag (an atom) on the hash, or `{key tag}` on an entry: whether it was new |
 | `(hash-lock h [key...])`, `(hash-make-const h ...)`, `(hash-make-private h ...)`, `(hash-make-not-nil h ...)` | The reserved tags, on the hash or on the keys' entries |
 | `(hash-tag? h tag)`, `(hash-locked? h [key])`, `(hash-private? h [key])`, `(hash-const? h [key])` | Whether the hash (or the entry) has it |

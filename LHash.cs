@@ -71,8 +71,12 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             }
         }
 
-        // the overrides (an error among them kept: OverrideError)
-        if (overrides != null && overrides.Count > 0) OverrideError = Override(overrides);
+        // the overrides, each its own (the first error among them kept: OverrideError)
+        if (overrides != null)
+            foreach (var o in overrides.Cells ?? new List<LVal>()) {
+                OverrideError = Override(o);
+                if (OverrideError != null) break;
+            }
 
         // the hash's own tags (locked, read-only ...): after the overrides, which they'd stop
         if (l.Tags != null) foreach (var t in l.Tags) _Add(t);
@@ -81,9 +85,9 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     // hash-clone's overrides' first error (null: none)
     public LVal? OverrideError;
 
-    // The overrides put (hash-clone's, the hash's own tags still to come): a tag, an entry {key value tag...} (its
-    // value as it is), or a list of them (a list of one is its item); anything else, or a tag or a put that fails, is
-    // an error, the first
+    // An override put (one of hash-clone's arguments, the hash's own tags still to come): a tag, an entry {key value
+    // tag...} (its value as it is), or a list of them (a list of one is its item); anything else, or a tag or a put
+    // that fails, is an error, the first
     private LVal? Override(LVal overrides) {
         var v = overrides;
         while (v.Count == 1) v = v[0];

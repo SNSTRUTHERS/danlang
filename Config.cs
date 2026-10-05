@@ -94,10 +94,9 @@ public record Config {
         new("version", "Print version/vendor information and exit", (reader, config) => {
             Console.WriteLine($"danlang");
             Console.WriteLine("  authors:   Daniel & Simon Struthers");
-            Console.WriteLine("  copyright: 2022-23 GPLv3");
+            Console.WriteLine("  copyright: 2022-23 Daniel & Simon Struthers");
             Console.WriteLine($"  version:   {Program.MAJOR_VERSION}.{Program.MINOR_VERSION}\n");
-            Console.WriteLine("This is free software, and you are welcome to redistribute it under");
-            Console.WriteLine("certain conditions. This program comes with ABSOLUTELY NO WARRANTY.");
+            Console.WriteLine("This program comes with ABSOLUTELY NO WARRANTY.");
             Environment.Exit(0);
             return true;
         })

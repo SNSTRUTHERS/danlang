@@ -812,7 +812,8 @@ public partial class Builtins
     private static LVal HashClone(LEnv e, LVal val) {
         var hash = val.Pop(0);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-clone' must be a hash");
-        return LVal.Hash(hash.HashValue!.Clone(val));
+        var clone = hash.HashValue!.Clone(val);
+        return clone.OverrideError ?? LVal.Hash(clone);
     }
 
     private static LVal HashAddTag(LEnv e, LVal val) {

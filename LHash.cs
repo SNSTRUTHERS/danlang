@@ -71,45 +71,43 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             }
         }
 
-        // apply overrides
-        // TODO: validate the overall shape and type of the overrides object
-        if (overrides != null && overrides.Count > 0) {
-            var v = overrides;
-            while (v.Count == 1) v = v[0];
-
-            // check for the case where they only apply a single tag
-            if (v.Count == 0 && v.IsAtom) {
-                AddTag(v);
-            }
-            // now for if they apply updates to a single element
-            else if (v.Count > 1 && IsKey(v[0])) {
-                var key = v.Pop(0);
-                var val = v.Pop(0);
-                Put(key, val, true);
-
-                // now add any tags
-                while (v.Count > 0) AddTag(key, v.Pop(0));
-            }
-            else {
-                // case where there are multiple elements updated
-                while (v.Count > 0) {
-                    var e = v.Pop(0);
-                    if (e.Count == 0 && e.IsAtom) AddTag(e);
-                    else if (e.Count == 1) AddTag(e[0]);
-                    else {
-                        var key = e.Pop(0);
-                        var val = e.Pop(0);
-                        var putResult = Put(key, val, true);
-                        
-                        // now add any tags
-                        while (e.Count > 0) AddTag(key, e.Pop(0));
-                    }
-                }
-            }
-        }
+        // the overrides (an error among them kept: OverrideError)
+        if (overrides != null && overrides.Count > 0) OverrideError = Override(overrides);
 
         // the hash's own tags (locked, read-only ...): after the overrides, which they'd stop
         if (l.Tags != null) foreach (var t in l.Tags) _Add(t);
+    }
+
+    // hash-clone's overrides' first error (null: none)
+    public LVal? OverrideError;
+
+    // The overrides put (hash-clone's, the hash's own tags still to come): a tag, an entry {key value tag...} (its
+    // value as it is), or a list of them (a list of one is its item); anything else, or a tag or a put that fails, is
+    // an error, the first
+    private LVal? Override(LVal overrides) {
+        var v = overrides;
+        while (v.Count == 1) v = v[0];
+        if (v.IsAtom) return Failed(AddTag(v));
+        if (v.Count > 1 && IsKey(v[0])) return PutEntry(v);
+        if (!v.IsQExpr || v.Count == 0) return LVal.Err($"A hash's entry is {{key value tag...}}, not {v.ToStr()}");
+        foreach (var e in v.Cells!) {
+            LVal? err;
+            if (e.IsAtom) err = Failed(AddTag(e));
+            else if (e.IsQExpr && e.Count == 1) err = Failed(AddTag(e[0]));
+            else if (e.IsQExpr && e.Count > 1) err = PutEntry(e);
+            else err = LVal.Err($"A hash's entry is {{key value tag...}}, not {e.ToStr()}");
+            if (err != null) return err;
+        }
+        return null;
+    }
+
+    private static LVal? Failed(LVal v) => v.IsErr ? v : null;
+
+    // An entry, {key value tag...}, put as it is (by a member); the first error
+    private LVal? PutEntry(LVal e) {
+        var err = Failed(Put(e[0], e[1], true));
+        for (int i = 2; err == null && i < e.Count; i++) err = Failed(AddTag(e[0], e[i]));
+        return err;
     }
 
     public LHash PrivateCallProxy => new LHash(this, isProxy: true);
@@ -272,10 +270,11 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
     public LVal Put(LVal entry, bool callerIsMember = false) {
         if (_privateCallProxy != null && !callerIsMember) return ((LHash)_privateCallProxy).Put(entry, true);
+        // {tag} alone: a tag on the hash (a key's name: nothing); anything else short of {key value}, an error
         if (entry.Count < 2) {
-            if (entry.Count == 1 && entry[0].IsAtom && !_ContainsKey(_KeyFromLVal(entry[0]))) {
-                AddTag(entry[0]);
-            }
+            if (!entry.IsQExpr || entry.Count == 0 || !entry[0].IsAtom)
+                return LVal.Err($"A hash's entry is {{key value tag...}}, not {entry.ToStr()}");
+            if (!_ContainsKey(_KeyFromLVal(entry[0]))) AddTag(entry[0]);
             return LVal.NIL();
         }
 
@@ -339,12 +338,13 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     // A tag of the hash's (an atom, or {tag}), or of an entry's ({key tag})
     public override LVal HasTag(LVal t) {
         if (t.IsAtom) return base.HasTag(t);
+        if (!t.IsQExpr || t.Count == 0) return LVal.Err("Invalid tag value");
         if (t.Count == 1) return base.HasTag(t[0]);
 
         var key = t.Pop(0);
         try {
             var e = _GetEntry(key);
-            if (e == null) return LVal.Err($"Key {key} not found when looking up tag for hash entry");
+            if (e == null) return LVal.Err($"Key {key.ToStr()} not found when looking up tag for hash entry");
             return e.HasTag(t.Pop(0));
         }
         catch (Exception e) {

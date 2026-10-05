@@ -10,7 +10,7 @@ Notation: `(name x y [z])` takes `x` and `y`, and `z` if it's given; `x...` is a
 ## 1. Reading
 
 **Text is bytes.**  A character is a byte, 0-255; a string is bytes.  Source files, the console and every file are
-read and written as bytes, so UTF-8 text is its bytes (`(len "Ã©")` is 2).  Outside a string or a comment, only ASCII
+read and written as bytes, so UTF-8 text is its bytes (`(len "ÃÂ©")` is 2).  Outside a string or a comment, only ASCII
 is allowed.  A space is ASCII's (space, tab, LF, VT, FF, CR); a control character is one below 32, or 127.
 
 | Form | Is |
@@ -324,11 +324,11 @@ only its methods reach), `:__not_nil` (an entry that can't be NIL).  Putting NIL
 | `(hash-create [entries])`, `#(entries)` | A hash: the entries a list of `{key value tag...}` (each value evaluated) and the hash's tags; a bad entry is an error |
 | `(to# entries)`, `(from# h)` | A hash from such a list, or the list from a hash |
 | `(hash-get h key)` | The value (NIL if none; NIL for a NIL hash); a private entry is an error |
-| `(hash-put h entry...)` | The old value (NIL if none); an entry `{key value tag...}`, its value evaluated; several: a list of them.  A non-atom tag is an error |
+| `(hash-put h entry...)` | The old value (NIL if none); an entry `{key value tag...}`, its value evaluated (`{tag}` alone: a tag on the hash); several: a list of them.  Anything else, or a non-atom tag, is an error |
 | `(hash-remove h key)` | The entry taken out: its value, or NIL |
 | `(hash-key? h key)`, `(hash-keys h)`, `(hash-values h)` | Whether it has the key; the keys; the values |
 | `(hash-call h key x...)` | As `(h key x...)` (section 3) |
-| `(hash-clone h [overrides])` | A copy, the overrides' entries and tags put, then the hash's own tags |
+| `(hash-clone h [overrides])` | A copy, the overrides' entries (their values as they are) and tags put, then the hash's own tags; a bad override is an error |
 | `(hash-add-tag h tag...)` | A tag (an atom) on the hash, or `{key tag}` on an entry: whether it was new |
 | `(hash-lock h [key...])`, `(hash-make-const h ...)`, `(hash-make-private h ...)`, `(hash-make-not-nil h ...)` | The reserved tags, on the hash or on the keys' entries |
 | `(hash-tag? h tag)`, `(hash-locked? h [key])`, `(hash-private? h [key])`, `(hash-const? h [key])` | Whether the hash (or the entry) has it |

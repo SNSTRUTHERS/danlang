@@ -28,6 +28,11 @@ public partial class Builtins
     public static LVal SysErr(string code, string? name = null) =>
         LVal.Err((name != null ? name + ": " : "") + SysErrors[code], code);
 
+    // An argument a system built-in can't take: its own message, the code :inval (not .NET's "x: invalid argument")
+    public class LArgException : ArgumentException {
+        public LArgException(string message) : base(message) {}
+    }
+
     // A .NET exception as the Hydra's error
     public static LVal SysErr(Exception ex, string? name = null) => ex switch {
         FileNotFoundException or DirectoryNotFoundException => SysErr("noent", name),
@@ -37,6 +42,7 @@ public partial class Builtins
         IOException io when io.HResult == unchecked((int)0x80070050) || io.HResult == unchecked((int)0x800700B7) => SysErr("exist", name),
         IOException io when io.HResult == unchecked((int)0x80070091) => SysErr("notempty", name),
         IOException => SysErr("io", name),
+        LArgException a => LVal.Err(a.Message, "inval"),
         ArgumentException => SysErr("inval", name),
         _ => LVal.Err(FromHost(ex.Message))
     };
@@ -62,7 +68,7 @@ public partial class Builtins
     private static string PathOf(LVal v, string fn) {
         if (v.IsStr) return ToHost(v.StrVal);
         if (v.IsAtom || v.IsSym) return ToHost(v.SymVal);
-        throw new ArgumentException($"'{fn}' expects a path");
+        throw new LArgException($"'{fn}' expects a path");
     }
 
     // ---- Files and directories
@@ -225,7 +231,7 @@ public partial class Builtins
             var r = Rat.ToRat(v.NumVal!);
             if (r.den == 1) return r.num;
         }
-        throw new ArgumentException($"{what} must be an integer");
+        throw new LArgException($"{what} must be an integer");
     }
 
     private static LVal Bits(LEnv e, LVal a, string fn, BigInteger start, Func<BigInteger, BigInteger, BigInteger> op) =>
@@ -248,18 +254,18 @@ public partial class Builtins
     private static LVal BytesOf(string s) {
         var l = LVal.Qexpr();
         foreach (var c in s) {
-            if (c > 255) throw new ArgumentException($"'{c}' isn't a byte");
+            if (c > 255) throw new LArgException($"'{c}' isn't a byte");
             l.Add(LVal.Number(c));
         }
         return l;
     }
 
     private static string StringOfBytes(LVal l, string fn) {
-        if (!l.IsQExpr) throw new ArgumentException($"'{fn}' expects a list of bytes");
+        if (!l.IsQExpr) throw new LArgException($"'{fn}' expects a list of bytes");
         var sb = new StringBuilder();
         foreach (var b in l.Cells!) {
             var n = IntOf(b, "a byte");
-            if (n < 0 || n > 255) throw new ArgumentException($"{n} isn't a byte");
+            if (n < 0 || n > 255) throw new LArgException($"{n} isn't a byte");
             sb.Append((char)(int)n);
         }
         return sb.ToString();

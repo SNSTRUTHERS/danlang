@@ -273,7 +273,7 @@ public class NumberParser {
         new Int(Val) :
         (_base == 10 ?
             new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
-            new Rat(Val, _den ?? 1)); }
+            Num.Norm(new Rat(Val, _den ?? 1))); }    // (a rational whose denominator is 1: an integer)
 
     private const string _customBaseStandardCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-=+`~!@#$%^&*,;:|?";
     private static Regex _customBaseRegex = new Regex(@"^#(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)((?<numberBase>([1-7]?[0-9]|80))[rR]|\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\])(?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");

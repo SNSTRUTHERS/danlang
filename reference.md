@@ -10,7 +10,7 @@ Notation: `(name x y [z])` takes `x` and `y`, and `z` if it's given; `x...` is a
 ## 1. Reading
 
 **Text is bytes.**  A character is a byte, 0-255; a string is bytes.  Source files, the console and every file are
-read and written as bytes, so UTF-8 text is its bytes (`(len "é")` is 2).  Outside a string or a comment, only ASCII
+read and written as bytes, so UTF-8 text is its bytes (`(len "Ã©")` is 2).  Outside a string or a comment, only ASCII
 is allowed.  A space is ASCII's (space, tab, LF, VT, FF, CR); a control character is one below 32, or 127.
 
 | Form | Is |
@@ -245,7 +245,7 @@ end takes what there is; a negative count is an error.
 | `(* x...)` | The product; 1 for none |
 | `(/ x...)` | `x` divided by the rest, exactly; `(/ x)` is 1/x; 1 for none; by zero, the error `Division by zero.` |
 | `(rational.n x)`, `(rational.d x)` | A real number's numerator, or denominator, in lowest terms |
-| `(to-rational x)` | A real number as a rational |
+| `(to-rational x)` | A real number as a rational (an integer when it's whole) |
 | `(to-fixed x [places])` | A real number as a fixed decimal of `places` (10, 0 to 10000) places, cut short |
 | `(truncate x)` | A real number's integer part (toward zero) |
 | `(complex re im)` | A complex number of two real numbers (a real number when `im` is 0) |
@@ -357,7 +357,8 @@ A failure is the system's error: the text after the name it's about, and its cod
 invalid argument, `:intr` interrupted, `:nomem` out of memory, `:noent` not found, `:exist` already exists,
 `:notdir` not a directory, `:isdir` is a directory, `:notempty` directory not empty, `:nospc` disk full, `:rofs`
 read-only, `:io` i/o error, `:noexec` not a program, `:eof` end of file, `:srch` no such task, `:child` no such child
-(and `:nosys`, `:busy`, `:range`, `:nametoolong`, `:badf`).  A path is a string (or an atom's or symbol's name).
+(and `:nosys`, `:busy`, `:range`, `:nametoolong`, `:badf`).  An argument one can't take is the error saying so, its code
+`:inval`.  A path is a string (or an atom's or symbol's name).
 
 | Built-in | Value |
 | --- | --- |

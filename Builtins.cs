@@ -1596,7 +1596,7 @@ public partial class Builtins
             return LVal.Number(Rat.ToRat(a[0].NumVal!).ToFix((int)places));
         });
         AddBuiltin(e, "to-rational", (e, a) => !IsReal(a[0]) ? LVal.Err("'to-rational' expects a real number") :
-            LVal.Number(Rat.ToRat(a[0].NumVal!)));
+            LVal.Number(Num.Norm(Rat.ToRat(a[0].NumVal!))));
         AddBuiltin(e, "truncate", (e, a) => !IsReal(a[0]) ? LVal.Err("'truncate' expects a real number") :
             LVal.Number(a[0].NumVal!.ToInt()));
         AddBuiltin(e, "complex",     Complex);

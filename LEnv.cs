@@ -12,15 +12,14 @@ public class LEnv : Dictionary<string, LVal> {
         else Put(s, v);
     }
 
+    // A binding: the value is shared from here on (frozen), not copied
     public void Put(string s, LVal v) {
-        this[s] = v.Copy();
+        this[s] = v.Freeze();
     }
 
     public LEnv Copy() {
         var e = new LEnv();
-        foreach (var s in Keys) {
-            e.Add(s, this[s].Copy());
-        }
+        foreach (var kv in this) e.Add(kv.Key, kv.Value);
         return e;
     }
 
@@ -32,9 +31,11 @@ public class LEnv : Dictionary<string, LVal> {
         return null;
     }
 
+    // A name's value, from the innermost scope out (shared: values aren't changed)
     public LVal Get(string s) {
-        var e = Find(s);
-        if (e != null) return e[s].Copy();
+        for (var e = this; e != null; e = e.Parent) {
+            if (e.TryGetValue(s, out var v)) return v;
+        }
         return LVal.Err($"Unbound Symbol '{s}'");
     }
 

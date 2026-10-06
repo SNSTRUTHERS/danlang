@@ -123,7 +123,7 @@ public class Program {
                     if (eof) return 0;
                     continue;
                 }
-                var expr = LVal.ReadExprFromTokens(tokens);
+                var expr = LVal.ReadExprFromTokens(tokens)?.Freeze();
                 LVal.Interrupted = false;
                 var ticks = Environment.TickCount;
                 var val = expr?.Eval(e);

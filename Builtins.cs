@@ -118,8 +118,10 @@ public partial class Builtins
         if (body.IsErr) return body;
         if (!spec.IsQExpr || spec.Count == 0 || spec.Cells!.Any(c => !c.IsSym)) return LVal.Err("'fun' expects {name formals...} first");
         if (!body.IsQExpr) return LVal.Err("'fun' expects a QExpr body");
-        var name = spec.Pop(0).SymVal;
-        e.Def(name, LVal.Lambda(spec, body, e));
+        var name = spec[0].SymVal;
+        var formals = LVal.Qexpr();
+        for (int i = 1; i < spec.Count; i++) formals.Add(spec[i]);
+        e.Def(name, LVal.Lambda(formals, body, e));
         return LVal.NIL();
     }
 
@@ -140,37 +142,37 @@ public partial class Builtins
         return v;
     }
 
-    // (A list made from another keeps the scope it was written in: Scope, which eval runs it in)
+    // (A list made from another keeps the scope it was written in: Scope, which eval runs it in.  The other isn't
+    // changed: values are shared)
+    private static LVal Sublist(LVal v, int from, int count) {
+        var ret = LVal.Qexpr();
+        ret.Cells!.AddRange(v.Cells!.GetRange(from, count));
+        ret.Scope = v.Scope;
+        return ret;
+    }
+
     private static LVal Head(LEnv e, LVal a) {
         var v = ListArg(e, a, "head", true);
         if (v.IsErr) return v;
-        var ret = LVal.Qexpr();
-        ret.Add(v.Pop(0));
-        ret.Scope = v.Scope;
-        return ret;
+        return Sublist(v, 0, 1);
     }
 
     private static LVal Tail(LEnv e, LVal a) {
         LVal v = ListArg(e, a, "tail", true);
         if (v.IsErr) return v;
-        v.Pop(0);
-        return v;
+        return Sublist(v, 1, v.Count - 1);
     }
 
     private static LVal Init(LEnv e, LVal a) {
         var v = ListArg(e, a, "init", true);
         if (v.IsErr) return v;
-        v.Pop(v.Count - 1);
-        return v;
+        return Sublist(v, 0, v.Count - 1);
     }
 
     private static LVal End(LEnv e, LVal a) {
         var v = ListArg(e, a, "end", true);
         if (v.IsErr) return v;
-        var ret = LVal.Qexpr();
-        ret.Add(v.Pop(v.Count - 1));
-        ret.Scope = v.Scope;
-        return ret;
+        return Sublist(v, v.Count - 1, 1);
     }
 
     // (eval x): a Q-expression run as code, or an expression (an fexpr's argument: an S-expression or a symbol)
@@ -180,8 +182,8 @@ public partial class Builtins
         LVal x =  a.Pop(0, e);
         if (x.IsErr) return TailStep.Done(x);
         var scope = x.Scope ?? e;
-        if (x.IsQExpr) x.ValType = LVal.LE.SEXPR;
-        else if (!x.IsSExpr && !x.IsSym) return TailStep.Done(x);
+        if (x.IsQExpr) return TailStep.RunCode(scope, x);
+        if (!x.IsSExpr && !x.IsSym) return TailStep.Done(x);
         return TailStep.Next(scope, x);
     }
 
@@ -194,56 +196,57 @@ public partial class Builtins
             var y = a.Pop(0);
             if (y.IsErr) return y;
             if (!y.IsQExpr) return LVal.Err("Invalid parameter passed to 'join'.  Expected QExpr.");
-            else if (x == null) x = y;
+            if (x == null) x = Sublist(y, 0, y.Count);
             else {
                 x.Scope ??= y.Scope;
-                x = x.Join(y);
+                x.Join(y);
             }
         }
         return x!;
     }
 
+    // (The numbers given aren't changed: values are shared; the result is a new one)
     private static LVal Op(LEnv e, LVal a, string op) {
-        LVal? x = null;
+        Num? x = null;
+        LVal? first = null;
         while (a.Count > 0) {
             LVal y = a.Pop(0);
             if (y.IsErr) return y;
             if (!y.IsNum) return LVal.Err($"All parameters to operator '{op}' must be numbers.");
             if (x == null) {
                 // one number: (- x) is its negation, (/ x) its reciprocal
-                if (a.Count == 0 && op == "-") {
-                    y.NumVal = -y.NumVal!;
-                    return y;
-                }
+                if (a.Count == 0 && op == "-") return LVal.Number(-y.NumVal!);
                 if (a.Count == 0 && op == "/") {
                     if (y.NumVal!.IsZero) return LVal.Err("Division by zero.");
-                    y.NumVal = (Num)new Int(BigInteger.One) / y.NumVal!;
-                    return y;
+                    return LVal.Number((Num)new Int(BigInteger.One) / y.NumVal!);
                 }
 
                 // not negation? Just set x to y and continue;
-                x = y;
+                x = y.NumVal;
+                first = y;
                 continue;
             }
 
-            if (op == "-") x.NumVal = x.NumVal! - y.NumVal!;
-            else if (op == "*") x.NumVal = x.NumVal! * y.NumVal!;
+            if (op == "-") x = x - y.NumVal!;
+            else if (op == "*") x = x * y.NumVal!;
             else if (op == "/") {
                 if (y.NumVal!.IsZero) {
                     return LVal.Err("Division by zero.");
                 }
-                x.NumVal = x.NumVal! / y.NumVal!;
+                x = x / y.NumVal!;
             }
         }
 
         // If no arguments were passed, return 0 for "-", and 1 otherwise
-        return x ?? LVal.Number(op == "-" ? BigInteger.Zero : BigInteger.One);
+        if (x == null) return LVal.Number(op == "-" ? BigInteger.Zero : BigInteger.One);
+        return ReferenceEquals(x, first!.NumVal) ? first : LVal.Number(x);
     }
 
     // (+ n...): the numbers' sum; or, the first a string (or a character), the values as print shows them, joined
     // ("n=5" for "n=" and 5); anything else is an error
     private static LVal Add(LEnv e, LVal a) {
-        LVal? x = null;
+        Num? x = null;
+        LVal? first = null;
         StringBuilder? sb = null;
         while (a.Count > 0) {
             LVal y = a.Pop(0);
@@ -251,12 +254,13 @@ public partial class Builtins
             if (sb != null) sb.Append(y.ToDisplay());
             else if (x == null && (y.IsStr || y.IsChar)) sb = new StringBuilder(y.StrVal);
             else if (!y.IsNum) return LVal.Err("'+' adds numbers, or joins values to a string");
-            else if (x == null) x = y;
-            else x.NumVal = x.NumVal! + y.NumVal!;
+            else if (x == null) { x = y.NumVal; first = y; }
+            else x = x + y.NumVal!;
         }
 
         if (sb != null) return LVal.Str(sb.ToString());
-        return x ?? LVal.Number(BigInteger.Zero);
+        if (x == null) return LVal.Number(BigInteger.Zero);
+        return ReferenceEquals(x, first!.NumVal) ? first : LVal.Number(x);
     }
     private static LVal Sub(LEnv e, LVal a) { return Op(e, a, "-"); }
     private static LVal Mul(LEnv e, LVal a) { return Op(e, a, "*"); }
@@ -276,9 +280,9 @@ public partial class Builtins
         if (!syms.IsQExpr || syms.Cells!.Any(v => !v.IsSym)) return LVal.Err($"'{func}' cannot define non-symbols");
 
         if (syms.Count != a.Count) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected {syms.Count}, got {a.Count}");
-            
-        while (syms.Count > 0 && a.Count > 0) {
-            var symbol = syms.Pop(0).SymVal!;
+
+        for (int i = 0; i < syms.Count; i++) {
+            var symbol = syms[i].SymVal!;
             var value = a.Pop(0, e);
             if (func == "def") { e.Def(symbol, value); }
             if (func == "set") { e.Put(symbol, value); }
@@ -411,7 +415,7 @@ public partial class Builtins
                 var c = a.Pop(0);
                 if (a.Count != 0 && c.Count < 2) return LVal.Err("All but last body block of a '<=>' operator must have comparator");
                 try {
-                    if (IsMatch(cmp, c)) return c.Pop(c.Count - 1, e);
+                    if (IsMatch(cmp, c)) return c[c.Count - 1].Eval(e);
                 } catch (InvalidOperationException ex) {
                     return LVal.Err(ex.Message);
                 }
@@ -456,11 +460,11 @@ public partial class Builtins
             var tokens = Parser.Tokenize(new StringReader(input)).ToList();
             var bad = tokens.FirstOrDefault(t => t.type == Parser.Token.Type.Error || t.type == Parser.Token.Type.More);
             if (bad != null) return LVal.Err($"{FromHost(filename)}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
-            var exprs = LVal.ReadExprFromTokens(tokens)!;
+            var exprs = LVal.ReadExprFromTokens(tokens)!.Freeze();
 
-            // a file's expressions are top level: the global environment's
-            while (exprs.Count > 0) {
-                lastExpr = exprs.Pop(0, e.Root);
+            // a file's expressions are top level: the global environment's (the code shared, frozen)
+            foreach (var x in exprs.Cells!) {
+                lastExpr = x.Eval(e.Root);
                 if (lastExpr.IsErr) return LVal.Err($"{FromHost(filename)}: {lastExpr.ErrVal}");
                 if (lastExpr.IsExit) throw new ExitException(lastExpr.ExitCode);
             }
@@ -685,7 +689,7 @@ public partial class Builtins
             if (n < count) count = (int)n;
         }
         var ret = LVal.Qexpr();
-        foreach (var c in q.Cells!.Skip((int)index).Take(count)) ret.Add(c.Copy());
+        ret.Cells!.AddRange(q.Cells!.GetRange((int)index, count));
         return ret;
     }
 
@@ -699,7 +703,7 @@ public partial class Builtins
         var i = Whole(a.Pop(0), "item-at", "an index", out var index);
         if (i.IsErr) return i;
         if (index < 0 || index >= q.Count) return LVal.Err($"'item-at': the list has no item {index}");
-        return q[(int)index].Copy();
+        return q[(int)index];
     }
 
     private static LVal FastFib(LEnv e, LVal val) {
@@ -749,7 +753,8 @@ public partial class Builtins
             if (!p.IsQExpr || p.Count < 2) return hash.HashValue!.Put(p);
             var v = p[1].Eval(e);
             if (v.IsErr) return v;
-            var entry = p.Copy();
+            var entry = LVal.Qexpr();
+            entry.Cells!.AddRange(p.Cells!);
             entry.Cells![1] = v;
             return hash.HashValue!.Put(entry);
         }
@@ -805,8 +810,7 @@ public partial class Builtins
         if (!f.IsFun) return LVal.Err("Second parameter to 'hash-call' must be a key to a member function");
 
         // &0, the hash, in the method's own scope
-        f.Env?.Put("&0", LVal.Hash(hash.HashValue.PrivateCallProxy));
-        return Apply(e, f, val.Cells!.ToArray());
+        return Apply(e, LVal.Method(f, hash), val.Cells!.ToArray());
     }
 
     private static LVal HashClone(LEnv e, LVal val) {
@@ -928,18 +932,16 @@ public partial class Builtins
     // e), anything else as it is
     private static LVal RunCode(LEnv e, LVal v) {
         if (!v.IsQExpr) return v;
-        var x = v.Copy();
-        x.ValType = LVal.LE.SEXPR;
-        return x.Eval(v.Scope ?? e);
+        return LVal.EvalCode(v.Scope ?? e, v);
     }
 
     // An unevaluated argument evaluated: a Q-expression run as code (here), anything else evaluated
-    private static LVal EvalArg(LEnv e, LVal x) => x.IsQExpr ? RunCode(e, x) : x.Copy().Eval(e);
+    private static LVal EvalArg(LEnv e, LVal x) => x.IsQExpr ? RunCode(e, x) : x.Eval(e);
 
     // f called with values as they are, not evaluated again; anything but a function is the evaluator's error
     public static LVal Apply(LEnv e, LVal f, params LVal[] args) {
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LVal.LEName(f.ValType)}, Expected {LVal.LEName(LVal.LE.FUN)}.");
-        if (f.BuiltinVal == null) return LVal.Apply(f.Copy(), args.ToList());
+        if (f.BuiltinVal == null) return LVal.Apply(f, args.ToList());
         return LVal.ApplyBuiltin(e, f, args.ToList());
     }
 
@@ -995,7 +997,7 @@ public partial class Builtins
             if (!bindings.IsQExpr) return TailStep.Done(LVal.Err("'let' expects a list of bindings first"));
             foreach (var b in bindings.Cells!) {
                 if (!b.IsQExpr || b.Count < 1 || b.Count > 2 || !b[0].IsSym) return TailStep.Done(LVal.Err("A 'let' binding is {name value}"));
-                var v = b.Count == 2 ? b[1].Copy().Eval(scope) : LVal.NIL();
+                var v = b.Count == 2 ? b[1].Eval(scope) : LVal.NIL();
                 if (v.IsErr) return TailStep.Done(v);
                 scope.Put(b[0].SymVal, v);
             }
@@ -1010,9 +1012,7 @@ public partial class Builtins
         var last = a.Pop(0);
         if (last.IsSExpr) return TailStep.Next(scope, last);
         if (!last.IsQExpr) return TailStep.Done(last.Eval(scope));
-        var x = last.Copy();
-        x.ValType = LVal.LE.SEXPR;
-        return TailStep.Next(last.Scope ?? scope, x);
+        return TailStep.RunCode(last.Scope ?? scope, last);
     }
 
     // A let's body expression: a Q-expression run, anything else's value
@@ -1026,7 +1026,7 @@ public partial class Builtins
         name = "";
         if (spec.Count != 2 || !spec[0].IsSym) return LVal.Err($"'{fn}' expects {{name value}} or a function first");
         name = spec[0].SymVal;
-        return spec[1].Copy().Eval(e);
+        return spec[1].Eval(e);
     }
 
     // The loops' body, run with name item, in a scope of its own; an error, if one comes
@@ -1164,8 +1164,9 @@ public partial class Builtins
         if (v.IsErr) return v;
         if (v.IsStr) return LVal.Str(new string(v.StrVal.Reverse().ToArray()));
         if (!v.IsQExpr) return LVal.Err("'reverse' expects a QExpr or a String");
-        v.Cells!.Reverse();
-        return v;
+        var r = Sublist(v, 0, v.Count);
+        r.Cells!.Reverse();
+        return r;
     }
 
     // (range n), (range from to) or (range from to step): the numbers from 0 (or from) up to, not including, to; down

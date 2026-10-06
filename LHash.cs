@@ -66,7 +66,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
                 if (kvp.Value.Value?.IsHash ?? false) {
                     he.Value = LVal.Hash(kvp.Value.Value.HashValue!.Clone());
                 }
-                else he.Value = kvp.Value.Value?.Copy();
+                else he.Value = kvp.Value.Value;     // (values are frozen: shared)
                 Value.Add(kvp.Key, he);
             }
         }
@@ -121,7 +121,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         var v = LVal.Qexpr();
         if (_Values != null)
             foreach (var e in _Values) {
-                v.Add(e.Value?.Copy() ?? LVal.NIL());
+                v.Add(e.Value ?? LVal.NIL());
             }
         return v; 
     } }
@@ -260,7 +260,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
                     }
                     else return LVal.Err($"Cannot set non-nillable field {key.ToStr()} to NIL.");
                 }
-                else e.Value = val.Copy();
+                else e.Value = val.Freeze();
 
                 return priorValue;
             }
@@ -308,7 +308,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             var e = _GetEntry(key);
             if (e != null) {
                 if (e.IsPrivate && !callerIsMember) return LVal.Err("hash-get error: cannot access private hash entry");
-                if (e.Value != null) return e.Value.Copy();
+                if (e.Value != null) return e.Value;
             }
             else if (errOnNotFound) {
                 return LVal.Err("hash-get failed: entry not found");
@@ -345,11 +345,11 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         if (!t.IsQExpr || t.Count == 0) return LVal.Err("Invalid tag value");
         if (t.Count == 1) return base.HasTag(t[0]);
 
-        var key = t.Pop(0);
+        var key = t[0];
         try {
             var e = _GetEntry(key);
             if (e == null) return LVal.Err($"Key {key.ToStr()} not found when looking up tag for hash entry");
-            return e.HasTag(t.Pop(0));
+            return e.HasTag(t[1]);
         }
         catch (Exception e) {
             return LVal.Err(e.Message);
@@ -389,7 +389,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
             e.Add(entry.Value?.ValType switch {
                 null => LVal.NIL(),
                 LVal.LE.HASH => entry.Value.HashValue!.ToQexpr(),
-                _ => entry.Value.Copy()
+                _ => entry.Value
             });
 
             if (entry.Tags != null) {

@@ -12,11 +12,13 @@ public struct TailStep {
     public LVal? Value;
     public LEnv? Env;
     public LVal? Expr;
+    public bool Run;        // Expr a list run as code: its items as an S-expression
     public static TailStep Done(LVal v) => new TailStep { Value = v };
     public static TailStep Next(LEnv e, LVal x) => new TailStep { Env = e, Expr = x };
+    public static TailStep RunCode(LEnv e, LVal x) => new TailStep { Env = e, Expr = x, Run = true };
 
-    // The step finished, outside tail position: the expression evaluated, if there is one
-    public LVal Finish() => Expr == null ? Value! : Expr.Eval(Env!);
+    // The step finished, outside tail position: the expression evaluated (or run), if there is one
+    public LVal Finish() => Expr == null ? Value! : Run ? LVal.EvalCode(Env!, Expr) : Expr.Eval(Env!);
 }
 
 public class LVal {
@@ -46,6 +48,33 @@ public class LVal {
     public LHash? HashValue = null;
     public LStream? StreamValue = null;
     public List<LVal>? Cells = null;
+
+    // A value is shared once it's code (the reader's), a variable's, a hash's or a partial application's: then it's
+    // frozen, and its list can't be changed in place (a built-in makes a new value, never changes one it's given)
+    public bool Frozen = false;
+
+    public LVal Freeze() {
+        if (Frozen) return this;
+        Frozen = true;
+        if (Cells != null) foreach (var c in Cells) c.Freeze();
+        if (Bound != null) foreach (var b in Bound) b.Freeze();
+        Formals?.Freeze();
+        Body?.Freeze();
+        return this;
+    }
+
+    private void Mutable() {
+        if (Frozen) throw new InvalidOperationException("internal error: a shared value was changed");
+    }
+
+    // This value as written here, remembering the scope e (a Q-expression's, which eval runs it in; an fexpr's
+    // argument's): a copy sharing its list, so the code it's in isn't changed
+    public LVal ScopedIn(LEnv e) {
+        Freeze();
+        var x = (LVal)MemberwiseClone();
+        x.Scope = e;
+        return x;
+    }
 
     public int Count => Cells?.Count ?? 0;
     public bool IsNIL => Count == 0 && (IsSExpr || IsQExpr);
@@ -82,7 +111,7 @@ public class LVal {
                     x.Bound = Bound == null ? null : new List<LVal>(Bound);
                 } else {
                     x.BuiltinVal = null;
-                    x.Env = Env?.Copy();
+                    x.Env = Env?.Copy();    // (its bindings shared: values are frozen)
                     x.Closure = Closure;
                     x.IsFexpr = IsFexpr;
                     x.Formals = Formals?.Copy();
@@ -347,7 +376,7 @@ public class LVal {
             if (entry.IsErr) return entry;
             if (!entry.IsQExpr || entry.Count < 2 || !LHash.IsKey(entry[0]))
                 return Err($"A hash's entry is {{key value tag...}}, not {entry.ToStr()}");
-            var value = e != null ? entry[1].Copy().Eval(e) : entry[1];
+            var value = e != null ? entry[1].Eval(e) : entry[1];
             if (value.IsErr) return value;
             var put = hash.Put(entry[0], value, true);
             if (put.IsErr) return put;
@@ -369,19 +398,23 @@ public class LVal {
 
     // Helper methods
     public LVal Add(LVal x) {
+        Mutable();
         Cells = Cells ?? new List<LVal>();
         Cells.Add(x);
         return this;
     }
 
     public LVal Join(LVal y) {
+        Mutable();
         Cells = Cells ?? new List<LVal>();
-        if (y.Cells != null) Cells?.AddRange(y.Cells); 
+        if (y.Cells != null) Cells?.AddRange(y.Cells);
         return this;
     }
 
+    // Item i taken out of a list of one's own (a built-in's arguments), evaluated in e if it's given
     public LVal Pop(int i, LEnv? e = null) {
         if (i >= Count) return Err($"Popping nonexistent item {i} from Expr");
+        Mutable();
         LVal x = this[i];
         if (e != null) x = x.Eval(e);
         Cells!.RemoveAt(i);
@@ -623,44 +656,47 @@ public class LVal {
         }
     }
 
-    // A function's arguments: evaluated in e, left to right (the first error stops them: err); or, for an fexpr,
-    // each as it is, the expression the caller wrote, remembering e (its Scope), so (eval x) evaluates it there
-    private static List<LVal> Args(LEnv e, LVal f, LVal a, out LVal? err) {
+    // A function's arguments, cells[start...]: evaluated in e, left to right (the first error stops them: err); or,
+    // for an fexpr, each as it is, the expression the caller wrote, remembering e (its Scope), so (eval x) evaluates
+    // it there.  The code isn't changed: it's shared
+    private static List<LVal> Args(LEnv e, LVal f, List<LVal> cells, int start, out LVal? err) {
         err = null;
-        var vals = new List<LVal>();
-        while (a.Count > 0) {
+        var vals = new List<LVal>(cells.Count - start);
+        for (int i = start; i < cells.Count; i++) {
             if (f.IsFexpr) {
-                var x = a.Pop(0);
-                x.Scope = e;
-                vals.Add(x);
+                vals.Add(cells[i].ScopedIn(e));
+                continue;
             }
-            else {
-                var v = a.Pop(0, e);
-                if (v.IsErr) {
-                    err = v;
-                    break;
-                }
-                vals.Add(v);
+            var v = cells[i].Eval(e);
+            if (v.IsErr) {
+                err = v;
+                break;
             }
+            vals.Add(v);
         }
         return vals;
     }
 
-    // A built-in's arguments.  A special form's are as they're written (more than it takes is an error).  An ordinary
-    // built-in's are evaluated, left to right, the first error the call's value (but for one that takes errors as
-    // values: the type tests, type-of, error-message ...), then checked as values (ValueArgs).  OUT: the call's value,
-    // if that's it (null: the call goes on, with a its values)
-    private static LVal? BuiltinArgs(ref LEnv e, LVal f, ref LVal a) {
-        int bound = f.Bound?.Count ?? 0, n = bound + a.Count;
+    // A built-in's arguments, cells[start...].  A special form's are as they're written (more than it takes is an
+    // error), a new list of the shared code.  An ordinary built-in's are evaluated, left to right, the first error the
+    // call's value (but for one that takes errors as values: the type tests, type-of, error-message ...), then checked
+    // as values (ValueArgs).  OUT: the call's value, if that's it (null: the call goes on, with a its arguments)
+    private static LVal? BuiltinArgs(LEnv e, LVal f, List<LVal> cells, int start, out LVal a) {
+        int bound = f.Bound?.Count ?? 0, n = bound + cells.Count - start;
+        a = null!;
         if (n > f.MaxArgs) return TooMany(f, n);
-        if (f.IsSpecial) return null;
-        var vals = new List<LVal>();
-        while (a.Count > 0) {
-            var v = a.Pop(0, e);
+        if (f.IsSpecial) {
+            a = Sexpr();
+            for (int i = start; i < cells.Count; i++) a.Cells!.Add(cells[i]);
+            return null;
+        }
+        var vals = new List<LVal>(n);
+        for (int i = start; i < cells.Count; i++) {
+            var v = cells[i].Eval(e);
             if (v.IsErr && !f.TakesErrors) return v;
             vals.Add(v);
         }
-        return ValueArgs(f, vals, out a, false);
+        return ValueArgs(f, vals, out a);
     }
 
     private static LVal TooMany(LVal f, int n) =>
@@ -668,19 +704,20 @@ public class LVal {
 
     // An ordinary built-in's values (a partially applied one's first): more than its most is an error, an error is the
     // call's value (as above), fewer than it needs is the built-in with those given, waiting for the rest (partial
-    // application).  A built-in may change the values it's given, so those kept or given from outside (a partial
-    // one's, vals when copy) are copies.  OUT: the call's value, if that's it (null: the call goes on, with a the values)
-    private static LVal? ValueArgs(LVal f, List<LVal> vals, out LVal a, bool copy) {
+    // application).  Values are shared: a built-in makes new ones, never changes those it's given.  OUT: the call's
+    // value, if that's it (null: the call goes on, with a the values)
+    private static LVal? ValueArgs(LVal f, List<LVal> vals, out LVal a) {
         a = Sexpr();
-        if (f.Bound != null) foreach (var b in f.Bound) a.Add(b.Copy());
+        if (f.Bound != null) a.Cells!.AddRange(f.Bound);
         foreach (var v in vals) {
             if (v.IsErr && !f.TakesErrors) return v;
-            a.Add(copy ? v.Copy() : v);
+            a.Cells!.Add(v);
         }
         if (a.Count > f.MaxArgs) return TooMany(f, a.Count);
         if (a.Count < f.MinArgs) {
             var p = f.Copy();
             p.Bound = new List<LVal>(a.Cells!);
+            foreach (var b in p.Bound) b.Freeze();
             return p;
         }
         return null;
@@ -689,7 +726,7 @@ public class LVal {
     // A built-in applied to values (map's f, sort's less ...), as a call of it with them would be, not evaluated again
     public static LVal ApplyBuiltin(LEnv e, LVal f, List<LVal> vals) {
         if (f.IsSpecial) return Err($"'{f.BuiltinName}' can't be applied to values: it's a special form");
-        return ValueArgs(f, vals, out var a, true) ?? CallBuiltin(e, f, a);
+        return ValueArgs(f, vals, out var a) ?? CallBuiltin(e, f, a);
     }
 
     // Whether a function's body takes extra arguments: it names &_ or &1, &2 ...
@@ -697,17 +734,19 @@ public class LVal {
         (v.IsSym && (v.SymVal == "&_" || (v.SymVal.Length > 1 && v.SymVal[0] == '&' && v.SymVal.Skip(1).All(char.IsDigit))))
         || (v.Cells != null && v.Cells.Any(TakesExtras));
 
-    public static LVal Call(LEnv e, LVal f, LVal a) {
-        if (f.BuiltinVal != null) return BuiltinArgs(ref e, f, ref a) ?? CallBuiltin(e, f, a);
-        var vals = Args(e, f, a, out var err);
+    // f called with the arguments cells[start...] (evaluated as f wants them)
+    public static LVal Call(LEnv e, LVal f, List<LVal> cells, int start) {
+        if (f.BuiltinVal != null) return BuiltinArgs(e, f, cells, start, out var a) ?? CallBuiltin(e, f, a);
+        var vals = Args(e, f, cells, start, out var err);
         if (err != null) return err;
         return Apply(f, vals);
     }
 
-    // A function (a copy of its own, which this changes) applied to values: they're bound in its own scope, the
-    // formals first, then &1, &2 ... and &_ for the rest; if it has all it needs, its body runs there, with the scope
-    // the function was made in as its parent (lexical scope); if not, it's the function with those bound (partial
-    // application).  A call in the body's tail position comes back as a TAIL value and runs here, in its place
+    // A function applied to values: they're bound in a new scope of its call (whose parent is the scope the function
+    // was made in: lexical scope), after those a partial application bound (its Env), the formals first, then &1, &2
+    // ... and &_ for the rest; if it has all it needs, its body runs there; if not, it's a new function with those
+    // bound (partial application).  The function isn't changed.  A call in the body's tail position comes back as a
+    // TAIL value and runs here, in its place
     public static LVal Apply(LVal f, List<LVal> vals) {
         if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
         ++_depth;
@@ -716,34 +755,42 @@ public class LVal {
                 var intr = CheckInterrupt();
                 if (intr != null) return intr;
                 if (!f.IsFexpr) {
-                    var err = vals.FirstOrDefault(v => v.IsErr);
-                    if (err != null) return err;
+                    foreach (var v in vals) if (v.IsErr) return v;
                 }
+
+                var formals = f.Formals!.Cells!;
+                var scope = new LEnv(f.Closure);
+                if (f.Env != null) foreach (var kv in f.Env) scope[kv.Key] = kv.Value;
 
                 // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
                 var extras = Qexpr();
+                int k = 0;
                 foreach (var val in vals) {
-                    if (f.Formals!.Count == 0) {
+                    if (k < formals.Count) scope.Put(formals[k++].SymVal!, val);
+                    else {
                         extras.Add(val);
-                        f.Env!.Put($"&{extras.Count}", val);
-                    } else {
-                        LVal sym = f.Formals.Pop(0);
-                        f.Env!.Put(sym.SymVal!, val);
+                        scope.Put($"&{extras.Count}", val);
                     }
                 }
+                scope.Put("&_", extras);
 
-                f.Env!.Put("&_", extras);
-                if (f.Formals!.Count > 0) return f.Copy();
+                if (k < formals.Count) {
+                    var p = (LVal)f.MemberwiseClone();
+                    p.Frozen = false;
+                    p.Formals = Qexpr();
+                    for (int i = k; i < formals.Count; i++) p.Formals.Add(formals[i]);
+                    p.Formals.Freeze();
+                    p.Env = new LEnv();
+                    foreach (var kv in scope) p.Env[kv.Key] = kv.Value;
+                    return p;
+                }
                 if (extras.Count > 0 && !TakesExtras(f.Body!)) {
                     var takes = vals.Count - extras.Count;
                     return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
                 }
 
                 if (!f.Body!.IsQExpr) return LVal.Err("A function's body must be a QExpr");
-                f.Env.Parent = f.Closure;
-                var body = f.Body.Copy();
-                body.ValType = LE.SEXPR;
-                var r = EvalTail(f.Env, body);
+                var r = EvalTail(scope, f.Body, true);
                 if (r.ValType != LE.TAIL) return r;
                 f = r.TailFn!;
                 vals = r.TailArgs!;
@@ -758,40 +805,42 @@ public class LVal {
     public List<LVal>? TailArgs = null; //   and its arguments
 
     // (exit code): the program ends with that status
-    private static LVal ExitWith(LEnv e, LVal v) {
-        var code = v.Pop(0, e);
+    private static LVal ExitWith(LEnv e, LVal x) {
+        var code = x.Eval(e);
         if (code.IsErr) return code;
         if (!code.IsNum) return LVal.Err("'exit' expects a Number");
         throw new ExitException((int)code.NumVal!.ToInt().num);
     }
 
-    // An expression evaluated in a function body's tail position: a call to a function there comes back as a TAIL
-    // value, for Apply to run in the caller's place; a built-in with a tail position (if, do, let, eval) goes on with
-    // the expression there
-    private static LVal EvalTail(LEnv e, LVal v) {
+    // An expression evaluated in a function body's tail position (run: a list's items as an S-expression, as a body
+    // is): a call to a function there comes back as a TAIL value, for Apply to run in the caller's place; a built-in
+    // with a tail position (if, do, let, eval) goes on with the expression there
+    private static LVal EvalTail(LEnv e, LVal v, bool run) {
         while (true) {
             var intr = CheckInterrupt();
             if (intr != null) return intr;
-            if (!v.IsSExpr) return v.Eval(e);
-            if (v.Count == 0) return NIL();
+            if (!(v.IsSExpr || (run && v.IsQExpr))) return v.Eval(e);
+            var cells = v.Cells!;
+            if (cells.Count == 0) return NIL();
 
-            LVal f = v.Pop(0, e);
+            LVal f = cells[0].Eval(e);
             if (f.IsErr) return f;
-            if (f.IsExit && v.Count > 0) return ExitWith(e, v);
-            if (v.Count == 0 && !f.IsFun) return f;
+            int start = 1;
+            if (f.IsExit && cells.Count > 1) return ExitWith(e, cells[1]);
+            if (cells.Count == 1 && !f.IsFun) return f;
             if (f.IsHash) {
-                f = HashAt(e, f, v);
+                f = HashAt(e, f, cells, ref start);
                 if (!f.IsFun) return f;
             }
             if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
 
             if (f.BuiltinVal != null) {
-                var done = BuiltinArgs(ref e, f, ref v);
+                var done = BuiltinArgs(e, f, cells, start, out var a);
                 if (done != null) return done;
-                if (f.TailForm == null) return CallBuiltin(e, f, v);
+                if (f.TailForm == null) return CallBuiltin(e, f, a);
                 TailStep step;
                 try {
-                    step = f.TailForm(e, v);
+                    step = f.TailForm(e, a);
                 }
                 catch (ExitException) { throw; }
                 catch (Exception ex) {
@@ -800,48 +849,63 @@ public class LVal {
                 if (step.Expr == null) return step.Value!;
                 e = step.Env!;
                 v = step.Expr;
+                run = step.Run;
                 continue;
             }
 
-            var vals = Args(e, f, v, out var err);
+            var vals = Args(e, f, cells, start, out var err);
             if (err != null) return err;
             return new LVal { ValType = LE.TAIL, TailFn = f, TailArgs = vals };
         }
     }
 
+    // An S-expression evaluated (or a list's items, as one: a function's body, code run); the code isn't changed
     public static LVal? EvalSExpr(LEnv e, LVal? v) {
         if (v == null) return null;
-        if (v.Count == 0) return NIL();
+        var cells = v.Cells;
+        if (cells == null || cells.Count == 0) return NIL();
 
-        LVal f = v.Pop(0, e);
+        LVal f = cells[0].Eval(e);
         if (f.IsErr) return f;
-        if (f.IsExit && v.Count > 0) return ExitWith(e, v);
-        if (v.Count == 0 && !f.IsFun) { return f; }
+        int start = 1;
+        if (f.IsExit && cells.Count > 1) return ExitWith(e, cells[1]);
+        if (cells.Count == 1 && !f.IsFun) return f;
         if (f.IsHash) {
-            f = HashAt(e, f, v);
+            f = HashAt(e, f, cells, ref start);
             if (!f.IsFun) return f;
         }
 
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
 
-        return LVal.Call(e, f, v);
+        return LVal.Call(e, f, cells, start);
     }
 
-    // A hash called, (h key arg...): the value at key (its first item, v's, evaluated and taken off); a function there
+    // A value run as code: a list's items as an S-expression, anything else evaluated
+    public static LVal EvalCode(LEnv e, LVal x) => x.IsQExpr ? EvalSExpr(e, x)! : x.Eval(e);
+
+    // A hash called, (h key arg...): the value at key (cells[start], evaluated; start moves past it); a function there
     // is a method, given back with &0 the hash (through which its private entries are had), to be applied to the
     // arguments that follow as any function is (fewer than its formals: partially applied); anything else is the value,
     // and arguments after it are an error
-    private static LVal HashAt(LEnv e, LVal h, LVal v) {
-        var key = v.Pop(0, e);
+    private static LVal HashAt(LEnv e, LVal h, List<LVal> cells, ref int start) {
+        var key = cells[start++].Eval(e);
         if (key.IsErr) return key;
         var value = h.HashValue!.Get(key);
         if (value.IsErr) return value;
-        if (value.IsFun) {
-            value.Env?.Put("&0", Hash(h.HashValue.PrivateCallProxy));
-            return value;
-        }
-        if (v.Count > 0) return Err($"{key.ToStr()} isn't a method: its value isn't a function");
+        if (value.IsFun) return Method(value, h);
+        if (start < cells.Count) return Err($"{key.ToStr()} isn't a method: its value isn't a function");
         return value;
+    }
+
+    // A hash's function as a method: a copy of it with &0 the hash (a built-in as it is)
+    public static LVal Method(LVal f, LVal h) {
+        if (f.BuiltinVal != null) return f;
+        var m = (LVal)f.MemberwiseClone();
+        m.Frozen = false;
+        m.Env = new LEnv();
+        if (f.Env != null) foreach (var kv in f.Env) m.Env[kv.Key] = kv.Value;
+        m.Env.Put("&0", Hash(h.HashValue!.PrivateCallProxy));
+        return m;
     }
 
     public static LVal? ReadExprFromTokens(List<Parser.Token> tokens, char? end = null) {
@@ -878,14 +942,16 @@ public class LVal {
         return exp;
     }
 
+    // A value: a symbol's, an S-expression's (a call), or this one.  A Q-expression remembers the scope it's written
+    // in: eval runs it there (so code passed to a function runs where it was written, and a function's own variables
+    // are its alone); the code isn't changed, so a copy of it remembers it
     public LVal Eval(LEnv e) {
-        if (IsSym) return e.Get(SymVal!);
-        if (IsSExpr) return EvalSExpr(e, this)!;
-
-        // A Q-expression remembers the scope it's written in: eval runs it there (so code passed to a function runs
-        // where it was written, and a function's own variables are its alone)
-        if (IsQExpr && Scope == null) Scope = e;
-        return this;
+        switch (ValType) {
+            case LE.SYM:   return e.Get(SymVal!);
+            case LE.SEXPR: return EvalSExpr(e, this)!;
+            case LE.QEXPR: return Scope == null && Count > 0 ? ScopedIn(e) : this;
+            default:       return this;
+        }
     }
 
     // The order of values (cmp, <, >, sort): one for all of them, by kind first (numbers, characters, strings, atoms,

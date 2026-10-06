@@ -61,6 +61,11 @@ public partial class LVal {
     internal static CodeInfo? Site;
     private static readonly CodeInfo?[] _calls = new CodeInfo?[MaxDepth + 2];
     private static int _ncalls;
+    // (the profiler's look: the call being made, and the innermost function's call)
+    internal static (CodeInfo? site, CodeInfo? call) Now() {
+        int n = _ncalls;
+        return (Site, n > 0 && n <= _calls.Length ? _calls[n - 1] : null);
+    }
     private static CodeInfo[]? CallsNow() {
         if (_ncalls == 0) return null;
         int n = Math.Min(_ncalls, 12);

@@ -152,6 +152,42 @@ public partial class Builtins
         return LVal.NIL();
     }
 
+    // (buffer-cmp b at x [i [n]]): -1, 0 or 1, as cmp orders strings: b's bytes from at on against x's (a buffer's or
+    // a string's) from i (0) on, n of them (to its end); as many of b's as there are, at most as many as x's
+    private static LVal BufferCmp(LEnv e, LVal a) {
+        var t = BufferArg(a[0], "buffer-cmp");
+        if (t.IsErr) return t;
+        var b = a[0].BufferValue!;
+        var ix = IndexArg(a[1], "buffer-cmp", b.Length, true, out var at);
+        if (ix.IsErr) return ix;
+        var x = a[2];
+        if (x.IsErr) return x;
+        if (!x.IsBuffer && !x.IsStr) return LVal.Err($"'buffer-cmp' expects a buffer or a string, not {x.ToStr()}");
+        int len = x.IsBuffer ? x.BufferValue!.Length : x.StrVal.Length;
+        int i = 0, count = len;
+        if (a.Count > 3) {
+            var fx = IndexArg(a[3], "buffer-cmp", len, true, out i);
+            if (fx.IsErr) return fx;
+            count = len - i;
+        }
+        if (a.Count > 4) {
+            var c = CountArg(a[4], "buffer-cmp", len, i, out count);
+            if (c.IsErr) return c;
+        }
+        return LVal.Number(Cmp(b, at, Math.Min(count, b.Length - at), x, i, count));
+    }
+
+    // Two runs of bytes in order (b's, and a buffer's or a string's): the first byte that differs, or the shorter first
+    private static int Cmp(byte[] b, int at, int n, LVal x, int i, int m) {
+        if (x.IsBuffer) return Math.Sign(b.AsSpan(at, n).SequenceCompareTo(x.BufferValue!.AsSpan(i, m)));
+        var s = x.StrVal;
+        for (int k = 0, l = Math.Min(n, m); k < l; k++) {
+            int d = b[at + k] - s[i + k];
+            if (d != 0) return Math.Sign(d);
+        }
+        return n.CompareTo(m);
+    }
+
     // (read-buffer s b [at [n]]): up to n bytes (to b's end) from the stream into b at at (0): how many, or NIL at
     // the stream's end
     private static LVal ReadBuffer(LEnv e, LVal a) {
@@ -181,6 +217,7 @@ public partial class Builtins
         AddBuiltin(e, "buffer-put", (e, a) => BufferPut(a[0], a[1], a[2]));
         AddBuiltin(e, "buffer-fill", BufferFill);
         AddBuiltin(e, "buffer-copy", BufferCopy);
+        AddBuiltin(e, "buffer-cmp", BufferCmp);
         AddBuiltin(e, "read-buffer", ReadBuffer);
         Fast(e, "buffer-get", null, (b, i) => b.IsBuffer && i.IsSmallInt(out var k) && k >= 0 && k < b.BufferValue!.Length
             ? LVal.Number(b.BufferValue![(int)k]) : null);
@@ -191,6 +228,13 @@ public partial class Builtins
             var old = bytes[(int)k];
             bytes[(int)k] = (byte)(int)n;
             return LVal.Number(old);
+        });
+        e.Get("buffer-cmp").SetFast3((b, i, x) => {
+            if (!b.IsBuffer || !i.IsSmallInt(out var k) || !(x.IsBuffer || x.IsStr)) return null;
+            var bytes = b.BufferValue!;
+            if (k < 0 || k > bytes.Length) return null;
+            int m = x.IsBuffer ? x.BufferValue!.Length : x.StrVal.Length;
+            return LVal.Number(Cmp(bytes, (int)k, Math.Min(m, bytes.Length - (int)k), x, 0, m));
         });
     }
 }

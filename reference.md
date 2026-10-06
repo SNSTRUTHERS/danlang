@@ -356,6 +356,7 @@ anything else is an error, its code `:inval`.
 | `(buffer-put b i byte)` | Its old byte: byte `i` set |
 | `(buffer-fill b byte [i [n]])` | NIL: the bytes from `i` (0) on, `n` of them (to the end), set to `byte` |
 | `(buffer-copy to at from [i [n]])` | NIL: `from`'s bytes from `i` (0) on, `n` of them (to its end), put in `to` from `at` (as many as fit); the two may be one buffer, the parts overlapping |
+| `(buffer-cmp b at x [i [n]])` | -1, 0 or 1, as `cmp` orders strings: `b`'s bytes from `at` on (as many as there are, at most as many as `x`'s) against `x`'s, a buffer's or a string's, from `i` (0) on, `n` of them (to its end) |
 | `(read-buffer s b [at [n]])` | Up to `n` bytes (to `b`'s end) read from the stream into `b` from `at` (0): how many; NIL at the stream's end |
 | `(buffer? x)` | Whether it's a buffer |
 

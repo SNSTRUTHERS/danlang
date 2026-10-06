@@ -51,6 +51,16 @@ public class Program {
     private static int Run(string[] args) {
         var (files, config) = Config.ParseCommandLine(args);
         Builtins.Warnings = config.Warnings;
+        if (config.Profile) Profiler.Start();
+        try {
+            return RunAll(files);
+        }
+        finally {
+            if (config.Profile) Profiler.Report(Console.Error);
+        }
+    }
+
+    private static int RunAll(string[] files) {
 
         LEnv e;
         try {

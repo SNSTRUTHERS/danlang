@@ -8,6 +8,8 @@ Work in progress LISP-inspired language.
                                     error (shown on stderr), or (exit n)'s
     dotnet run -- -w file.dl        the same, with warnings (on stderr): def or fun replacing a built-in, or a
                                     global of another kind (a function with a value, or a value with a function)
+    dotnet run -- -p file.dl        the same, with a profile (on stderr, when it ends): the calls the time was
+                                    in, sampled (each call's place, file:line, and its code)
     dotnet run -- tests/regress/run.dl
                                     the regression suite (from danlang's folder): each file's checks, then the
                                     count; status 1 if any failed

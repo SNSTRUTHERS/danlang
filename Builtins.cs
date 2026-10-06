@@ -54,7 +54,7 @@ public partial class Builtins
         ["key?"] = (0, 0),
         // (Buffers: BufferBuiltins.cs)
         ["buffer"] = (1, 2), ["buffer?"] = (1, 1), ["buffer-get"] = (2, 2), ["buffer-put"] = (3, 3), ["buffer-fill"] = (2, 4),
-        ["buffer-copy"] = (3, 5), ["read-buffer"] = (2, 4),
+        ["buffer-copy"] = (3, 5), ["buffer-cmp"] = (3, 5), ["read-buffer"] = (2, 4),
         // (The library's: LibraryBuiltins.cs)
         ["not"] = (1, 1), ["=="] = (2, 2), [">="] = (2, 2), ["<="] = (2, 2), ["neg?"] = (1, 1), ["pos?"] = (1, 1),
         ["zero?"] = (1, 1), ["one?"] = (1, 1), ["1+"] = (1, 1), ["1-"] = (1, 1), ["abs"] = (1, 1), ["cons"] = (2, 2),

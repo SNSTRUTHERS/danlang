@@ -773,7 +773,7 @@ public partial class LVal {
     // How deep calls may nest (a call in tail position doesn't count: it takes its caller's place); deeper is an
     // error, not the host's stack overflowing (Program runs the interpreter on a thread with a stack big enough)
     public const int MaxDepth = 10000;
-    [ThreadStatic] private static int _depth;
+    private static int _depth;      // (the interpreter runs on one thread, Program's, as Site and the calls' stack say)
 
     // Ctrl-C was pressed (Program's handler sets it, the REPL clears it): each call, and each loop's step, stops with
     // the error "interrupted" (:intr) till then
@@ -886,19 +886,21 @@ public partial class LVal {
             while (true) {
                 var intr = CheckInterrupt();
                 if (intr != null) return intr;
-                if (!argsChecked && !f.IsFexpr) {
-                    foreach (var v in vals) if (v.IsErr) return v;
+                var fi = f.Fn!;
+                if (!argsChecked && !fi.IsFexpr) {
+                    for (int i = 0; i < vals.Count; i++) if (vals[i].IsErr) return vals[i];
                 }
                 argsChecked = false;
 
-                var formals = f.Formals!.Cells!;
-                var scope = new LEnv(f.Closure) { IsCall = true };
-                if (f.Env != null && f.Env.Count > 0) scope.CopyFrom(f.Env);
+                var formals = fi.Formals!.Cells!;
+                var scope = new LEnv(fi.Closure) { IsCall = true };
+                if (fi.Env != null && fi.Env.Count > 0) scope.CopyFrom(fi.Env);
 
                 // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
                 LVal? extras = null;
                 int k = 0;
-                foreach (var val in vals) {
+                for (int i = 0; i < vals.Count; i++) {
+                    var val = vals[i];
                     if (k < formals.Count) scope.Put(formals[k++].SymName, val);
                     else {
                         (extras ??= Qexpr()).Add(val);
@@ -916,13 +918,14 @@ public partial class LVal {
                     foreach (var kv in scope.Entries) p.Env.SetLocal(kv.Key, kv.Value);
                     return p;
                 }
-                if (extras != null && !f.Body!.Mentions(Uses.Extras)) {
+                var body = fi.Body!;
+                if (extras != null && !body.Mentions(Uses.Extras)) {
                     var takes = vals.Count - extras.Count;
                     return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
                 }
 
-                if (!f.Body!.IsQExpr) return LVal.Err("A function's body must be a QExpr");
-                var r = f.Body.CallOf().Tail(scope);
+                if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
+                var r = body.CallOf().Tail(scope);
                 if (r.ValType != LE.TAIL) return r;
                 f = r.TailFn!;
                 vals = r.TailArgs!;

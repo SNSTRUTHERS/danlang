@@ -46,8 +46,11 @@ public class LEnv {
     public bool IsCall;
 
     private const int Small = 8;
-    private Name[]? _names;
-    private LVal[]? _vals;
+    private struct Binding {
+        public Name K;
+        public LVal V;
+    }
+    private Binding[]? _b;          // (a small one's: _n of them)
     private int _n;
     private Dictionary<Name, Slot>? _map;
 
@@ -62,7 +65,7 @@ public class LEnv {
     public IEnumerable<KeyValuePair<Name, LVal>> Entries {
         get {
             if (_map != null) foreach (var kv in _map) yield return new KeyValuePair<Name, LVal>(kv.Key, kv.Value.Value);
-            else for (int i = 0; i < _n; i++) yield return new KeyValuePair<Name, LVal>(_names![i], _vals![i]);
+            else for (int i = 0; i < _n; i++) yield return new KeyValuePair<Name, LVal>(_b![i].K, _b[i].V);
         }
     }
 
@@ -76,8 +79,8 @@ public class LEnv {
             return false;
         }
         for (int i = 0; i < _n; i++) {
-            if (ReferenceEquals(_names![i], k)) {
-                v = _vals![i];
+            if (ReferenceEquals(_b![i].K, k)) {
+                v = _b[i].V;
                 return true;
             }
         }
@@ -93,8 +96,8 @@ public class LEnv {
             return true;
         }
         for (int i = 0; i < _n; i++) {
-            if (ReferenceEquals(_names![i], k)) {
-                _vals![i] = v;
+            if (ReferenceEquals(_b![i].K, k)) {
+                _b[i].V = v;
                 return true;
             }
         }
@@ -110,29 +113,22 @@ public class LEnv {
             return;
         }
         for (int i = 0; i < _n; i++) {
-            if (ReferenceEquals(_names![i], k)) {
-                _vals![i] = v;
+            if (ReferenceEquals(_b![i].K, k)) {
+                _b[i].V = v;
                 return;
             }
         }
         if (_n == Small) {
             _map = new Dictionary<Name, Slot>(Small * 2);
-            for (int i = 0; i < _n; i++) _map[_names![i]] = new Slot { Value = _vals![i] };
+            for (int i = 0; i < _n; i++) _map[_b![i].K] = new Slot { Value = _b[i].V };
             _map[k] = new Slot { Value = v };
-            _names = null;
-            _vals = null;
+            _b = null;
             return;
         }
-        if (_names == null) {
-            _names = new Name[4];
-            _vals = new LVal[4];
-        }
-        else if (_n == _names.Length) {
-            Array.Resize(ref _names, Small);
-            Array.Resize(ref _vals, Small);
-        }
-        _names[_n] = k;
-        _vals![_n++] = v;
+        if (_b == null) _b = new Binding[4];
+        else if (_n == _b.Length) Array.Resize(ref _b, Small);
+        _b[_n].K = k;
+        _b[_n++].V = v;
     }
 
     // A big scope's slot for k, if it has one
@@ -154,7 +150,7 @@ public class LEnv {
     // Another scope's bindings, here
     public void CopyFrom(LEnv o) {
         if (o._map != null) foreach (var kv in o._map) SetLocal(kv.Key, kv.Value.Value);
-        else for (int i = 0; i < o._n; i++) SetLocal(o._names![i], o._vals![i]);
+        else for (int i = 0; i < o._n; i++) SetLocal(o._b![i].K, o._b[i].V);
     }
 
     public LEnv Copy() {

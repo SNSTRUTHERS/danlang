@@ -138,7 +138,7 @@ public partial class LVal {
 
     // A tail call: the function and its arguments, for the Apply it goes back to (one value, used again: each goes
     // straight back to its Apply, which takes them out before another is made)
-    [ThreadStatic] private static LVal? _tail;
+    private static LVal? _tail;
     internal static LVal TailCall(LVal f, List<LVal> args) {
         var t = _tail ??= new LVal { ValType = LE.TAIL };
         t.TailFn = f;

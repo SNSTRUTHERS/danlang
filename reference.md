@@ -303,7 +303,7 @@ end takes what there is; a negative count is an error.
 | `(output-of x...)` | What the expressions printed to stdout, a string; an error, if one is one.  Special |
 | `(read text)` | The expressions in the text, unevaluated, a list; a reader error is an error |
 | `(load path...)` | Each file's expressions run at the top level in turn; the last value.  A path is as it is, or with `.dl`; a bare name is also looked for in the library's folder.  An error is `file: message` |
-| `(save x)`, `(save x path [mode])` | NIL: `x` as it would be read back, printed, or written to the file with LF (`:overwrite` or `:append`; an existing file without one is an error) |
+| `(save x)`, `(save x path [mode])` | NIL: `x` as it would be read back, printed, or written to the file with LF (`:overwrite` or `:append`; an existing file without one is an error; its folder must be there, else `:noent`) |
 | `(open path [mode])` | A stream on the file: `:read` (the default), `:write` (made, or emptied), `:append`; a directory is `:isdir` |
 | `(close s)` | NIL; the console's streams can't be closed |
 | `(read-line [s])` | A line without its LF (a CR before it dropped), from `s` or stdin; NIL at the end |

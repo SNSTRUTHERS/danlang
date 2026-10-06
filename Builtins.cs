@@ -486,8 +486,8 @@ public partial class Builtins
 
             try {
                 var fi = new FileInfo(ToHost(filename.StrVal));
-                if (fi.Directory == null) return LVal.Err("Folder for 'save' does not exist");
-                if (!fi.Directory.Exists) fi.Directory.Create();
+                // (its folder is there, or it's the system's error: as write-file's)
+                if (fi.Directory == null || !fi.Directory.Exists) return SysErr("noent", filename.StrVal);
                 FileStream? fs = null;
                 if (fi.Exists) {
                     if (s.Contains("overwrite")) fs = fi.Open(FileMode.Truncate);

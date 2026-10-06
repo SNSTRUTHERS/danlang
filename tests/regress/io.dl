@@ -63,6 +63,7 @@
 (save #({{:a 1} {"b" {2 3}}}) io-tmp :overwrite)
 (check ((load io-tmp) "b") {2 3})
 (check-error (save 1 io-tmp))
+(check (error-code (save 1 (+ regress-dir "no-such-dir/x.tmp"))) :noent)
 (save 2 io-tmp :append)
 (check (load io-tmp) 2)
 (check-error (load "no-such-file-at-all"))

@@ -72,6 +72,22 @@ public class LEnv {
         return false;
     }
 
+    // k's binding here changed, if it's here (the value already shared): whether it was
+    public bool SetIfHere(Name k, LVal v) {
+        if (_map != null) {
+            if (!_map.TryGetValue(k, out var slot)) return false;
+            slot.Value = v;
+            return true;
+        }
+        for (int i = 0; i < _n; i++) {
+            if (ReferenceEquals(_names![i], k)) {
+                _vals![i] = v;
+                return true;
+            }
+        }
+        return false;
+    }
+
     // A binding here, as it is (the value already shared)
     public void SetLocal(Name k, LVal v) {
         if (_map != null) {

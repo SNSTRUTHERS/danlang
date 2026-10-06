@@ -59,6 +59,7 @@ public partial class LVal {
         public Func<LVal, LVal?>? Fast1;            // a built-in's fast way with one argument, or two (NIL: the
         public Func<LVal, LVal, LVal?>? Fast2;      //   built-in itself does it): Compiler.cs
         public Func<LVal, LVal, LVal, LVal?>? Fast3;
+        public Func<LVal[], LVal?>? FastN;          // (any number of them)
         public FunInfo Clone() => (FunInfo)MemberwiseClone();
     }
     private FunInfo? Fn => _x as FunInfo;
@@ -99,6 +100,7 @@ public partial class LVal {
         F.Fast2 = two;
     }
     public void SetFast3(Func<LVal, LVal, LVal, LVal?> three) => F.Fast3 = three;
+    public void SetFastN(Func<LVal[], LVal?> any) => F.FastN = any;
 
     // A value is shared once it's code (the reader's), a variable's, a hash's or a partial application's: then it's
     // frozen, and its list can't be changed in place (a built-in makes a new value, never changes one it's given)

@@ -136,10 +136,14 @@ public partial class LVal {
             if (f.IsExit && _cells.Count > 1) return ExitWith(e, _cells[1]);
             if (_cells.Count == 1) return f;
             if (f.IsHash) {
-                int start = 1;
-                f = HashAt(e, f, _cells, ref start);
-                if (!f.IsFun) return f;
-                return Invoke(e, f, start, tail);
+                // A hash called, (h key arg...): the value at key; a function there, a method, given the rest
+                var key = NodeAt(1).Eval(e);
+                if (key.IsErr) return key;
+                var value = f.HashValue!.Get(key);
+                if (value.IsErr) return value;
+                if (value.IsFun) return Invoke(e, Method(value, f), 2, tail);
+                if (_cells.Count > 2) return Err($"{key.ToStr()} isn't a method: its value isn't a function");
+                return value;
             }
             if (f.IsBuffer) {
                 // A buffer called, (b i): its byte i
@@ -164,6 +168,19 @@ public partial class LVal {
                 // takes errors as values), then its fast way, if it has one for them, or its own
                 int total = (fi.Bound?.Count ?? 0) + n;
                 if (total > fi.MaxArgs) return TooMany(f, total);
+                if (n > 3 && fi.Bound == null && fi.FastN != null) {
+                    var arr = new LVal[n];
+                    for (int k = 0; k < n; k++) {
+                        var v = NodeAt(start + k).Eval(e);
+                        if (v.IsErr && !fi.TakesErrors) return v;
+                        arr[k] = v;
+                    }
+                    if (n >= fi.MinArgs) {
+                        var r = FastAny(fi.FastN, arr);
+                        if (r != null) return r;
+                    }
+                    return ValueArgs(f, new List<LVal>(arr), out var an) ?? CallBuiltin(e, f, an);
+                }
                 if (n <= 3 && fi.Bound == null) {
                     LVal? a0 = null, a1 = null, a2 = null;
                     if (n > 0) {
@@ -187,6 +204,13 @@ public partial class LVal {
                             catch (Exception ex) { return Err(Builtins.FromHost(ex.Message)); }
                         }
                         else if (n == 1 && fi.Fast1 != null) r = Fast(fi.Fast1, a0!);
+                        if (r == null && fi.FastN != null) {
+                            var arr = new LVal[n];
+                            if (n > 0) arr[0] = a0!;
+                            if (n > 1) arr[1] = a1!;
+                            if (n > 2) arr[2] = a2!;
+                            r = FastAny(fi.FastN, arr);
+                        }
                         if (r != null) return r;
                     }
                     var two = new List<LVal>(n);
@@ -205,7 +229,7 @@ public partial class LVal {
             }
 
             // A function: its arguments' values (the first error stops them), or, for an fexpr, as they're written
-            var args = new List<LVal>(n);
+            var args = n == 0 ? NoArgs : new List<LVal>(n);
             for (int k = start; k < _cells.Count; k++) {
                 if (fi.IsFexpr) {
                     args.Add(_cells[k].ScopedIn(e));
@@ -225,6 +249,12 @@ public partial class LVal {
             catch (ExitException) { throw; }
             catch (Exception ex) { return Err(Builtins.FromHost(ex.Message)); }
         }
+        private static LVal? FastAny(Func<LVal[], LVal?> f, LVal[] x) {
+            try { return f(x); }
+            catch (ExitException) { throw; }
+            catch (Exception ex) { return Err(Builtins.FromHost(ex.Message)); }
+        }
+        private static readonly List<LVal> NoArgs = new(0);     // (a call of none's: never changed)
         private static LVal? Fast(Func<LVal, LVal?> f, LVal x) {
             try { return f(x); }
             catch (ExitException) { throw; }
@@ -237,6 +267,34 @@ public partial class LVal {
             var x = _cells[k];
             if (x.ValType != LE.QEXPR) return NodeAt(k).Eval(e);
             return x.Count == 0 ? NIL() : x.CallOf().Eval(x.Scope ?? e);
+        }
+
+        // set! of one name (the call's i'th): its nearest binding changed; a global one's slot remembered
+        private LEnv? _setRoot;
+        private LEnv.Slot?[]? _setSlots;
+        private LVal SetBang(LEnv e, Name k, int i, LVal v) {
+            v.Freeze();
+            for (var s = e; ; s = s.Parent!) {
+                if (s.Parent == null) {
+                    if (ReferenceEquals(s, _setRoot) && _setSlots![i] is LEnv.Slot cached) {
+                        cached.Value = v;
+                        return NIL();
+                    }
+                    var slot = s.SlotOf(k);
+                    if (slot != null) {
+                        if (!ReferenceEquals(s, _setRoot)) {
+                            _setRoot = s;
+                            _setSlots = new LEnv.Slot?[_cells.Count];
+                        }
+                        _setSlots![i] = slot;
+                        slot.Value = v;
+                        return NIL();
+                    }
+                    if (s.SetIfHere(k, v)) return NIL();
+                    return Err($"Unbound Symbol '{k.Text}'");
+                }
+                if (s.SetIfHere(k, v)) return NIL();
+            }
         }
 
         // A special form: its items as they're written
@@ -277,10 +335,15 @@ public partial class LVal {
             if (n >= 1 && (ReferenceEquals(b, SetBangFn) || ReferenceEquals(b, SetFn) || ReferenceEquals(b, DefFn))) {
                 var func = ReferenceEquals(b, SetBangFn) ? "set!" : ReferenceEquals(b, SetFn) ? "set" : "def";
                 var syms = _cells[start];
-                if (syms.ValType == LE.SYM && n == 2) return Builtins.Bind(e, func, syms.SymName, NodeAt(start + 1).Eval(e));
+                bool bang = func == "set!";
+                if (syms.ValType == LE.SYM && n == 2) {
+                    var v = NodeAt(start + 1).Eval(e);
+                    return bang ? SetBang(e, syms.SymName, 0, v) : Builtins.Bind(e, func, syms.SymName, v);
+                }
                 if (syms.ValType == LE.QEXPR && syms.Count == n - 1 && syms.Cells!.TrueForAll(s => s.ValType == LE.SYM)) {
                     for (int i = 0; i < syms.Count; i++) {
-                        var r = Builtins.Bind(e, func, syms.Cells![i].SymName, NodeAt(start + 1 + i).Eval(e));
+                        var v = NodeAt(start + 1 + i).Eval(e);
+                        var r = bang ? SetBang(e, syms.Cells![i].SymName, i, v) : Builtins.Bind(e, func, syms.Cells![i].SymName, v);
                         if (r.IsErr) return r;
                     }
                     return NIL();

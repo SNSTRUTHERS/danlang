@@ -24,6 +24,27 @@ public partial class Builtins
         LVal.DefFn = e.Get("def").BuiltinVal;
         LVal.WhileFn = e.Get("while").BuiltinVal;
 
+        // (any number of plain integers: the sum, the difference, the product, the bits)
+        static LVal? IntsN(LVal[] x, BigInteger empty, Func<BigInteger, BigInteger, BigInteger> op, bool negateOne = false) {
+            if (x.Length == 0) return LVal.Number(empty);
+            if (!x[0].IsPlainInt(out var r)) return null;
+            if (x.Length == 1 && negateOne) return LVal.Number(-r);
+            for (int i = 1; i < x.Length; i++) {
+                if (!x[i].IsPlainInt(out var n)) return null;
+                r = op(r, n);
+            }
+            return LVal.Number(r);
+        }
+        e.Get("+").SetFastN(x => IntsN(x, 0, (p, q) => p + q));
+        e.Get("-").SetFastN(x => IntsN(x, 0, (p, q) => p - q, true));
+        e.Get("*").SetFastN(x => IntsN(x, 1, (p, q) => p * q));
+        e.Get("bit-and").SetFastN(x => x.Length == 0 ? null : IntsN(x, 0, (p, q) => p & q));
+        e.Get("bit-or").SetFastN(x => x.Length == 0 ? null : IntsN(x, 0, (p, q) => p | q));
+        e.Get("bit-xor").SetFastN(x => x.Length == 0 ? null : IntsN(x, 0, (p, q) => p ^ q));
+        // (min, max: as the library's Least has it: each value in turn taken unless the one so far is before it (after it))
+        e.Get("min").SetFastN(x => { var acc = x[0]; for (int i = 1; i < x.Length; i++) if (acc.CompareTo(x[i]) >= 0) acc = x[i]; return acc; });
+        e.Get("max").SetFastN(x => { var acc = x[0]; for (int i = 1; i < x.Length; i++) if (acc.CompareTo(x[i]) <= 0) acc = x[i]; return acc; });
+
         var zero = LVal.Number(0);
         var one = LVal.Number(1);
 

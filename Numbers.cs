@@ -54,6 +54,7 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
     public static Num operator-(Num n, BigInteger m) => n - (Num)new Int(m);
 
     public static Num operator*(Num n, Num m) {
+        if (n.GetType() == typeof(Int) && m.GetType() == typeof(Int)) return new Int(((Int)n).num * ((Int)m).num);
         if (n is Comp || m is Comp) return Comp.Mul(Comp.Of(n), Comp.Of(m));
         if (n is Rat || m is Rat) return Norm(Rat.ToRat(n) * Rat.ToRat(m));
         if (n is Fix || m is Fix) {
@@ -65,6 +66,7 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
     }
 
     public static Num operator+(Num n, Num m) {
+        if (n.GetType() == typeof(Int) && m.GetType() == typeof(Int)) return new Int(((Int)n).num + ((Int)m).num);
         if (n is Comp || m is Comp) return Comp.Add(Comp.Of(n), Comp.Of(m));
         if (n is Rat || m is Rat) return Norm(Rat.ToRat(n) + Rat.ToRat(m));
         if (n is Fix || m is Fix) return Fix.Add(Fix.Of((Int)n), Fix.Of((Int)m));
@@ -87,6 +89,7 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
     // imaginary part
     public int CompareTo(Num? obj) {
         if (obj is null) return 1;
+        if (GetType() == typeof(Int) && obj.GetType() == typeof(Int)) return ((Int)this).num.CompareTo(((Int)obj).num);
         if (this is Comp || obj is Comp) {
             var a = Comp.Of(this);
             var b = Comp.Of(obj);

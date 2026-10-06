@@ -34,13 +34,14 @@ public partial class Builtins
 
         // logic, comparison and arithmetic
         AddBuiltin(e, "not",  (e, a) => LVal.Bool(a[0].IsNIL));
-        AddBuiltin(e, "==",   (e, a) => Apply(e, eq, a[0], a[1]));
-        AddBuiltin(e, ">=",   (e, a) => Not(Apply(e, lt, a[0], a[1])));
-        AddBuiltin(e, "<=",   (e, a) => Not(Apply(e, gt, a[0], a[1])));
-        AddBuiltin(e, "neg?", (e, a) => Apply(e, lt, a[0], zero));
-        AddBuiltin(e, "pos?", (e, a) => Apply(e, lt, zero, a[0]));
-        AddBuiltin(e, "zero?", (e, a) => Apply(e, eq, zero, a[0]));
-        AddBuiltin(e, "one?", (e, a) => Apply(e, eq, one, a[0]));
+        // (eq, < and > themselves, directly: the values compared by Equals and the order)
+        AddBuiltin(e, "==",   (e, a) => LVal.Bool(a[0].Equals(a[1])));
+        AddBuiltin(e, ">=",   (e, a) => LVal.Bool(a[0].CompareTo(a[1]) >= 0));
+        AddBuiltin(e, "<=",   (e, a) => LVal.Bool(a[0].CompareTo(a[1]) <= 0));
+        AddBuiltin(e, "neg?", (e, a) => LVal.Bool(a[0].CompareTo(zero) < 0));
+        AddBuiltin(e, "pos?", (e, a) => LVal.Bool(zero.CompareTo(a[0]) < 0));
+        AddBuiltin(e, "zero?", (e, a) => LVal.Bool(zero.Equals(a[0])));
+        AddBuiltin(e, "one?", (e, a) => LVal.Bool(one.Equals(a[0])));
         AddBuiltin(e, "1+",   (e, a) => Apply(e, plus, a[0], one));
         AddBuiltin(e, "1-",   (e, a) => Apply(e, minus, a[0], one));
         AddBuiltin(e, "abs",  (e, a) => {

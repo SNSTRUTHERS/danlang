@@ -177,7 +177,8 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
     private static string _KeyFromLVal(LVal key) => key.ValType switch {
             LVal.LE.ATOM => key.SymVal!,
             LVal.LE.STR  => "\"" + key.StrVal!,
-            LVal.LE.NUM  => Builtins.Whole(key, "hash", "a key", out var n).IsErr
+            LVal.LE.NUM  => key.IsPlainInt(out var k) && k >= long.MinValue && k <= long.MaxValue ? "#" + ((long)k).ToString() :
+                Builtins.Whole(key, "hash", "a key", out var n).IsErr
                 ? throw new Exception($"A hash key must be an atom, a string or an integer, not {key.ToStr()}")
                 : "#" + n.ToString(),
             _            => throw new Exception($"Unsupported key type {LVal.LEName(key.ValType)}")

@@ -24,30 +24,70 @@ public struct TailStep {
 public class LVal {
     public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, STREAM, COMMENT, EXIT, TAIL };
 
+    // (A value is small: what every kind has, and one reference to what the rarer kinds have, _x)
     public LE ValType;
-    public LEnv? Env = null;        // a lambda's own scope: the arguments given it so far
-    public LEnv? Closure = null;    // a lambda's: the scope it was made in, its calls' parent (lexical scope)
-    public bool IsFexpr = false;    // a lambda's: its arguments come unevaluated, each a Q-expression (fexpr)
     public LEnv? Scope = null;      // a Q-expression's: the scope it was written in, where eval runs it
-    public Func<LEnv, LVal, TailStep>? TailForm = null;    // a built-in's, if it has a tail position (if, do ...)
-    public int ExitCode = 0;
-    public LVal? Formals = null;
-    public LVal? Body = null;
     public Num? NumVal = null;
-    public Func<LEnv, LVal, LVal>? BuiltinVal = null;
-    public string? BuiltinName = null;  // a built-in's name ...
-    public int MinArgs = 0;             //   the arguments it needs (fewer: partial application) ...
-    public int MaxArgs = int.MaxValue;  //   the most it takes (more: an error) ...
-    public bool IsSpecial = false;      //   a special form (its arguments as they're written): never partial ...
-    public bool TakesErrors = false;    //   given an error as a value, not stopped by it (error?, type-of ...) ...
-    public List<LVal>? Bound = null;    //   and, partially applied, the values given it so far
-    public string ErrVal = string.Empty;
-    public string? ErrCode = null;
-    public string SymVal = string.Empty;
-    public string StrVal = string.Empty;
-    public LHash? HashValue = null;
-    public LStream? StreamValue = null;
+    public string Text = string.Empty;  // a string's or a character's text, a symbol's or an atom's name, an error's message
     public List<LVal>? Cells = null;
+    private object? _x = null;      // a function's FunInfo, a hash's LHash, a stream's LStream, an error's code, exit's code, a tail call's TailInfo
+
+    public string StrVal { get => Text; set => Text = value; }
+    public string SymVal { get => Text; set => Text = value; }
+    public string ErrVal { get => Text; set => Text = value; }
+    public string? ErrCode { get => _x as string; set => _x = value; }
+    public int ExitCode { get => _x is int i ? i : 0; set => _x = value; }
+    public LHash? HashValue { get => _x as LHash; set => _x = value; }
+    public LStream? StreamValue { get => _x as LStream; set => _x = value; }
+    public Name SymName => _x as Name ?? (Name)(_x = Name.Of(Text));     // a symbol's name, interned
+
+    // A function's own: a lambda's scope (the arguments given it so far), the scope it was made in (its calls' parent:
+    // lexical scope), whether it's an fexpr (its arguments come unevaluated), its formals and body; a built-in's code,
+    // its tail form (if, do ...), its name, the arguments it needs (fewer: partial application) and the most it takes
+    // (more: an error), whether it's a special form (its arguments as they're written) or takes errors as values, and,
+    // partially applied, the values given it so far
+    public sealed class FunInfo {
+        public LEnv? Env, Closure;
+        public bool IsFexpr, IsSpecial, TakesErrors;
+        public Func<LEnv, LVal, TailStep>? TailForm;
+        public LVal? Formals, Body;
+        public Func<LEnv, LVal, LVal>? BuiltinVal;
+        public string? BuiltinName;
+        public int MinArgs, MaxArgs = int.MaxValue;
+        public List<LVal>? Bound;
+        public FunInfo Clone() => (FunInfo)MemberwiseClone();
+    }
+    private FunInfo? Fn => _x as FunInfo;
+    private FunInfo F => _x as FunInfo ?? (FunInfo)(_x = new FunInfo());
+    public LEnv? Env { get => Fn?.Env; set => F.Env = value; }
+    public LEnv? Closure { get => Fn?.Closure; set => F.Closure = value; }
+    public bool IsFexpr { get => Fn?.IsFexpr ?? false; set => F.IsFexpr = value; }
+    public Func<LEnv, LVal, TailStep>? TailForm { get => Fn?.TailForm; set => F.TailForm = value; }
+    public LVal? Formals { get => Fn?.Formals; set => F.Formals = value; }
+    public LVal? Body { get => Fn?.Body; set => F.Body = value; }
+    public Func<LEnv, LVal, LVal>? BuiltinVal { get => Fn?.BuiltinVal; set => F.BuiltinVal = value; }
+    public string? BuiltinName { get => Fn?.BuiltinName; set => F.BuiltinName = value; }
+    public int MinArgs { get => Fn?.MinArgs ?? 0; set => F.MinArgs = value; }
+    public int MaxArgs { get => Fn?.MaxArgs ?? int.MaxValue; set => F.MaxArgs = value; }
+    public bool IsSpecial { get => Fn?.IsSpecial ?? false; set => F.IsSpecial = value; }
+    public bool TakesErrors { get => Fn?.TakesErrors ?? false; set => F.TakesErrors = value; }
+    public List<LVal>? Bound { get => Fn?.Bound; set => F.Bound = value; }
+
+    // A function value of its own to change (a method's, a partial application's): this one's copy, its FunInfo too
+    public LVal CloneFun() {
+        var x = (LVal)MemberwiseClone();
+        x.Frozen = false;
+        x._x = Fn?.Clone();
+        return x;
+    }
+
+    // A tail call's: the function and its arguments
+    private sealed class TailInfo {
+        public LVal? Fn;
+        public List<LVal>? Args;
+    }
+    public LVal? TailFn { get => (_x as TailInfo)?.Fn; set => ((TailInfo)(_x ??= new TailInfo())).Fn = value; }
+    public List<LVal>? TailArgs { get => (_x as TailInfo)?.Args; set => ((TailInfo)(_x ??= new TailInfo())).Args = value; }
 
     // A value is shared once it's code (the reader's), a variable's, a hash's or a partial application's: then it's
     // frozen, and its list can't be changed in place (a built-in makes a new value, never changes one it's given)
@@ -138,18 +178,26 @@ public class LVal {
         return x;
     }
 
-    public static LVal T() {
-        LVal v = new LVal();
-        v.ValType = LE.T;
-        return v;
-    }
+    // T and NIL: one each, shared (frozen)
+    private static readonly LVal _t = new LVal { ValType = LE.T, Frozen = true };
+    private static readonly LVal _nil = new LVal { ValType = LE.QEXPR, Cells = new List<LVal>(), Frozen = true };
+    public static LVal T() => _t;
+    public static LVal NIL() => _nil;
+    public static LVal Bool(bool b) => b ? _t : _nil;
 
-    public static LVal NIL() => Qexpr();
-    public static LVal Bool(bool b) => b ? T() : NIL();
+    // The small integers, made once each, shared (they're frozen: a value isn't changed): -1024 to 65535
+    private const int SmallMin = -1024, SmallMax = 65535;
+    private static readonly LVal?[] _small = new LVal?[SmallMax - SmallMin + 1];
+    private static LVal Small(int n) => _small[n - SmallMin] ??= new LVal { ValType = LE.NUM, NumVal = new Int(n), Frozen = true };
 
-    public static LVal Number(int x) => Number(new Int(x));
-    public static LVal Number(BigInteger x) => Number(new Int(x));
+    public static LVal Number(int x) => x >= SmallMin && x <= SmallMax ? Small(x) : Number(new Int(x));
+    public static LVal Number(long x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : Number(new Int(x));
+    public static LVal Number(BigInteger x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : Number(new Int(x));
     public static LVal Number(Num x) {
+        if (x.GetType() == typeof(Int)) {
+            var n = ((Int)x).num;
+            if (n >= SmallMin && n <= SmallMax) return Small((int)n);
+        }
         LVal v = new LVal();
         v.ValType = LE.NUM;
         v.NumVal = x;
@@ -174,10 +222,23 @@ public class LVal {
 
     // A character, \x or \name (a name CharOf knows)
     public static LVal Character(string s) {
-        LVal v = new LVal();
-        v.ValType = LE.CHAR;
-        v.StrVal = CharOf(s) ?? throw new ArgumentException($"Unknown character name \\{s}");
-        return v;
+        var c = CharOf(s) ?? throw new ArgumentException($"Unknown character name \\{s}");
+        return c.Length == 1 && c[0] < 256 ? Char(c[0]) : new LVal { ValType = LE.CHAR, StrVal = c };
+    }
+
+    // The characters (bytes), one each, shared (frozen)
+    private static readonly LVal?[] _chars = new LVal?[256];
+    public static LVal Char(char c) => c < 256 ? _chars[c] ??= new LVal { ValType = LE.CHAR, StrVal = c.ToString(), Frozen = true }
+        : new LVal { ValType = LE.CHAR, StrVal = c.ToString() };
+
+    // A number that's a plain integer (not fixed, rational or complex): its value
+    public bool IsPlainInt(out BigInteger n) {
+        if (ValType == LE.NUM && NumVal!.GetType() == typeof(Int)) {
+            n = ((Int)NumVal).num;
+            return true;
+        }
+        n = default;
+        return false;
     }
 
     // The character a name names: one character itself, or a name for one; null if it isn't one
@@ -759,29 +820,28 @@ public class LVal {
                 }
 
                 var formals = f.Formals!.Cells!;
-                var scope = new LEnv(f.Closure);
-                if (f.Env != null) foreach (var kv in f.Env) scope[kv.Key] = kv.Value;
+                var scope = new LEnv(f.Closure) { IsCall = true };
+                if (f.Env != null) foreach (var kv in f.Env.Entries) scope.SetLocal(kv.Key, kv.Value);
 
                 // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
                 var extras = Qexpr();
                 int k = 0;
                 foreach (var val in vals) {
-                    if (k < formals.Count) scope.Put(formals[k++].SymVal!, val);
+                    if (k < formals.Count) scope.Put(formals[k++].SymName, val);
                     else {
                         extras.Add(val);
                         scope.Put($"&{extras.Count}", val);
                     }
                 }
-                scope.Put("&_", extras);
+                if (extras.Count > 0) scope.Put(Name.Rest, extras);    // (none: NIL, the call scope's own)
 
                 if (k < formals.Count) {
-                    var p = (LVal)f.MemberwiseClone();
-                    p.Frozen = false;
+                    var p = f.CloneFun();
                     p.Formals = Qexpr();
                     for (int i = k; i < formals.Count; i++) p.Formals.Add(formals[i]);
                     p.Formals.Freeze();
                     p.Env = new LEnv();
-                    foreach (var kv in scope) p.Env[kv.Key] = kv.Value;
+                    foreach (var kv in scope.Entries) p.Env.SetLocal(kv.Key, kv.Value);
                     return p;
                 }
                 if (extras.Count > 0 && !TakesExtras(f.Body!)) {
@@ -800,9 +860,6 @@ public class LVal {
             --_depth;
         }
     }
-
-    public LVal? TailFn = null;         // a TAIL value's function ...
-    public List<LVal>? TailArgs = null; //   and its arguments
 
     // (exit code): the program ends with that status
     private static LVal ExitWith(LEnv e, LVal x) {
@@ -900,10 +957,9 @@ public class LVal {
     // A hash's function as a method: a copy of it with &0 the hash (a built-in as it is)
     public static LVal Method(LVal f, LVal h) {
         if (f.BuiltinVal != null) return f;
-        var m = (LVal)f.MemberwiseClone();
-        m.Frozen = false;
+        var m = f.CloneFun();
         m.Env = new LEnv();
-        if (f.Env != null) foreach (var kv in f.Env) m.Env[kv.Key] = kv.Value;
+        if (f.Env != null) foreach (var kv in f.Env.Entries) m.Env.SetLocal(kv.Key, kv.Value);
         m.Env.Put("&0", Hash(h.HashValue!.PrivateCallProxy));
         return m;
     }
@@ -947,7 +1003,7 @@ public class LVal {
     // are its alone); the code isn't changed, so a copy of it remembers it
     public LVal Eval(LEnv e) {
         switch (ValType) {
-            case LE.SYM:   return e.Get(SymVal!);
+            case LE.SYM:   return e.Get(SymName);
             case LE.SEXPR: return EvalSExpr(e, this)!;
             case LE.QEXPR: return Scope == null && Count > 0 ? ScopedIn(e) : this;
             default:       return this;

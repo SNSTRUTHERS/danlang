@@ -227,6 +227,7 @@ public partial class Builtins
 
     // An integer argument (a number equal to one counts: 2.0)
     private static BigInteger IntOf(LVal v, string what) {
+        if (v.IsPlainInt(out var n)) return n;
         if (v.IsNum && !(v.NumVal is Comp)) {
             var r = Rat.ToRat(v.NumVal!);
             if (r.den == 1) return r.num;
@@ -234,8 +235,19 @@ public partial class Builtins
         throw new LArgException($"{what} must be an integer");
     }
 
-    private static LVal Bits(LEnv e, LVal a, string fn, BigInteger start, Func<BigInteger, BigInteger, BigInteger> op) =>
-        SysOp(e, a, fn, x => LVal.Number(x.Select(v => IntOf(v, $"'{fn}''s argument")).Aggregate(op)));
+    private static LVal Bits(LEnv e, LVal a, string fn, BigInteger start, Func<BigInteger, BigInteger, BigInteger> op) {
+        BigInteger r = default;
+        for (int i = 0; i < a.Count; i++) {
+            var v = a[i];
+            if (v.IsErr) return v;
+            if (!v.IsPlainInt(out var n)) {
+                try { n = IntOf(v, $"'{fn}''s argument"); }
+                catch (Exception ex) { return SysErr(ex, a[0].ToDisplay()); }
+            }
+            r = i == 0 ? n : op(r, n);
+        }
+        return LVal.Number(r);
+    }
 
     // An integer's digits in base b (upper case), at least width of them; a - before a negative one's
     private static string Digits(BigInteger n, int b, int width) {

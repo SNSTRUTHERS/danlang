@@ -207,6 +207,8 @@ public partial class Builtins
 
     // (The numbers given aren't changed: values are shared; the result is a new one)
     private static LVal Op(LEnv e, LVal a, string op) {
+        if (a.Count == 2 && op != "/" && a[0].IsPlainInt(out var p) && a[1].IsPlainInt(out var q))
+            return LVal.Number(op == "-" ? p - q : p * q);
         Num? x = null;
         LVal? first = null;
         while (a.Count > 0) {
@@ -245,6 +247,7 @@ public partial class Builtins
     // (+ n...): the numbers' sum; or, the first a string (or a character), the values as print shows them, joined
     // ("n=5" for "n=" and 5); anything else is an error
     private static LVal Add(LEnv e, LVal a) {
+        if (a.Count == 2 && a[0].IsPlainInt(out var p) && a[1].IsPlainInt(out var q)) return LVal.Number(p + q);
         Num? x = null;
         LVal? first = null;
         StringBuilder? sb = null;
@@ -270,28 +273,30 @@ public partial class Builtins
         //if (a.Count == 0 || !a.IsQExpr) return LVal.Err($"Invalid parameter(s) passed to '{func}'");
         LVal syms = a.Pop(0);
         if (syms.IsSym) {
-            var x = LVal.Qexpr();
-            x.Add(syms);
-            syms = x;
+            if (a.Count != 1) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected 1, got {a.Count}");
+            return Bind(e, func, syms.SymName, a.Pop(0, e));
         }
-        else if (syms.IsSExpr) syms = syms.Eval(e);
+        if (syms.IsSExpr) syms = syms.Eval(e);
 
         if (syms.IsErr) return syms;
-        if (!syms.IsQExpr || syms.Cells!.Any(v => !v.IsSym)) return LVal.Err($"'{func}' cannot define non-symbols");
+        if (!syms.IsQExpr) return LVal.Err($"'{func}' cannot define non-symbols");
+        foreach (var s in syms.Cells!) if (!s.IsSym) return LVal.Err($"'{func}' cannot define non-symbols");
 
         if (syms.Count != a.Count) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected {syms.Count}, got {a.Count}");
 
         for (int i = 0; i < syms.Count; i++) {
-            var symbol = syms[i].SymVal!;
-            var value = a.Pop(0, e);
-            if (func == "def") { e.Def(symbol, value); }
-            if (func == "set") { e.Put(symbol, value); }
-            if (func == "set!") {
-                var r = e.Update(symbol, value);
-                if (r.IsErr) return r;
-            }
+            var r = Bind(e, func, syms[i].SymName, a.Pop(0, e));
+            if (r.IsErr) return r;
         }
         
+        return LVal.NIL();
+    }
+
+    // A name bound to a value, as def, set or set! do
+    private static LVal Bind(LEnv e, string func, Name symbol, LVal value) {
+        if (func == "def") e.Def(symbol, value);
+        else if (func == "set") e.Put(symbol, value);
+        else return e.Update(symbol, value);
         return LVal.NIL();
     }
 
@@ -301,11 +306,8 @@ public partial class Builtins
 
     private static LVal Ord(LEnv e, LVal a, string op) {
         // if (!(a[0].IsNum && a[1].IsNum)) return LVal.Err($"'{op}' passed non-number parameter(s)");
-        bool r = false;
-        var cmp = Cmp(e, a, "cmp").NumVal!.ToInt().num;
-        if (op == ">") { r = cmp > 0; } //((a[0].NumVal as Int)!.num > (a[1].NumVal as Int)!.num); }
-        if (op == "<") { r = cmp < 0; } //((a[0].NumVal as Int)!.num < (a[1].NumVal as Int)!.num); }
-        return LVal.Bool(r);
+        var cmp = a[0].CompareTo(a[1]);
+        return LVal.Bool(op == ">" ? cmp > 0 : cmp < 0);
     }
 
     private static LVal Gt(LEnv e, LVal a) { return Ord(e, a, ">");  }
@@ -877,11 +879,7 @@ public partial class Builtins
     // ---- Helpers for the built-ins below
 
     // A character value
-    private static LVal Chr(char c) {
-        var v = LVal.Character("x");
-        v.StrVal = c.ToString();
-        return v;
-    }
+    private static LVal Chr(char c) => LVal.Char(c);
 
     // A symbol named s, as it is (LVal.Sym reads :x as an atom, \x as a character, nil as NIL ...)
     private static LVal PlainSym(string s) {
@@ -905,6 +903,7 @@ public partial class Builtins
     // A whole number argument for fn (an integer, or a number equal to one: 2.0, 4/2), already evaluated: the number
     // (n its value), or an error (what it is to fn: "an index", "a count" ...)
     public static LVal Whole(LVal v, string fn, string what, out BigInteger n) {
+        if (v.IsPlainInt(out n)) return v;
         n = 0;
         if (v.IsErr) return v;
         if (v.IsNum && !(v.NumVal is Comp)) {
@@ -1117,8 +1116,8 @@ public partial class Builtins
         if (!v.IsSym) return false;
         if (!v.SymVal.StartsWith('&')) return e.Find(v.SymVal) != null;
         for (var s = e; s != null; s = s.Parent) {
-            if (s.ContainsKey(v.SymVal)) return true;
-            if (s.ContainsKey("&_")) break;
+            if (s.ContainsKey(v.SymName)) return true;
+            if (s.IsCall) break;
         }
         return false;
     }

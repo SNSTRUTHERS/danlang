@@ -43,12 +43,26 @@ public class TaggedValue<T> where T: class {
     public static bool IsReserved(string s) => _ReservedTags.Contains(s);
 }
 
-public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
+// A hash's key, as its dictionary keeps it: an atom's name, a string, or an integer (a long's as it is, a bigger one's
+// digits), each its own kind (so an atom and a string of the same text, or 5 and :#5, are different keys)
+public readonly struct HKey : IEquatable<HKey> {
+    public const byte Atom = 0, Str = 1, Int = 2, BigInt = 3;
+    public readonly byte Kind;
+    public readonly long N;
+    public readonly string? S;
+    public HKey(byte kind, long n, string? s) { Kind = kind; N = n; S = s; }
+    public bool Equals(HKey o) => Kind == o.Kind && N == o.N && string.Equals(S, o.S, StringComparison.Ordinal);
+    public override bool Equals(object? o) => o is HKey k && Equals(k);
+    public override int GetHashCode() => Kind == Int ? N.GetHashCode() : HashCode.Combine(Kind, S);
+    public override string ToString() => Kind switch { Atom => ":" + S, Str => "\"" + S + "\"", Int => N.ToString(), _ => S! };
+}
+
+public class LHash : TaggedValue<Dictionary<HKey, LHash.LHashEntry>> {
     public const string TAG_LOCKED = "__locked";
     public const string TAG_RO = "__read-only";
     public const string TAG_PRIV = "__private";
     public const string TAG_NOT_NIL = "__not_nil";
-    public LHash() : base(new Dictionary<string, LHash.LHashEntry>()) {}
+    public LHash() : base(new Dictionary<HKey, LHash.LHashEntry>()) {}
     public LHash(LHash l, LVal? overrides = null, bool isProxy = false) {
         if (isProxy) {
             _privateCallProxy = l;
@@ -57,7 +71,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
         // make sure entry values are copied properly
         if (l.Value != null) {
-            Value = new Dictionary<string, LHashEntry>();
+            Value = new Dictionary<HKey, LHashEntry>();
             foreach (var kvp in l.Value) {
                 var he = new LHashEntry();
                 if (kvp.Value.Tags != null) {
@@ -116,7 +130,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
     public LHash PrivateCallProxy => new LHash(this, isProxy: true);
 
-    private Dictionary<string, LHash.LHashEntry>.ValueCollection? _Values => _privateCallProxy != null ? _privateCallProxy.Value?.Values : Value?.Values;
+    private Dictionary<HKey, LHash.LHashEntry>.ValueCollection? _Values => _privateCallProxy != null ? _privateCallProxy.Value?.Values : Value?.Values;
     public LVal Values { get {
         var v = LVal.Qexpr();
         if (_Values != null)
@@ -126,7 +140,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         return v; 
     } }
 
-    private Dictionary<string, LHash.LHashEntry>.KeyCollection? _Keys => _privateCallProxy != null ? _privateCallProxy.Value?.Keys : Value?.Keys;
+    private Dictionary<HKey, LHash.LHashEntry>.KeyCollection? _Keys => _privateCallProxy != null ? _privateCallProxy.Value?.Keys : Value?.Keys;
     public LVal Keys { get {
         var v = LVal.Qexpr();
         if (_Keys != null)
@@ -138,7 +152,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
 
     public int Count => (_privateCallProxy != null ? _privateCallProxy.Value?.Count : Value?.Count) ?? 0;
 
-    private bool _ContainsKey(string s) => (_privateCallProxy != null ? _privateCallProxy.Value?.ContainsKey(s) : Value?.ContainsKey(s)) ?? false;
+    private bool _ContainsKey(HKey s) => (_privateCallProxy != null ? _privateCallProxy.Value?.ContainsKey(s) : Value?.ContainsKey(s)) ?? false;
 
     public LVal ContainsKey(LVal key) {
         try {
@@ -159,7 +173,7 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         public bool MakePrivate => _Add(TAG_PRIV);
         public bool MakeNotNil => _Add(TAG_NOT_NIL);
 
-        public void Serialize(string key, string pre, StringBuilder sb) {
+        public void Serialize(HKey key, string pre, StringBuilder sb) {
             sb.Append(pre).Append('{').Append(KeyToLVal(key).ToStr()).Append(' ');
             sb.Append(Value?.Serialize() ?? "NIL");
 
@@ -172,31 +186,35 @@ public class LHash : TaggedValue<Dictionary<string, LHash.LHashEntry>> {
         }
     }
 
-    // A key, as the dictionary keeps it: an atom's name; a string after a '"', a number after a '#' (so each comes back
-    // as what it was: KeyToLVal)
-    private static string _KeyFromLVal(LVal key) => key.ValType switch {
-            LVal.LE.ATOM => key.SymVal!,
-            LVal.LE.STR  => "\"" + key.StrVal!,
-            LVal.LE.NUM  => key.IsPlainInt(out var k) && k >= long.MinValue && k <= long.MaxValue ? "#" + ((long)k).ToString() :
-                Builtins.Whole(key, "hash", "a key", out var n).IsErr
-                ? throw new Exception($"A hash key must be an atom, a string or an integer, not {key.ToStr()}")
-                : "#" + n.ToString(),
-            _            => throw new Exception($"Unsupported key type {LVal.LEName(key.ValType)}")
-        };
+    // A key, as the dictionary keeps it (HKey: so each comes back as what it was, KeyToLVal)
+    private static HKey _KeyFromLVal(LVal key) {
+        switch (key.ValType) {
+            case LVal.LE.ATOM: return new HKey(HKey.Atom, 0, key.SymVal);
+            case LVal.LE.STR:  return new HKey(HKey.Str, 0, key.StrVal);
+            case LVal.LE.NUM:
+                if (Builtins.Whole(key, "hash", "a key", out var n).IsErr)
+                    throw new Exception($"A hash key must be an atom, a string or an integer, not {key.ToStr()}");
+                return n >= long.MinValue && n <= long.MaxValue ? new HKey(HKey.Int, (long)n, null) : new HKey(HKey.BigInt, 0, n.ToString());
+            default: throw new Exception($"Unsupported key type {LVal.LEName(key.ValType)}");
+        }
+    }
 
-    public static LVal KeyToLVal(string k) =>
-        k.StartsWith('"') ? LVal.Str(k.Substring(1)) :
-        k.StartsWith('#') ? LVal.Number(System.Numerics.BigInteger.Parse(k.Substring(1))) :
-        LVal.Atom(k);
+    public static LVal KeyToLVal(HKey k) => k.Kind switch {
+        HKey.Str => LVal.Str(k.S!),
+        HKey.Int => LVal.Number(k.N),
+        HKey.BigInt => LVal.Number(System.Numerics.BigInteger.Parse(k.S!)),
+        _ => LVal.Atom(k.S!),
+    };
 
     public static bool IsKey(LVal key) => key.IsAtom || key.IsStr || key.IsNum;
 
     private LHashEntry? _GetEntry(LVal key, bool create = false) {
         LHashEntry? e = null;
         var k = _KeyFromLVal(key);
-        if (!string.IsNullOrEmpty(k)) {
-            if (IsReserved(k)) throw new Exception($"Cannot get/set value for reserved hash key {k}");
-            if (_ContainsKey(k)) e = Value![k];
+        if (k.Kind != HKey.Atom || !string.IsNullOrEmpty(k.S)) {
+            if (k.Kind == HKey.Atom && IsReserved(k.S!)) throw new Exception($"Cannot get/set value for reserved hash key {k.S}");
+            var d = _privateCallProxy != null ? _privateCallProxy.Value : Value;
+            d?.TryGetValue(k, out e);
         }
 
         if (e == null && create && !IsLocked) {

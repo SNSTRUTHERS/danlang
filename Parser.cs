@@ -21,6 +21,7 @@ public class Parser {
         public string? raw;
         public Num? num;
         public string parens = "";
+        public int line;        // where it starts (an unclosed bracket's More: the innermost one's opener)
     }
 
     // The shorthand: a prefix right before ( or { is the function it names, the call's first item: ?(c a b) is
@@ -32,9 +33,14 @@ public class Parser {
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream, string startingParens = "") {
+        int line = 1, tokLine = 1;
         int peekInt() => stream.Peek();
         char peek() => (char)peekInt();
-        int nextInt() => stream.Read();
+        int nextInt() {
+            var c = stream.Read();
+            if (c == '\n') line++;
+            return c;
+        }
         char next() => (char)nextInt();
 
         bool isNumberSeparator(int c, char? numBase = null) =>
@@ -267,6 +273,7 @@ public class Parser {
         IEnumerable<Token> Lex() {
             var i = 0;
             while ((i = peekInt()) != -1) {
+                tokLine = line;
                 var c = (char)i;
                 if (isSpace(c)) next();
                 else if (isControl(c)) {
@@ -296,28 +303,32 @@ public class Parser {
             }
         }
 
+        // (each token at the line it starts on; each opener's line, for one left unclosed)
         var parens = startingParens;
+        var opened = new List<int>();
         foreach (var t in Lex()) {
+            t.line = tokLine;
             if (t.type == Token.Type.More) {
                 // (a here string open at the end: its quotes the last closer wanted)
                 parens += t.parens;
+                opened.Add(tokLine);
                 break;
             }
-            if (t.type == Token.Type.SExOpen) parens += t.raw == "[" ? ']' : ')';
-            if (t.type == Token.Type.QExOpen) parens += '}';
+            if (t.type == Token.Type.SExOpen) { parens += t.raw == "[" ? ']' : ')'; opened.Add(tokLine); }
+            if (t.type == Token.Type.QExOpen) { parens += '}'; opened.Add(tokLine); }
             if (t.type == Token.Type.SExClose) {
                 var closer = t.raw == "]" ? ']' : ')';
-                if (parens.EndsWith(closer)) parens = parens.Remove(parens.Length - 1);
-                else yield return error(closer == ']' ? $"Closed a list without opening: {parens}" : $"Closed a SExpr without opening: {parens}");
+                if (parens.EndsWith(closer)) { parens = parens.Remove(parens.Length - 1); if (opened.Count > 0) opened.RemoveAt(opened.Count - 1); }
+                else yield return error(closer == ']' ? $"Closed a list without opening: {parens}" : $"Closed a SExpr without opening: {parens}") with { line = tokLine };
             }
             if (t.type == Token.Type.QExClose) {
-                if (parens.EndsWith('}')) parens = parens.Remove(parens.Length - 1);
-                else yield return error($"Closed a QExpr without opening: {parens}");
+                if (parens.EndsWith('}')) { parens = parens.Remove(parens.Length - 1); if (opened.Count > 0) opened.RemoveAt(opened.Count - 1); }
+                else yield return error($"Closed a QExpr without opening: {parens}") with { line = tokLine };
             }
             yield return t;
         }
 
-        if (parens.Length > 0) yield return new Token { type = Token.Type.More, parens = parens };
-        else yield return new Token { type = Token.Type.EOF };
+        if (parens.Length > 0) yield return new Token { type = Token.Type.More, parens = parens, line = opened.Count > 0 ? opened[^1] : line };
+        else yield return new Token { type = Token.Type.EOF, line = line };
     }
 }

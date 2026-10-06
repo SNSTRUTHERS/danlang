@@ -50,6 +50,7 @@ public class Program {
     // them), its status 0, 1 after an error (shown on stderr), or (exit n)'s
     private static int Run(string[] args) {
         var (files, config) = Config.ParseCommandLine(args);
+        Builtins.Warnings = config.Warnings;
 
         LEnv e;
         try {
@@ -68,6 +69,8 @@ public class Program {
                 var x = Builtins.Load(e, LVal.Sexpr().Add(LVal.Str(Builtins.FromHost(files[0]))));
                 if (x.IsErr) {
                     Console.Error.WriteLine(x.ToStr());
+                    var trace = x.Trace();
+                    if (trace.Length > 0) Console.Error.WriteLine(trace);
                     return 1;
                 }
                 return 0;
@@ -129,6 +132,7 @@ public class Program {
                 var val = expr?.Eval(e);
                 ticks = Environment.TickCount - ticks;
                 Console.Write($"{(ticks > 1000 ? $"({ticks}ms)" : "")}=> "); val?.Println();
+                if (val != null && val.IsErr && val.Trace().Length > 0) Console.Error.WriteLine(val.Trace());
                 if (val?.IsExit ?? false) return val.ExitCode;
             }
             catch (ExitException x) {

@@ -35,7 +35,16 @@ public partial class LVal {
     public string StrVal { get => Text; set => Text = value; }
     public string SymVal { get => Text; set => Text = value; }
     public string ErrVal { get => Text; set => Text = value; }
-    public string? ErrCode { get => _x as string; set => _x = value; }
+    public string? ErrCode { get => (_x as ErrInfo)?.Code; set => ((ErrInfo)(_x ??= new ErrInfo())).Code = value; }
+    public ErrInfo? Where => _x as ErrInfo;
+
+    // An error's code, and where it was made: the call it was made in (its code's place) and the calls of functions
+    // it was in, the innermost first (for the trace shown when it ends a program: Program)
+    public sealed class ErrInfo {
+        public string? Code;
+        public CodeInfo? Site;
+        public CodeInfo[]? Calls;
+    }
     public int ExitCode { get => _x is int i ? i : 0; set => _x = value; }
     public LHash? HashValue { get => _x as LHash; set => _x = value; }
     public LStream? StreamValue { get => _x as LStream; set => _x = value; }
@@ -224,8 +233,24 @@ public partial class LVal {
         LVal v = new LVal();
         v.ValType = LE.ERR;
         v.ErrVal = errStr;
-        v.ErrCode = code;
+        v._x = new ErrInfo { Code = code, Site = Site, Calls = CallsNow() };
         return v;
+    }
+
+    // An error made from another (its message changed): its code, and where the other was made
+    public static LVal ErrFrom(LVal e, string errStr) {
+        var v = Err(errStr);
+        v._x = e._x is ErrInfo w ? new ErrInfo { Code = w.Code, Site = w.Site, Calls = w.Calls } : v._x;
+        return v;
+    }
+
+    // The trace of an error: where it was made, and the calls it was in (lines, for stderr: empty when none's known)
+    public string Trace() {
+        if (_x is not ErrInfo w || w.Site == null) return "";
+        var sb = new StringBuilder();
+        sb.Append("  at ").Append(w.Site.Place());
+        foreach (var c in w.Calls ?? Array.Empty<CodeInfo>()) sb.Append('\n').Append("  called at ").Append(c.Place());
+        return sb.ToString();
     }
 
     public static LVal Atom(string s) {
@@ -931,17 +956,30 @@ public partial class LVal {
         return m;
     }
 
+    // The file being read (load's), for the code's places
+    public static string? SourceFile;
+
+    // The expressions the tokens make: a list, as the reader's lists are (each S- or Q-expression's place kept: the
+    // file and the line it starts on)
     public static LVal? ReadExprFromTokens(List<Parser.Token> tokens, char? end = null) {
+        int at = 0;
+        var r = ReadExprFromTokens(tokens, ref at, end, tokens.Count > 0 ? tokens[0].line : 0);
+        tokens.RemoveRange(0, at);
+        return r;
+    }
+
+    private static LVal? ReadExprFromTokens(List<Parser.Token> tokens, ref int at, char? end, int line) {
         LVal exp = end == '}' ? Qexpr() : Sexpr();
-        var t = tokens.FirstOrDefault();
+        exp._x = new CodeInfo { File = SourceFile, Line = line, Code = exp };
+        var t = at < tokens.Count ? tokens[at] : null;
         while (t != null) {
-            tokens.RemoveAt(0);
+            at++;
             LVal? val = t.type switch {
                 Parser.Token.Type.EOF => end == null ? null : Err($"Missing {end} for {(end == '}' ? 'Q' : 'S')}Expr"),
                 Parser.Token.Type.Comment => Comment(t.str!),
                 Parser.Token.Type.Error => Err(t.str ?? "Unknown error"),
-                Parser.Token.Type.SExOpen => ReadExprFromTokens(tokens, ')'),
-                Parser.Token.Type.QExOpen => ReadExprFromTokens(tokens, '}'),
+                Parser.Token.Type.SExOpen => ReadExprFromTokens(tokens, ref at, ')', t.line),
+                Parser.Token.Type.QExOpen => ReadExprFromTokens(tokens, ref at, '}', t.line),
                 Parser.Token.Type.SExClose => end != ')' ? Err("SExClose without SExOpen") : null,
                 Parser.Token.Type.QExClose => end != '}' ? Err("QExClose without QExOpen") : null,
                 Parser.Token.Type.Number => Number(t.num!),
@@ -959,7 +997,7 @@ public partial class LVal {
                     exp.Add(val);
                     break;
             }
-            t = tokens.FirstOrDefault();
+            t = at < tokens.Count ? tokens[at] : null;
         }
 
         return exp;

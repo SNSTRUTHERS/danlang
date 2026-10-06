@@ -7,9 +7,18 @@
 // (FunInfo.Fast1 and Fast2: NIL from them, a case they leave to the built-in itself)
 public partial class LVal {
     // A list's compiled code: the call its items make
-    internal sealed class CodeInfo {
-        public CallNode? Call;
-        public Uses? Uses;      // the names a function's body has (&_ or &1 ..., &0), anywhere in it
+    public sealed class CodeInfo {
+        public string? File;    // where it was read (load's file, or none), and its line there, and the code
+        public int Line;
+        public LVal? Code;
+        internal CallNode? Call;
+        // Its place, as a trace shows it: file:line, and the code's start
+        public string Place() {
+            var code = Code?.ToStr() ?? "";
+            if (code.Length > 60) code = code.Substring(0, 57) + "...";
+            return (File != null ? File + ":" + Line : Line > 0 ? "line " + Line : "(made, not read)") + "  " + code;
+        }
+        internal Uses? Uses;    // the names a function's body has (&_ or &1 ..., &0), anywhere in it
     }
 
     // What a function's body names, anywhere in it: its extra arguments (&_, &1 ...), the hash it's a method of (&0)
@@ -43,7 +52,21 @@ public partial class LVal {
             Freeze();
             _x = info = new CodeInfo();
         }
-        return info.Call ??= new CallNode(this);
+        info.Code ??= this;
+        return info.Call ??= new CallNode(this, info);
+    }
+
+    // Where evaluation is: the call being made (an error made now was made there), and the calls of functions it's in
+    // (a stack, the outermost first), for an error's trace
+    internal static CodeInfo? Site;
+    private static readonly CodeInfo?[] _calls = new CodeInfo?[MaxDepth + 2];
+    private static int _ncalls;
+    private static CodeInfo[]? CallsNow() {
+        if (_ncalls == 0) return null;
+        int n = Math.Min(_ncalls, 12);
+        var a = new CodeInfo[n];
+        for (int i = 0; i < n; i++) a[i] = _calls[_ncalls - 1 - i]!;
+        return a;
     }
 
     internal abstract class Node {
@@ -117,10 +140,12 @@ public partial class LVal {
     internal sealed class CallNode : Node {
         private readonly List<LVal> _cells;
         private readonly Node?[] _nodes;      // each item's, as it's needed
+        private readonly CodeInfo _info;      // (its place, for an error's trace)
 
-        public CallNode(LVal code) {
+        public CallNode(LVal code, CodeInfo info) {
             _cells = code.Cells ?? new List<LVal>();
             _nodes = new Node?[_cells.Count];
+            _info = info;
         }
 
         private Node NodeAt(int k) => _nodes[k] ??= NodeOf(_cells[k]);
@@ -129,6 +154,7 @@ public partial class LVal {
         public override LVal Tail(LEnv e) => Do(e, true);
 
         private LVal Do(LEnv e, bool tail) {
+            Site = _info;
             if (_cells.Count == 0) return NIL();
             var f = NodeAt(0).Eval(e);
             if (f.ValType == LE.FUN) return Invoke(e, f, 1, tail);
@@ -175,6 +201,7 @@ public partial class LVal {
                         if (v.IsErr && !fi.TakesErrors) return v;
                         arr[k] = v;
                     }
+                    Site = _info;
                     if (n >= fi.MinArgs) {
                         var r = FastAny(fi.FastN, arr);
                         if (r != null) return r;
@@ -195,6 +222,7 @@ public partial class LVal {
                         a2 = NodeAt(start + 2).Eval(e);
                         if (a2.IsErr && !fi.TakesErrors) return a2;
                     }
+                    Site = _info;
                     if (n >= fi.MinArgs) {
                         LVal? r = null;
                         if (n == 2 && fi.Fast2 != null) r = Fast(fi.Fast2, a0!, a1!);
@@ -225,6 +253,7 @@ public partial class LVal {
                     if (v.IsErr && !fi.TakesErrors) return v;
                     vals.Add(v);
                 }
+                Site = _info;
                 return ValueArgs(f, vals, out var a) ?? CallBuiltin(e, f, a);
             }
 
@@ -240,7 +269,13 @@ public partial class LVal {
                 args.Add(v);
             }
             if (tail) return TailCall(f, args);
-            return Apply(f, args, !fi.IsFexpr);
+            _calls[_ncalls++] = _info;
+            try {
+                return Apply(f, args, !fi.IsFexpr);
+            }
+            finally {
+                _ncalls--;
+            }
         }
 
         // A built-in's fast way (an exception it throws: an error, as CallBuiltin has it)
@@ -374,6 +409,7 @@ public partial class LVal {
             }
 
             // Any other: the built-in itself, given the items (in tail position, its tail form)
+            Site = _info;
             var a = Sexpr();
             for (int k = start; k < _cells.Count; k++) a.Cells!.Add(_cells[k]);
             if (tail && fi.TailForm != null) {

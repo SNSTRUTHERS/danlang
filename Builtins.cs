@@ -125,7 +125,9 @@ public partial class Builtins
         var name = spec[0].SymVal;
         var formals = LVal.Qexpr();
         for (int i = 1; i < spec.Count; i++) formals.Add(spec[i]);
-        e.Def(name, LVal.Lambda(formals, body, e));
+        var f = LVal.Lambda(formals, body, e);
+        if (Warnings) WarnRedef(e, "fun", Name.Of(name), f);
+        e.Def(name, f);
         return LVal.NIL();
     }
 
@@ -298,10 +300,27 @@ public partial class Builtins
 
     // A name bound to a value, as def, set or set! do
     internal static LVal Bind(LEnv e, string func, Name symbol, LVal value) {
-        if (func == "def") e.Def(symbol, value);
+        if (func == "def") {
+            if (Warnings) WarnRedef(e, func, symbol, value);
+            e.Def(symbol, value);
+        }
         else if (func == "set") e.Put(symbol, value);
         else return e.Update(symbol, value);
         return LVal.NIL();
+    }
+
+    // danlang -w: a global's definition that replaces a built-in, or a value of another kind (a function with what
+    // isn't one, or the other way round), said on stderr, with where it's made
+    public static bool Warnings;
+    private static void WarnRedef(LEnv e, string func, Name name, LVal value) {
+        if (!e.Root.TryGetLocal(name, out var old)) return;
+        string? what = null;
+        if (old.BuiltinVal != null && !ReferenceEquals(old.BuiltinVal, value.BuiltinVal)) what = "the built-in " + name.Text;
+        else if (old.IsFun != value.IsFun) what = (old.IsFun ? "a function" : "a " + LVal.LEName(old.ValType).ToLower()) + ", " + name.Text + ",";
+        if (what == null) return;
+        var site = LVal.Site;
+        var place = site == null ? "" : (site.File != null ? site.File + ":" + site.Line + ": " : "line " + site.Line + ": ");
+        Console.Error.WriteLine($"{place}warning: {func} replaces {what} with {(value.IsFun ? "a function" : "a " + LVal.LEName(value.ValType).ToLower())}");
     }
 
     private static LVal Def(LEnv e, LVal a) { return Var(e, a, "def"); }
@@ -465,13 +484,21 @@ public partial class Builtins
             var input = File.ReadAllText(filename, Encoding.Latin1);
             var tokens = Parser.Tokenize(new StringReader(input)).ToList();
             var bad = tokens.FirstOrDefault(t => t.type == Parser.Token.Type.Error || t.type == Parser.Token.Type.More);
-            if (bad != null) return LVal.Err($"{FromHost(filename)}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
-            var exprs = LVal.ReadExprFromTokens(tokens)!.Freeze();
+            if (bad != null) return LVal.Err($"{FromHost(filename)}:{bad.line}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
+            var outer = LVal.SourceFile;
+            LVal.SourceFile = FromHost(filename);
+            LVal exprs;
+            try {
+                exprs = LVal.ReadExprFromTokens(tokens)!.Freeze();
+            }
+            finally {
+                LVal.SourceFile = outer;
+            }
 
             // a file's expressions are top level: the global environment's (the code shared, frozen)
             foreach (var x in exprs.Cells!) {
                 lastExpr = x.Eval(e.Root);
-                if (lastExpr.IsErr) return LVal.Err($"{FromHost(filename)}: {lastExpr.ErrVal}");
+                if (lastExpr.IsErr) return LVal.ErrFrom(lastExpr, $"{FromHost(filename)}: {lastExpr.ErrVal}");
                 if (lastExpr.IsExit) throw new ExitException(lastExpr.ExitCode);
             }
         }

@@ -151,7 +151,7 @@ public partial class LVal {
                 var i = NodeAt(1).Eval(e);
                 if (i.IsErr) return i;
                 var bytes = f.BufferValue!;
-                if (i.IsPlainInt(out var k) && k >= 0 && k < bytes.Length) return Number(bytes[(int)k]);
+                if (i.IsSmallInt(out var k) && k >= 0 && k < bytes.Length) return Number(bytes[(int)k]);
                 return Builtins.BufferGet(f, i);
             }
             return Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
@@ -240,7 +240,7 @@ public partial class LVal {
                 args.Add(v);
             }
             if (tail) return TailCall(f, args);
-            return Apply(f, args);
+            return Apply(f, args, !fi.IsFexpr);
         }
 
         // A built-in's fast way (an exception it throws: an error, as CallBuiltin has it)
@@ -268,6 +268,10 @@ public partial class LVal {
             if (x.ValType != LE.QEXPR) return NodeAt(k).Eval(e);
             return x.Count == 0 ? NIL() : x.CallOf().Eval(x.Scope ?? e);
         }
+
+        // The special form this call was last (its built-in: one Compiler.cs runs, which, 0 none)
+        private Func<LEnv, LVal, LVal>? _special;
+        private int _kind;
 
         // set! of one name (the call's i'th): its nearest binding changed; a global one's slot remembered
         private LEnv? _setRoot;
@@ -301,14 +305,19 @@ public partial class LVal {
         private LVal Special(LEnv e, LVal f, FunInfo fi, int start, int n, bool tail) {
             if (n > fi.MaxArgs) return TooMany(f, n);
             var b = fi.BuiltinVal;
-            if (ReferenceEquals(b, IfFn) && n >= 2) {
+            if (!ReferenceEquals(b, _special)) {
+                _special = b;
+                _kind = ReferenceEquals(b, IfFn) ? 1 : ReferenceEquals(b, DoFn) ? 2 : ReferenceEquals(b, AndFn) ? 3 : ReferenceEquals(b, OrFn) ? 4
+                    : ReferenceEquals(b, SetBangFn) || ReferenceEquals(b, SetFn) || ReferenceEquals(b, DefFn) ? 5 : ReferenceEquals(b, WhileFn) ? 6 : 0;
+            }
+            if (_kind == 1 && n >= 2) {
                 var t = NodeAt(start).Eval(e);
                 if (t.IsErr) return t;
                 if (!t.IsNIL) return tail ? NodeAt(start + 1).Tail(e) : NodeAt(start + 1).Eval(e);
                 if (n == 2) return NIL();
                 return tail ? NodeAt(start + 2).Tail(e) : NodeAt(start + 2).Eval(e);
             }
-            if (ReferenceEquals(b, DoFn)) {
+            if (_kind == 2) {
                 if (n == 0) return NIL();
                 int last = _cells.Count - 1;
                 for (int k = start; k < last; k++) {
@@ -317,7 +326,7 @@ public partial class LVal {
                 }
                 return tail ? NodeAt(last).Tail(e) : NodeAt(last).Eval(e);
             }
-            if (ReferenceEquals(b, AndFn)) {
+            if (_kind == 3) {
                 LVal last = T();
                 for (int k = start; k < _cells.Count; k++) {
                     last = NodeAt(k).Eval(e);
@@ -325,14 +334,14 @@ public partial class LVal {
                 }
                 return last;
             }
-            if (ReferenceEquals(b, OrFn)) {
+            if (_kind == 4) {
                 for (int k = start; k < _cells.Count; k++) {
                     var v = NodeAt(k).Eval(e);
                     if (v.IsErr || !v.IsNIL) return v;
                 }
                 return NIL();
             }
-            if (n >= 1 && (ReferenceEquals(b, SetBangFn) || ReferenceEquals(b, SetFn) || ReferenceEquals(b, DefFn))) {
+            if (_kind == 5 && n >= 1) {
                 var func = ReferenceEquals(b, SetBangFn) ? "set!" : ReferenceEquals(b, SetFn) ? "set" : "def";
                 var syms = _cells[start];
                 bool bang = func == "set!";
@@ -349,7 +358,7 @@ public partial class LVal {
                     return NIL();
                 }
             }
-            if (ReferenceEquals(b, WhileFn) && n >= 1) {
+            if (_kind == 6 && n >= 1) {
                 LVal result = NIL();
                 while (true) {
                     var intr = CheckInterrupt();

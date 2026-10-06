@@ -137,6 +137,12 @@ public class LEnv {
     public void Put(Name k, LVal v) => SetLocal(k, v.Freeze());
     public void Put(string s, LVal v) => Put(Name.Of(s), v);
 
+    // Another scope's bindings, here
+    public void CopyFrom(LEnv o) {
+        if (o._map != null) foreach (var kv in o._map) SetLocal(kv.Key, kv.Value.Value);
+        else for (int i = 0; i < o._n; i++) SetLocal(o._names![i], o._vals![i]);
+    }
+
     public LEnv Copy() {
         var e = new LEnv();
         foreach (var kv in Entries) e.SetLocal(kv.Key, kv.Value);

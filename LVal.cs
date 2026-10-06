@@ -206,7 +206,7 @@ public partial class LVal {
     private static LVal Small(int n) => _small[n - SmallMin] ??= new LVal { ValType = LE.NUM, NumVal = new Int(n), Frozen = true };
 
     public static LVal Number(int x) => x >= SmallMin && x <= SmallMax ? Small(x) : Number(new Int(x));
-    public static LVal Number(long x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : Number(new Int(x));
+    public static LVal Number(long x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : new LVal { ValType = LE.NUM, NumVal = new Int(x) };
     public static LVal Number(BigInteger x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : Number(new Int(x));
     public static LVal Number(Num x) {
         if (x.GetType() == typeof(Int)) {
@@ -245,6 +245,19 @@ public partial class LVal {
     private static readonly LVal?[] _chars = new LVal?[256];
     public static LVal Char(char c) => c < 256 ? _chars[c] ??= new LVal { ValType = LE.CHAR, StrVal = c.ToString(), Frozen = true }
         : new LVal { ValType = LE.CHAR, StrVal = c.ToString() };
+
+    // A number that's a plain integer (not fixed, rational or complex) that fits in a long: its value
+    public bool IsSmallInt(out long n) {
+        if (ValType == LE.NUM && NumVal!.GetType() == typeof(Int)) {
+            var i = (Int)NumVal;
+            if (i.Fits) {
+                n = i.Small;
+                return true;
+            }
+        }
+        n = 0;
+        return false;
+    }
 
     // A number that's a plain integer (not fixed, rational or complex): its value
     public bool IsPlainInt(out BigInteger n) {
@@ -825,20 +838,21 @@ public partial class LVal {
     // ... and &_ for the rest; if it has all it needs, its body runs there; if not, it's a new function with those
     // bound (partial application).  The function isn't changed.  A call in the body's tail position comes back as a
     // TAIL value and runs here, in its place
-    public static LVal Apply(LVal f, List<LVal> vals) {
+    public static LVal Apply(LVal f, List<LVal> vals, bool argsChecked = false) {
         if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
         ++_depth;
         try {
             while (true) {
                 var intr = CheckInterrupt();
                 if (intr != null) return intr;
-                if (!f.IsFexpr) {
+                if (!argsChecked && !f.IsFexpr) {
                     foreach (var v in vals) if (v.IsErr) return v;
                 }
+                argsChecked = false;
 
                 var formals = f.Formals!.Cells!;
                 var scope = new LEnv(f.Closure) { IsCall = true };
-                if (f.Env != null) foreach (var kv in f.Env.Entries) scope.SetLocal(kv.Key, kv.Value);
+                if (f.Env != null && f.Env.Count > 0) scope.CopyFrom(f.Env);
 
                 // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
                 LVal? extras = null;

@@ -182,10 +182,10 @@ public partial class Builtins
         AddBuiltin(e, "buffer-fill", BufferFill);
         AddBuiltin(e, "buffer-copy", BufferCopy);
         AddBuiltin(e, "read-buffer", ReadBuffer);
-        Fast(e, "buffer-get", null, (b, i) => b.IsBuffer && i.IsPlainInt(out var k) && k >= 0 && k < b.BufferValue!.Length
+        Fast(e, "buffer-get", null, (b, i) => b.IsBuffer && i.IsSmallInt(out var k) && k >= 0 && k < b.BufferValue!.Length
             ? LVal.Number(b.BufferValue![(int)k]) : null);
         e.Get("buffer-put").SetFast3((b, i, x) => {
-            if (!b.IsBuffer || !i.IsPlainInt(out var k) || !x.IsPlainInt(out var n)) return null;
+            if (!b.IsBuffer || !i.IsSmallInt(out var k) || !x.IsSmallInt(out var n)) return null;
             var bytes = b.BufferValue!;
             if (k < 0 || k >= bytes.Length || n < 0 || n > 255) return null;
             var old = bytes[(int)k];

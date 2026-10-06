@@ -9,6 +9,13 @@ public partial class Builtins
         e.Get(name).SetFast(one, two);
 
     private static BigInteger? PlainInt(LVal v) => v.IsPlainInt(out var n) ? n : null;
+    private static bool Longs(LVal x, LVal y, out long p, out long q) {
+        q = 0;
+        return x.IsSmallInt(out p) && y.IsSmallInt(out q);
+    }
+    private static LVal? AddL(long p, long q) { var r = unchecked(p + q); return ((p ^ r) & (q ^ r)) < 0 ? null : LVal.Number(r); }
+    private static LVal? SubL(long p, long q) { var r = unchecked(p - q); return ((p ^ q) & (p ^ r)) < 0 ? null : LVal.Number(r); }
+    private static LVal? MulL(long p, long q) { var hi = Math.BigMul(p, q, out var lo); return hi != (lo >> 63) ? null : LVal.Number(lo); }
     private static bool Ints(LVal x, LVal y, out BigInteger p, out BigInteger q) {
         q = default;
         return x.IsPlainInt(out p) && y.IsPlainInt(out q);
@@ -49,12 +56,12 @@ public partial class Builtins
         var one = LVal.Number(1);
 
         // arithmetic and comparison
-        Fast(e, "+", null, (x, y) => Ints(x, y, out var p, out var q) ? LVal.Number(p + q) : null);
+        Fast(e, "+", null, (x, y) => (Longs(x, y, out var a, out var b) ? AddL(a, b) : null) ?? (Ints(x, y, out var p, out var q) ? LVal.Number(p + q) : null));
         Fast(e, "-", x => PlainInt(x) is BigInteger p ? LVal.Number(-p) : null,
-            (x, y) => Ints(x, y, out var p, out var q) ? LVal.Number(p - q) : null);
-        Fast(e, "*", null, (x, y) => Ints(x, y, out var p, out var q) ? LVal.Number(p * q) : null);
-        Fast(e, "1+", x => PlainInt(x) is BigInteger p ? LVal.Number(p + 1) : null);
-        Fast(e, "1-", x => PlainInt(x) is BigInteger p ? LVal.Number(p - 1) : null);
+            (x, y) => (Longs(x, y, out var a, out var b) ? SubL(a, b) : null) ?? (Ints(x, y, out var p, out var q) ? LVal.Number(p - q) : null));
+        Fast(e, "*", null, (x, y) => (Longs(x, y, out var a, out var b) ? MulL(a, b) : null) ?? (Ints(x, y, out var p, out var q) ? LVal.Number(p * q) : null));
+        Fast(e, "1+", x => (x.IsSmallInt(out var a) ? AddL(a, 1) : null) ?? (PlainInt(x) is BigInteger p ? LVal.Number(p + 1) : null));
+        Fast(e, "1-", x => (x.IsSmallInt(out var a) ? SubL(a, 1) : null) ?? (PlainInt(x) is BigInteger p ? LVal.Number(p - 1) : null));
         Fast(e, "<", null, (x, y) => LVal.Bool(x.CompareTo(y) < 0));
         Fast(e, ">", null, (x, y) => LVal.Bool(x.CompareTo(y) > 0));
         Fast(e, "<=", null, (x, y) => LVal.Bool(x.CompareTo(y) <= 0));
@@ -72,17 +79,21 @@ public partial class Builtins
         Fast(e, "max", null, (x, y) => x.CompareTo(y) > 0 ? x : y);
 
         // bits and bytes
-        Fast(e, "bit-and", x => PlainInt(x) is BigInteger ? x : null, (x, y) => Ints(x, y, out var p, out var q) ? LVal.Number(p & q) : null);
-        Fast(e, "bit-or", x => PlainInt(x) is BigInteger ? x : null, (x, y) => Ints(x, y, out var p, out var q) ? LVal.Number(p | q) : null);
-        Fast(e, "bit-xor", x => PlainInt(x) is BigInteger ? x : null, (x, y) => Ints(x, y, out var p, out var q) ? LVal.Number(p ^ q) : null);
+        Fast(e, "bit-and", x => PlainInt(x) is BigInteger ? x : null, (x, y) => Longs(x, y, out var a, out var b) ? LVal.Number(a & b) : Ints(x, y, out var p, out var q) ? LVal.Number(p & q) : null);
+        Fast(e, "bit-or", x => PlainInt(x) is BigInteger ? x : null, (x, y) => Longs(x, y, out var a, out var b) ? LVal.Number(a | b) : Ints(x, y, out var p, out var q) ? LVal.Number(p | q) : null);
+        Fast(e, "bit-xor", x => PlainInt(x) is BigInteger ? x : null, (x, y) => Longs(x, y, out var a, out var b) ? LVal.Number(a ^ b) : Ints(x, y, out var p, out var q) ? LVal.Number(p ^ q) : null);
         Fast(e, "bit-not", x => PlainInt(x) is BigInteger p ? LVal.Number(-p - 1) : null);
-        Fast(e, "shl", null, (x, y) => Ints(x, y, out var p, out var q) && q >= int.MinValue && q <= int.MaxValue ? LVal.Number(p << (int)q) : null);
-        Fast(e, "shr", null, (x, y) => Ints(x, y, out var p, out var q) && q >= int.MinValue && q <= int.MaxValue ? LVal.Number(p >> (int)q) : null);
-        Fast(e, "bit?", null, (x, y) => Ints(x, y, out var p, out var q) && q >= int.MinValue && q <= int.MaxValue
+        Fast(e, "shl", null, (x, y) => Longs(x, y, out var a, out var b) && b >= 0 && b < 63 && ((a << (int)b) >> (int)b) == a ? LVal.Number(a << (int)b)
+            : Ints(x, y, out var p, out var q) && q >= int.MinValue && q <= int.MaxValue ? LVal.Number(p << (int)q) : null);
+        Fast(e, "shr", null, (x, y) => Longs(x, y, out var a, out var b) && b >= 0 ? LVal.Number(a >> (int)Math.Min(b, 63))
+            : Ints(x, y, out var p, out var q) && q >= int.MinValue && q <= int.MaxValue ? LVal.Number(p >> (int)q) : null);
+        Fast(e, "bit?", null, (x, y) => Longs(x, y, out var a, out var b) && b >= 0 ? LVal.Bool(((a >> (int)Math.Min(b, 63)) & 1) != 0)
+            : Ints(x, y, out var p, out var q) && q >= int.MinValue && q <= int.MaxValue
             ? LVal.Bool(!((p >> (int)q) & 1).IsZero) : null);
         Fast(e, "lo", x => PlainInt(x) is BigInteger p ? LVal.Number(p & 255) : null);
         Fast(e, "hi", x => PlainInt(x) is BigInteger p ? LVal.Number((p >> 8) & 255) : null);
-        Fast(e, "word", null, (x, y) => Ints(x, y, out var p, out var q) ? LVal.Number((p & 255) + 256 * (q & 255)) : null);
+        Fast(e, "word", null, (x, y) => Longs(x, y, out var a, out var b) ? LVal.Number((a & 255) + 256 * (b & 255))
+            : Ints(x, y, out var p, out var q) ? LVal.Number((p & 255) + 256 * (q & 255)) : null);
 
         // strings and characters
         Fast(e, "char-at", null, (x, y) => (x.IsStr || x.IsChar) && y.IsPlainInt(out var i) && i >= 0 && i < x.StrVal.Length

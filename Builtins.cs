@@ -51,7 +51,7 @@ public partial class Builtins
         ["shl"] = (2, 2), ["shr"] = (2, 2), ["bit?"] = (2, 2), ["hex"] = (1, 2), ["bin"] = (1, 2), ["lo"] = (1, 1),
         ["hi"] = (1, 1), ["word"] = (2, 2), ["bytes"] = (1, 1), ["from-bytes"] = (1, 1), ["read-bytes"] = (2, 2),
         ["write-bytes"] = (2, 4), ["platform"] = (0, 0), ["hydra?"] = (0, 0), ["clock"] = (0, 0), ["key"] = (0, 0),
-        ["key?"] = (0, 0),
+        ["key?"] = (0, 0), ["on-note"] = (1, 1),
         // (Buffers: BufferBuiltins.cs)
         ["buffer"] = (1, 2), ["buffer?"] = (1, 1), ["buffer-get"] = (2, 2), ["buffer-put"] = (3, 3), ["buffer-fill"] = (2, 4),
         ["buffer-copy"] = (3, 5), ["buffer-cmp"] = (3, 5), ["read-buffer"] = (2, 4),

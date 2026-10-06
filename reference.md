@@ -192,7 +192,8 @@ of, `do`, `let`, `and`, `or`, the loops.  A failure of the system's is its text 
 found`) and its code (`:noent` ...: section 4's system list).  `(try x [handler])` catches one.
 
 **Ctrl-C** stops what's running: at the next call or loop step it's the error `interrupted` (`:intr`), which `try`
-can catch; at the prompt it gives up the line.
+can catch; at the prompt it gives up the line.  `(on-note f)` gives it to a function instead, which says whether to
+go on (section 4).
 
 **`(exit n)`** ends the program, its status `n` (`exit` alone, at the REPL, ends it).
 
@@ -409,6 +410,7 @@ read-only, `:io` i/o error, `:noexec` not a program, `:eof` end of file, `:srch`
 | `(ticks)`, `(tick-rate)`, `(sleep secs)` | The clock's ticks (0-32767, 200 a second); 200; NIL after that long (a fraction too) |
 | `(clock)` | The seconds since the program started, a fixed decimal (to the millisecond) |
 | `(key)`, `(key?)` | The next key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys (`:up`, `:down`, `:left`, `:right`, `:home`, `:end`, `:ins`, `:del`, `:pgup`, `:pgdn`, `:f1` ... `:f12`), a key past a byte as its UTF-8 bytes, one at a time; whether one is waiting (a read that doesn't wait) |
+| `(on-note f)` | NIL: Ctrl-C's note, `:interrupt`, given to `f` (a function, or NIL for none) at the next call or loop step; what was running goes on if `f`'s value isn't NIL, else (and with none) it's the error `:intr`.  On the Hydra, each note the task gets (but a kill), an atom (`:interrupt`, `:hangup`, `:alarm`, `:brk`) or its number |
 | `(bit-and n...)`, `(bit-or n...)`, `(bit-xor n...)`, `(bit-not n)`, `(shl n k)`, `(shr n k)`, `(bit? n k)` | On integers (two's complement, of any size) |
 | `(hex n [width])`, `(bin n [width])` | Digits in upper case, at least `width` of them |
 | `(lo n)`, `(hi n)`, `(word lo hi)` | A word's low byte, high byte; a word of two bytes |

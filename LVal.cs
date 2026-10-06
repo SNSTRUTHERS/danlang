@@ -778,10 +778,23 @@ public partial class LVal {
     public const int MaxDepth = 10000;
     private static int _depth;      // (the interpreter runs on one thread, Program's, as Site and the calls' stack say)
 
-    // Ctrl-C was pressed (Program's handler sets it, the REPL clears it): each call, and each loop's step, stops with
-    // the error "interrupted" (:intr) till then
+    // Ctrl-C was pressed (Program's handler sets it): at the next call, or loop step, on-note's function is given its
+    // note (:interrupt), and what was running goes on if that's anything but NIL; otherwise (or with no function) it's
+    // the error "interrupted" (:intr), once, which stops what it reaches as any error does (try can catch it)
     public static volatile bool Interrupted;
-    public static LVal? CheckInterrupt() => Interrupted ? Builtins.SysErr("intr") : null;
+    public static LVal? CheckInterrupt() => Interrupted ? Interrupt() : null;
+    internal static LVal? NoteFn;           // (on-note's function, and the scope on-note was called in)
+    internal static LEnv? NoteEnv;
+    private static LVal? Interrupt() {
+        Interrupted = false;
+        var f = NoteFn;
+        if (f == null) return Builtins.SysErr("intr");
+        var args = new List<LVal> { Atom("interrupt") };
+        var r = f.BuiltinVal != null ? ApplyBuiltin(NoteEnv!, f, args) : Apply(f, args);
+        if (r.IsErr) return r;
+        if (!r.IsNIL) return null;
+        return Builtins.SysErr("intr");
+    }
 
     // A built-in called: an exception it throws comes back as an error value (but exit's)
     private static LVal CallBuiltin(LEnv e, LVal f, LVal a) {

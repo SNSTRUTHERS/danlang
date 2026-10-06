@@ -519,6 +519,15 @@ public partial class Builtins
         // (key): the next key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys; (key?):
         // whether one is waiting.  (Input not a console: its next byte, NIL at its end; one's waiting unless it's ended)
         AddBuiltin(e, "key", (e, a) => Key());
+        // (on-note f): Ctrl-C's note (:interrupt) given to f, a function, at the next call (NIL: none, its default:
+        // the error :intr), as hylang's on-note has the Hydra's notes
+        AddBuiltin(e, "on-note", (e, a) => {
+            var f = a[0];
+            if (!f.IsNIL && !f.IsFun) return LVal.Err("'on-note' expects a function or NIL");
+            LVal.NoteFn = f.IsNIL ? null : f.Freeze();
+            LVal.NoteEnv = e;
+            return LVal.NIL();
+        });
         AddBuiltin(e, "key?", (e, a) => {
             if (!Console.IsInputRedirected) return LVal.Bool(Console.KeyAvailable);
             return LVal.Bool(Console.In.Peek() >= 0);

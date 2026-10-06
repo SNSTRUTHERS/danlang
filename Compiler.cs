@@ -304,6 +304,9 @@ public partial class LVal {
             return x.Count == 0 ? NIL() : x.CallOf().Eval(x.Scope ?? e);
         }
 
+        private Name[]? _names;               // (def's, set's, set!'s names: none, the built-in's way)
+        private int _namesStart;
+
         // The special form this call was last (its built-in: one Compiler.cs runs, which, 0 none)
         private Func<LEnv, LVal, LVal>? _special;
         private int _kind;
@@ -377,17 +380,21 @@ public partial class LVal {
                 return NIL();
             }
             if (_kind == 5 && n >= 1) {
-                var func = ReferenceEquals(b, SetBangFn) ? "set!" : ReferenceEquals(b, SetFn) ? "set" : "def";
-                var syms = _cells[start];
-                bool bang = func == "set!";
-                if (syms.ValType == LE.SYM && n == 2) {
-                    var v = NodeAt(start + 1).Eval(e);
-                    return bang ? SetBang(e, syms.SymName, 0, v) : Builtins.Bind(e, func, syms.SymName, v);
+                // (def, set, set!: the names, worked out once for this call, as its items are its own: a name, or a
+                // list of names as many as the values; anything else, the built-in's way)
+                if (_names == null || _namesStart != start) {
+                    _namesStart = start;
+                    var syms = _cells[start];
+                    _names = syms.ValType == LE.SYM && n == 2 ? new[] { syms.SymName }
+                        : syms.ValType == LE.QEXPR && syms.Count == n - 1 && syms.Cells!.TrueForAll(s => s.ValType == LE.SYM)
+                            ? syms.Cells!.Select(s => s.SymName).ToArray() : Array.Empty<Name>();
                 }
-                if (syms.ValType == LE.QEXPR && syms.Count == n - 1 && syms.Cells!.TrueForAll(s => s.ValType == LE.SYM)) {
-                    for (int i = 0; i < syms.Count; i++) {
+                if (_names.Length > 0) {
+                    var func = ReferenceEquals(b, SetBangFn) ? "set!" : ReferenceEquals(b, SetFn) ? "set" : "def";
+                    bool bang = ReferenceEquals(b, SetBangFn);
+                    for (int i = 0; i < _names.Length; i++) {
                         var v = NodeAt(start + 1 + i).Eval(e);
-                        var r = bang ? SetBang(e, syms.Cells![i].SymName, i, v) : Builtins.Bind(e, func, syms.Cells![i].SymName, v);
+                        var r = bang ? SetBang(e, _names[i], i, v) : Builtins.Bind(e, func, _names[i], v);
                         if (r.IsErr) return r;
                     }
                     return NIL();

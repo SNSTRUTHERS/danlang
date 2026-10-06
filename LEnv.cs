@@ -35,7 +35,12 @@ public class LEnv {
     private Name[]? _names;
     private LVal[]? _vals;
     private int _n;
-    private Dictionary<Name, LVal>? _map;
+    private Dictionary<Name, Slot>? _map;
+
+    // A big scope's binding: one for each name, kept (a compiled name remembers its global one)
+    public sealed class Slot {
+        public LVal Value = null!;
+    }
 
     public LEnv Root => Parent?.Root ?? this;
     public int Count => _map?.Count ?? _n;
@@ -43,13 +48,20 @@ public class LEnv {
     // The bindings here (not the enclosing scopes')
     public IEnumerable<KeyValuePair<Name, LVal>> Entries {
         get {
-            if (_map != null) foreach (var kv in _map) yield return kv;
+            if (_map != null) foreach (var kv in _map) yield return new KeyValuePair<Name, LVal>(kv.Key, kv.Value.Value);
             else for (int i = 0; i < _n; i++) yield return new KeyValuePair<Name, LVal>(_names![i], _vals![i]);
         }
     }
 
     public bool TryGetLocal(Name k, out LVal v) {
-        if (_map != null) return _map.TryGetValue(k, out v!);
+        if (_map != null) {
+            if (_map.TryGetValue(k, out var slot)) {
+                v = slot.Value;
+                return true;
+            }
+            v = null!;
+            return false;
+        }
         for (int i = 0; i < _n; i++) {
             if (ReferenceEquals(_names![i], k)) {
                 v = _vals![i];
@@ -63,7 +75,8 @@ public class LEnv {
     // A binding here, as it is (the value already shared)
     public void SetLocal(Name k, LVal v) {
         if (_map != null) {
-            _map[k] = v;
+            if (_map.TryGetValue(k, out var slot)) slot.Value = v;
+            else _map[k] = new Slot { Value = v };
             return;
         }
         for (int i = 0; i < _n; i++) {
@@ -73,9 +86,9 @@ public class LEnv {
             }
         }
         if (_n == Small) {
-            _map = new Dictionary<Name, LVal>(Small * 2);
-            for (int i = 0; i < _n; i++) _map[_names![i]] = _vals![i];
-            _map[k] = v;
+            _map = new Dictionary<Name, Slot>(Small * 2);
+            for (int i = 0; i < _n; i++) _map[_names![i]] = new Slot { Value = _vals![i] };
+            _map[k] = new Slot { Value = v };
             _names = null;
             _vals = null;
             return;
@@ -91,6 +104,9 @@ public class LEnv {
         _names[_n] = k;
         _vals![_n++] = v;
     }
+
+    // A big scope's slot for k, if it has one
+    public Slot? SlotOf(Name k) => _map != null && _map.TryGetValue(k, out var slot) ? slot : null;
 
     public bool ContainsKey(Name k) => TryGetLocal(k, out _);
     public bool ContainsKey(string s) => ContainsKey(Name.Of(s));

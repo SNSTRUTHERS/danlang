@@ -293,7 +293,7 @@ public partial class Builtins
     }
 
     // A name bound to a value, as def, set or set! do
-    private static LVal Bind(LEnv e, string func, Name symbol, LVal value) {
+    internal static LVal Bind(LEnv e, string func, Name symbol, LVal value) {
         if (func == "def") e.Def(symbol, value);
         else if (func == "set") e.Put(symbol, value);
         else return e.Update(symbol, value);
@@ -1675,5 +1675,8 @@ public partial class Builtins
 
         // the library's most used functions
         AddLibraryBuiltins(e);
+
+        // the most used ones' fast ways, and the special forms the compiled code runs itself (FastBuiltins.cs)
+        AddFastWays(e);
     }
 }

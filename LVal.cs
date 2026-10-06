@@ -21,7 +21,7 @@ public struct TailStep {
     public LVal Finish() => Expr == null ? Value! : Run ? LVal.EvalCode(Env!, Expr) : Expr.Eval(Env!);
 }
 
-public class LVal {
+public partial class LVal {
     public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, STREAM, COMMENT, EXIT, TAIL };
 
     // (A value is small: what every kind has, and one reference to what the rarer kinds have, _x)
@@ -55,6 +55,8 @@ public class LVal {
         public string? BuiltinName;
         public int MinArgs, MaxArgs = int.MaxValue;
         public List<LVal>? Bound;
+        public Func<LVal, LVal?>? Fast1;            // a built-in's fast way with one argument, or two (NIL: the
+        public Func<LVal, LVal, LVal?>? Fast2;      //   built-in itself does it): Compiler.cs
         public FunInfo Clone() => (FunInfo)MemberwiseClone();
     }
     private FunInfo? Fn => _x as FunInfo;
@@ -89,6 +91,12 @@ public class LVal {
     public LVal? TailFn { get => (_x as TailInfo)?.Fn; set => ((TailInfo)(_x ??= new TailInfo())).Fn = value; }
     public List<LVal>? TailArgs { get => (_x as TailInfo)?.Args; set => ((TailInfo)(_x ??= new TailInfo())).Args = value; }
 
+    // A built-in's fast ways (Compiler.cs)
+    public void SetFast(Func<LVal, LVal?>? one, Func<LVal, LVal, LVal?>? two) {
+        F.Fast1 = one;
+        F.Fast2 = two;
+    }
+
     // A value is shared once it's code (the reader's), a variable's, a hash's or a partial application's: then it's
     // frozen, and its list can't be changed in place (a built-in makes a new value, never changes one it's given)
     public bool Frozen = false;
@@ -111,6 +119,7 @@ public class LVal {
     // argument's): a copy sharing its list, so the code it's in isn't changed
     public LVal ScopedIn(LEnv e) {
         Freeze();
+        if (Cells != null && _x == null) _x = new CodeInfo();    // (its compiled code shared with the copy)
         var x = (LVal)MemberwiseClone();
         x.Scope = e;
         return x;
@@ -850,7 +859,7 @@ public class LVal {
                 }
 
                 if (!f.Body!.IsQExpr) return LVal.Err("A function's body must be a QExpr");
-                var r = EvalTail(scope, f.Body, true);
+                var r = f.Body.CallOf().Tail(scope);
                 if (r.ValType != LE.TAIL) return r;
                 f = r.TailFn!;
                 vals = r.TailArgs!;
@@ -869,76 +878,12 @@ public class LVal {
         throw new ExitException((int)code.NumVal!.ToInt().num);
     }
 
-    // An expression evaluated in a function body's tail position (run: a list's items as an S-expression, as a body
-    // is): a call to a function there comes back as a TAIL value, for Apply to run in the caller's place; a built-in
-    // with a tail position (if, do, let, eval) goes on with the expression there
-    private static LVal EvalTail(LEnv e, LVal v, bool run) {
-        while (true) {
-            var intr = CheckInterrupt();
-            if (intr != null) return intr;
-            if (!(v.IsSExpr || (run && v.IsQExpr))) return v.Eval(e);
-            var cells = v.Cells!;
-            if (cells.Count == 0) return NIL();
-
-            LVal f = cells[0].Eval(e);
-            if (f.IsErr) return f;
-            int start = 1;
-            if (f.IsExit && cells.Count > 1) return ExitWith(e, cells[1]);
-            if (cells.Count == 1 && !f.IsFun) return f;
-            if (f.IsHash) {
-                f = HashAt(e, f, cells, ref start);
-                if (!f.IsFun) return f;
-            }
-            if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
-
-            if (f.BuiltinVal != null) {
-                var done = BuiltinArgs(e, f, cells, start, out var a);
-                if (done != null) return done;
-                if (f.TailForm == null) return CallBuiltin(e, f, a);
-                TailStep step;
-                try {
-                    step = f.TailForm(e, a);
-                }
-                catch (ExitException) { throw; }
-                catch (Exception ex) {
-                    return LVal.Err(Builtins.FromHost(ex.Message));
-                }
-                if (step.Expr == null) return step.Value!;
-                e = step.Env!;
-                v = step.Expr;
-                run = step.Run;
-                continue;
-            }
-
-            var vals = Args(e, f, cells, start, out var err);
-            if (err != null) return err;
-            return new LVal { ValType = LE.TAIL, TailFn = f, TailArgs = vals };
-        }
-    }
-
-    // An S-expression evaluated (or a list's items, as one: a function's body, code run); the code isn't changed
-    public static LVal? EvalSExpr(LEnv e, LVal? v) {
-        if (v == null) return null;
-        var cells = v.Cells;
-        if (cells == null || cells.Count == 0) return NIL();
-
-        LVal f = cells[0].Eval(e);
-        if (f.IsErr) return f;
-        int start = 1;
-        if (f.IsExit && cells.Count > 1) return ExitWith(e, cells[1]);
-        if (cells.Count == 1 && !f.IsFun) return f;
-        if (f.IsHash) {
-            f = HashAt(e, f, cells, ref start);
-            if (!f.IsFun) return f;
-        }
-
-        if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
-
-        return LVal.Call(e, f, cells, start);
-    }
+    // An S-expression evaluated (or a list's items, as one: a function's body, code run): its compiled code's value
+    // (Compiler.cs); the code isn't changed
+    public static LVal? EvalSExpr(LEnv e, LVal? v) => v?.CallOf().Eval(e);
 
     // A value run as code: a list's items as an S-expression, anything else evaluated
-    public static LVal EvalCode(LEnv e, LVal x) => x.IsQExpr ? EvalSExpr(e, x)! : x.Eval(e);
+    public static LVal EvalCode(LEnv e, LVal x) => x.IsQExpr ? x.CallOf().Eval(e) : x.Eval(e);
 
     // A hash called, (h key arg...): the value at key (cells[start], evaluated; start moves past it); a function there
     // is a method, given back with &0 the hash (through which its private entries are had), to be applied to the
@@ -1004,7 +949,7 @@ public class LVal {
     public LVal Eval(LEnv e) {
         switch (ValType) {
             case LE.SYM:   return e.Get(SymName);
-            case LE.SEXPR: return EvalSExpr(e, this)!;
+            case LE.SEXPR: return CallOf().Eval(e);
             case LE.QEXPR: return Scope == null && Count > 0 ? ScopedIn(e) : this;
             default:       return this;
         }

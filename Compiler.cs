@@ -9,6 +9,32 @@ public partial class LVal {
     // A list's compiled code: the call its items make
     internal sealed class CodeInfo {
         public CallNode? Call;
+        public Uses? Uses;      // the names a function's body has (&_ or &1 ..., &0), anywhere in it
+    }
+
+    // What a function's body names, anywhere in it: its extra arguments (&_, &1 ...), the hash it's a method of (&0)
+    [Flags]
+    internal enum Uses { None = 0, Extras = 1, Self = 2 }
+
+    internal bool Mentions(Uses u) {
+        if (_x is not CodeInfo info) {
+            Freeze();
+            _x = info = new CodeInfo();
+        }
+        info.Uses ??= UsesOf(this);
+        return (info.Uses.Value & u) != 0;
+    }
+
+    private static Uses UsesOf(LVal v) {
+        if (v.ValType == LE.SYM) {
+            var s = v.SymVal;
+            var u0 = s == "&0" ? Uses.Self : Uses.None;      // (&0 counts as an extra's name too, as it always has)
+            if (s == "&_" || (s.Length > 1 && s[0] == '&' && s.Skip(1).All(char.IsDigit))) return u0 | Uses.Extras;
+            return u0;
+        }
+        var u = Uses.None;
+        if (v.Cells != null) foreach (var c in v.Cells) u |= UsesOf(c);
+        return u;
     }
 
     // This list's items as a call, compiled (once: it's kept with the list, and with every copy of it ScopedIn makes)
@@ -72,6 +98,16 @@ public partial class LVal {
 
     // The special forms run here: their built-ins (Builtins.AddBuiltins tells them)
     internal static Func<LEnv, LVal, LVal>? IfFn, DoFn, AndFn, OrFn, SetBangFn, SetFn, DefFn, WhileFn;
+
+    // A tail call: the function and its arguments, for the Apply it goes back to (one value, used again: each goes
+    // straight back to its Apply, which takes them out before another is made)
+    [ThreadStatic] private static LVal? _tail;
+    internal static LVal TailCall(LVal f, List<LVal> args) {
+        var t = _tail ??= new LVal { ValType = LE.TAIL };
+        t.TailFn = f;
+        t.TailArgs = args;
+        return t;
+    }
 
     // An expression in tail position, as a TailStep has it (run: a list's items as an S-expression)
     internal static LVal TailOf(LEnv e, LVal x, bool run) =>
@@ -160,7 +196,7 @@ public partial class LVal {
                 if (v.IsErr) return v;
                 args.Add(v);
             }
-            if (tail) return new LVal { ValType = LE.TAIL, TailFn = f, TailArgs = args };
+            if (tail) return TailCall(f, args);
             return Apply(f, args);
         }
 

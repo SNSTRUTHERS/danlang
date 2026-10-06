@@ -799,11 +799,6 @@ public partial class LVal {
         return ValueArgs(f, vals, out var a) ?? CallBuiltin(e, f, a);
     }
 
-    // Whether a function's body takes extra arguments: it names &_ or &1, &2 ...
-    private static bool TakesExtras(LVal v) =>
-        (v.IsSym && (v.SymVal == "&_" || (v.SymVal.Length > 1 && v.SymVal[0] == '&' && v.SymVal.Skip(1).All(char.IsDigit))))
-        || (v.Cells != null && v.Cells.Any(TakesExtras));
-
     // f called with the arguments cells[start...] (evaluated as f wants them)
     public static LVal Call(LEnv e, LVal f, List<LVal> cells, int start) {
         if (f.BuiltinVal != null) return BuiltinArgs(e, f, cells, start, out var a) ?? CallBuiltin(e, f, a);
@@ -833,16 +828,16 @@ public partial class LVal {
                 if (f.Env != null) foreach (var kv in f.Env.Entries) scope.SetLocal(kv.Key, kv.Value);
 
                 // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
-                var extras = Qexpr();
+                LVal? extras = null;
                 int k = 0;
                 foreach (var val in vals) {
                     if (k < formals.Count) scope.Put(formals[k++].SymName, val);
                     else {
-                        extras.Add(val);
+                        (extras ??= Qexpr()).Add(val);
                         scope.Put($"&{extras.Count}", val);
                     }
                 }
-                if (extras.Count > 0) scope.Put(Name.Rest, extras);    // (none: NIL, the call scope's own)
+                if (extras != null) scope.Put(Name.Rest, extras);     // (none: NIL, the call scope's own)
 
                 if (k < formals.Count) {
                     var p = f.CloneFun();
@@ -853,7 +848,7 @@ public partial class LVal {
                     foreach (var kv in scope.Entries) p.Env.SetLocal(kv.Key, kv.Value);
                     return p;
                 }
-                if (extras.Count > 0 && !TakesExtras(f.Body!)) {
+                if (extras != null && !f.Body!.Mentions(Uses.Extras)) {
                     var takes = vals.Count - extras.Count;
                     return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
                 }
@@ -901,7 +896,7 @@ public partial class LVal {
 
     // A hash's function as a method: a copy of it with &0 the hash (a built-in as it is)
     public static LVal Method(LVal f, LVal h) {
-        if (f.BuiltinVal != null) return f;
+        if (f.BuiltinVal != null || !f.Body!.Mentions(Uses.Self)) return f;    // (&0 nowhere in its body: none bound)
         var m = f.CloneFun();
         m.Env = new LEnv();
         if (f.Env != null) foreach (var kv in f.Env.Entries) m.Env.SetLocal(kv.Key, kv.Value);

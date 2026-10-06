@@ -192,6 +192,7 @@ public class LHash : TaggedValue<Dictionary<HKey, LHash.LHashEntry>> {
             case LVal.LE.ATOM: return new HKey(HKey.Atom, 0, key.SymVal);
             case LVal.LE.STR:  return new HKey(HKey.Str, 0, key.StrVal);
             case LVal.LE.NUM:
+                if (key.IsSmallInt(out var l)) return new HKey(HKey.Int, l, null);
                 if (Builtins.Whole(key, "hash", "a key", out var n).IsErr)
                     throw new Exception($"A hash key must be an atom, a string or an integer, not {key.ToStr()}");
                 return n >= long.MinValue && n <= long.MaxValue ? new HKey(HKey.Int, (long)n, null) : new HKey(HKey.BigInt, 0, n.ToString());

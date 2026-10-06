@@ -218,16 +218,19 @@ public partial class LVal {
     // The small integers, made once each, shared (they're frozen: a value isn't changed): -1024 to 65535
     private const int SmallMin = -1024, SmallMax = 65535;
     private static readonly LVal?[] _small = new LVal?[SmallMax - SmallMin + 1];
-    private static LVal Small(int n) => _small[n - SmallMin] ??= new LVal { ValType = LE.NUM, NumVal = new Int(n), Frozen = true };
+    private static LVal Small(int n) => _small[n - SmallMin] ??= new LVal { ValType = LE.NUM, _long = n, Frozen = true };
 
-    public static LVal Number(int x) => x >= SmallMin && x <= SmallMax ? Small(x) : Number(new Int(x));
+    // An integer kept in the value itself (as Number(long) makes one): its value
+    internal bool IsLong(out long n) {
+        n = _long;
+        return ValType == LE.NUM && _num == null;
+    }
+
+    public static LVal Number(int x) => Number((long)x);
     public static LVal Number(long x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : new LVal { ValType = LE.NUM, _long = x };
-    public static LVal Number(BigInteger x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : Number(new Int(x));
+    public static LVal Number(BigInteger x) => x >= long.MinValue && x <= long.MaxValue ? Number((long)x) : Number(new Int(x));
     public static LVal Number(Num x) {
-        if (x.GetType() == typeof(Int)) {
-            var n = ((Int)x).num;
-            if (n >= SmallMin && n <= SmallMax) return Small((int)n);
-        }
+        if (x.GetType() == typeof(Int) && ((Int)x).Fits) return Number(((Int)x).Small);    // (kept in the value)
         LVal v = new LVal();
         v.ValType = LE.NUM;
         v.NumVal = x;

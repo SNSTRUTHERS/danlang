@@ -30,6 +30,11 @@ public partial class Builtins
         LVal.SetFn = e.Get("set").BuiltinVal;
         LVal.DefFn = e.Get("def").BuiltinVal;
         LVal.WhileFn = e.Get("while").BuiltinVal;
+        foreach (var (name, op) in new[] { ("+", LVal.Op.Add), ("-", LVal.Op.Sub), ("<", LVal.Op.Lt), (">", LVal.Op.Gt),
+                ("<=", LVal.Op.Le), (">=", LVal.Op.Ge), ("==", LVal.Op.Eq), ("eq", LVal.Op.Eq), ("bit-and", LVal.Op.BitAnd),
+                ("bit-or", LVal.Op.BitOr), ("bit-xor", LVal.Op.BitXor), ("shr", LVal.Op.Shr), ("shl", LVal.Op.Shl),
+                ("word", LVal.Op.Word), ("bit?", LVal.Op.Bit), ("zero?", LVal.Op.ZeroP), ("not", LVal.Op.Not) })
+            LVal.Ops[e.Get(name).BuiltinVal!] = op;
 
         // (any number of plain integers: the sum, the difference, the product, the bits)
         static LVal? IntsN(LVal[] x, BigInteger empty, Func<BigInteger, BigInteger, BigInteger> op, bool negateOne = false) {

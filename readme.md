@@ -71,14 +71,16 @@ it, `(+ "n=" 5)`; with anything else first, `+` adds numbers only; `substring`, 
 and hashes (keys are atoms, strings or integers; tags make them or their entries private, locked, read-only or not
 NIL).  A hash is called to look a key up: `(h :k)` is the value at `:k`; a function there is a method, applied to
 the arguments that follow with `&0` the hash (`(obj :add 3)`; fewer than its formals: partially applied), and
-`hash-call` does the same.  `type-of` names a value's type; `num?`, `int?`, `string?` and the other type tests are
+`hash-call` does the same.  Buffers are bytes, changed in place (`(buffer 16)`, `(buffer "text")`; `(b i)` is byte `i`,
+`buffer-put`, `buffer-fill`, `buffer-copy`, `read-buffer`): a hash or a buffer is shared, one value wherever it's
+been given; any other value is never changed (a built-in makes a new one).  `type-of` names a value's type; `num?`, `int?`, `string?` and the other type tests are
 NIL for anything else.  `cmp`, `<`, `>` and `sort` order every kind of value: numbers, characters, strings, atoms,
 symbols, lists, T, then the rest, each by its value.  An index or a count is a whole number (`2.0` too); an index
 outside a list or a string (`nth`, `item-at`, `subset`, `substring`, `char-at`) is an error, and a count past its end
 takes what there is.
 
 **Input and output.**  `print` (a string's text as it is, spaces between, a newline after) and `write` (no spaces,
-no newline); `repr` is a value as the REPL shows it.  Streams: `(open path [:read | :write | :append])`, `close`,
+no newline); `repr` is a value as the REPL shows it.  Streams: `(open path [:read | :write | :append | :update])`, `close`,
 `read-line`, `read-byte`, `read-all`, `print-to`, `write-to`, `seek`, `tell`, and `stdin`, `stdout`, `stderr`.
 `(output-of expr...)` is what the expressions printed.  `save` writes a value to be read back; `load` runs a file;
 `read` turns text into expressions.
@@ -88,7 +90,9 @@ no newline); `repr` is a value as the REPL shows it.  Streams: `(open path [:rea
 `file?`, `mkdir`, `remove`, `rename`, `copy-file`, `cd`, `cwd`, `glob` (rc's `*`, `?` and `[...]`).  Programs: `run`
 (its exit code), `sh` and `sh-out` (a line for the shell, with input if it's given), `spawn`, `wait`, `kill`,
 `pid`.  The environment: `env`, `setenv`, `unsetenv`.  The clock: `time` (seconds since 2000, as the Hydra counts),
-`date`, `date-parts`, `seconds-of`, `ticks` and `tick-rate` (200 a second), `sleep` (seconds, a fraction too).
+`date`, `date-parts`, `seconds-of`, `ticks` and `tick-rate` (200 a second), `sleep` (seconds, a fraction too),
+`clock` (seconds since the program started, to the millisecond).  Keys: `key` (raw: a character, or an atom for the
+terminal's keys, `:up` ...) and `key?`.
 Bits and bytes: `bit-and`, `bit-or`, `bit-xor`, `bit-not`, `shl`, `shr`, `bit?`, `hex`, `bin`, `lo`, `hi`, `word`,
 `bytes`, `from-bytes`, `read-bytes`, `write-bytes`.  A failure is the Hydra's error: its text after the name it's
 about (`x: not found`) and its code, `(error-code e)` (`:noent`, `:exist`, `:notempty` ...; a program's own errors can
@@ -103,7 +107,7 @@ example programs.
 ## The regression suite
 
 `tests/regress/`: `run.dl` loads `harness.dl` (`check`, `check-error`: fexprs) and then each test file: `reader`,
-`eval`, `scope`, `control`, `errors`, `lists`, `strings`, `numbers`, `hashes`, `types`, `io`, `system`, `bits` and
-`library`.  Every
+`eval`, `scope`, `control`, `errors`, `lists`, `strings`, `numbers`, `hashes`, `types`, `io`, `system`, `bits`,
+`buffers` and `library`.  Every
 built-in and every library function has checks; a new one should too.  The suite is in danlang itself, so another
 implementation of the language (hylang, on the Hydra-16) can run it as it is.

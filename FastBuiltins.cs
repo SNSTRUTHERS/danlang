@@ -74,6 +74,7 @@ public partial class Builtins
             LVal.LE.QEXPR => LVal.Number(x.Count),
             LVal.LE.STR   => LVal.Number(x.StrVal.Length),
             LVal.LE.HASH  => LVal.Number(x.HashValue!.Count),
+            LVal.LE.BUFFER => LVal.Number(x.BufferValue!.Length),
             _             => null,
         });
         Fast(e, "fst", x => x.IsQExpr && x.Count > 0 ? x.Cells![0] : null);

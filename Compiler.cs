@@ -141,6 +141,15 @@ public partial class LVal {
                 if (!f.IsFun) return f;
                 return Invoke(e, f, start, tail);
             }
+            if (f.IsBuffer) {
+                // A buffer called, (b i): its byte i
+                if (_cells.Count > 2) return Err("A buffer is called with an index: (b i)");
+                var i = NodeAt(1).Eval(e);
+                if (i.IsErr) return i;
+                var bytes = f.BufferValue!;
+                if (i.IsPlainInt(out var k) && k >= 0 && k < bytes.Length) return Number(bytes[(int)k]);
+                return Builtins.BufferGet(f, i);
+            }
             return Err($"S-Expression starts with incorrect type. Got {LEName(f.ValType)}, Expected {LEName(LE.FUN)}.");
         }
 
@@ -155,8 +164,8 @@ public partial class LVal {
                 // takes errors as values), then its fast way, if it has one for them, or its own
                 int total = (fi.Bound?.Count ?? 0) + n;
                 if (total > fi.MaxArgs) return TooMany(f, total);
-                if (n <= 2 && fi.Bound == null) {
-                    LVal? a0 = null, a1 = null;
+                if (n <= 3 && fi.Bound == null) {
+                    LVal? a0 = null, a1 = null, a2 = null;
                     if (n > 0) {
                         a0 = NodeAt(start).Eval(e);
                         if (a0.IsErr && !fi.TakesErrors) return a0;
@@ -165,16 +174,26 @@ public partial class LVal {
                         a1 = NodeAt(start + 1).Eval(e);
                         if (a1.IsErr && !fi.TakesErrors) return a1;
                     }
+                    if (n > 2) {
+                        a2 = NodeAt(start + 2).Eval(e);
+                        if (a2.IsErr && !fi.TakesErrors) return a2;
+                    }
                     if (n >= fi.MinArgs) {
                         LVal? r = null;
                         if (n == 2 && fi.Fast2 != null) r = Fast(fi.Fast2, a0!, a1!);
+                        else if (n == 3 && fi.Fast3 != null) {
+                            try { r = fi.Fast3(a0!, a1!, a2!); }
+                            catch (ExitException) { throw; }
+                            catch (Exception ex) { return Err(Builtins.FromHost(ex.Message)); }
+                        }
                         else if (n == 1 && fi.Fast1 != null) r = Fast(fi.Fast1, a0!);
                         if (r != null) return r;
                     }
                     var two = new List<LVal>(n);
                     if (n > 0) two.Add(a0!);
                     if (n > 1) two.Add(a1!);
-                    return ValueArgs(f, two, out var a2) ?? CallBuiltin(e, f, a2);
+                    if (n > 2) two.Add(a2!);
+                    return ValueArgs(f, two, out var a3) ?? CallBuiltin(e, f, a3);
                 }
                 var vals = new List<LVal>(n);
                 for (int k = start; k < _cells.Count; k++) {

@@ -22,7 +22,7 @@ public struct TailStep {
 }
 
 public partial class LVal {
-    public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, STREAM, COMMENT, EXIT, TAIL };
+    public enum LE { ERR, T, NUM, ATOM, SYM, CHAR, STR, FUN, SEXPR, QEXPR, HASH, STREAM, COMMENT, EXIT, TAIL, BUFFER };
 
     // (A value is small: what every kind has, and one reference to what the rarer kinds have, _x)
     public LE ValType;
@@ -39,6 +39,7 @@ public partial class LVal {
     public int ExitCode { get => _x is int i ? i : 0; set => _x = value; }
     public LHash? HashValue { get => _x as LHash; set => _x = value; }
     public LStream? StreamValue { get => _x as LStream; set => _x = value; }
+    public byte[]? BufferValue { get => _x as byte[]; set => _x = value; }    // a buffer's bytes (changed in place: shared)
     public Name SymName => _x as Name ?? (Name)(_x = Name.Of(Text));     // a symbol's name, interned
 
     // A function's own: a lambda's scope (the arguments given it so far), the scope it was made in (its calls' parent:
@@ -57,6 +58,7 @@ public partial class LVal {
         public List<LVal>? Bound;
         public Func<LVal, LVal?>? Fast1;            // a built-in's fast way with one argument, or two (NIL: the
         public Func<LVal, LVal, LVal?>? Fast2;      //   built-in itself does it): Compiler.cs
+        public Func<LVal, LVal, LVal, LVal?>? Fast3;
         public FunInfo Clone() => (FunInfo)MemberwiseClone();
     }
     private FunInfo? Fn => _x as FunInfo;
@@ -96,6 +98,7 @@ public partial class LVal {
         F.Fast1 = one;
         F.Fast2 = two;
     }
+    public void SetFast3(Func<LVal, LVal, LVal, LVal?> three) => F.Fast3 = three;
 
     // A value is shared once it's code (the reader's), a variable's, a hash's or a partial application's: then it's
     // frozen, and its list can't be changed in place (a built-in makes a new value, never changes one it's given)
@@ -140,11 +143,12 @@ public partial class LVal {
     public bool IsQExpr => ValType == LE.QEXPR;
     public bool IsHash => ValType == LE.HASH;
     public bool IsStream => ValType == LE.STREAM;
+    public bool IsBuffer => ValType == LE.BUFFER;
     public bool IsComment => ValType == LE.COMMENT;
 
     //  Hashes
     public LVal Copy() {
-        if (IsHash || IsStream) return this;
+        if (IsHash || IsStream || IsBuffer) return this;
         LVal x = new LVal();
         x.ValType = ValType;
         switch (ValType) {
@@ -466,6 +470,9 @@ public partial class LVal {
     }
     public static LVal Stream(Stream stream) => Stream(new LStream(stream));
 
+    // A buffer: bytes, changed in place (so, as a hash is, it's shared, not copied)
+    public static LVal Buffer(byte[] bytes) => new LVal { ValType = LE.BUFFER, BufferValue = bytes };
+
     // Helper methods
     public LVal Add(LVal x) {
         Mutable();
@@ -586,6 +593,7 @@ public partial class LVal {
             case LE.STR:   return StrAsString();
             case LE.HASH:  s.Append("<hash>").Append(HashValue!.ToQexpr().ToStr()); break;
             case LE.STREAM: s.Append("<stream>"); break;
+            case LE.BUFFER: s.Append("<buffer>{").AppendJoin(' ', BufferValue!).Append('}'); break;
             case LE.EXIT:  s.Append("exit"); break;
             case LE.SEXPR: return ExprAsString('(', ')');
             case LE.QEXPR: return ExprAsString('{', '}');
@@ -601,6 +609,7 @@ public partial class LVal {
 
     public string Serialize() {
         if (IsHash) return HashValue!.Serialize();
+        if (IsBuffer) return "(buffer {" + string.Join(' ', BufferValue!) + "})";
 
         var sb = new StringBuilder();
         if (IsQExpr) sb.Append('{');
@@ -653,6 +662,7 @@ public partial class LVal {
                 return (Formals!.Equals(y.Formals) && Body!.Equals(y.Body));
 
             case LE.HASH: return ReferenceEquals(HashValue, y.HashValue) || HashValue!.EqualTo(y.HashValue!);
+            case LE.BUFFER: return BufferValue.AsSpan().SequenceEqual(y.BufferValue);
 
             case LE.QEXPR:
             case LE.SEXPR:
@@ -694,6 +704,7 @@ public partial class LVal {
             LE.STR => "String",
             LE.HASH => "Hash",
             LE.STREAM => "Stream",
+            LE.BUFFER => "Buffer",
             LE.SEXPR => "S-Expression",
             LE.QEXPR => "Q-Expression",
             LE.T => "T",
@@ -957,7 +968,7 @@ public partial class LVal {
     public int CompareTo(LVal v) {
         int Rank(LVal x) => x.ValType switch {
             LE.NUM => 0, LE.CHAR => 1, LE.STR => 2, LE.ATOM => 3, LE.SYM => 4, LE.QEXPR => 5, LE.SEXPR => 6,
-            LE.T => 7, LE.FUN => 8, LE.HASH => 9, LE.STREAM => 10, LE.ERR => 11, _ => 12
+            LE.T => 7, LE.FUN => 8, LE.HASH => 9, LE.BUFFER => 10, LE.STREAM => 11, LE.ERR => 12, _ => 13
         };
         var kind = Rank(this).CompareTo(Rank(v));
         if (kind != 0) return Math.Sign(kind);
@@ -979,6 +990,7 @@ public partial class LVal {
             case LE.HASH:
                 if (Equals(v)) return 0;
                 break;
+            case LE.BUFFER:   return Math.Sign(BufferValue.AsSpan().SequenceCompareTo(v.BufferValue));
             case LE.STREAM:
                 if (ReferenceEquals(StreamValue, v.StreamValue)) return 0;
                 return Math.Sign(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(StreamValue)

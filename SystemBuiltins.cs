@@ -273,7 +273,8 @@ public partial class Builtins
     }
 
     private static string StringOfBytes(LVal l, string fn) {
-        if (!l.IsQExpr) throw new LArgException($"'{fn}' expects a list of bytes");
+        if (l.IsBuffer) return Encoding.Latin1.GetString(l.BufferValue!);
+        if (!l.IsQExpr) throw new LArgException($"'{fn}' expects a list of bytes, or a buffer");
         var sb = new StringBuilder();
         foreach (var b in l.Cells!) {
             var n = IntOf(b, "a byte");
@@ -281,6 +282,29 @@ public partial class Builtins
             sb.Append((char)(int)n);
         }
         return sb.ToString();
+    }
+
+    // (key): a key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys (hylang's names); a key
+    // past a byte comes as its UTF-8 bytes, one at a time.  Input not a console: its next byte, NIL at its end
+    private static readonly Queue<byte> _keyBytes = new();
+    private static LVal Key() {
+        if (_keyBytes.Count > 0) return LVal.Char((char)_keyBytes.Dequeue());
+        if (Console.IsInputRedirected) {
+            var c = Console.In.Read();
+            return c < 0 ? LVal.NIL() : LVal.Char((char)c);
+        }
+        var k = Console.ReadKey(true);
+        var atom = k.Key switch {
+            ConsoleKey.UpArrow => "up", ConsoleKey.DownArrow => "down", ConsoleKey.LeftArrow => "left",
+            ConsoleKey.RightArrow => "right", ConsoleKey.Home => "home", ConsoleKey.End => "end", ConsoleKey.Insert => "ins",
+            ConsoleKey.Delete => "del", ConsoleKey.PageUp => "pgup", ConsoleKey.PageDown => "pgdn",
+            >= ConsoleKey.F1 and <= ConsoleKey.F12 => "f" + (k.Key - ConsoleKey.F1 + 1),
+            _ => null
+        };
+        if (atom != null) return LVal.Atom(atom);
+        if (k.KeyChar < 256) return LVal.Char(k.KeyChar);
+        foreach (var b in Encoding.UTF8.GetBytes(k.KeyChar.ToString())) _keyBytes.Enqueue(b);
+        return LVal.Char((char)_keyBytes.Dequeue());
     }
 
     public static void AddSystemBuiltins(LEnv e) {
@@ -451,7 +475,12 @@ public partial class Builtins
         AddBuiltin(e, "hi", (e, a) => SysOp(e, a, "hi", x => LVal.Number((IntOf(x[0], "'hi''s number") >> 8) & 255)));
         AddBuiltin(e, "word", (e, a) => SysOp(e, a, "word", x => LVal.Number((IntOf(x[0], "A low byte") & 255) + 256 * (IntOf(x[1], "A high byte") & 255))));
         AddBuiltin(e, "bytes", (e, a) => SysOp(e, a, "bytes", x => {
-            if (!x[0].IsStr && !x[0].IsChar) return LVal.Err("'bytes' expects a String");
+            if (x[0].IsBuffer) {
+                var l = LVal.Qexpr();
+                foreach (var b in x[0].BufferValue!) l.Add(LVal.Number(b));
+                return l;
+            }
+            if (!x[0].IsStr && !x[0].IsChar) return LVal.Err("'bytes' expects a String or a buffer");
             return BytesOf(x[0].StrVal);
         }));
         AddBuiltin(e, "from-bytes", (e, a) => SysOp(e, a, "from-bytes", x => LVal.Str(StringOfBytes(x[0], "from-bytes"))));
@@ -466,7 +495,34 @@ public partial class Builtins
             }
             return l.Count == 0 && n > 0 ? LVal.NIL() : l;
         }));
-        AddBuiltin(e, "write-bytes", (e, a) => StreamOp(e, a, "write-bytes", 1, (s, x) => s.WriteBytes(StringOfBytes(x[0], "write-bytes"))));
+        // (a buffer's: all of it, or from i (0) on, n of them (to its end))
+        AddBuiltin(e, "write-bytes", (e, a) => {
+            if (a.Count > 1 && a[1].IsBuffer && a[0].IsStream) {
+                var bytes = a[1].BufferValue!;
+                int at = 0, count = bytes.Length;
+                if (a.Count > 2) {
+                    var ix = IndexArg(a[2], "write-bytes", bytes.Length, true, out at);
+                    if (ix.IsErr) return ix;
+                    count = bytes.Length - at;
+                }
+                if (a.Count > 3) {
+                    var c = CountArg(a[3], "write-bytes", bytes.Length, at, out count);
+                    if (c.IsErr) return c;
+                }
+                return a[0].StreamValue!.WriteBytes(bytes, at, count);
+            }
+            if (a.Count > 2) return LVal.Err("'write-bytes' takes a part (i n) only of a buffer");
+            return StreamOp(e, a, "write-bytes", 1, (s, x) => s.WriteBytes(StringOfBytes(x[0], "write-bytes")));
+        });
+        // (clock): the seconds since the program started, a fixed decimal (to the millisecond)
+        AddBuiltin(e, "clock", (e, a) => LVal.Number(Num.Norm(new Fix(_clock.ElapsedMilliseconds, 3))));
+        // (key): the next key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys; (key?):
+        // whether one is waiting.  (Input not a console: its next byte, NIL at its end; one's waiting unless it's ended)
+        AddBuiltin(e, "key", (e, a) => Key());
+        AddBuiltin(e, "key?", (e, a) => {
+            if (!Console.IsInputRedirected) return LVal.Bool(Console.KeyAvailable);
+            return LVal.Bool(Console.In.Peek() >= 0);
+        });
 
         // ---- where it's running
         AddBuiltin(e, "platform", (e, a) => LVal.Atom(OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsLinux() ? "linux" : OperatingSystem.IsMacOS() ? "macos" : "host"));

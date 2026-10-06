@@ -50,7 +50,11 @@ public partial class Builtins
         ["bit-and"] = (1, Any), ["bit-or"] = (1, Any), ["bit-xor"] = (1, Any), ["bit-not"] = (1, 1),
         ["shl"] = (2, 2), ["shr"] = (2, 2), ["bit?"] = (2, 2), ["hex"] = (1, 2), ["bin"] = (1, 2), ["lo"] = (1, 1),
         ["hi"] = (1, 1), ["word"] = (2, 2), ["bytes"] = (1, 1), ["from-bytes"] = (1, 1), ["read-bytes"] = (2, 2),
-        ["write-bytes"] = (2, 2), ["platform"] = (0, 0), ["hydra?"] = (0, 0),
+        ["write-bytes"] = (2, 4), ["platform"] = (0, 0), ["hydra?"] = (0, 0), ["clock"] = (0, 0), ["key"] = (0, 0),
+        ["key?"] = (0, 0),
+        // (Buffers: BufferBuiltins.cs)
+        ["buffer"] = (1, 2), ["buffer?"] = (1, 1), ["buffer-get"] = (2, 2), ["buffer-put"] = (3, 3), ["buffer-fill"] = (2, 4),
+        ["buffer-copy"] = (3, 5), ["read-buffer"] = (2, 4),
         // (The library's: LibraryBuiltins.cs)
         ["not"] = (1, 1), ["=="] = (2, 2), [">="] = (2, 2), ["<="] = (2, 2), ["neg?"] = (1, 1), ["pos?"] = (1, 1),
         ["zero?"] = (1, 1), ["one?"] = (1, 1), ["1+"] = (1, 1), ["1-"] = (1, 1), ["abs"] = (1, 1), ["cons"] = (2, 2),
@@ -67,7 +71,7 @@ public partial class Builtins
     private static readonly HashSet<string> TakesErrors = new() {
         "error?", "type-of", "error-message", "error-code", "repr", "print", "write", "print-to", "write-to",
         "t?", "nil?", "num?", "fixed?", "rational?", "int?", "complex?", "atom?", "symbol?", "string?", "char?",
-        "function?", "qexpr?", "sexpr?",
+        "function?", "qexpr?", "sexpr?", "buffer?",
     };
 
     // A built-in, its name and what it takes (Arity) on it
@@ -510,7 +514,7 @@ public partial class Builtins
             }
         }
         else {
-            Console.Out.WriteLine(ob.Serialize());
+            Console.Out.Write(ob.Serialize() + "\n");     // (LF, as a file gets: not the host's line end)
         }
 
         return LVal.NIL();
@@ -1138,6 +1142,7 @@ public partial class Builtins
             LVal.LE.SEXPR  => "sexpr",
             LVal.LE.HASH   => "hash",
             LVal.LE.STREAM => "stream",
+            LVal.LE.BUFFER => "buffer",
             LVal.LE.EXIT   => "exit",
             _              => "unknown"
         });
@@ -1376,16 +1381,18 @@ public partial class Builtins
         if (a.Count > 0) {
             var m = a.Pop(0);
             if (m.IsErr) return m;
-            if (!m.IsAtom) return LVal.Err("'open' mode must be :read, :write or :append");
+            if (!m.IsAtom) return LVal.Err("'open' mode must be :read, :write, :append or :update");
             mode = m.SymVal;
         }
-        if (mode != "read" && mode != "write" && mode != "append") return LVal.Err($"'open' mode must be :read, :write or :append, not :{mode}");
+        if (mode != "read" && mode != "write" && mode != "append" && mode != "update")
+            return LVal.Err($"'open' mode must be :read, :write, :append or :update, not :{mode}");
         var path = ToHost(p.StrVal);
         if (Directory.Exists(path)) return SysErr("isdir", p.StrVal);
         try {
             Stream s = mode switch {
                 "read"   => File.OpenRead(path),
                 "write"  => File.Create(path),
+                "update" => new FileStream(path, FileMode.Open, FileAccess.ReadWrite),
                 _        => new FileStream(path, FileMode.Append, FileAccess.Write),
             };
             return LVal.Stream(s);
@@ -1478,8 +1485,9 @@ public partial class Builtins
             LVal.LE.QEXPR => LVal.Number(a[0].Count),
             LVal.LE.STR   => LVal.Number(a[0].StrVal.Length),
             LVal.LE.HASH  => LVal.Number(a[0].HashValue!.Count),
+            LVal.LE.BUFFER => LVal.Number(a[0].BufferValue!.Length),
             LVal.LE.ERR   => a[0],
-            _             => LVal.Err("'len' requires parameter of type string, list or hash")
+            _             => LVal.Err("'len' requires parameter of type string, list, hash or buffer")
         });
         AddBuiltin(e, "item-at", ItemAt);
         AddBuiltin(e, "subset", Subset);
@@ -1675,6 +1683,9 @@ public partial class Builtins
 
         // the library's most used functions
         AddLibraryBuiltins(e);
+
+        // buffers (BufferBuiltins.cs)
+        AddBufferBuiltins(e);
 
         // the most used ones' fast ways, and the special forms the compiled code runs itself (FastBuiltins.cs)
         AddFastWays(e);

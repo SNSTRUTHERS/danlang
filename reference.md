@@ -100,11 +100,16 @@ end in one is the error `missing }`.
 | `:t` | T |
 | `:function` | Functions and built-ins, partially applied ones too |
 | `:hash` | Hashes |
+| `:buffer` | Buffers (bytes, changed in place) |
 | `:stream` | Streams |
 | `:error` | Errors |
 | `:exit` | `exit` |
 
 **Truth.**  NIL (the empty list, `{}`, `()`) is false; everything else is true.  The tests give T or NIL.
+
+**Sharing.**  A hash or a buffer is changed in place (`hash-put`, `buffer-put` ...), so it's one value wherever it's
+been given or kept.  Any other value is never changed: a built-in makes a new one (`tail`, `+`, `reverse` ...), so a
+value can be kept and given anywhere and stays what it was.
 
 **Numbers.**  A sum, difference or product is complex if either number is; else rational if either is; else
 fixed if either is; else an integer.  A quotient is exact: a rational, or an integer when it's whole (complex if
@@ -113,12 +118,12 @@ A fixed decimal keeps its places (`(+ 0.5 0.25)` is `0.75`) and prints without z
 
 **Equality** (`eq`): numbers by value whatever their kinds (`(eq 1 1.0)`, `(eq 1/2 0.5)`); characters, strings,
 atoms and symbols by their text (a character isn't a string); lists item by item, and a Q-expression isn't an
-S-expression; T is T; hashes by their entries' keys and values; functions by their formals and body, built-ins by
-which and the values given them; errors by their messages.  Values of different kinds aren't equal.
+S-expression; T is T; hashes by their entries' keys and values; buffers by their bytes; functions by their formals
+and body, built-ins by which and the values given them; errors by their messages.  Values of different kinds aren't equal.
 
 **Order** (`cmp`, `<`, `>`, `sort`): by kind first, in this order: numbers, characters, strings, atoms, symbols,
-Q-expressions, S-expressions, T, functions, hashes, streams, errors; then by value: numbers by value (a complex number
-by its real part, then its imaginary), characters and strings by their bytes, atoms and symbols by name, lists item by
+Q-expressions, S-expressions, T, functions, hashes, buffers, streams, errors; then by value: numbers by value (a complex
+number by its real part, then its imaginary), characters, strings and buffers by their bytes, atoms and symbols by name, lists item by
 item (one that's the start of another first).  Equal values are in the same place.
 
 **Printing.**  Two forms: as `print` shows a value (display) and as the REPL does (`repr`).  They differ only for
@@ -134,19 +139,24 @@ strings and characters.
 | A function | `<function>(fn {x} {* x 2})` | The same |
 | A built-in | `<function>(+)`; partially applied, `<function>(eq 1)` | The same |
 | A hash | `<hash>{{:a 1 :tag} :hashtag}` | The same |
+| A buffer | `<buffer>{0 1 255}` | The same |
 | A stream, T, exit | `<stream>`, `T`, `exit` | The same |
 | An error | `Error: message` | The same |
 
 ## 3. Evaluation
 
 * **A symbol** is its value, from the innermost scope out (lexical scope); unbound, it's the error `Unbound
-  Symbol 'name'`.  **A number, string, character, atom, T, hash, stream or error** is itself.
-* **A Q-expression** is itself; the first time it's evaluated it remembers the scope it's in, where `eval` runs it.
+  Symbol 'name'`.  **A number, string, character, atom, T, hash, buffer, stream or error** is itself.
+* **A Q-expression** is itself, remembering the scope it's evaluated in (one that already remembers one keeps it),
+  where `eval` runs it.
 * **An S-expression** is a call.  `()` is NIL.  Its first item is evaluated: a function or built-in is called with
-  the rest; a hash is called (below); `(x)` of anything else is `x`; anything else with arguments is an error.
+  the rest; a hash or a buffer is called (below); `(x)` of anything else is `x`; anything else with arguments is an
+  error.
 * **A hash called**, `(h key arg...)`: the value at `key` (evaluated).  A function there is a method: it's applied to
   the arguments that follow with `&0` the hash (through which its private entries are had), as any function is: with
   fewer than its formals, it's partially applied.  Any other value is the value, and arguments after it are an error.
+* **A buffer called**, `(b i)`: its byte `i` (evaluated: an index, from 0), as `buffer-get` has it.  Anything after
+  the index is an error.
 
 **Functions.**  `(fn {formals} {body})` makes a function; its body runs in a new scope of its own whose parent is
 the scope the function was made in, so closures keep their variables.
@@ -229,7 +239,7 @@ end takes what there is; a negative count is an error.
 | `(head l)`, `(end l)` | A list of the first item, or the last; an empty list is an error |
 | `(tail l)`, `(init l)` | All but the first item, or all but the last; an empty list is an error |
 | `(join l...)` | The lists' items in one list (at least one, each a list) |
-| `(len x)` | A list's items, a string's bytes, a hash's entries |
+| `(len x)` | A list's items, a string's bytes, a hash's entries, a buffer's bytes |
 | `(item-at l i)` | Item `i` (from 0), as it's written |
 | `(subset l i [n])` | `n` items from `i` (to the end without `n`; `i` may be the length: NIL) |
 | `(reverse x)` | A list's items, or a string's characters, the other way round |
@@ -303,8 +313,8 @@ end takes what there is; a negative count is an error.
 | `(output-of x...)` | What the expressions printed to stdout, a string; an error, if one is one.  Special |
 | `(read text)` | The expressions in the text, unevaluated, a list; a reader error is an error |
 | `(load path...)` | Each file's expressions run at the top level in turn; the last value.  A path is as it is, or with `.dl`; a bare name is also looked for in the library's folder.  An error is `file: message` |
-| `(save x)`, `(save x path [mode])` | NIL: `x` as it would be read back, printed, or written to the file with LF (`:overwrite` or `:append`; an existing file without one is an error; its folder must be there, else `:noent`) |
-| `(open path [mode])` | A stream on the file: `:read` (the default), `:write` (made, or emptied), `:append`; a directory is `:isdir` |
+| `(save x)`, `(save x path [mode])` | NIL: `x` as it would be read back, printed (a line, ending LF), or written to the file with LF (`:overwrite` or `:append`; an existing file without one is an error; its folder must be there, else `:noent`) |
+| `(open path [mode])` | A stream on the file: `:read` (the default), `:write` (made, or emptied), `:append`, `:update` (read and written in place: it must be there, else `:noent`; nothing emptied); a directory is `:isdir` |
 | `(close s)` | NIL; the console's streams can't be closed |
 | `(read-line [s])` | A line without its LF (a CR before it dropped), from `s` or stdin; NIL at the end |
 | `(read-byte [s])`, `(read-all [s])` | A byte (0-255), NIL at the end; or the rest, `""` at the end |
@@ -332,6 +342,25 @@ only its methods reach), `:__not_nil` (an entry that can't be NIL).  Putting NIL
 | `(hash-add-tag h tag...)` | A tag (an atom) on the hash, or `{key tag}` on an entry: whether it was new |
 | `(hash-lock h [key...])`, `(hash-make-const h ...)`, `(hash-make-private h ...)`, `(hash-make-not-nil h ...)` | The reserved tags, on the hash or on the keys' entries |
 | `(hash-tag? h tag)`, `(hash-locked? h [key])`, `(hash-private? h [key])`, `(hash-const? h [key])` | Whether the hash (or the entry) has it |
+
+### Buffers
+
+A buffer is bytes, changed in place (so it's shared, as a hash is: one value wherever it's been given or kept).  An
+index is from 0; a count past the end takes what there is.  A byte is an integer, 0-255, or a character (its code);
+anything else is an error, its code `:inval`.
+
+| Built-in | Value |
+| --- | --- |
+| `(buffer n [fill])`, `(buffer s)`, `(buffer l)`, `(buffer b)` | A new buffer: `n` bytes, each `fill` (0); a string's bytes; a list's (each a byte); another buffer's, a copy |
+| `(b i)`, `(buffer-get b i)` | Byte `i` |
+| `(buffer-put b i byte)` | Its old byte: byte `i` set |
+| `(buffer-fill b byte [i [n]])` | NIL: the bytes from `i` (0) on, `n` of them (to the end), set to `byte` |
+| `(buffer-copy to at from [i [n]])` | NIL: `from`'s bytes from `i` (0) on, `n` of them (to its end), put in `to` from `at` (as many as fit); the two may be one buffer, the parts overlapping |
+| `(read-buffer s b [at [n]])` | Up to `n` bytes (to `b`'s end) read from the stream into `b` from `at` (0): how many; NIL at the stream's end |
+| `(buffer? x)` | Whether it's a buffer |
+
+`len`, `bytes` and `from-bytes` take a buffer too (its length, its bytes as a list, as a string), and `write-bytes` (all
+of it, or a part).
 
 ### The library's built-ins
 
@@ -377,11 +406,13 @@ read-only, `:io` i/o error, `:noexec` not a program, `:eof` end of file, `:srch`
 | `(env [name])`, `(setenv name value)`, `(unsetenv name)` | A variable (NIL if none), or a hash of them all; NIL (a list is its items, spaces between) |
 | `(time)`, `(date [t])`, `(date-parts [t])`, `(seconds-of y m d [h mi s])` | Seconds since 2000-01-01; `"YYYY-MM-DD hh:mm:ss"`; a hash of `:year` ... `:weekday`; a time's seconds |
 | `(ticks)`, `(tick-rate)`, `(sleep secs)` | The clock's ticks (0-32767, 200 a second); 200; NIL after that long (a fraction too) |
+| `(clock)` | The seconds since the program started, a fixed decimal (to the millisecond) |
+| `(key)`, `(key?)` | The next key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys (`:up`, `:down`, `:left`, `:right`, `:home`, `:end`, `:ins`, `:del`, `:pgup`, `:pgdn`, `:f1` ... `:f12`), a key past a byte as its UTF-8 bytes, one at a time; whether one is waiting (a read that doesn't wait) |
 | `(bit-and n...)`, `(bit-or n...)`, `(bit-xor n...)`, `(bit-not n)`, `(shl n k)`, `(shr n k)`, `(bit? n k)` | On integers (two's complement, of any size) |
 | `(hex n [width])`, `(bin n [width])` | Digits in upper case, at least `width` of them |
 | `(lo n)`, `(hi n)`, `(word lo hi)` | A word's low byte, high byte; a word of two bytes |
-| `(bytes s)`, `(from-bytes l)` | A string's bytes, a list; a string of a list of bytes |
-| `(read-bytes s n)`, `(write-bytes s l)` | Up to `n` bytes from a stream (NIL at its end); NIL: bytes written |
+| `(bytes s)`, `(from-bytes l)` | A string's (or a buffer's) bytes, a list; a string of a list of bytes (or a buffer's) |
+| `(read-bytes s n)`, `(write-bytes s l)`, `(write-bytes s b [i [n]])` | Up to `n` bytes from a stream (NIL at its end); NIL: bytes written (a list's, a buffer's from `i` (0) on, `n` of them (to its end)) |
 | `(platform)`, `(hydra?)` | `:windows`, `:linux`, `:macos`, `:hydra`; whether it's the Hydra |
 
 ## 5. The library
@@ -408,7 +439,7 @@ read-only, `:io` i/o error, `:noexec` not a program, `:eof` end of file, `:srch`
 | `zip`, `flatten`, `distinct` | Pairs; nested lists' items in one; each item once |
 | `avg` | A list's mean |
 | `cond`, `case` | `(cond {test value}...)`, `(case x {key value}...)`: the first clause whose test is true (whose key equals `x`), its value, each run where it was written; none, an error (`Selection not found`, `Case not found`) |
-| `floor`, `ceil` | Toward minus or plus infinity |
+| `floor`, `ceil`, `round` | Toward minus or plus infinity; the nearest integer, a half away from zero |
 | `div`, `mod`, `%`, `divmod` | Rounding down: `(+ (* b (div a b)) (mod a b))` is `a`; `divmod` both |
 | `fdiv`, `frecip`, `finverse` | A quotient, a reciprocal, as fixed decimals (`&1` places, 10) |
 | `odd?`, `even?`, `positive?`, `negative?`, `+?`, `-?` | Of numbers; anything else is an error |
@@ -436,3 +467,6 @@ read-only, `:io` i/o error, `:noexec` not a program, `:eof` end of file, `:srch`
 | `platform` | `:windows`, `:linux`, `:macos` | `:hydra` |
 | Ctrl-C | The console's | The window's `interrupt` note |
 | Strings, lists, hashes | As memory allows | As memory allows |
+| Buffers | As memory allows (`Array.MaxLength` bytes) | As a blob allows (8,184 bytes) |
+| `key`, `key?` with input that isn't a console | Its next byte (NIL at its end); whether it's ended | As the console's |
+| `clock` | To the millisecond | To the tick (5 ms) |

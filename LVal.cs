@@ -27,7 +27,12 @@ public partial class LVal {
     // (A value is small: what every kind has, and one reference to what the rarer kinds have, _x)
     public LE ValType;
     public LEnv? Scope = null;      // a Q-expression's: the scope it was written in, where eval runs it
-    public Num? NumVal = null;
+    private Num? _num;
+    private long _long;             // a number's value, when it's an integer that fits (its Num made only when it's wanted)
+    public Num? NumVal {
+        get => _num ?? (ValType == LE.NUM ? _num = new Int(_long) : null);
+        set => _num = value;
+    }
     public string Text = string.Empty;  // a string's or a character's text, a symbol's or an atom's name, an error's message
     public List<LVal>? Cells = null;
     private object? _x = null;      // a function's FunInfo, a hash's LHash, a stream's LStream, an error's code, exit's code, a tail call's TailInfo
@@ -118,6 +123,7 @@ public partial class LVal {
     public LVal Freeze() {
         if (Frozen) return this;
         Frozen = true;
+        if (_x == null && Cells == null) return this;
         if (Cells != null) foreach (var c in Cells) c.Freeze();
         if (Bound != null) foreach (var b in Bound) b.Freeze();
         Formals?.Freeze();
@@ -183,7 +189,7 @@ public partial class LVal {
                 }
                 break;
 
-            case LE.NUM: x.NumVal = NumVal; break;
+            case LE.NUM: x._num = _num; x._long = _long; break;
             case LE.ERR: x.ErrVal = ErrVal; x.ErrCode = ErrCode; break;
             case LE.EXIT: x.ExitCode = ExitCode; break;
 
@@ -215,7 +221,7 @@ public partial class LVal {
     private static LVal Small(int n) => _small[n - SmallMin] ??= new LVal { ValType = LE.NUM, NumVal = new Int(n), Frozen = true };
 
     public static LVal Number(int x) => x >= SmallMin && x <= SmallMax ? Small(x) : Number(new Int(x));
-    public static LVal Number(long x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : new LVal { ValType = LE.NUM, NumVal = new Int(x) };
+    public static LVal Number(long x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : new LVal { ValType = LE.NUM, _long = x };
     public static LVal Number(BigInteger x) => x >= SmallMin && x <= SmallMax ? Small((int)x) : Number(new Int(x));
     public static LVal Number(Num x) {
         if (x.GetType() == typeof(Int)) {
@@ -273,11 +279,17 @@ public partial class LVal {
 
     // A number that's a plain integer (not fixed, rational or complex) that fits in a long: its value
     public bool IsSmallInt(out long n) {
-        if (ValType == LE.NUM && NumVal!.GetType() == typeof(Int)) {
-            var i = (Int)NumVal;
-            if (i.Fits) {
-                n = i.Small;
+        if (ValType == LE.NUM) {
+            if (_num == null) {
+                n = _long;
                 return true;
+            }
+            if (_num.GetType() == typeof(Int)) {
+                var i = (Int)_num;
+                if (i.Fits) {
+                    n = i.Small;
+                    return true;
+                }
             }
         }
         n = 0;
@@ -286,6 +298,10 @@ public partial class LVal {
 
     // A number that's a plain integer (not fixed, rational or complex): its value
     public bool IsPlainInt(out BigInteger n) {
+        if (ValType == LE.NUM && _num == null) {
+            n = _long;
+            return true;
+        }
         if (ValType == LE.NUM && NumVal!.GetType() == typeof(Int)) {
             n = ((Int)NumVal).num;
             return true;

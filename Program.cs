@@ -39,7 +39,7 @@ public class Program {
 
     // An environment with the built-ins and the standard library (lib/globals.dl)
     public static LEnv NewEnv() {
-        LEnv e = new LEnv();
+        LEnv e = new LEnv { IsGlobal = true };
         Builtins.AddBuiltins(e);
         var g = Builtins.Load(e, LVal.Sexpr().Add(LVal.Str("globals")));
         if (g.IsErr) Console.Error.WriteLine(g.ToStr());

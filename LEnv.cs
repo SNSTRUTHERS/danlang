@@ -4,6 +4,10 @@ public sealed class Name {
     public readonly int Id;
     private Name(string text, int id) { Text = text; Id = id; }
 
+    // Whether it's ever been bound in a scope that isn't a global one (a call's, a let's ...): if not, its value from
+    // anywhere is its global one (Compiler.cs)
+    public bool Local;
+
     private static readonly Dictionary<string, Name> _table = new(StringComparer.Ordinal);
     public static Name Of(string s) {
         if (_table.TryGetValue(s, out var n)) return n;
@@ -16,17 +20,27 @@ public sealed class Name {
     public override int GetHashCode() => Id;
     public override string ToString() => Text;
 
-    public static readonly Name Rest = Of("&_");        // a call's extra arguments, a list
+    public static readonly Name Rest = Of("&_");        // a call's extra arguments, a list (a call's own, always)
+    static Name() => Rest.Local = true;
 }
 
 // A scope: names bound to values (shared: a value is frozen once bound), and the scope it's in (Parent).  A small one
 // keeps them in arrays, a big one (the global scope) in a dictionary
 public class LEnv {
-    public LEnv(LEnv? p = null) => Parent = p;
+    public LEnv(LEnv? p = null) {
+        Parent = p;
+        Root = p?.Root ?? this;
+    }
 
     // The enclosing scope: lexical, so a function's call has the scope it was made in (its closure) as its parent,
     // not its caller's; the global environment has none
-    public LEnv? Parent;
+    public readonly LEnv? Parent;
+
+    // The outermost scope it's in (itself, for one with no parent)
+    public LEnv Root { get; }
+
+    // The global environment's (Program's): a name bound in any other scope is a local one somewhere (Name.Local)
+    public bool IsGlobal;
 
     // A function call's own scope: &_ is its, NIL when the call had no extra arguments
     public bool IsCall;
@@ -42,7 +56,6 @@ public class LEnv {
         public LVal Value = null!;
     }
 
-    public LEnv Root => Parent?.Root ?? this;
     public int Count => _map?.Count ?? _n;
 
     // The bindings here (not the enclosing scopes')
@@ -90,6 +103,7 @@ public class LEnv {
 
     // A binding here, as it is (the value already shared)
     public void SetLocal(Name k, LVal v) {
+        if (!IsGlobal) k.Local = true;
         if (_map != null) {
             if (_map.TryGetValue(k, out var slot)) slot.Value = v;
             else _map[k] = new Slot { Value = v };

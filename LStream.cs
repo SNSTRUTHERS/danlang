@@ -15,7 +15,11 @@ public class LStream
 
     private Stream? _stm;
     private int _console;   // 1 stdin, 2 stdout, 3 stderr (Console's, as they are when used): 0 a file
-    private TextReader? _in => _console == 1 ? Console.In : null;
+    private TextReader? _in => _console == 1 ? CookedIn() : null;
+    private static TextReader CookedIn() {
+        ConsoleMode.Cooked();           // (a read of the console's input: its lines edited again, if key made it raw)
+        return Console.In;
+    }
     private TextWriter? _out => _console == 2 ? Console.Out : _console == 3 ? Console.Error : null;
     private bool _closed;
 

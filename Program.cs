@@ -33,6 +33,7 @@ public class Program {
         }
         catch (IOException) { }     // (no console: input or output redirected)
         Console.SetIn(new StreamReader(Console.OpenStandardInput(), Encoding.Latin1));
+        ConsoleMode.Init();
         Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Encoding.Latin1) { AutoFlush = true });
         Console.SetError(new StreamWriter(Console.OpenStandardError(), Encoding.Latin1) { AutoFlush = true });
     }
@@ -104,6 +105,7 @@ public class Program {
             var cancelled = false;
             do {
                 Console.Write(parens.Length > 0 ? $"\t{parens} <" : prompt);
+                ConsoleMode.Cooked();
                 var line = Console.ReadLine();
                 if (line == null && LVal.Interrupted) {
                     // Ctrl-C at the prompt: the line given up, a new prompt

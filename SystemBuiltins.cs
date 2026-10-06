@@ -285,7 +285,9 @@ public partial class Builtins
     }
 
     // (key): a key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys (hylang's names); a key
-    // past a byte comes as its UTF-8 bytes, one at a time.  Input not a console: its next byte, NIL at its end
+    // past a byte comes as its UTF-8 bytes, one at a time.  Input not a console: its next byte, NIL at its end.  (The
+    // console raw: ConsoleMode; a terminal's key that comes as a sequence, ESC [ ... or ESC O ..., is its atom; one
+    // not known, its bytes, one at a time)
     private static readonly Queue<byte> _keyBytes = new();
     private static LVal Key() {
         if (_keyBytes.Count > 0) return LVal.Char((char)_keyBytes.Dequeue());
@@ -293,7 +295,23 @@ public partial class Builtins
             var c = Console.In.Read();
             return c < 0 ? LVal.NIL() : LVal.Char((char)c);
         }
+        ConsoleMode.Raw();
         var k = Console.ReadKey(true);
+        if (k.KeyChar == '\x1B' && Console.KeyAvailable) {
+            var seq = "\x1B" + Console.ReadKey(true).KeyChar;
+            if (seq[1] == '[') {
+                while (Console.KeyAvailable) {
+                    var d = Console.ReadKey(true).KeyChar;
+                    seq += d;
+                    if (d >= '@' && d <= '~') break;
+                }
+            }
+            else if (seq[1] == 'O' && Console.KeyAvailable) seq += Console.ReadKey(true).KeyChar;
+            var named = KeyOfSequence(seq);
+            if (named != null) return LVal.Atom(named);
+            foreach (var ch in seq.Substring(1)) foreach (var b in Encoding.UTF8.GetBytes(ch.ToString())) _keyBytes.Enqueue(b);
+            return LVal.Char('\x1B');
+        }
         var atom = k.Key switch {
             ConsoleKey.UpArrow => "up", ConsoleKey.DownArrow => "down", ConsoleKey.LeftArrow => "left",
             ConsoleKey.RightArrow => "right", ConsoleKey.Home => "home", ConsoleKey.End => "end", ConsoleKey.Insert => "ins",
@@ -305,6 +323,20 @@ public partial class Builtins
         if (k.KeyChar < 256) return LVal.Char(k.KeyChar);
         foreach (var b in Encoding.UTF8.GetBytes(k.KeyChar.ToString())) _keyBytes.Enqueue(b);
         return LVal.Char((char)_keyBytes.Dequeue());
+    }
+
+    // A terminal's key from the sequence it sends (its modifiers, ESC [ 1 ; m A or ESC [ n ; m ~, dropped): its name
+    private static string? KeyOfSequence(string seq) {
+        var m = System.Text.RegularExpressions.Regex.Match(seq, @"^\x1B(?:\[(?:1;\d+)?([A-DFH])|\[(\d+)(?:;\d+)?~|O([A-DFHP-S]))$");
+        if (!m.Success) return null;
+        var letter = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[3].Value;
+        if (letter.Length > 0) return letter switch {
+            "A" => "up", "B" => "down", "C" => "right", "D" => "left", "H" => "home", "F" => "end",
+            "P" => "f1", "Q" => "f2", "R" => "f3", _ => "f4" };
+        return int.Parse(m.Groups[2].Value) switch {
+            1 or 7 => "home", 2 => "ins", 3 => "del", 4 or 8 => "end", 5 => "pgup", 6 => "pgdn",
+            11 => "f1", 12 => "f2", 13 => "f3", 14 => "f4", 15 => "f5", 17 => "f6", 18 => "f7", 19 => "f8", 20 => "f9",
+            21 => "f10", 23 => "f11", 24 => "f12", _ => null };
     }
 
     public static void AddSystemBuiltins(LEnv e) {
@@ -529,7 +561,11 @@ public partial class Builtins
             return LVal.NIL();
         });
         AddBuiltin(e, "key?", (e, a) => {
-            if (!Console.IsInputRedirected) return LVal.Bool(Console.KeyAvailable);
+            if (_keyBytes.Count > 0) return LVal.T();
+            if (!Console.IsInputRedirected) {
+                ConsoleMode.Raw();
+                return LVal.Bool(Console.KeyAvailable);
+            }
             return LVal.Bool(Console.In.Peek() >= 0);
         });
 

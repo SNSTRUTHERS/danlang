@@ -20,7 +20,8 @@ An error that ends a program is shown with where it was made (the file, the line
 of functions it was in (a call in tail position takes its caller's place: it isn't one of them); one at the REPL too.
 A file that can't be read says the line (`file.dl:12: missing )}`: the line of the bracket left open).
 
-For speed, use the Release build (`dotnet build -c Release`, then `bin/Release/net6.0/danlang`).
+For speed, use the Release build (`dotnet build -c Release`, then `bin/Release/net6.0/danlang`).  It runs on the
+newest .NET runtime installed (6 or later: 8 is a fifth faster).
 
 ## The language
 

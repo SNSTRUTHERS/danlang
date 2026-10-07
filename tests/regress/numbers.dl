@@ -285,3 +285,12 @@
 (check (1- -9223372036854775808) -9223372036854775809)
 (check (+ 1 2 9223372036854775807) 9223372036854775810)
 (check (< 9223372036854775807 9223372036854775808) T)
+
+; a balanced base of an even size: one digit fewer above 0 than below (8 below, 7 above in #=16r)
+(check (to-str 8 "#=16r") "#=16r90")
+(check (to-str 104 "#=16r") "#=16rF0")
+(check (to-str -8 "#=16r") "#=16r0")
+(check (to-str 0.5 "#=16r") "#=16r9.0")
+(check (val "#=16r90") 8)
+(check (to-str 5 "#=[0123456789]") "#=[0123456789]60")
+(check (val "#=[0123456789]60") 5)

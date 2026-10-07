@@ -146,7 +146,7 @@ public class NumberParser {
     
     public bool IsDigit(int i) => i >= 0 && Chars.IndexOf(DigitOf(i)) >= 0;
     public int MinDigitVal { get => -_zeroIndex; }
-    public int MaxDigitVal{ get => _balanced ? _zeroIndex : Chars.Length - 1; }
+    public int MaxDigitVal{ get => _balanced ? Chars.Length - 1 - _zeroIndex : Chars.Length - 1; }   // (balanced of an even size: one less above 0 than below)
     
     public BigInteger NewVal(int c) => Val * _base + DigitVal(c);
 

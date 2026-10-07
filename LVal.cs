@@ -643,7 +643,7 @@ public partial class LVal {
                 }
                 break;
 
-            case LE.NUM:   return NumVal?.ToString() ?? "NIL";
+            case LE.NUM:   return NumVal == null ? "NIL" : NumberParser.Display(NumVal, NumberFormat.Current);
             case LE.T:     return "T";
             case LE.ERR:   s.Append("Error: ").Append(ErrVal); break;
             case LE.ATOM:  s.Append(':').Append(SymVal); break;
@@ -683,6 +683,8 @@ public partial class LVal {
         } else if (!IsQExpr && !IsSExpr) {
             // (an empty list is its brackets alone, {} or (), so it reads back as itself)
             if (IsErr) sb.Append("error ").Append(ErrVal);
+            // (a number in a base other than decimal written with its prefix, so it reads back in any base)
+            else if (IsNum && !NumberFormat.Current.IsDecimal) sb.Append(NumberParser.Display(NumVal!, NumberFormat.Current, true));
             else sb.Append(ToStr());
         }
 

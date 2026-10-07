@@ -261,7 +261,7 @@ public class Parser {
             var g = glued(sb.ToString());
             Num? num;
             try {
-                num = NumberParser.ParseString(sb.ToString());
+                num = NumberParser.ParseString(sb.ToString(), NumberFormat.Current, true);    // (a program's text: in the base)
             }
             catch (DivideByZeroException) {
                 return new[] {error($"Division by zero: {sb}", sb.ToString())};

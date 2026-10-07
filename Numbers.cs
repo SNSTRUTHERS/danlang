@@ -404,3 +404,136 @@ public class Comp : Num {
         return new Comp(rPart ?? new Int(BigInteger.Zero), imPart ?? new Int(BigInteger.Zero));
     }
 }
+
+// The Hydra's stored format of a number (hydra-2's reborn/docs/design/plans/NUMBERS.md, "The format numbers are stored
+// in"): a tag byte, then what it says.  An integer: -64 to 63 the tag itself ($00-$7F, 7-bit two's complement); else
+// $80+n-1 (positive) or $90+n-1 (negative) and its magnitude's n bytes (1 to 16), least first; or $A0 (positive) or
+// $A1 (negative), a length (17 to 255) and the magnitude.  A fixed decimal: $B0+places (0 to 15), or $C0 and the
+// places in two bytes (16 to 65535), then its digits, an integer.  A rational: $C1, its numerator, its denominator.  A
+// complex number: $C2, its real part, its imaginary part.  Each number has one form, its shortest; Decode takes no
+// other
+public static class NumBytes {
+    public static List<byte> Encode(Num n) {
+        var l = new List<byte>();
+        if (n is Comp c) {
+            l.Add(0xC2);
+            PutReal(l, c.r);
+            PutReal(l, c.im);
+        }
+        else PutReal(l, n);
+        return l;
+    }
+
+    private static void PutReal(List<byte> l, Num n) {
+        switch (n) {
+            case Rat r when r.den != 1:
+                l.Add(0xC1);
+                PutInt(l, r.num);
+                PutInt(l, r.den);
+                break;
+            case Fix f:
+                if (f.dec < 16) l.Add((byte)(0xB0 + f.dec));
+                else {
+                    if (f.dec > 65535) throw new OverflowException("Too many places for the stored format");
+                    l.Add(0xC0);
+                    l.Add((byte)(f.dec & 255));
+                    l.Add((byte)(f.dec >> 8));
+                }
+                PutInt(l, f.num);
+                break;
+            default:
+                PutInt(l, ((Int)n).num);
+                break;
+        }
+    }
+
+    private static void PutInt(List<byte> l, BigInteger v) {
+        if (v >= -64 && v <= 63) {
+            l.Add((byte)((int)v & 0x7F));
+            return;
+        }
+        var neg = v < 0;
+        var m = BigInteger.Abs(v).ToByteArray(isUnsigned: true, isBigEndian: false);
+        if (m.Length > 255) throw new OverflowException("Too big for the stored format");
+        if (m.Length <= 16) l.Add((byte)((neg ? 0x90 : 0x80) + m.Length - 1));
+        else {
+            l.Add(neg ? (byte)0xA1 : (byte)0xA0);
+            l.Add((byte)m.Length);
+        }
+        l.AddRange(m);
+    }
+
+    // The number the bytes hold, all of them; an error (FormatException) if they aren't a number in the format, in its
+    // one form
+    public static Num Decode(IList<byte> b) {
+        var at = 0;
+        Num n;
+        if (Byte(b, ref at) == 0xC2) {
+            var r = GetReal(b, ref at);
+            var im = GetReal(b, ref at);
+            if (im.IsZero) throw new FormatException("a complex number's imaginary part is 0");
+            n = new Comp((Int)r, (Int)im);
+        }
+        else {
+            at = 0;
+            n = GetReal(b, ref at);
+        }
+        if (at != b.Count) throw new FormatException($"{b.Count - at} bytes after the number");
+        return n;
+    }
+
+    private static int Byte(IList<byte> b, ref int at) {
+        if (at >= b.Count) throw new FormatException("the bytes end in the middle of a number");
+        return b[at++];
+    }
+
+    private static Num GetReal(IList<byte> b, ref int at) {
+        var t = Byte(b, ref at);
+        if (t < 0xB0) {
+            --at;
+            return new Int(GetInt(b, ref at));
+        }
+        if (t <= 0xBF || t == 0xC0) {
+            var places = t - 0xB0;
+            if (t == 0xC0) {
+                places = Byte(b, ref at) + 256 * Byte(b, ref at);
+                if (places < 16) throw new FormatException("a fixed decimal of fewer than 16 places has a tag of its own");
+            }
+            var digits = GetInt(b, ref at);
+            if (places > 0 && digits % 10 == 0) throw new FormatException("a fixed decimal's digits end in 0");
+            return new Fix(digits, places);
+        }
+        if (t == 0xC1) {
+            var num = GetInt(b, ref at);
+            var den = GetInt(b, ref at);
+            if (den <= 1) throw new FormatException("a rational's denominator is above 1");
+            if (num.IsZero || BigInteger.GreatestCommonDivisor(num, den) != 1) throw new FormatException("a rational isn't in its lowest terms");
+            return new Rat(num, den);
+        }
+        throw new FormatException($"${t:X2} isn't a real number's tag");
+    }
+
+    private static BigInteger GetInt(IList<byte> b, ref int at) {
+        var t = Byte(b, ref at);
+        if (t < 0x80) return (t & 0x40) != 0 ? t - 128 : t;
+        bool neg;
+        int len;
+        if (t <= 0x9F) {
+            neg = t >= 0x90;
+            len = (t & 0x0F) + 1;
+        }
+        else if (t == 0xA0 || t == 0xA1) {
+            neg = t == 0xA1;
+            len = Byte(b, ref at);
+            if (len < 17) throw new FormatException("an integer of fewer than 17 bytes has a tag of its own");
+        }
+        else throw new FormatException($"${t:X2} isn't an integer's tag");
+        var m = new byte[len];
+        for (var i = 0; i < len; i++) m[i] = (byte)Byte(b, ref at);
+        if (m[len - 1] == 0) throw new FormatException("an integer's magnitude ends in a 0 byte");
+        var v = new BigInteger(m, isUnsigned: true, isBigEndian: false);
+        if (neg) v = -v;
+        if (v >= -64 && v <= 63) throw new FormatException("an integer of -64 to 63 is its tag alone");
+        return v;
+    }
+}

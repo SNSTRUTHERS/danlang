@@ -103,6 +103,9 @@
 (to-fixed nb-q 4)
 (check nb-q -1/3)
 (check (to-rational 0.75) 3/4)
+; a rational whose denominator is 1 is an integer
+(check (int? (to-rational 5)) T)
+(check (int? (to-rational 2.0)) T)
 (check (truncate 7/2) 3)
 (check (truncate -7/2) -3)
 (check (truncate 2.75) 2)
@@ -145,6 +148,8 @@
 (check (fixed? 1.5) T)
 (check (rational? 1/2) T)
 (check (rational? 1) NIL)
+(check (int? #b1.0) T)
+(check #b1.1 3/2)
 (check (complex? 1) NIL)
 ; anything else isn't one either
 (check (int? "a") NIL)
@@ -163,3 +168,16 @@
 (check-error (random "a"))
 (check (fib 10) 55)
 (check (fib 100) 354224848179261915075)
+
+; past 64 bits, either way: the same numbers, a sum, a difference or a product not cut short
+(check (+ 9223372036854775807 1) 9223372036854775808)
+(check (- -9223372036854775808 1) -9223372036854775809)
+(check (- 9223372036854775807 -1) 9223372036854775808)
+(check (+ -9223372036854775808 -1) -9223372036854775809)
+(check (* 3037000500 3037000500) 9223372037000250000)
+(check (* -4611686018427387904 2) -9223372036854775808)
+(check (* 4611686018427387904 2) 9223372036854775808)
+(check (1+ 9223372036854775807) 9223372036854775808)
+(check (1- -9223372036854775808) -9223372036854775809)
+(check (+ 1 2 9223372036854775807) 9223372036854775810)
+(check (< 9223372036854775807 9223372036854775808) T)

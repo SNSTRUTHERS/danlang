@@ -15,7 +15,11 @@ public class LStream
 
     private Stream? _stm;
     private int _console;   // 1 stdin, 2 stdout, 3 stderr (Console's, as they are when used): 0 a file
-    private TextReader? _in => _console == 1 ? Console.In : null;
+    private TextReader? _in => _console == 1 ? CookedIn() : null;
+    private static TextReader CookedIn() {
+        ConsoleMode.Cooked();           // (a read of the console's input: its lines edited again, if key made it raw)
+        return Console.In;
+    }
     private TextWriter? _out => _console == 2 ? Console.Out : _console == 3 ? Console.Error : null;
     private bool _closed;
 
@@ -46,6 +50,25 @@ public class LStream
             return LVal.Number(new BigInteger(offset));
         }
         return LVal.Err("Cannot seek on a non-seekable stream");
+    }
+
+    // Up to n bytes into b at at: how many, or NIL at the end (when n isn't 0)
+    public LVal ReadInto(byte[] b, int at, int n) {
+        if (!IsInput) return LVal.Err("Cannot read from this stream");
+        int got = 0;
+        while (got < n) {
+            int k;
+            if (_in != null) {
+                var c = _in.Read();
+                if (c < 0) break;
+                b[at + got] = (byte)c;
+                k = 1;
+            }
+            else k = _stm!.Read(b, at + got, n - got);
+            if (k <= 0) break;
+            got += k;
+        }
+        return got == 0 && n > 0 ? LVal.NIL() : LVal.Number(got);
     }
 
     // A byte (0-255), or NIL at the end
@@ -95,6 +118,20 @@ public class LStream
     }
 
     // Bytes as they are: a string's characters, each one byte (0-255)
+    // n bytes of b from at, written
+    public LVal WriteBytes(byte[] b, int at, int n) {
+        if (!IsOutput) return LVal.Err("Cannot write this stream");
+        if (_out != null) {
+            _out.Write(System.Text.Encoding.Latin1.GetString(b, at, n));
+            _out.Flush();
+        }
+        else {
+            _stm!.Write(b, at, n);
+            _stm.Flush();
+        }
+        return LVal.NIL();
+    }
+
     public LVal WriteBytes(string s) {
         if (!IsOutput) return LVal.Err("Cannot write this stream");
         if (_out != null) {

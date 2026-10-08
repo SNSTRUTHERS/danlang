@@ -1,4 +1,9 @@
 public record Config {
+    // -w: warnings, on stderr (def or fun replacing a built-in, or a global of another kind)
+    public bool Warnings { get; set; }
+    // -p: a profile of the program (on stderr, when it ends): where its time went
+    public bool Profile { get; set; }
+
     private class CommandLineReader {
         private string[] args;
         private int index;
@@ -78,6 +83,14 @@ public record Config {
             }
 
             Environment.Exit(0);
+            return true;
+        }),
+        new('w', "warnings", "Warn (on stderr) when def or fun replaces a built-in, or a global of another kind", (reader, config) => {
+            config.Warnings = true;
+            return true;
+        }),
+        new('p', "profile", "Profile the program: where its time went (on stderr, when it ends)", (reader, config) => {
+            config.Profile = true;
             return true;
         }),
         new("version", "Print version/vendor information and exit", (reader, config) => {

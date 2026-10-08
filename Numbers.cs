@@ -54,6 +54,7 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
     public static Num operator-(Num n, BigInteger m) => n - (Num)new Int(m);
 
     public static Num operator*(Num n, Num m) {
+        if (n.GetType() == typeof(Int) && m.GetType() == typeof(Int)) return new Int(((Int)n).num * ((Int)m).num);
         if (n is Comp || m is Comp) return Comp.Mul(Comp.Of(n), Comp.Of(m));
         if (n is Rat || m is Rat) return Norm(Rat.ToRat(n) * Rat.ToRat(m));
         if (n is Fix || m is Fix) {
@@ -65,6 +66,7 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
     }
 
     public static Num operator+(Num n, Num m) {
+        if (n.GetType() == typeof(Int) && m.GetType() == typeof(Int)) return new Int(((Int)n).num + ((Int)m).num);
         if (n is Comp || m is Comp) return Comp.Add(Comp.Of(n), Comp.Of(m));
         if (n is Rat || m is Rat) return Norm(Rat.ToRat(n) + Rat.ToRat(m));
         if (n is Fix || m is Fix) return Fix.Add(Fix.Of((Int)n), Fix.Of((Int)m));
@@ -87,6 +89,10 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
     // imaginary part
     public int CompareTo(Num? obj) {
         if (obj is null) return 1;
+        if (GetType() == typeof(Int) && obj.GetType() == typeof(Int)) {
+            Int a = (Int)this, b = (Int)obj;
+            return a.Fits && b.Fits ? a.Small.CompareTo(b.Small) : a.num.CompareTo(b.num);
+        }
         if (this is Comp || obj is Comp) {
             var a = Comp.Of(this);
             var b = Comp.Of(obj);
@@ -107,9 +113,25 @@ public class Num : IComparable<Num>, IComparable<BigInteger>, IComparable<long> 
 }
 
 public class Int : Num {
-    public BigInteger num { get; protected set; } = 0;
+    // Its value; and, when it fits in a long, that long (Small: Fits), for the arithmetic's fast ways
+    private BigInteger _num;
+    public BigInteger num {
+        get => _num;
+        protected set {
+            _num = value;
+            Fits = value >= long.MinValue && value <= long.MaxValue;
+            Small = Fits ? (long)value : 0;
+        }
+    }
+    public long Small { get; private set; }
+    public bool Fits { get; private set; } = true;
     public Int() : base() {}
     public Int(BigInteger? num = null) => this.num = num ?? BigInteger.Zero;
+    public Int(long n) {
+        _num = n;
+        Small = n;
+        Fits = true;
+    }
 
     public static explicit operator double(Int r) => (double)r.num;
     

@@ -28,6 +28,11 @@ public partial class Builtins
     public static LVal SysErr(string code, string? name = null) =>
         LVal.Err((name != null ? name + ": " : "") + SysErrors[code], code);
 
+    // An argument a system built-in can't take: its own message, the code :inval (not .NET's "x: invalid argument")
+    public class LArgException : ArgumentException {
+        public LArgException(string message) : base(message) {}
+    }
+
     // A .NET exception as the Hydra's error
     public static LVal SysErr(Exception ex, string? name = null) => ex switch {
         FileNotFoundException or DirectoryNotFoundException => SysErr("noent", name),
@@ -37,6 +42,7 @@ public partial class Builtins
         IOException io when io.HResult == unchecked((int)0x80070050) || io.HResult == unchecked((int)0x800700B7) => SysErr("exist", name),
         IOException io when io.HResult == unchecked((int)0x80070091) => SysErr("notempty", name),
         IOException => SysErr("io", name),
+        LArgException a => LVal.Err(a.Message, "inval"),
         ArgumentException => SysErr("inval", name),
         _ => LVal.Err(FromHost(ex.Message))
     };
@@ -62,7 +68,7 @@ public partial class Builtins
     private static string PathOf(LVal v, string fn) {
         if (v.IsStr) return ToHost(v.StrVal);
         if (v.IsAtom || v.IsSym) return ToHost(v.SymVal);
-        throw new ArgumentException($"'{fn}' expects a path");
+        throw new LArgException($"'{fn}' expects a path");
     }
 
     // ---- Files and directories
@@ -221,15 +227,27 @@ public partial class Builtins
 
     // An integer argument (a number equal to one counts: 2.0)
     private static BigInteger IntOf(LVal v, string what) {
+        if (v.IsPlainInt(out var n)) return n;
         if (v.IsNum && !(v.NumVal is Comp)) {
             var r = Rat.ToRat(v.NumVal!);
             if (r.den == 1) return r.num;
         }
-        throw new ArgumentException($"{what} must be an integer");
+        throw new LArgException($"{what} must be an integer");
     }
 
-    private static LVal Bits(LEnv e, LVal a, string fn, BigInteger start, Func<BigInteger, BigInteger, BigInteger> op) =>
-        SysOp(e, a, fn, x => LVal.Number(x.Select(v => IntOf(v, $"'{fn}''s argument")).Aggregate(op)));
+    private static LVal Bits(LEnv e, LVal a, string fn, BigInteger start, Func<BigInteger, BigInteger, BigInteger> op) {
+        BigInteger r = default;
+        for (int i = 0; i < a.Count; i++) {
+            var v = a[i];
+            if (v.IsErr) return v;
+            if (!v.IsPlainInt(out var n)) {
+                try { n = IntOf(v, $"'{fn}''s argument"); }
+                catch (Exception ex) { return SysErr(ex, a[0].ToDisplay()); }
+            }
+            r = i == 0 ? n : op(r, n);
+        }
+        return LVal.Number(r);
+    }
 
     // An integer's digits in base b (upper case), at least width of them; a - before a negative one's
     private static string Digits(BigInteger n, int b, int width) {
@@ -248,21 +266,77 @@ public partial class Builtins
     private static LVal BytesOf(string s) {
         var l = LVal.Qexpr();
         foreach (var c in s) {
-            if (c > 255) throw new ArgumentException($"'{c}' isn't a byte");
+            if (c > 255) throw new LArgException($"'{c}' isn't a byte");
             l.Add(LVal.Number(c));
         }
         return l;
     }
 
     private static string StringOfBytes(LVal l, string fn) {
-        if (!l.IsQExpr) throw new ArgumentException($"'{fn}' expects a list of bytes");
+        if (l.IsBuffer) return Encoding.Latin1.GetString(l.BufferValue!);
+        if (!l.IsQExpr) throw new LArgException($"'{fn}' expects a list of bytes, or a buffer");
         var sb = new StringBuilder();
         foreach (var b in l.Cells!) {
             var n = IntOf(b, "a byte");
-            if (n < 0 || n > 255) throw new ArgumentException($"{n} isn't a byte");
+            if (n < 0 || n > 255) throw new LArgException($"{n} isn't a byte");
             sb.Append((char)(int)n);
         }
         return sb.ToString();
+    }
+
+    // (key): a key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys (hylang's names); a key
+    // past a byte comes as its UTF-8 bytes, one at a time.  Input not a console: its next byte, NIL at its end.  (The
+    // console raw: ConsoleMode; a terminal's key that comes as a sequence, ESC [ ... or ESC O ..., is its atom; one
+    // not known, its bytes, one at a time)
+    private static readonly Queue<byte> _keyBytes = new();
+    private static LVal Key() {
+        if (_keyBytes.Count > 0) return LVal.Char((char)_keyBytes.Dequeue());
+        if (Console.IsInputRedirected) {
+            var c = Console.In.Read();
+            return c < 0 ? LVal.NIL() : LVal.Char((char)c);
+        }
+        ConsoleMode.Raw();
+        var k = Console.ReadKey(true);
+        if (k.KeyChar == '\x1B' && Console.KeyAvailable) {
+            var seq = "\x1B" + Console.ReadKey(true).KeyChar;
+            if (seq[1] == '[') {
+                while (Console.KeyAvailable) {
+                    var d = Console.ReadKey(true).KeyChar;
+                    seq += d;
+                    if (d >= '@' && d <= '~') break;
+                }
+            }
+            else if (seq[1] == 'O' && Console.KeyAvailable) seq += Console.ReadKey(true).KeyChar;
+            var named = KeyOfSequence(seq);
+            if (named != null) return LVal.Atom(named);
+            foreach (var ch in seq.Substring(1)) foreach (var b in Encoding.UTF8.GetBytes(ch.ToString())) _keyBytes.Enqueue(b);
+            return LVal.Char('\x1B');
+        }
+        var atom = k.Key switch {
+            ConsoleKey.UpArrow => "up", ConsoleKey.DownArrow => "down", ConsoleKey.LeftArrow => "left",
+            ConsoleKey.RightArrow => "right", ConsoleKey.Home => "home", ConsoleKey.End => "end", ConsoleKey.Insert => "ins",
+            ConsoleKey.Delete => "del", ConsoleKey.PageUp => "pgup", ConsoleKey.PageDown => "pgdn",
+            >= ConsoleKey.F1 and <= ConsoleKey.F12 => "f" + (k.Key - ConsoleKey.F1 + 1),
+            _ => null
+        };
+        if (atom != null) return LVal.Atom(atom);
+        if (k.KeyChar < 256) return LVal.Char(k.KeyChar);
+        foreach (var b in Encoding.UTF8.GetBytes(k.KeyChar.ToString())) _keyBytes.Enqueue(b);
+        return LVal.Char((char)_keyBytes.Dequeue());
+    }
+
+    // A terminal's key from the sequence it sends (its modifiers, ESC [ 1 ; m A or ESC [ n ; m ~, dropped): its name
+    private static string? KeyOfSequence(string seq) {
+        var m = System.Text.RegularExpressions.Regex.Match(seq, @"^\x1B(?:\[(?:1;\d+)?([A-DFH])|\[(\d+)(?:;\d+)?~|O([A-DFHP-S]))$");
+        if (!m.Success) return null;
+        var letter = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[3].Value;
+        if (letter.Length > 0) return letter switch {
+            "A" => "up", "B" => "down", "C" => "right", "D" => "left", "H" => "home", "F" => "end",
+            "P" => "f1", "Q" => "f2", "R" => "f3", _ => "f4" };
+        return int.Parse(m.Groups[2].Value) switch {
+            1 or 7 => "home", 2 => "ins", 3 => "del", 4 or 8 => "end", 5 => "pgup", 6 => "pgdn",
+            11 => "f1", 12 => "f2", 13 => "f3", 14 => "f4", 15 => "f5", 17 => "f6", 18 => "f7", 19 => "f8", 20 => "f9",
+            21 => "f10", 23 => "f11", 24 => "f12", _ => null };
     }
 
     public static void AddSystemBuiltins(LEnv e) {
@@ -433,7 +507,12 @@ public partial class Builtins
         AddBuiltin(e, "hi", (e, a) => SysOp(e, a, "hi", x => LVal.Number((IntOf(x[0], "'hi''s number") >> 8) & 255)));
         AddBuiltin(e, "word", (e, a) => SysOp(e, a, "word", x => LVal.Number((IntOf(x[0], "A low byte") & 255) + 256 * (IntOf(x[1], "A high byte") & 255))));
         AddBuiltin(e, "bytes", (e, a) => SysOp(e, a, "bytes", x => {
-            if (!x[0].IsStr && !x[0].IsChar) return LVal.Err("'bytes' expects a String");
+            if (x[0].IsBuffer) {
+                var l = LVal.Qexpr();
+                foreach (var b in x[0].BufferValue!) l.Add(LVal.Number(b));
+                return l;
+            }
+            if (!x[0].IsStr && !x[0].IsChar) return LVal.Err("'bytes' expects a String or a buffer");
             return BytesOf(x[0].StrVal);
         }));
         AddBuiltin(e, "from-bytes", (e, a) => SysOp(e, a, "from-bytes", x => LVal.Str(StringOfBytes(x[0], "from-bytes"))));
@@ -448,7 +527,47 @@ public partial class Builtins
             }
             return l.Count == 0 && n > 0 ? LVal.NIL() : l;
         }));
-        AddBuiltin(e, "write-bytes", (e, a) => StreamOp(e, a, "write-bytes", 1, (s, x) => s.WriteBytes(StringOfBytes(x[0], "write-bytes"))));
+        // (a buffer's: all of it, or from i (0) on, n of them (to its end))
+        AddBuiltin(e, "write-bytes", (e, a) => {
+            if (a.Count > 1 && a[1].IsBuffer && a[0].IsStream) {
+                var bytes = a[1].BufferValue!;
+                int at = 0, count = bytes.Length;
+                if (a.Count > 2) {
+                    var ix = IndexArg(a[2], "write-bytes", bytes.Length, true, out at);
+                    if (ix.IsErr) return ix;
+                    count = bytes.Length - at;
+                }
+                if (a.Count > 3) {
+                    var c = CountArg(a[3], "write-bytes", bytes.Length, at, out count);
+                    if (c.IsErr) return c;
+                }
+                return a[0].StreamValue!.WriteBytes(bytes, at, count);
+            }
+            if (a.Count > 2) return LVal.Err("'write-bytes' takes a part (i n) only of a buffer");
+            return StreamOp(e, a, "write-bytes", 1, (s, x) => s.WriteBytes(StringOfBytes(x[0], "write-bytes")));
+        });
+        // (clock): the seconds since the program started, a fixed decimal (to the millisecond)
+        AddBuiltin(e, "clock", (e, a) => LVal.Number(Num.Norm(new Fix(_clock.ElapsedMilliseconds, 3))));
+        // (key): the next key, raw (unechoed, as it comes): a character, or an atom for the terminal's keys; (key?):
+        // whether one is waiting.  (Input not a console: its next byte, NIL at its end; one's waiting unless it's ended)
+        AddBuiltin(e, "key", (e, a) => Key());
+        // (on-note f): Ctrl-C's note (:interrupt) given to f, a function, at the next call (NIL: none, its default:
+        // the error :intr), as hylang's on-note has the Hydra's notes
+        AddBuiltin(e, "on-note", (e, a) => {
+            var f = a[0];
+            if (!f.IsNIL && !f.IsFun) return LVal.Err("'on-note' expects a function or NIL");
+            LVal.NoteFn = f.IsNIL ? null : f.Freeze();
+            LVal.NoteEnv = e;
+            return LVal.NIL();
+        });
+        AddBuiltin(e, "key?", (e, a) => {
+            if (_keyBytes.Count > 0) return LVal.T();
+            if (!Console.IsInputRedirected) {
+                ConsoleMode.Raw();
+                return LVal.Bool(Console.KeyAvailable);
+            }
+            return LVal.Bool(Console.In.Peek() >= 0);
+        });
 
         // ---- where it's running
         AddBuiltin(e, "platform", (e, a) => LVal.Atom(OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsLinux() ? "linux" : OperatingSystem.IsMacOS() ? "macos" : "host"));

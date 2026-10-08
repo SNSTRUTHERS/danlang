@@ -18,7 +18,7 @@ public partial class Builtins
         var items = Items(l);
         if (items == null) return LVal.Err($"'{fn}' expects a list");
         if (i < 0 || i >= items.Count) return LVal.Err("'nth': the list has no such item");
-        return items[(int)i].Copy();
+        return items[(int)i];
     }
 
     // take's and drop's count: a whole number, 0 or more; or an error
@@ -30,17 +30,18 @@ public partial class Builtins
 
     private static void AddLibraryBuiltins(LEnv e) {
         LVal plus = e.Get("+"), minus = e.Get("-"), times = e.Get("*"), eq = e.Get("eq"), lt = e.Get("<"), gt = e.Get(">");
-        LVal zero = LVal.Number(BigInteger.Zero), one = LVal.Number(BigInteger.One);
+        LVal zero = LVal.Number(BigInteger.Zero).Freeze(), one = LVal.Number(BigInteger.One).Freeze();
 
         // logic, comparison and arithmetic
         AddBuiltin(e, "not",  (e, a) => LVal.Bool(a[0].IsNIL));
-        AddBuiltin(e, "==",   (e, a) => Apply(e, eq, a[0], a[1]));
-        AddBuiltin(e, ">=",   (e, a) => Not(Apply(e, lt, a[0], a[1])));
-        AddBuiltin(e, "<=",   (e, a) => Not(Apply(e, gt, a[0], a[1])));
-        AddBuiltin(e, "neg?", (e, a) => Apply(e, lt, a[0], zero));
-        AddBuiltin(e, "pos?", (e, a) => Apply(e, lt, zero, a[0]));
-        AddBuiltin(e, "zero?", (e, a) => Apply(e, eq, zero, a[0]));
-        AddBuiltin(e, "one?", (e, a) => Apply(e, eq, one, a[0]));
+        // (eq, < and > themselves, directly: the values compared by Equals and the order)
+        AddBuiltin(e, "==",   (e, a) => LVal.Bool(a[0].Equals(a[1])));
+        AddBuiltin(e, ">=",   (e, a) => LVal.Bool(a[0].CompareTo(a[1]) >= 0));
+        AddBuiltin(e, "<=",   (e, a) => LVal.Bool(a[0].CompareTo(a[1]) <= 0));
+        AddBuiltin(e, "neg?", (e, a) => LVal.Bool(a[0].CompareTo(zero) < 0));
+        AddBuiltin(e, "pos?", (e, a) => LVal.Bool(zero.CompareTo(a[0]) < 0));
+        AddBuiltin(e, "zero?", (e, a) => LVal.Bool(zero.Equals(a[0])));
+        AddBuiltin(e, "one?", (e, a) => LVal.Bool(one.Equals(a[0])));
         AddBuiltin(e, "1+",   (e, a) => Apply(e, plus, a[0], one));
         AddBuiltin(e, "1-",   (e, a) => Apply(e, minus, a[0], one));
         AddBuiltin(e, "abs",  (e, a) => {
@@ -55,7 +56,7 @@ public partial class Builtins
             if (items == null) return LVal.Err("'cons' expects a list second");
             var q = LVal.Qexpr();
             q.Add(a[0]);
-            foreach (var c in items) q.Add(c.Copy());
+            foreach (var c in items) q.Add(c);
             return q;
         });
         AddBuiltin(e, "fst",  (e, a) => Nth(zero, a[0], "fst"));
@@ -74,7 +75,7 @@ public partial class Builtins
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'take' expects a list");
             var q = LVal.Qexpr();
-            foreach (var c in items.Take(k < items.Count ? (int)k : items.Count)) q.Add(c.Copy());
+            foreach (var c in items.Take(k < items.Count ? (int)k : items.Count)) q.Add(c);
             return q;
         });
         AddBuiltin(e, "drop", (e, a) => {
@@ -83,7 +84,7 @@ public partial class Builtins
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'drop' expects a list");
             var q = LVal.Qexpr();
-            foreach (var c in items.Skip(k < items.Count ? (int)k : items.Count)) q.Add(c.Copy());
+            foreach (var c in items.Skip(k < items.Count ? (int)k : items.Count)) q.Add(c);
             return q;
         });
         LVal Elem(LVal x, LVal l, string fn) {
@@ -100,7 +101,7 @@ public partial class Builtins
             if (items == null) return LVal.Err("'map' expects a function and a list");
             var q = LVal.Qexpr();
             foreach (var c in items) {
-                var r = Apply(e, a[0], c.Copy());
+                var r = Apply(e, a[0], c);
                 if (r.IsErr) return r;
                 q.Add(r);
             }
@@ -111,9 +112,9 @@ public partial class Builtins
             if (items == null) return LVal.Err("'filter' expects a function and a list");
             var q = LVal.Qexpr();
             foreach (var c in items) {
-                var r = Apply(e, a[0], c.Copy());
+                var r = Apply(e, a[0], c);
                 if (r.IsErr) return r;
-                if (!r.IsNIL) q.Add(c.Copy());
+                if (!r.IsNIL) q.Add(c);
             }
             return q;
         });
@@ -122,7 +123,7 @@ public partial class Builtins
             if (items == null) return LVal.Err("'foldl' expects a function, a value and a list");
             var acc = a[1];
             foreach (var c in items) {
-                acc = Apply(e, a[0], acc, c.Copy());
+                acc = Apply(e, a[0], acc, c);
                 if (acc.IsErr) return acc;
             }
             return acc;
@@ -132,7 +133,7 @@ public partial class Builtins
             if (items == null) return LVal.Err("'foldr' expects a function, a value and a list");
             var acc = a[1];
             for (int i = items.Count - 1; i >= 0; i--) {
-                acc = Apply(e, a[0], items[i].Copy(), acc);
+                acc = Apply(e, a[0], items[i], acc);
                 if (acc.IsErr) return acc;
             }
             return acc;
@@ -142,7 +143,7 @@ public partial class Builtins
             var items = Items(l);
             if (items == null) return LVal.Err($"'{fn}' expects a function and a list");
             foreach (var c in items) {
-                var r = Apply(e, f, c.Copy());
+                var r = Apply(e, f, c);
                 if (r.IsErr) return r;
                 var v = step(c, r);
                 if (v != null) return v;
@@ -151,7 +152,7 @@ public partial class Builtins
         }
         AddBuiltin(e, "any?",  (e, a) => Test(a[0], a[1], "any?", (c, r) => r.IsNIL ? null : LVal.Bool(true), LVal.NIL));
         AddBuiltin(e, "all?",  (e, a) => Test(a[0], a[1], "all?", (c, r) => r.IsNIL ? LVal.NIL() : null, () => LVal.Bool(true)));
-        AddBuiltin(e, "find",  (e, a) => Test(a[0], a[1], "find", (c, r) => r.IsNIL ? null : c.Copy(), LVal.NIL));
+        AddBuiltin(e, "find",  (e, a) => Test(a[0], a[1], "find", (c, r) => r.IsNIL ? null : c, LVal.NIL));
         AddBuiltin(e, "count", (e, a) => {
             int n = 0;
             var r = Test(a[0], a[1], "count", (c, x) => { if (!x.IsNIL) n++; return null; }, LVal.NIL);
@@ -164,7 +165,7 @@ public partial class Builtins
             if (items == null) return LVal.Err($"'{fn}' expects a list");
             var acc = z;
             foreach (var c in items) {
-                acc = Apply(e, f, acc, c.Copy());
+                acc = Apply(e, f, acc, c);
                 if (acc.IsErr) return acc;
             }
             return acc;

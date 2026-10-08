@@ -21,6 +21,7 @@ public class Parser {
         public string? raw;
         public Num? num;
         public string parens = "";
+        public int line;        // where it starts (an unclosed bracket's More: the innermost one's opener)
     }
 
     // The shorthand: a prefix right before ( or { is the function it names, the call's first item: ?(c a b) is
@@ -32,9 +33,14 @@ public class Parser {
         };
 
     public static IEnumerable<Token> Tokenize(TextReader stream, string startingParens = "") {
+        int line = 1, tokLine = 1;
         int peekInt() => stream.Peek();
         char peek() => (char)peekInt();
-        int nextInt() => stream.Read();
+        int nextInt() {
+            var c = stream.Read();
+            if (c == '\n') line++;
+            return c;
+        }
         char next() => (char)nextInt();
 
         bool isNumberSeparator(int c, char? numBase = null) =>
@@ -56,6 +62,11 @@ public class Parser {
         // A name (or a number) right against an opening bracket: an error, as f(x) or <(h k) isn't danlang
         Token? glued(string name) =>
             isOpener(peekInt()) ? error($"'{name}' touches '{peek()}': put a space between them", name) : null;
+
+        // A byte that's never in a word, as it's never outside a string: a control character, or one past ASCII (its
+        // error; null for any other)
+        string? notInWord(int c) =>
+            c < 0 ? null : isControl(c) ? "Control sequences not allowed" : c > 127 ? "Non-ASCII character outside of string literal" : null;
 
         Token error(String reason, String? raw = null) => new Token { type = Token.Type.Error,  str = reason, raw = raw };
         Token symbol(String sym,   String? raw = null) => new Token { type = Token.Type.Symbol, str = sym,    raw = raw ?? sym };
@@ -148,6 +159,8 @@ public class Parser {
                 return new Token { type = Token.Type.String, str = str.ToString(), raw = raw.ToString() };
             }
 
+            // the text's end in a here string: more is wanted, as for an open bracket (at the REPL, another line)
+            if (quoteCount > 1) return new Token { type = Token.Type.More, parens = new string('"', quoteCount), raw = raw.ToString() };
             return error("Incomplete string literal", raw.ToString());
         }
 
@@ -177,7 +190,14 @@ public class Parser {
             else if (prefix == '$' && !isTerminator(peekInt())) {
                 // $name: the environment's variable, (env "name"), its name's case kept
                 var name = new StringBuilder();
-                while (!isTerminator(peekInt())) name.Append(next());
+                while (!isTerminator(peekInt())) {
+                    if (notInWord(peekInt()) is string m) {
+                        next();
+                        yield return error(m);
+                        yield break;
+                    }
+                    name.Append(next());
+                }
                 yield return paren('(', $"${name}");
                 yield return symbol("env", "");
                 yield return new Token { type = Token.Type.String, str = name.ToString(), raw = "" };
@@ -194,6 +214,11 @@ public class Parser {
                 str.Append(prefix);
 
                 while (!isTerminator(peekInt())) {
+                    if (notInWord(peekInt()) is string m) {
+                        next();
+                        yield return error(m);
+                        yield break;
+                    }
                     str.Append(next());
                 }
 
@@ -212,14 +237,25 @@ public class Parser {
                 if (isOpener(peekInt())) {
                     // a digit set of its own, #[...] (after #, and < > = + -): to its ], part of the number
                     if (peek() == '[' && System.Text.RegularExpressions.Regex.IsMatch(sb.ToString(), @"^[+-]?#[<>]?=?[+-]?$")) {
-                        while (peekInt() != -1 && peek() != ']') sb.Append(next());
+                        while (peekInt() != -1 && peek() != ']') {
+                            if (notInWord(peekInt()) is string m) {
+                                next();
+                                return new[] {error(m)};
+                            }
+                            sb.Append(next());
+                        }
                         if (peekInt() != -1) sb.Append(next());
                         continue;
                     }
                     break;
                 }
+                if (notInWord(peekInt()) is string bad) {
+                    next();
+                    return new[] {error(bad)};
+                }
                 var c = next();
-                if (c == '#' && (peek() == '(' || peek() == '{')) return lexSymbol(c);
+                // (# is a prefix only as a word's first: +#(a) is the word +# against a bracket)
+                if (c == '#' && sb.Length == 0 && (peek() == '(' || peek() == '{')) return lexSymbol(c);
                 sb.Append(c);
             }
             var g = glued(sb.ToString());
@@ -237,6 +273,7 @@ public class Parser {
         IEnumerable<Token> Lex() {
             var i = 0;
             while ((i = peekInt()) != -1) {
+                tokLine = line;
                 var c = (char)i;
                 if (isSpace(c)) next();
                 else if (isControl(c)) {
@@ -266,23 +303,32 @@ public class Parser {
             }
         }
 
+        // (each token at the line it starts on; each opener's line, for one left unclosed)
         var parens = startingParens;
+        var opened = new List<int>();
         foreach (var t in Lex()) {
-            if (t.type == Token.Type.SExOpen) parens += t.raw == "[" ? ']' : ')';
-            if (t.type == Token.Type.QExOpen) parens += '}';
+            t.line = tokLine;
+            if (t.type == Token.Type.More) {
+                // (a here string open at the end: its quotes the last closer wanted)
+                parens += t.parens;
+                opened.Add(tokLine);
+                break;
+            }
+            if (t.type == Token.Type.SExOpen) { parens += t.raw == "[" ? ']' : ')'; opened.Add(tokLine); }
+            if (t.type == Token.Type.QExOpen) { parens += '}'; opened.Add(tokLine); }
             if (t.type == Token.Type.SExClose) {
                 var closer = t.raw == "]" ? ']' : ')';
-                if (parens.EndsWith(closer)) parens = parens.Remove(parens.Length - 1);
-                else yield return error(closer == ']' ? $"Closed a list without opening: {parens}" : $"Closed a SExpr without opening: {parens}");
+                if (parens.EndsWith(closer)) { parens = parens.Remove(parens.Length - 1); if (opened.Count > 0) opened.RemoveAt(opened.Count - 1); }
+                else yield return error(closer == ']' ? $"Closed a list without opening: {parens}" : $"Closed a SExpr without opening: {parens}") with { line = tokLine };
             }
             if (t.type == Token.Type.QExClose) {
-                if (parens.EndsWith('}')) parens = parens.Remove(parens.Length - 1);
-                else yield return error($"Closed a QExpr without opening: {parens}");
+                if (parens.EndsWith('}')) { parens = parens.Remove(parens.Length - 1); if (opened.Count > 0) opened.RemoveAt(opened.Count - 1); }
+                else yield return error($"Closed a QExpr without opening: {parens}") with { line = tokLine };
             }
             yield return t;
         }
 
-        if (parens.Length > 0) yield return new Token { type = Token.Type.More, parens = parens };
-        else yield return new Token { type = Token.Type.EOF };
+        if (parens.Length > 0) yield return new Token { type = Token.Type.More, parens = parens, line = opened.Count > 0 ? opened[^1] : line };
+        else yield return new Token { type = Token.Type.EOF, line = line };
     }
 }

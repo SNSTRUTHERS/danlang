@@ -1,48 +1,189 @@
-public class LEnv : Dictionary<string, LVal> {
-    public LEnv(LEnv? p = null) : base(StringComparer.OrdinalIgnoreCase) => Parent = p;
+// A name, interned: one object for each name (names are case-insensitive: lower case), compared by reference
+public sealed class Name {
+    public readonly string Text;
+    public readonly int Id;
+    private Name(string text, int id) { Text = text; Id = id; }
+
+    // Whether it's ever been bound in a scope that isn't a global one (a call's, a let's ...): if not, its value from
+    // anywhere is its global one (Compiler.cs)
+    public bool Local;
+
+    private static readonly Dictionary<string, Name> _table = new(StringComparer.Ordinal);
+    public static Name Of(string s) {
+        if (_table.TryGetValue(s, out var n)) return n;
+        var lower = s.ToLowerInvariant();
+        if (!_table.TryGetValue(lower, out n)) _table[lower] = n = new Name(lower, _table.Count);
+        if (lower != s) _table[s] = n;
+        return n;
+    }
+
+    public override int GetHashCode() => Id;
+    public override string ToString() => Text;
+
+    public static readonly Name Rest = Of("&_");        // a call's extra arguments, a list (a call's own, always)
+    static Name() => Rest.Local = true;
+}
+
+// A scope: names bound to values (shared: a value is frozen once bound), and the scope it's in (Parent).  A small one
+// keeps them in arrays, a big one (the global scope) in a dictionary
+public class LEnv {
+    public LEnv(LEnv? p = null) {
+        Parent = p;
+        Root = p?.Root ?? this;
+    }
 
     // The enclosing scope: lexical, so a function's call has the scope it was made in (its closure) as its parent,
     // not its caller's; the global environment has none
-    public LEnv? Parent {get; set;}
+    public readonly LEnv? Parent;
 
-    public LEnv Root => Parent?.Root ?? this;
+    // The outermost scope it's in (itself, for one with no parent)
+    public LEnv Root { get; }
 
-    public void Def(string s, LVal v) {
-        if (Parent != null) Parent.Def(s, v);
-        else Put(s, v);
+    // The global environment's (Program's): a name bound in any other scope is a local one somewhere (Name.Local)
+    public bool IsGlobal;
+
+    // A function call's own scope: &_ is its, NIL when the call had no extra arguments
+    public bool IsCall;
+
+    private const int Small = 8;
+    private struct Binding {
+        public Name K;
+        public LVal V;
+    }
+    private Binding[]? _b;          // (a small one's: _n of them)
+    private int _n;
+    private Dictionary<Name, Slot>? _map;
+
+    // A big scope's binding: one for each name, kept (a compiled name remembers its global one)
+    public sealed class Slot {
+        public LVal Value = null!;
     }
 
-    public void Put(string s, LVal v) {
-        this[s] = v.Copy();
+    public int Count => _map?.Count ?? _n;
+
+    // The bindings here (not the enclosing scopes')
+    public IEnumerable<KeyValuePair<Name, LVal>> Entries {
+        get {
+            if (_map != null) foreach (var kv in _map) yield return new KeyValuePair<Name, LVal>(kv.Key, kv.Value.Value);
+            else for (int i = 0; i < _n; i++) yield return new KeyValuePair<Name, LVal>(_b![i].K, _b[i].V);
+        }
+    }
+
+    public bool TryGetLocal(Name k, out LVal v) {
+        if (_map != null) {
+            if (_map.TryGetValue(k, out var slot)) {
+                v = slot.Value;
+                return true;
+            }
+            v = null!;
+            return false;
+        }
+        for (int i = 0; i < _n; i++) {
+            if (ReferenceEquals(_b![i].K, k)) {
+                v = _b[i].V;
+                return true;
+            }
+        }
+        v = null!;
+        return false;
+    }
+
+    // k's binding here changed, if it's here (the value already shared): whether it was
+    public bool SetIfHere(Name k, LVal v) {
+        if (_map != null) {
+            if (!_map.TryGetValue(k, out var slot)) return false;
+            slot.Value = v;
+            return true;
+        }
+        for (int i = 0; i < _n; i++) {
+            if (ReferenceEquals(_b![i].K, k)) {
+                _b[i].V = v;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // A binding here, as it is (the value already shared)
+    public void SetLocal(Name k, LVal v) {
+        if (!IsGlobal) k.Local = true;
+        if (_map != null) {
+            if (_map.TryGetValue(k, out var slot)) slot.Value = v;
+            else _map[k] = new Slot { Value = v };
+            return;
+        }
+        for (int i = 0; i < _n; i++) {
+            if (ReferenceEquals(_b![i].K, k)) {
+                _b[i].V = v;
+                return;
+            }
+        }
+        if (_n == Small) {
+            _map = new Dictionary<Name, Slot>(Small * 2);
+            for (int i = 0; i < _n; i++) _map[_b![i].K] = new Slot { Value = _b[i].V };
+            _map[k] = new Slot { Value = v };
+            _b = null;
+            return;
+        }
+        if (_b == null) _b = new Binding[4];
+        else if (_n == _b.Length) Array.Resize(ref _b, Small);
+        _b[_n].K = k;
+        _b[_n++].V = v;
+    }
+
+    // A big scope's slot for k, if it has one
+    public Slot? SlotOf(Name k) => _map != null && _map.TryGetValue(k, out var slot) ? slot : null;
+
+    public bool ContainsKey(Name k) => TryGetLocal(k, out _);
+    public bool ContainsKey(string s) => ContainsKey(Name.Of(s));
+
+    public void Def(Name k, LVal v) {
+        if (Parent != null) Parent.Def(k, v);
+        else Put(k, v);
+    }
+    public void Def(string s, LVal v) => Def(Name.Of(s), v);
+
+    // A binding: the value is shared from here on (frozen), not copied
+    public void Put(Name k, LVal v) => SetLocal(k, v.Freeze());
+    public void Put(string s, LVal v) => Put(Name.Of(s), v);
+
+    // Another scope's bindings, here
+    public void CopyFrom(LEnv o) {
+        if (o._map != null) foreach (var kv in o._map) SetLocal(kv.Key, kv.Value.Value);
+        else for (int i = 0; i < o._n; i++) SetLocal(o._b![i].K, o._b[i].V);
     }
 
     public LEnv Copy() {
         var e = new LEnv();
-        foreach (var s in Keys) {
-            e.Add(s, this[s].Copy());
-        }
+        foreach (var kv in Entries) e.SetLocal(kv.Key, kv.Value);
         return e;
     }
 
-    // The scope holding s: this one, or the nearest enclosing one that does
-    public LEnv? Find(string s) {
+    // The scope holding k: this one, or the nearest enclosing one that does
+    public LEnv? Find(Name k) {
         for (var e = this; e != null; e = e.Parent) {
-            if (e.ContainsKey(s)) return e;
+            if (e.TryGetLocal(k, out _)) return e;
         }
         return null;
     }
+    public LEnv? Find(string s) => Find(Name.Of(s));
 
-    public LVal Get(string s) {
-        var e = Find(s);
-        if (e != null) return e[s].Copy();
-        return LVal.Err($"Unbound Symbol '{s}'");
+    // A name's value, from the innermost scope out (shared: values aren't changed); &_ is the nearest call's
+    public LVal Get(Name k) {
+        for (var e = this; e != null; e = e.Parent) {
+            if (e.TryGetLocal(k, out var v)) return v;
+            if (e.IsCall && ReferenceEquals(k, Name.Rest)) return LVal.NIL();
+        }
+        return LVal.Err($"Unbound Symbol '{k.Text}'");
     }
+    public LVal Get(string s) => Get(Name.Of(s));
 
-    // set!: the nearest binding of s changed, wherever it is
-    public LVal Update(string s, LVal v) {
-        var e = Find(s);
-        if (e == null) return LVal.Err($"Unbound Symbol '{s}'");
-        e.Put(s, v);
+    // set!: the nearest binding of k changed, wherever it is
+    public LVal Update(Name k, LVal v) {
+        var e = Find(k);
+        if (e == null) return LVal.Err($"Unbound Symbol '{k.Text}'");
+        e.Put(k, v);
         return LVal.NIL();
     }
+    public LVal Update(string s, LVal v) => Update(Name.Of(s), v);
 }

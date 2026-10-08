@@ -50,7 +50,11 @@ public partial class Builtins
         ["bit-and"] = (1, Any), ["bit-or"] = (1, Any), ["bit-xor"] = (1, Any), ["bit-not"] = (1, 1),
         ["shl"] = (2, 2), ["shr"] = (2, 2), ["bit?"] = (2, 2), ["hex"] = (1, 2), ["bin"] = (1, 2), ["lo"] = (1, 1),
         ["hi"] = (1, 1), ["word"] = (2, 2), ["bytes"] = (1, 1), ["from-bytes"] = (1, 1), ["read-bytes"] = (2, 2),
-        ["write-bytes"] = (2, 2), ["platform"] = (0, 0), ["hydra?"] = (0, 0),
+        ["write-bytes"] = (2, 4), ["platform"] = (0, 0), ["hydra?"] = (0, 0), ["clock"] = (0, 0), ["key"] = (0, 0),
+        ["key?"] = (0, 0), ["on-note"] = (1, 1),
+        // (Buffers: BufferBuiltins.cs)
+        ["buffer"] = (1, 2), ["buffer?"] = (1, 1), ["buffer-get"] = (2, 2), ["buffer-put"] = (3, 3), ["buffer-fill"] = (2, 4),
+        ["buffer-copy"] = (3, 5), ["buffer-cmp"] = (3, 5), ["read-buffer"] = (2, 4),
         // (The library's: LibraryBuiltins.cs)
         ["not"] = (1, 1), ["=="] = (2, 2), [">="] = (2, 2), ["<="] = (2, 2), ["neg?"] = (1, 1), ["pos?"] = (1, 1),
         ["zero?"] = (1, 1), ["one?"] = (1, 1), ["1+"] = (1, 1), ["1-"] = (1, 1), ["abs"] = (1, 1), ["cons"] = (2, 2),
@@ -67,7 +71,7 @@ public partial class Builtins
     private static readonly HashSet<string> TakesErrors = new() {
         "error?", "type-of", "error-message", "error-code", "repr", "print", "write", "print-to", "write-to",
         "t?", "nil?", "num?", "fixed?", "rational?", "int?", "complex?", "atom?", "symbol?", "string?", "char?",
-        "function?", "qexpr?", "sexpr?",
+        "function?", "qexpr?", "sexpr?", "buffer?",
     };
 
     // A built-in, its name and what it takes (Arity) on it
@@ -89,16 +93,22 @@ public partial class Builtins
         e.Put(k.SymVal!, v);
     }
 
-    private static LVal Lambda(LEnv e, LVal a) {
+    private static LVal Lambda(LEnv e, LVal a) => Made(e, a, "fn");
+
+    // A function made here (its closure: this scope): its formals a list of symbols, its body a list, or an error
+    private static LVal Made(LEnv e, LVal a, string fn) {
         LVal formals = a.Pop(0);
         LVal body = a.Pop(0);
+        if (!formals.IsQExpr || (formals.Cells ?? new List<LVal>()).Any(c => !c.IsSym)) return LVal.Err($"'{fn}' expects a list of symbols first");
+        if (!body.IsQExpr) return LVal.Err($"'{fn}' expects a QExpr body");
         return LVal.Lambda(formals, body, e);
     }
 
     // (fexpr {formals} body): a function whose arguments come unevaluated, each in a Q-expression that remembers the
     // caller's scope, so (eval x) evaluates it there, if and when the function wants
     private static LVal Fexpr(LEnv e, LVal a) {
-        var f = Lambda(e, a);
+        var f = Made(e, a, "fexpr");
+        if (f.IsErr) return f;
         f.IsFexpr = true;
         return f;
     }
@@ -111,8 +121,13 @@ public partial class Builtins
         var body = a.Pop(0);
         if (body.IsErr) return body;
         if (!spec.IsQExpr || spec.Count == 0 || spec.Cells!.Any(c => !c.IsSym)) return LVal.Err("'fun' expects {name formals...} first");
-        var name = spec.Pop(0).SymVal;
-        e.Def(name, LVal.Lambda(spec, body, e));
+        if (!body.IsQExpr) return LVal.Err("'fun' expects a QExpr body");
+        var name = spec[0].SymVal;
+        var formals = LVal.Qexpr();
+        for (int i = 1; i < spec.Count; i++) formals.Add(spec[i]);
+        var f = LVal.Lambda(formals, body, e);
+        if (Warnings) WarnRedef(e, "fun", Name.Of(name), f);
+        e.Def(name, f);
         return LVal.NIL();
     }
 
@@ -133,37 +148,37 @@ public partial class Builtins
         return v;
     }
 
-    // (A list made from another keeps the scope it was written in: Scope, which eval runs it in)
+    // (A list made from another keeps the scope it was written in: Scope, which eval runs it in.  The other isn't
+    // changed: values are shared)
+    private static LVal Sublist(LVal v, int from, int count) {
+        var ret = LVal.Qexpr();
+        ret.Cells!.AddRange(v.Cells!.GetRange(from, count));
+        ret.Scope = v.Scope;
+        return ret;
+    }
+
     private static LVal Head(LEnv e, LVal a) {
         var v = ListArg(e, a, "head", true);
         if (v.IsErr) return v;
-        var ret = LVal.Qexpr();
-        ret.Add(v.Pop(0));
-        ret.Scope = v.Scope;
-        return ret;
+        return Sublist(v, 0, 1);
     }
 
     private static LVal Tail(LEnv e, LVal a) {
         LVal v = ListArg(e, a, "tail", true);
         if (v.IsErr) return v;
-        v.Pop(0);
-        return v;
+        return Sublist(v, 1, v.Count - 1);
     }
 
     private static LVal Init(LEnv e, LVal a) {
         var v = ListArg(e, a, "init", true);
         if (v.IsErr) return v;
-        v.Pop(v.Count - 1);
-        return v;
+        return Sublist(v, 0, v.Count - 1);
     }
 
     private static LVal End(LEnv e, LVal a) {
         var v = ListArg(e, a, "end", true);
         if (v.IsErr) return v;
-        var ret = LVal.Qexpr();
-        ret.Add(v.Pop(v.Count - 1));
-        ret.Scope = v.Scope;
-        return ret;
+        return Sublist(v, v.Count - 1, 1);
     }
 
     // (eval x): a Q-expression run as code, or an expression (an fexpr's argument: an S-expression or a symbol)
@@ -173,8 +188,8 @@ public partial class Builtins
         LVal x =  a.Pop(0, e);
         if (x.IsErr) return TailStep.Done(x);
         var scope = x.Scope ?? e;
-        if (x.IsQExpr) x.ValType = LVal.LE.SEXPR;
-        else if (!x.IsSExpr && !x.IsSym) return TailStep.Done(x);
+        if (x.IsQExpr) return TailStep.RunCode(scope, x);
+        if (!x.IsSExpr && !x.IsSym) return TailStep.Done(x);
         return TailStep.Next(scope, x);
     }
 
@@ -187,56 +202,60 @@ public partial class Builtins
             var y = a.Pop(0);
             if (y.IsErr) return y;
             if (!y.IsQExpr) return LVal.Err("Invalid parameter passed to 'join'.  Expected QExpr.");
-            else if (x == null) x = y;
+            if (x == null) x = Sublist(y, 0, y.Count);
             else {
                 x.Scope ??= y.Scope;
-                x = x.Join(y);
+                x.Join(y);
             }
         }
         return x!;
     }
 
+    // (The numbers given aren't changed: values are shared; the result is a new one)
     private static LVal Op(LEnv e, LVal a, string op) {
-        LVal? x = null;
+        if (a.Count == 2 && op != "/" && a[0].IsPlainInt(out var p) && a[1].IsPlainInt(out var q))
+            return LVal.Number(op == "-" ? p - q : p * q);
+        Num? x = null;
+        LVal? first = null;
         while (a.Count > 0) {
             LVal y = a.Pop(0);
             if (y.IsErr) return y;
             if (!y.IsNum) return LVal.Err($"All parameters to operator '{op}' must be numbers.");
             if (x == null) {
                 // one number: (- x) is its negation, (/ x) its reciprocal
-                if (a.Count == 0 && op == "-") {
-                    y.NumVal = -y.NumVal!;
-                    return y;
-                }
+                if (a.Count == 0 && op == "-") return LVal.Number(-y.NumVal!);
                 if (a.Count == 0 && op == "/") {
                     if (y.NumVal!.IsZero) return LVal.Err("Division by zero.");
-                    y.NumVal = (Num)new Int(BigInteger.One) / y.NumVal!;
-                    return y;
+                    return LVal.Number((Num)new Int(BigInteger.One) / y.NumVal!);
                 }
 
                 // not negation? Just set x to y and continue;
-                x = y;
+                x = y.NumVal;
+                first = y;
                 continue;
             }
 
-            if (op == "-") x.NumVal = x.NumVal! - y.NumVal!;
-            else if (op == "*") x.NumVal = x.NumVal! * y.NumVal!;
+            if (op == "-") x = x - y.NumVal!;
+            else if (op == "*") x = x * y.NumVal!;
             else if (op == "/") {
                 if (y.NumVal!.IsZero) {
                     return LVal.Err("Division by zero.");
                 }
-                x.NumVal = x.NumVal! / y.NumVal!;
+                x = x / y.NumVal!;
             }
         }
 
         // If no arguments were passed, return 0 for "-", and 1 otherwise
-        return x ?? LVal.Number(op == "-" ? BigInteger.Zero : BigInteger.One);
+        if (x == null) return LVal.Number(op == "-" ? BigInteger.Zero : BigInteger.One);
+        return ReferenceEquals(x, first!.NumVal) ? first : LVal.Number(x);
     }
 
     // (+ n...): the numbers' sum; or, the first a string (or a character), the values as print shows them, joined
     // ("n=5" for "n=" and 5); anything else is an error
     private static LVal Add(LEnv e, LVal a) {
-        LVal? x = null;
+        if (a.Count == 2 && a[0].IsPlainInt(out var p) && a[1].IsPlainInt(out var q)) return LVal.Number(p + q);
+        Num? x = null;
+        LVal? first = null;
         StringBuilder? sb = null;
         while (a.Count > 0) {
             LVal y = a.Pop(0);
@@ -244,12 +263,13 @@ public partial class Builtins
             if (sb != null) sb.Append(y.ToDisplay());
             else if (x == null && (y.IsStr || y.IsChar)) sb = new StringBuilder(y.StrVal);
             else if (!y.IsNum) return LVal.Err("'+' adds numbers, or joins values to a string");
-            else if (x == null) x = y;
-            else x.NumVal = x.NumVal! + y.NumVal!;
+            else if (x == null) { x = y.NumVal; first = y; }
+            else x = x + y.NumVal!;
         }
 
         if (sb != null) return LVal.Str(sb.ToString());
-        return x ?? LVal.Number(BigInteger.Zero);
+        if (x == null) return LVal.Number(BigInteger.Zero);
+        return ReferenceEquals(x, first!.NumVal) ? first : LVal.Number(x);
     }
     private static LVal Sub(LEnv e, LVal a) { return Op(e, a, "-"); }
     private static LVal Mul(LEnv e, LVal a) { return Op(e, a, "*"); }
@@ -259,29 +279,48 @@ public partial class Builtins
         //if (a.Count == 0 || !a.IsQExpr) return LVal.Err($"Invalid parameter(s) passed to '{func}'");
         LVal syms = a.Pop(0);
         if (syms.IsSym) {
-            var x = LVal.Qexpr();
-            x.Add(syms);
-            syms = x;
+            if (a.Count != 1) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected 1, got {a.Count}");
+            return Bind(e, func, syms.SymName, a.Pop(0, e));
         }
-        else if (syms.IsSExpr) syms = syms.Eval(e);
+        if (syms.IsSExpr) syms = syms.Eval(e);
 
         if (syms.IsErr) return syms;
-        if (!syms.IsQExpr || syms.Cells!.Any(v => !v.IsSym)) return LVal.Err($"'{func}' cannot define non-symbols");
+        if (!syms.IsQExpr) return LVal.Err($"'{func}' cannot define non-symbols");
+        foreach (var s in syms.Cells!) if (!s.IsSym) return LVal.Err($"'{func}' cannot define non-symbols");
 
         if (syms.Count != a.Count) return LVal.Err($"'{func}' passed too many arguments or symbols.  Expected {syms.Count}, got {a.Count}");
-            
-        while (syms.Count > 0 && a.Count > 0) {
-            var symbol = syms.Pop(0).SymVal!;
-            var value = a.Pop(0, e);
-            if (func == "def") { e.Def(symbol, value); }
-            if (func == "set") { e.Put(symbol, value); }
-            if (func == "set!") {
-                var r = e.Update(symbol, value);
-                if (r.IsErr) return r;
-            }
+
+        for (int i = 0; i < syms.Count; i++) {
+            var r = Bind(e, func, syms[i].SymName, a.Pop(0, e));
+            if (r.IsErr) return r;
         }
         
         return LVal.NIL();
+    }
+
+    // A name bound to a value, as def, set or set! do
+    internal static LVal Bind(LEnv e, string func, Name symbol, LVal value) {
+        if (func == "def") {
+            if (Warnings) WarnRedef(e, func, symbol, value);
+            e.Def(symbol, value);
+        }
+        else if (func == "set") e.Put(symbol, value);
+        else return e.Update(symbol, value);
+        return LVal.NIL();
+    }
+
+    // danlang -w: a global's definition that replaces a built-in, or a value of another kind (a function with what
+    // isn't one, or the other way round), said on stderr, with where it's made
+    public static bool Warnings;
+    private static void WarnRedef(LEnv e, string func, Name name, LVal value) {
+        if (!e.Root.TryGetLocal(name, out var old)) return;
+        string? what = null;
+        if (old.BuiltinVal != null && !ReferenceEquals(old.BuiltinVal, value.BuiltinVal)) what = "the built-in " + name.Text;
+        else if (old.IsFun != value.IsFun) what = (old.IsFun ? "a function" : "a " + LVal.LEName(old.ValType).ToLower()) + ", " + name.Text + ",";
+        if (what == null) return;
+        var site = LVal.Site;
+        var place = site == null ? "" : (site.File != null ? site.File + ":" + site.Line + ": " : "line " + site.Line + ": ");
+        Console.Error.WriteLine($"{place}warning: {func} replaces {what} with {(value.IsFun ? "a function" : "a " + LVal.LEName(value.ValType).ToLower())}");
     }
 
     private static LVal Def(LEnv e, LVal a) { return Var(e, a, "def"); }
@@ -290,11 +329,8 @@ public partial class Builtins
 
     private static LVal Ord(LEnv e, LVal a, string op) {
         // if (!(a[0].IsNum && a[1].IsNum)) return LVal.Err($"'{op}' passed non-number parameter(s)");
-        bool r = false;
-        var cmp = Cmp(e, a, "cmp").NumVal!.ToInt().num;
-        if (op == ">") { r = cmp > 0; } //((a[0].NumVal as Int)!.num > (a[1].NumVal as Int)!.num); }
-        if (op == "<") { r = cmp < 0; } //((a[0].NumVal as Int)!.num < (a[1].NumVal as Int)!.num); }
-        return LVal.Bool(r);
+        var cmp = a[0].CompareTo(a[1]);
+        return LVal.Bool(op == ">" ? cmp > 0 : cmp < 0);
     }
 
     private static LVal Gt(LEnv e, LVal a) { return Ord(e, a, ">");  }
@@ -404,7 +440,7 @@ public partial class Builtins
                 var c = a.Pop(0);
                 if (a.Count != 0 && c.Count < 2) return LVal.Err("All but last body block of a '<=>' operator must have comparator");
                 try {
-                    if (IsMatch(cmp, c)) return c.Pop(c.Count - 1, e);
+                    if (IsMatch(cmp, c)) return c[c.Count - 1].Eval(e);
                 } catch (InvalidOperationException ex) {
                     return LVal.Err(ex.Message);
                 }
@@ -448,13 +484,21 @@ public partial class Builtins
             var input = File.ReadAllText(filename, Encoding.Latin1);
             var tokens = Parser.Tokenize(new StringReader(input)).ToList();
             var bad = tokens.FirstOrDefault(t => t.type == Parser.Token.Type.Error || t.type == Parser.Token.Type.More);
-            if (bad != null) return LVal.Err($"{FromHost(filename)}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
-            var exprs = LVal.ReadExprFromTokens(tokens)!;
+            if (bad != null) return LVal.Err($"{FromHost(filename)}:{bad.line}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
+            var outer = LVal.SourceFile;
+            LVal.SourceFile = FromHost(filename);
+            LVal exprs;
+            try {
+                exprs = LVal.ReadExprFromTokens(tokens)!.Freeze();
+            }
+            finally {
+                LVal.SourceFile = outer;
+            }
 
-            // a file's expressions are top level: the global environment's
-            while (exprs.Count > 0) {
-                lastExpr = exprs.Pop(0, e.Root);
-                if (lastExpr.IsErr) return LVal.Err($"{FromHost(filename)}: {lastExpr.ErrVal}");
+            // a file's expressions are top level: the global environment's (the code shared, frozen)
+            foreach (var x in exprs.Cells!) {
+                lastExpr = x.Eval(e.Root);
+                if (lastExpr.IsErr) return LVal.ErrFrom(lastExpr, $"{FromHost(filename)}: {lastExpr.ErrVal}");
                 if (lastExpr.IsExit) throw new ExitException(lastExpr.ExitCode);
             }
         }
@@ -479,8 +523,8 @@ public partial class Builtins
 
             try {
                 var fi = new FileInfo(ToHost(filename.StrVal));
-                if (fi.Directory == null) return LVal.Err("Folder for 'save' does not exist");
-                if (!fi.Directory.Exists) fi.Directory.Create();
+                // (its folder is there, or it's the system's error: as write-file's)
+                if (fi.Directory == null || !fi.Directory.Exists) return SysErr("noent", filename.StrVal);
                 FileStream? fs = null;
                 if (fi.Exists) {
                     if (s.Contains("overwrite")) fs = fi.Open(FileMode.Truncate);
@@ -497,7 +541,7 @@ public partial class Builtins
             }
         }
         else {
-            Console.Out.WriteLine(ob.Serialize());
+            Console.Out.Write(ob.Serialize() + "\n");     // (LF, as a file gets: not the host's line end)
         }
 
         return LVal.NIL();
@@ -678,7 +722,7 @@ public partial class Builtins
             if (n < count) count = (int)n;
         }
         var ret = LVal.Qexpr();
-        foreach (var c in q.Cells!.Skip((int)index).Take(count)) ret.Add(c.Copy());
+        ret.Cells!.AddRange(q.Cells!.GetRange((int)index, count));
         return ret;
     }
 
@@ -692,7 +736,7 @@ public partial class Builtins
         var i = Whole(a.Pop(0), "item-at", "an index", out var index);
         if (i.IsErr) return i;
         if (index < 0 || index >= q.Count) return LVal.Err($"'item-at': the list has no item {index}");
-        return q[(int)index].Copy();
+        return q[(int)index];
     }
 
     private static LVal FastFib(LEnv e, LVal val) {
@@ -742,7 +786,8 @@ public partial class Builtins
             if (!p.IsQExpr || p.Count < 2) return hash.HashValue!.Put(p);
             var v = p[1].Eval(e);
             if (v.IsErr) return v;
-            var entry = p.Copy();
+            var entry = LVal.Qexpr();
+            entry.Cells!.AddRange(p.Cells!);
             entry.Cells![1] = v;
             return hash.HashValue!.Put(entry);
         }
@@ -798,14 +843,14 @@ public partial class Builtins
         if (!f.IsFun) return LVal.Err("Second parameter to 'hash-call' must be a key to a member function");
 
         // &0, the hash, in the method's own scope
-        f.Env?.Put("&0", LVal.Hash(hash.HashValue.PrivateCallProxy));
-        return Apply(e, f, val.Cells!.ToArray());
+        return Apply(e, LVal.Method(f, hash), val.Cells!.ToArray());
     }
 
     private static LVal HashClone(LEnv e, LVal val) {
         var hash = val.Pop(0);
         if (!hash.IsHash) return LVal.Err("First parameter to 'hash-clone' must be a hash");
-        return LVal.Hash(hash.HashValue!.Clone(val));
+        var clone = hash.HashValue!.Clone(val);
+        return clone.OverrideError ?? LVal.Hash(clone);
     }
 
     private static LVal HashAddTag(LEnv e, LVal val) {
@@ -865,11 +910,7 @@ public partial class Builtins
     // ---- Helpers for the built-ins below
 
     // A character value
-    private static LVal Chr(char c) {
-        var v = LVal.Character("x");
-        v.StrVal = c.ToString();
-        return v;
-    }
+    private static LVal Chr(char c) => LVal.Char(c);
 
     // A symbol named s, as it is (LVal.Sym reads :x as an atom, \x as a character, nil as NIL ...)
     private static LVal PlainSym(string s) {
@@ -893,6 +934,7 @@ public partial class Builtins
     // A whole number argument for fn (an integer, or a number equal to one: 2.0, 4/2), already evaluated: the number
     // (n its value), or an error (what it is to fn: "an index", "a count" ...)
     public static LVal Whole(LVal v, string fn, string what, out BigInteger n) {
+        if (v.IsPlainInt(out n)) return v;
         n = 0;
         if (v.IsErr) return v;
         if (v.IsNum && !(v.NumVal is Comp)) {
@@ -920,17 +962,16 @@ public partial class Builtins
     // e), anything else as it is
     private static LVal RunCode(LEnv e, LVal v) {
         if (!v.IsQExpr) return v;
-        var x = v.Copy();
-        x.ValType = LVal.LE.SEXPR;
-        return x.Eval(v.Scope ?? e);
+        return LVal.EvalCode(v.Scope ?? e, v);
     }
 
     // An unevaluated argument evaluated: a Q-expression run as code (here), anything else evaluated
-    private static LVal EvalArg(LEnv e, LVal x) => x.IsQExpr ? RunCode(e, x) : x.Copy().Eval(e);
+    private static LVal EvalArg(LEnv e, LVal x) => x.IsQExpr ? RunCode(e, x) : x.Eval(e);
 
-    // f called with values as they are, not evaluated again
+    // f called with values as they are, not evaluated again; anything but a function is the evaluator's error
     public static LVal Apply(LEnv e, LVal f, params LVal[] args) {
-        if (f.BuiltinVal == null) return LVal.Apply(f.Copy(), args.ToList());
+        if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LVal.LEName(f.ValType)}, Expected {LVal.LEName(LVal.LE.FUN)}.");
+        if (f.BuiltinVal == null) return LVal.Apply(f, args.ToList());
         return LVal.ApplyBuiltin(e, f, args.ToList());
     }
 
@@ -986,7 +1027,7 @@ public partial class Builtins
             if (!bindings.IsQExpr) return TailStep.Done(LVal.Err("'let' expects a list of bindings first"));
             foreach (var b in bindings.Cells!) {
                 if (!b.IsQExpr || b.Count < 1 || b.Count > 2 || !b[0].IsSym) return TailStep.Done(LVal.Err("A 'let' binding is {name value}"));
-                var v = b.Count == 2 ? b[1].Copy().Eval(scope) : LVal.NIL();
+                var v = b.Count == 2 ? b[1].Eval(scope) : LVal.NIL();
                 if (v.IsErr) return TailStep.Done(v);
                 scope.Put(b[0].SymVal, v);
             }
@@ -1001,9 +1042,7 @@ public partial class Builtins
         var last = a.Pop(0);
         if (last.IsSExpr) return TailStep.Next(scope, last);
         if (!last.IsQExpr) return TailStep.Done(last.Eval(scope));
-        var x = last.Copy();
-        x.ValType = LVal.LE.SEXPR;
-        return TailStep.Next(last.Scope ?? scope, x);
+        return TailStep.RunCode(last.Scope ?? scope, last);
     }
 
     // A let's body expression: a Q-expression run, anything else's value
@@ -1017,7 +1056,7 @@ public partial class Builtins
         name = "";
         if (spec.Count != 2 || !spec[0].IsSym) return LVal.Err($"'{fn}' expects {{name value}} or a function first");
         name = spec[0].SymVal;
-        return spec[1].Copy().Eval(e);
+        return spec[1].Eval(e);
     }
 
     // The loops' body, run with name item, in a scope of its own; an error, if one comes
@@ -1108,8 +1147,8 @@ public partial class Builtins
         if (!v.IsSym) return false;
         if (!v.SymVal.StartsWith('&')) return e.Find(v.SymVal) != null;
         for (var s = e; s != null; s = s.Parent) {
-            if (s.ContainsKey(v.SymVal)) return true;
-            if (s.ContainsKey("&_")) break;
+            if (s.ContainsKey(v.SymName)) return true;
+            if (s.IsCall) break;
         }
         return false;
     }
@@ -1130,6 +1169,7 @@ public partial class Builtins
             LVal.LE.SEXPR  => "sexpr",
             LVal.LE.HASH   => "hash",
             LVal.LE.STREAM => "stream",
+            LVal.LE.BUFFER => "buffer",
             LVal.LE.EXIT   => "exit",
             _              => "unknown"
         });
@@ -1155,8 +1195,9 @@ public partial class Builtins
         if (v.IsErr) return v;
         if (v.IsStr) return LVal.Str(new string(v.StrVal.Reverse().ToArray()));
         if (!v.IsQExpr) return LVal.Err("'reverse' expects a QExpr or a String");
-        v.Cells!.Reverse();
-        return v;
+        var r = Sublist(v, 0, v.Count);
+        r.Cells!.Reverse();
+        return r;
     }
 
     // (range n), (range from to) or (range from to step): the numbers from 0 (or from) up to, not including, to; down
@@ -1367,16 +1408,18 @@ public partial class Builtins
         if (a.Count > 0) {
             var m = a.Pop(0);
             if (m.IsErr) return m;
-            if (!m.IsAtom) return LVal.Err("'open' mode must be :read, :write or :append");
+            if (!m.IsAtom) return LVal.Err("'open' mode must be :read, :write, :append or :update");
             mode = m.SymVal;
         }
-        if (mode != "read" && mode != "write" && mode != "append") return LVal.Err($"'open' mode must be :read, :write or :append, not :{mode}");
+        if (mode != "read" && mode != "write" && mode != "append" && mode != "update")
+            return LVal.Err($"'open' mode must be :read, :write, :append or :update, not :{mode}");
         var path = ToHost(p.StrVal);
         if (Directory.Exists(path)) return SysErr("isdir", p.StrVal);
         try {
             Stream s = mode switch {
                 "read"   => File.OpenRead(path),
                 "write"  => File.Create(path),
+                "update" => new FileStream(path, FileMode.Open, FileAccess.ReadWrite),
                 _        => new FileStream(path, FileMode.Append, FileAccess.Write),
             };
             return LVal.Stream(s);
@@ -1469,8 +1512,9 @@ public partial class Builtins
             LVal.LE.QEXPR => LVal.Number(a[0].Count),
             LVal.LE.STR   => LVal.Number(a[0].StrVal.Length),
             LVal.LE.HASH  => LVal.Number(a[0].HashValue!.Count),
+            LVal.LE.BUFFER => LVal.Number(a[0].BufferValue!.Length),
             LVal.LE.ERR   => a[0],
-            _             => LVal.Err("'len' requires parameter of type string, list or hash")
+            _             => LVal.Err("'len' requires parameter of type string, list, hash or buffer")
         });
         AddBuiltin(e, "item-at", ItemAt);
         AddBuiltin(e, "subset", Subset);
@@ -1588,7 +1632,7 @@ public partial class Builtins
             return LVal.Number(Rat.ToRat(a[0].NumVal!).ToFix((int)places));
         });
         AddBuiltin(e, "to-rational", (e, a) => !IsReal(a[0]) ? LVal.Err("'to-rational' expects a real number") :
-            LVal.Number(Rat.ToRat(a[0].NumVal!)));
+            LVal.Number(Num.Norm(Rat.ToRat(a[0].NumVal!))));
         AddBuiltin(e, "truncate", (e, a) => !IsReal(a[0]) ? LVal.Err("'truncate' expects a real number") :
             LVal.Number(a[0].NumVal!.ToInt()));
         AddBuiltin(e, "complex",     Complex);
@@ -1666,5 +1710,11 @@ public partial class Builtins
 
         // the library's most used functions
         AddLibraryBuiltins(e);
+
+        // buffers (BufferBuiltins.cs)
+        AddBufferBuiltins(e);
+
+        // the most used ones' fast ways, and the special forms the compiled code runs itself (FastBuiltins.cs)
+        AddFastWays(e);
     }
 }

@@ -28,7 +28,9 @@ public partial class Builtins
         ["read"] = (1, 1), ["open"] = (1, 2), ["close"] = (1, 1), ["read-line"] = (0, 1), ["read-byte"] = (0, 1),
         ["read-all"] = (0, 1), ["seek"] = (2, 2), ["tell"] = (1, 1), ["print-to"] = (1, Any), ["write-to"] = (1, Any),
         ["val"] = (1, 1), ["to-fixed"] = (1, 2), ["to-rational"] = (1, 1), ["truncate"] = (1, 1),
-        ["complex"] = (2, 2), ["to-str"] = (1, 2), ["base"] = (0, 1), ["number-bytes"] = (1, 1), ["bytes-number"] = (1, 1), ["repr"] = (1, 1), ["to-sym"] = (1, 1), ["to-atom"] = (1, 1),
+        ["complex"] = (2, 2), ["to-str"] = (1, 2), ["base"] = (0, 1), ["number-bytes"] = (1, 1), ["bytes-number"] = (1, 1),
+        ["sqrt"] = (1, 1), ["exp"] = (1, 1), ["log"] = (1, 1), ["sin"] = (1, 1), ["cos"] = (1, 1), ["tan"] = (1, 1),
+        ["atan"] = (1, 1), ["pi"] = (0, 0), ["digits"] = (0, 1), ["pow"] = (2, 2), ["repr"] = (1, 1), ["to-sym"] = (1, 1), ["to-atom"] = (1, 1),
         ["fib"] = (1, 1), ["defined?"] = (0, 1), ["type-of"] = (1, 1),
         ["t?"] = (1, 1), ["nil?"] = (1, 1), ["num?"] = (1, 1), ["fixed?"] = (1, 1), ["rational?"] = (1, 1),
         ["int?"] = (1, 1), ["complex?"] = (1, 1), ["atom?"] = (1, 1), ["symbol?"] = (1, 1), ["string?"] = (1, 1),
@@ -673,6 +675,42 @@ public partial class Builtins
         try { NumberFormat.Current = NumberFormat.Of(s.StrVal!); }
         catch (FormatException x) { return LVal.Err($"'base': {x.Message}"); }
         return LVal.Str(old.Spec);
+    }
+
+    // A math function of one number: its value, or its error
+    private static LVal MathFn(LVal a, string name, Func<Num, Num> f) {
+        var x = a.Pop(0);
+        if (x.IsErr) return x;
+        if (!x.IsNum) return LVal.Err($"'{name}' expects a number");
+        try { return LVal.Number(f(x.NumVal!)); }
+        catch (MathError m) { return LVal.Err(m.Message); }
+        catch (DivideByZeroException) { return LVal.Err("Division by zero."); }
+    }
+
+    // (digits): the precision of the math functions' results when they aren't exact (12 significant digits at the
+    // start); (digits n): it set to n (1 to 100), the one before it given back
+    private static LVal Digits(LEnv e, LVal a) {
+        var old = NumMath.Digits;
+        if (a.Count == 0) return LVal.Number(old);
+        var n = a.Pop(0);
+        if (n.IsErr) return n;
+        if (!n.IsNum || !(n.NumVal is Int i) || n.NumVal is Rat || (n.NumVal is Fix f && f.dec != 0) || i.num < 1 || i.num > NumMath.MaxDigits)
+            return LVal.Err($"'digits' takes a whole number from 1 to {NumMath.MaxDigits}");
+        NumMath.Digits = (int)i.num;
+        return LVal.Number(old);
+    }
+
+    // (pow x y): x to the power y: exact for a whole y (any x); else x real and 0 or more, exact when its root is
+    // rational (4 to 1/2 is 2), else a fixed decimal of (digits) significant digits
+    private static LVal Pow(LEnv e, LVal a) {
+        var x = a.Pop(0);
+        if (x.IsErr) return x;
+        var y = a.Pop(0);
+        if (y.IsErr) return y;
+        if (!x.IsNum || !y.IsNum) return LVal.Err("'pow' expects numbers");
+        try { return LVal.Number(NumMath.Pow(x.NumVal!, y.NumVal!)); }
+        catch (MathError m) { return LVal.Err(m.Message); }
+        catch (DivideByZeroException) { return LVal.Err("Division by zero."); }
     }
 
     // (number-bytes n): a number in the Hydra's stored format, its bytes (a list); (bytes-number b): the number bytes
@@ -1722,6 +1760,18 @@ public partial class Builtins
         AddBuiltin(e, "base", Base);
         AddBuiltin(e, "number-bytes", NumberBytes);
         AddBuiltin(e, "bytes-number", BytesNumber);
+        // The math functions (NumMath.cs): exact when the answer is, else a fixed decimal of (digits) significant
+        // digits, correctly rounded
+        AddBuiltin(e, "sqrt", (e, a) => MathFn(a, "sqrt", NumMath.Sqrt));
+        AddBuiltin(e, "exp", (e, a) => MathFn(a, "exp", NumMath.Exp));
+        AddBuiltin(e, "log", (e, a) => MathFn(a, "log", NumMath.Log));
+        AddBuiltin(e, "sin", (e, a) => MathFn(a, "sin", x => NumMath.Trig(x, 0)));
+        AddBuiltin(e, "cos", (e, a) => MathFn(a, "cos", x => NumMath.Trig(x, 1)));
+        AddBuiltin(e, "tan", (e, a) => MathFn(a, "tan", x => NumMath.Trig(x, 2)));
+        AddBuiltin(e, "atan", (e, a) => MathFn(a, "atan", NumMath.Atan));
+        AddBuiltin(e, "pi", (e, a) => LVal.Number(NumMath.Pi()));
+        AddBuiltin(e, "digits", Digits);
+        AddBuiltin(e, "pow", Pow);
         // (repr x): x as the REPL shows it (a string in quotes, with escapes), an error too ("Error: ...")
         AddBuiltin(e, "repr", (e, a) => LVal.Str(a.Pop(0).ToStr()));
         AddBuiltin(e, "to-sym",

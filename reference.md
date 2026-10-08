@@ -278,6 +278,11 @@ end takes what there is; a negative count is an error.
 | `(base)`, `(base b)` | The base numbers are shown and read in (a base string: `"d"` at the start); `b` makes it the base, and the one before it is the value (to put back).  Section 1, "The base" |
 | `(number-bytes x)`, `(bytes-number l)` | A number in the Hydra-16's stored format, its bytes (a list); the number bytes (a list or a buffer) hold, each number in its one form (an error otherwise).  A tag byte, then what it says: an integer of -64 to 63 the tag itself; `$80`-`$8F` or `$90`-`$9F` and a magnitude of 1 to 16 bytes, least first (positive or negative); `$A0` or `$A1`, a length (17-255) and the magnitude; a fixed decimal `$B0`+places (0-15), or `$C0` and its places in two bytes, then its digits, an integer; a rational `$C1`, its numerator, its denominator; a complex number `$C2`, its real part, its imaginary part |
 | `(val s)` | The number a string is written as (spaces around it allowed); not one, an error |
+| `(sqrt x)`, `(exp x)`, `(log x)` | The square root, e to the `x`, the natural logarithm; a negative number's square root or logarithm is complex (`(sqrt -4)` is `2i`), `(log 0)` an error |
+| `(sin x)`, `(cos x)`, `(tan x)`, `(atan x)` | The circle's functions, in radians |
+| `(pi)` | Pi |
+| `(pow x y)` | `x` to the power `y`: a whole `y` exactly, as the products are (any `x`; `(pow 2 -2)` is `1/4`); else `x` real and 0 or more (a negative one is an error), exact when the root is rational (`(pow 8 1/3)` is 2, `(pow 0.25 0.5)` 0.5) |
+| `(digits)`, `(digits n)` | The precision of the math functions' answers when they aren't exact: 12 significant digits at the start; `n` (1 to 100) makes it the precision, and the one before it is the value.  Each function is exact when its answer is (a perfect square's root is the root, of `x`'s kind; `(exp 0)` is 1, `(log 1)` 0, `(sin 0)` 0), else a fixed decimal of that many significant digits, correctly rounded (`(pi)` is `3.14159265359`; `(exp 100)` `26881171418200000000000000000000000000000000`).  `exp`'s argument, and a power's `y log x`, at most 20000 from 0 |
 
 ### Comparison and types
 
@@ -461,7 +466,6 @@ read-only, `:io` i/o error, `:noexec` not a program, `:eof` end of file, `:srch`
 | `div`, `mod`, `%`, `divmod` | Rounding down: `(+ (* b (div a b)) (mod a b))` is `a`; `divmod` both |
 | `fdiv`, `frecip`, `finverse` | A quotient, a reciprocal, as fixed decimals (`&1` places, 10) |
 | `odd?`, `even?`, `positive?`, `negative?`, `+?`, `-?` | Of numbers; anything else is an error |
-| `pow` | `(pow a b)`: `b` a whole number |
 | `minimum`, `maximum` | Of a list |
 | `starts-with?`, `ends-with?`, `contains?` | Of strings |
 | `repeat`, `times` | `(repeat n code)`: a list of `n` runs' values |

@@ -28,7 +28,9 @@ public partial class Builtins
         ["read"] = (1, 1), ["open"] = (1, 2), ["close"] = (1, 1), ["read-line"] = (0, 1), ["read-byte"] = (0, 1),
         ["read-all"] = (0, 1), ["seek"] = (2, 2), ["tell"] = (1, 1), ["print-to"] = (1, Any), ["write-to"] = (1, Any),
         ["val"] = (1, 1), ["to-fixed"] = (1, 2), ["to-rational"] = (1, 1), ["truncate"] = (1, 1),
-        ["complex"] = (2, 2), ["to-str"] = (1, 2), ["repr"] = (1, 1), ["to-sym"] = (1, 1), ["to-atom"] = (1, 1),
+        ["complex"] = (2, 2), ["to-str"] = (1, 2), ["base"] = (0, 1), ["number-bytes"] = (1, 1), ["bytes-number"] = (1, 1),
+        ["sqrt"] = (1, 1), ["exp"] = (1, 1), ["log"] = (1, 1), ["sin"] = (1, 1), ["cos"] = (1, 1), ["tan"] = (1, 1),
+        ["atan"] = (1, 1), ["pi"] = (0, 0), ["digits"] = (0, 1), ["pow"] = (2, 2), ["repr"] = (1, 1), ["to-sym"] = (1, 1), ["to-atom"] = (1, 1),
         ["fib"] = (1, 1), ["defined?"] = (0, 1), ["type-of"] = (1, 1),
         ["t?"] = (1, 1), ["nil?"] = (1, 1), ["num?"] = (1, 1), ["fixed?"] = (1, 1), ["rational?"] = (1, 1),
         ["int?"] = (1, 1), ["complex?"] = (1, 1), ["atom?"] = (1, 1), ["symbol?"] = (1, 1), ["string?"] = (1, 1),
@@ -482,27 +484,56 @@ public partial class Builtins
             if (filename == null) return SysErr("noent", v.StrVal);
 
             var input = File.ReadAllText(filename, Encoding.Latin1);
-            var tokens = Parser.Tokenize(new StringReader(input)).ToList();
-            var bad = tokens.FirstOrDefault(t => t.type == Parser.Token.Type.Error || t.type == Parser.Token.Type.More);
-            if (bad != null) return LVal.Err($"{FromHost(filename)}:{bad.line}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
-            var outer = LVal.SourceFile;
-            LVal.SourceFile = FromHost(filename);
-            LVal exprs;
-            try {
-                exprs = LVal.ReadExprFromTokens(tokens)!.Freeze();
-            }
-            finally {
-                LVal.SourceFile = outer;
-            }
+            // An expression at a time, each run before the next is read, so that what one does to the reader (the
+            // base: numbers are read in it) holds for those after it
+            var tokens = Parser.Tokenize(new StringReader(input)).GetEnumerator();
+            while (true) {
+                var item = NextItem(tokens, out var bad);
+                if (bad != null) return LVal.Err($"{FromHost(filename)}:{bad.line}: {(bad.type == Parser.Token.Type.More ? $"missing {bad.parens}" : bad.str)}");
+                if (item == null) break;
+                var outer = LVal.SourceFile;
+                LVal.SourceFile = FromHost(filename);
+                LVal exprs;
+                try {
+                    exprs = LVal.ReadExprFromTokens(item)!.Freeze();
+                }
+                finally {
+                    LVal.SourceFile = outer;
+                }
 
-            // a file's expressions are top level: the global environment's (the code shared, frozen)
-            foreach (var x in exprs.Cells!) {
-                lastExpr = x.Eval(e.Root);
-                if (lastExpr.IsErr) return LVal.ErrFrom(lastExpr, $"{FromHost(filename)}: {lastExpr.ErrVal}");
-                if (lastExpr.IsExit) throw new ExitException(lastExpr.ExitCode);
+                // a file's expressions are top level: the global environment's (the code shared, frozen)
+                foreach (var x in exprs.Cells!) {
+                    lastExpr = x.Eval(e.Root);
+                    if (lastExpr.IsErr) return LVal.ErrFrom(lastExpr, $"{FromHost(filename)}: {lastExpr.ErrVal}");
+                    if (lastExpr.IsExit) throw new ExitException(lastExpr.ExitCode);
+                }
             }
         }
         return lastExpr;
+    }
+
+    // The tokens of a file's next top-level item (an expression in brackets, or a word), its comments passed by; null
+    // at the end.  bad: a token that's an error (or More: a bracket left open at the end)
+    private static List<Parser.Token>? NextItem(IEnumerator<Parser.Token> tokens, out Parser.Token? bad) {
+        bad = null;
+        var item = new List<Parser.Token>();
+        var depth = 0;
+        while (tokens.MoveNext()) {
+            var t = tokens.Current;
+            switch (t.type) {
+                case Parser.Token.Type.Error:
+                case Parser.Token.Type.More: bad = t; return null;
+                case Parser.Token.Type.EOF: return item.Count > 0 ? item : null;
+                case Parser.Token.Type.Comment: if (depth == 0) continue; break;
+                case Parser.Token.Type.SExOpen:
+                case Parser.Token.Type.QExOpen: ++depth; break;
+                case Parser.Token.Type.SExClose:
+                case Parser.Token.Type.QExClose: --depth; break;
+            }
+            item.Add(t);
+            if (depth <= 0) return item;
+        }
+        return item.Count > 0 ? item : null;
     }
 
     public static LVal Save(LEnv e, LVal a) {
@@ -629,6 +660,88 @@ public partial class Builtins
             return LVal.Err("Imaginary part of complex must be an int, a rational, or a fixed");
         }
         return LVal.Err("Real part of complex must be an int, a rational, or a fixed");
+    }
+
+    // (base): the base numbers are shown and read in, a base string ("d" at the start); (base s): it set to s (as
+    // to-str takes them: "x", "#x" with its prefix shown, "#16r", "c", "<x", "[01]" ...), the one before it given back,
+    // so that a program can put it back.  Everything follows it: print, repr, to-str, format's {}, val, read, and the
+    // reader, from the next expression it reads
+    private static LVal Base(LEnv e, LVal a) {
+        var old = NumberFormat.Current;
+        if (a.Count == 0) return LVal.Str(old.Spec);
+        var s = a.Pop(0);
+        if (s.IsErr) return s;
+        if (!s.IsStr) return LVal.Err("'base' expects a string: a base (\"x\", \"#16r\", \"c\" ...)");
+        try { NumberFormat.Current = NumberFormat.Of(s.StrVal!); }
+        catch (FormatException x) { return LVal.Err($"'base': {x.Message}"); }
+        return LVal.Str(old.Spec);
+    }
+
+    // A math function of one number: its value, or its error
+    private static LVal MathFn(LVal a, string name, Func<Num, Num> f) {
+        var x = a.Pop(0);
+        if (x.IsErr) return x;
+        if (!x.IsNum) return LVal.Err($"'{name}' expects a number");
+        try { return LVal.Number(f(x.NumVal!)); }
+        catch (MathError m) { return LVal.Err(m.Message); }
+        catch (DivideByZeroException) { return LVal.Err("Division by zero."); }
+    }
+
+    // (digits): the precision of the math functions' results when they aren't exact (12 significant digits at the
+    // start); (digits n): it set to n (1 to 100), the one before it given back
+    private static LVal Digits(LEnv e, LVal a) {
+        var old = NumMath.Digits;
+        if (a.Count == 0) return LVal.Number(old);
+        var n = a.Pop(0);
+        if (n.IsErr) return n;
+        if (!n.IsNum || !(n.NumVal is Int i) || n.NumVal is Rat || (n.NumVal is Fix f && f.dec != 0) || i.num < 1 || i.num > NumMath.MaxDigits)
+            return LVal.Err($"'digits' takes a whole number from 1 to {NumMath.MaxDigits}");
+        NumMath.Digits = (int)i.num;
+        return LVal.Number(old);
+    }
+
+    // (pow x y): x to the power y: exact for a whole y (any x); else x real and 0 or more, exact when its root is
+    // rational (4 to 1/2 is 2), else a fixed decimal of (digits) significant digits
+    private static LVal Pow(LEnv e, LVal a) {
+        var x = a.Pop(0);
+        if (x.IsErr) return x;
+        var y = a.Pop(0);
+        if (y.IsErr) return y;
+        if (!x.IsNum || !y.IsNum) return LVal.Err("'pow' expects numbers");
+        try { return LVal.Number(NumMath.Pow(x.NumVal!, y.NumVal!)); }
+        catch (MathError m) { return LVal.Err(m.Message); }
+        catch (DivideByZeroException) { return LVal.Err("Division by zero."); }
+    }
+
+    // (number-bytes n): a number in the Hydra's stored format, its bytes (a list); (bytes-number b): the number bytes
+    // (a list, or a buffer) hold, in that format, its one form
+    private static LVal NumberBytes(LEnv e, LVal a) {
+        var n = a.Pop(0);
+        if (n.IsErr) return n;
+        if (!n.IsNum) return LVal.Err("'number-bytes' expects a number");
+        List<byte> b;
+        try { b = NumBytes.Encode(n.NumVal!); }
+        catch (OverflowException x) { return LVal.Err($"'number-bytes': {x.Message}"); }
+        var l = LVal.Qexpr();
+        foreach (var x in b) l.Add(LVal.Number(x));
+        return l;
+    }
+
+    private static LVal BytesNumber(LEnv e, LVal a) {
+        var l = a.Pop(0);
+        if (l.IsErr) return l;
+        var b = new List<byte>();
+        if (l.IsBuffer) b.AddRange(l.BufferValue!);
+        else if (l.IsQExpr) {
+            foreach (var x in l.Cells!) {
+                if (!x.IsNum || !(x.NumVal is Int i) || x.NumVal is Fix || x.NumVal is Rat || i.num < 0 || i.num > 255)
+                    return LVal.Err("'bytes-number' expects bytes, 0-255");
+                b.Add((byte)i.num);
+            }
+        }
+        else return LVal.Err("'bytes-number' expects a list of bytes or a buffer");
+        try { return LVal.Number(NumBytes.Decode(b)); }
+        catch (FormatException x) { return LVal.Err($"'bytes-number': {x.Message}"); }
     }
 
     private static LVal ToStr(LEnv e, LVal a) {
@@ -1335,7 +1448,8 @@ public partial class Builtins
         return LVal.Str(string.Concat(Enumerable.Repeat(s.StrVal, n)));
     }
 
-    // (format text args...): the text with each {} the next argument, as print shows it ({{ and }}: a brace)
+    // (format text args...): the text with each {} the next argument, as print shows it, and each {base} the next
+    // argument, a number, in that base ({x} FF, {#x} #xFF, {c}, {16r}, {[01]} ...); {{ and }} a brace
     private static LVal Format(LEnv e, LVal a) {
         var f = StrArg(e, a, "format");
         if (f.IsErr) return f;
@@ -1345,12 +1459,18 @@ public partial class Builtins
             var next = i + 1 < s.Length ? s[i + 1] : '\0';
             if (s[i] == '{' && next == '{') { sb.Append('{'); i++; }
             else if (s[i] == '}' && next == '}') { sb.Append('}'); i++; }
-            else if (s[i] == '{' && next == '}') {
+            else if (s[i] == '{' && s.IndexOf('}', i + 1) is var close && close > i) {
                 if (a.Count == 0) return LVal.Err("'format' has too few arguments for its {}s");
                 var v = a.Pop(0);
                 if (v.IsErr) return v;
-                sb.Append(v.ToDisplay());
-                i++;
+                var spec = s.Substring(i + 1, close - i - 1);
+                if (spec == "") sb.Append(v.ToDisplay());
+                else {
+                    if (!v.IsNum) return LVal.Err($"'format's {{{spec}}} is a base, for a number");
+                    try { sb.Append(NumberParser.Display(v.NumVal!, NumberFormat.Of(spec))); }
+                    catch (FormatException x) { return LVal.Err($"'format': {x.Message}"); }
+                }
+                i = close;
             }
             else sb.Append(s[i]);
         }
@@ -1637,6 +1757,21 @@ public partial class Builtins
             LVal.Number(a[0].NumVal!.ToInt()));
         AddBuiltin(e, "complex",     Complex);
         AddBuiltin(e, "to-str", ToStr);
+        AddBuiltin(e, "base", Base);
+        AddBuiltin(e, "number-bytes", NumberBytes);
+        AddBuiltin(e, "bytes-number", BytesNumber);
+        // The math functions (NumMath.cs): exact when the answer is, else a fixed decimal of (digits) significant
+        // digits, correctly rounded
+        AddBuiltin(e, "sqrt", (e, a) => MathFn(a, "sqrt", NumMath.Sqrt));
+        AddBuiltin(e, "exp", (e, a) => MathFn(a, "exp", NumMath.Exp));
+        AddBuiltin(e, "log", (e, a) => MathFn(a, "log", NumMath.Log));
+        AddBuiltin(e, "sin", (e, a) => MathFn(a, "sin", x => NumMath.Trig(x, 0)));
+        AddBuiltin(e, "cos", (e, a) => MathFn(a, "cos", x => NumMath.Trig(x, 1)));
+        AddBuiltin(e, "tan", (e, a) => MathFn(a, "tan", x => NumMath.Trig(x, 2)));
+        AddBuiltin(e, "atan", (e, a) => MathFn(a, "atan", NumMath.Atan));
+        AddBuiltin(e, "pi", (e, a) => LVal.Number(NumMath.Pi()));
+        AddBuiltin(e, "digits", Digits);
+        AddBuiltin(e, "pow", Pow);
         // (repr x): x as the REPL shows it (a string in quotes, with escapes), an error too ("Error: ...")
         AddBuiltin(e, "repr", (e, a) => LVal.Str(a.Pop(0).ToStr()));
         AddBuiltin(e, "to-sym",

@@ -72,12 +72,25 @@ is allowed.  A space is ASCII's (space, tab, LF, VT, FF, CR); a control characte
 | `#=...` | Balanced (a radix or digits of its own): the middle digit is zero |
 | `#+...`, `#-...` | A positive base, or a negative one |
 | `-#x10` | A sign before `#` |
+| `1+2i`, `0.5-1/3i`, `2i` | A complex number: a real part, `+` or `-`, an imaginary part and `i`; or an imaginary part and `i` (`i` alone is a name, `1i` the number) |
 
 A fraction in base 10 is a fixed decimal; in any other base, a rational.  The named bases (balanced and
 least-digit-first ones first): `c` `-0+`, `e` `=-0+#`, `g` `~=-0+#*`, `i` `UON`, `j` `WUONM`, `m` `DanielStphrus`
 (negative); `b` binary, `t` 3, `q` 4, `v` 5, `f` 6, `s` 7, `o` 8, `n` 9, `d` 10, `x` 16, `z` 36; balanced, most
 digit first: `k` (27: `ZYX...N0AB...M`), `y` (53: `zy...a0AB...Z`).  A word that starts like a number and isn't one
-is a symbol (`1+`, `1/x`).
+is a symbol (`1+`, `1/x`, `1+i`).
+
+**The base.**  `(base "x")` sets the base numbers are shown and read in, everywhere, all the time: what `print`,
+`repr`, `to-str` and `format`'s `{}` write, what `val` and `read` read, and a program's own text, from the next
+expression read (`load` reads a file an expression at a time, each run before the next is read).  A base is a base
+string, as `to-str` takes one: `"x"`, `"16r"`, `"c"`, `"<x"`, `"=16r"`, `"[01]"` ...; one that starts with `#` shows
+its prefix as a number is written (`"#x"`: `#xFF`; `"x"`: `FF`).  Decimal at the start (`"d"`).  In a program's text
+a bare number starts with a digit `0`-`9`, so that names stay names (in hexadecimal `0FF` is a number, `FF` a name);
+a base whose digits aren't those (`c`, `i`, `m` ...) is written with its `#` there.  A number with a `#` of its own
+is read in its own base whatever the base is (`#d10` is ten).  In another base than decimal a fraction or a fixed
+decimal is written with a radix point when it ends in that base (`0.5` in binary `0.1`), else as a fraction
+(`0.1` in hexadecimal `1/A`), and a complex number as its parts in it (in a base whose digits include `+`, `-` or
+`i`, in decimal, each part with `#d`); `save` writes a number with its prefix, so it reads back in any base.
 
 **Reader errors.**  An unclosed or wrongly closed bracket (`(1 2]`), an unknown escape or character name, a line's
 end in a plain string, a control character, non-ASCII outside a string (in a word too: `a\x01b`), `1/0`, `$(`, and a
@@ -262,7 +275,14 @@ end takes what there is; a negative count is an error.
 | `(complex re im)` | A complex number of two real numbers (a real number when `im` is 0) |
 | `(random n)` | An integer from 0 up to, not including, `n` (an integer, 1 or more) |
 | `(fib n)` | The `n`th Fibonacci number (`n` 0 or more) |
+| `(base)`, `(base b)` | The base numbers are shown and read in (a base string: `"d"` at the start); `b` makes it the base, and the one before it is the value (to put back).  Section 1, "The base" |
+| `(number-bytes x)`, `(bytes-number l)` | A number in the Hydra-16's stored format, its bytes (a list); the number bytes (a list or a buffer) hold, each number in its one form (an error otherwise).  A tag byte, then what it says: an integer of -64 to 63 the tag itself; `$80`-`$8F` or `$90`-`$9F` and a magnitude of 1 to 16 bytes, least first (positive or negative); `$A0` or `$A1`, a length (17-255) and the magnitude; a fixed decimal `$B0`+places (0-15), or `$C0` and its places in two bytes, then its digits, an integer; a rational `$C1`, its numerator, its denominator; a complex number `$C2`, its real part, its imaginary part |
 | `(val s)` | The number a string is written as (spaces around it allowed); not one, an error |
+| `(sqrt x)`, `(exp x)`, `(log x)` | The square root, e to the `x`, the natural logarithm; a negative number's square root or logarithm is complex (`(sqrt -4)` is `2i`), `(log 0)` an error.  Of a complex number, the principal value (the root whose real part is above 0, the logarithm whose angle is above -pi and at most pi): `(sqrt 3+4i)` is `2+1i` |
+| `(sin x)`, `(cos x)`, `(tan x)`, `(atan x)` | The circle's functions, in radians; of a complex number, by cosh and sinh (`(sin 1i)` is `1.17520119364i`), `atan`'s principal value (odd: `(atan -x)` is `-(atan x)`), `(atan 1i)` and `(atan -1i)` errors |
+| `(pi)` | Pi |
+| `(pow x y)` | `x` to the power `y`: a whole `y` exactly, as the products are (any `x`; `(pow 2 -2)` is `1/4`); else `x` real and 0 or more, exact when the root is rational (`(pow 8 1/3)` is 2, `(pow 0.25 0.5)` 0.5); else (a negative `x`, or a complex `x` or `y`) the principal value, `exp` of `y` times `log x`: `(pow -8 1/3)` is `1+1.73205080757i`, `(pow -4 1/2)` `2i`, `(pow 1i 1i)` the real `0.207879576351`.  0 to a complex power whose real part isn't above 0 is an error |
+| `(digits)`, `(digits n)` | The precision of the math functions' answers when they aren't exact: 12 significant digits at the start; `n` (1 to 100) makes it the precision, and the one before it is the value.  Each function is exact when its answer is (a perfect square's root is the root, of `x`'s kind; `(exp 0)` is 1, `(log 1)` 0, `(sin 0)` 0), else a fixed decimal of that many significant digits, correctly rounded (`(pi)` is `3.14159265359`; `(exp 100)` `26881171418200000000000000000000000000000000`); a complex answer's each part so, a part that's exactly 0 known from the argument and given as 0 (`(log 0.6+0.8i)` has no real part).  `exp`'s argument, and a power's `y log x`, at most 20000 from 0 |
 
 ### Comparison and types
 
@@ -291,7 +311,7 @@ end takes what there is; a negative count is an error.
 | `(str-chars s)` | Its characters, a list |
 | `(str-pad-left s n [c])`, `(str-pad-right s n [c])` | `s` made `n` long with `c` (a space; a character or a string of one) before or after it; a longer `s` as it is |
 | `(str-repeat s n)` | `s` `n` times |
-| `(format text x...)` | The text with each `{}` the next value as `print` shows it (`{{` and `}}` a brace); too few values or too many is an error |
+| `(format text x...)` | The text with each `{}` the next value as `print` shows it, and each `{b}` the next value, a number, in the base `b` names (`{x}`, `{#b}`, `{c}`, `{16r}` ...); `{{` and `}}` a brace; too few values or too many is an error |
 | `(char-code c)` | A character's code (or a string of one's), 0-255 |
 | `(code-char n)` | The character with code `n`, 0-255 |
 | `(alpha? c)`, `(digit? c)`, `(space? c)`, `(upper? c)`, `(lower? c)` | Whether a character is one, or every character of a string that isn't empty (ASCII's classes) |
@@ -300,7 +320,7 @@ end takes what there is; a negative count is an error.
 
 | Built-in | Value |
 | --- | --- |
-| `(to-str x [base])` | As `print` shows it; a number in a base (`"x"`, `"#x"`, `"#16r"`, with `<` `>` `+` `-`): `"#xFF"`, a rational `"#x1/#x3"`, a fixed decimal as a rational; a complex number in a base is an error |
+| `(to-str x [base])` | As `print` shows it; a number in a base (`"x"`, `"#16r"`, `"c"`, `"[01]"`, with `<` `>` `=` `+` `-`), its prefix written when the base string starts with `#` (`"#x"`: `"#xFF"`; `"x"`: `"FF"`): a fraction or a fixed decimal with a radix point when it ends in that base (`"#b0.1"`), else a fraction (`"#x1/#x3"`); a complex number its parts in the base |
 | `(repr x)` | As the REPL shows it |
 | `(to-sym x)` | A symbol: of a symbol, an atom or a string (its text in lower case) |
 | `(to-atom x)` | An atom: of an atom, a symbol, a string or a number (as it prints) |
@@ -313,7 +333,7 @@ end takes what there is; a negative count is an error.
 | `(write x...)` | NIL: the same, no spaces, no LF |
 | `(output-of x...)` | What the expressions printed to stdout, a string; an error, if one is one.  Special |
 | `(read text)` | The expressions in the text, unevaluated, a list; a reader error is an error |
-| `(load path...)` | Each file's expressions run at the top level in turn; the last value.  A path is as it is, or with `.dl`; a bare name is also looked for in the library's folder.  An error is `file: message` |
+| `(load path...)` | Each file's expressions run at the top level in turn, each read as the one before it has run (so the base one sets holds for those after it); the last value.  A path is as it is, or with `.dl`; a bare name is also looked for in the library's folder.  An error is `file: message` |
 | `(save x)`, `(save x path [mode])` | NIL: `x` as it would be read back, printed (a line, ending LF), or written to the file with LF (`:overwrite` or `:append`; an existing file without one is an error; its folder must be there, else `:noent`) |
 | `(open path [mode])` | A stream on the file: `:read` (the default), `:write` (made, or emptied), `:append`, `:update` (read and written in place: it must be there, else `:noent`; nothing emptied); a directory is `:isdir` |
 | `(close s)` | NIL; the console's streams can't be closed |
@@ -371,7 +391,7 @@ of it, or a part).
 | `(not x)` | T for NIL, NIL for anything else |
 | `(== x y)`, `(>= x y)`, `(<= x y)` | `eq`, and the order's |
 | `(neg? x)`, `(pos? x)`, `(zero? x)`, `(one? x)` | Of a number |
-| `(1+ x)`, `(1- x)`, `(abs x)` | Of a number |
+| `(1+ x)`, `(1- x)`, `(abs x)` | Of a number; `abs` of a complex number is its modulus, its distance from 0 (`(abs 3-4i)` is 5) |
 | `(cons x l)` | `x` and the list's items, a list |
 | `(fst l)`, `(snd l)`, `(thd l)`, `(last l)`, `(nth i l)` | An item, as it's written |
 | `(take n l)`, `(drop n l)` | The first `n` items, or all but them |
@@ -446,7 +466,6 @@ read-only, `:io` i/o error, `:noexec` not a program, `:eof` end of file, `:srch`
 | `div`, `mod`, `%`, `divmod` | Rounding down: `(+ (* b (div a b)) (mod a b))` is `a`; `divmod` both |
 | `fdiv`, `frecip`, `finverse` | A quotient, a reciprocal, as fixed decimals (`&1` places, 10) |
 | `odd?`, `even?`, `positive?`, `negative?`, `+?`, `-?` | Of numbers; anything else is an error |
-| `pow` | `(pow a b)`: `b` a whole number |
 | `minimum`, `maximum` | Of a list |
 | `starts-with?`, `ends-with?`, `contains?` | Of strings |
 | `repeat`, `times` | `(repeat n code)`: a list of `n` runs' values |

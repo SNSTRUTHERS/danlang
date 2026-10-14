@@ -146,7 +146,7 @@ public class NumberParser {
     
     public bool IsDigit(int i) => i >= 0 && Chars.IndexOf(DigitOf(i)) >= 0;
     public int MinDigitVal { get => -_zeroIndex; }
-    public int MaxDigitVal{ get => _balanced ? _zeroIndex : Chars.Length - 1; }
+    public int MaxDigitVal{ get => _balanced ? Chars.Length - 1 - _zeroIndex : Chars.Length - 1; }   // (balanced of an even size: one less above 0 than below)
     
     public BigInteger NewVal(int c) => Val * _base + DigitVal(c);
 
@@ -177,60 +177,81 @@ public class NumberParser {
     public override string ToString() => 
         $"NumberParser: Base={_base}, Chars={Chars}, {(_le ? "Little" : "Big")} Endian{(_balanced ? ", Balanced" : "")}, Case {(IsCaseSignificant ? "Sensitive" : "Insensitive")}";
 
-    //@b: base specifier of the form '0[<>]?[+-]?[bcdefgkmnoqstvxyz]'
-    //    > = Big Endian (override default little endianness)
-    //    < = Little Endian (override default big endianness)
-    //    - = Negative Base (override default positive base)
-    //    + = Positive Base (override default negative base)
-    public static string ToBase(Num n, string b) {
-        if (n is Comp) throw new FormatException("A complex number has no form in another base");
-        if (n is Fix f && f.dec != 0) n = Num.Norm(Rat.ToRat(f));    // a fraction, in that base
-        var num = ToBase(((Int)n).num, b);
-        var den = "";
-        if (n is Rat r && r.num != 0 && r.den != 1) {
-            den = ToBase(r.den, b);
-        }
 
-        if (den != "") return num + "/" + den;
-        return num;
+    // ---- Writing a number in a base
+
+    // A number as text in a base (a base string, as to-str takes): with its prefix when the string starts with #
+    // ("#x": #xFF), without it when it doesn't ("x": FF)
+    public static string ToBase(Num n, string b) => Display(n, NumberFormat.Of(b));
+
+    // A number as text in a format (prefix: whether its prefix is written; null, as the format says).  Decimal with no
+    // prefix is as ToString writes it.  In any other base an integer is its digits; a fraction or a fixed decimal is
+    // written with a radix point when it ends in that base (0.5 in binary 0.1), else as a fraction, its parts in the
+    // base; a complex number is its parts, joined by its imaginary part's sign, then i
+    public static string Display(Num n, NumberFormat f, bool? prefix = null) {
+        var pre = prefix ?? f.Prefix;
+        if (f.IsDecimal && !pre) return n.ToString();
+        if (n is Comp c) return DisplayComplex(c, f, pre);
+        return DisplayReal(n, f, pre);
     }
 
-    public static string ToBase(BigInteger n, string b) {
-        // validate incoming b (the # may be left off: "x" is "#x")
-        if (!b.StartsWith('#')) b = "#" + b;
-        var reg = new Regex(@"^#[<>]?[+-]?(?<numberBase>([1-7]?[0-9]|80)[rR]|[" + string.Join("", Bases.Keys.Select(c => c.ToString())) +"])$", RegexOptions.IgnoreCase);
-        if (!reg.IsMatch(b)) throw new FormatException($"Invalid base specifier {b}");
+    private static string DisplayComplex(Comp c, NumberFormat f, bool pre) {
+        // A base whose digits include +, - or i would make the parts ambiguous: its complex numbers are written in
+        // decimal, each part with #d, which reads back in any base
+        if (f.HasDigit('+') || f.HasDigit('-') || f.HasDigit('i')) { f = NumberFormat.Decimal; pre = true; }
+        var im = DisplayReal(c.im, f, pre);
+        if (c.r.IsZero) return im + "i";
+        var re = DisplayReal(c.r, f, pre);
+        return re + (im.StartsWith('-') ? "" : "+") + im + "i";
+    }
 
-        var baseChar = Char.ToLower(b.Last());
-        int? radix = null;
-        if (baseChar == 'r') {
-            var m = reg.Match(b);
-            radix = int.Parse(m.Groups["numberBase"].Captures[0].Value.TrimEnd('r', 'R'));
-            if (radix < 2) throw new FormatException($"Invalid base specifier {b}: a radix is 2 to 80");
+    private static string DisplayReal(Num n, NumberFormat f, bool pre) {
+        var p = pre ? f.PrefixText : "";
+        if (f.IsDecimal) {
+            // decimal with its prefix (#d): danlang's forms, the prefix after the sign
+            var s = n.ToString();
+            if (n is Rat r && r.den != 1) return Display(new Int(r.num), f, true) + "/" + Display(new Int(r.den), f, true);
+            return s.StartsWith('-') ? "-" + p + s.Substring(1) : p + s;
         }
+        var q = Rat.ToRat(n);
+        if (q.den == 1) return Digits(q.num, f, p, 0);
+        var k = PlacesIn(q.den, f.Base);
+        if (k < 0) return Digits(q.num, f, p, 0) + "/" + Digits(q.den, f, p, 0);
+        return Digits(q.num * BigInteger.Pow(f.Base, k) / q.den, f, p, k);
+    }
 
-        bool? negBase = null;
-        if (b.Contains('-')) negBase = true;
-        if (b.Contains('+')) negBase = false;
+    // The places after the radix point a fraction with this denominator ends in, in a base (its least k for which
+    // den divides base^k), or -1 if it doesn't end there
+    private static int PlacesIn(BigInteger den, int b) {
+        BigInteger ab = Math.Abs(b);
+        var k = 0;
+        while (den != 1) {
+            var g = BigInteger.GreatestCommonDivisor(den, ab);
+            if (g == 1) return -1;
+            den /= g;
+            ++k;
+        }
+        return k;
+    }
 
-        bool? le = null;
-        if (b.Contains('<')) le = true;
-        if (b.Contains('>')) le = false;
+    // An integer's digits in a format, with its prefix p and a radix point before its last k digits: the sign first
+    // in a positive base that isn't balanced (-#b101); a balanced or negative base's digits hold the sign themselves
+    private static string Digits(BigInteger n, NumberFormat f, string p, int k) {
+        var acc = f.NewParser();
+        var neg = acc.Base > 0 && !acc.IsBalanced && n < 0;
+        var be = BigEndianDigits(neg ? -n : n, acc);
+        if (k > 0) {
+            if (be.Length <= k) be = new string(acc.CharFor(0), k + 1 - be.Length) + be;
+            be = be.Insert(be.Length - k, ".");
+        }
+        if (acc.IsLE) be = new string(be.Reverse().ToArray());
+        return (neg ? "-" : "") + p + be;
+    }
 
-        NumberParser? acc = null;
-        if (radix == null) acc = new NumberParser(baseChar, negBase, le);
-        else acc = new NumberParser(negBase ?? false, le ?? false, false, _customBaseStandardCharset.Substring(0, radix ?? 10));
-
-        // final normalize
-        if (b == "#d") b = "";
-
+    // An integer's digits, the most significant first (a negative one in a positive base that isn't balanced: its
+    // magnitude's, as the caller writes the sign)
+    private static string BigEndianDigits(BigInteger scratch, NumberParser acc) {
         var str = new StringBuilder();
-
-        // adjuster for negative numbers when the base is positive and not balanced
-        // in that case, we parse the positive value and then insert a '-' at the front when done
-        var mult = (acc.Base > 0 && !acc.IsBalanced && n < 0) ? -1 : 1;
-        var scratch = n * mult;
-
         BigInteger p = 1;
         BigInteger min = acc.MinDigitVal;
         BigInteger max = acc.MaxDigitVal;
@@ -259,13 +280,8 @@ public class NumberParser {
 
             // adjust p for the next place
             p = p / acc.Base;
-
-            if (acc.IsLE) str.Insert(0, acc.CharFor(d));
-            else str.Append(acc.CharFor(d));
+            str.Append(acc.CharFor(d));
         }
-
-        str.Insert(0, b);
-        if (mult < 0) str.Insert(0, '-');
         return str.ToString();
     }
 
@@ -275,54 +291,90 @@ public class NumberParser {
             new Fix(_den > 0 ? Val : -Val, Log10(_den ?? 1)) :
             Num.Norm(new Rat(Val, _den ?? 1))); }    // (a rational whose denominator is 1: an integer)
 
-    private const string _customBaseStandardCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-=+`~!@#$%^&*,;:|?";
+    public const string CustomBaseStandardCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-=+`~!@#$%^&*,;:|?";
     private static Regex _customBaseRegex = new Regex(@"^#(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)((?<numberBase>([1-7]?[0-9]|80))[rR]|\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\])(?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
 
-    public static Num? ParseString(string? s) {
-        // read base
-        // create new IntAcc from base
-        // add until Add returns false or end-of-input
-        // if not EOI, see if next char is /, +- or i and if so, change to either rational or complex, respectively and repeat
-        // if rational consumed and still more input, must be +- or i.  If +-, repeat from top changing over to complex
-        NumberParser? i = null;
+    // ---- Reading a number
+
+    // A number from text in the current base (NumberFormat.Current), or null when it isn't one
+    public static Num? ParseString(string? s) => ParseString(s, NumberFormat.Current, false);
+
+    // A number from text in a base: a number with a # of its own in its own (#xFF), a bare one in f.  source: the text
+    // is a program's (the reader's), where a bare number must start with a digit 0-9 so that names stay names (FF is
+    // a name in hexadecimal, 0FF a number).  A complex number is a real part, + or -, an imaginary part and i (1+2i,
+    // 0.5-1/3i), or an imaginary part and i alone (2i)
+    public static Num? ParseString(string? s, NumberFormat f, bool source) {
         s = s?.Trim().Replace("_", "");
         if (string.IsNullOrWhiteSpace(s)) return null;
+        var real = ParseReal(s, f, source);
+        if (real != null || !s.EndsWith('i')) return real;
 
+        // a complex number: the imaginary part alone, or the last sign at which both parts are real numbers
+        var body = s.Substring(0, s.Length - 1);
+        if (body.Length == 0) return null;
+        var im = ParseReal(body, f, source);
+        if (im != null) return Num.Norm(new Comp(new Int(0), (Int)im));
+        for (var p = body.Length - 1; p > 0; --p) {
+            if (body[p] != '+' && body[p] != '-') continue;
+            var re = ParseReal(body.Substring(0, p), f, source);
+            if (re == null) continue;
+            var ip = ParseReal(body.Substring(p), f, false);    // (its sign first: the rule is the real part's)
+            if (ip != null) return Num.Norm(new Comp((Int)re, (Int)ip));
+        }
+        return null;
+    }
+
+    private static Num? ParseReal(string s, NumberFormat f, bool source) {
         if (s.Contains('/')) { // is a rational
             var splits = s.Split('/');
             if (splits.Length != 2 || splits.Any(sp => sp.Length == 0 || sp.Contains('.'))) return null;
 
             // each part an integer, or it isn't a number (1/x is a symbol)
-            var num = ParseString(splits[0]);
-            var den = ParseString(splits[1]);
+            var num = ParseReal(splits[0], f, source);
+            var den = ParseReal(splits[1], f, false);
             if (num == null || den == null || num is Rat || den is Rat || num is Comp || den is Comp) return null;
             if (den.IsZero) throw new DivideByZeroException();
 
             return Num.Norm(new Rat(((Int)num).num, ((Int)den).num));
         }
 
-        // simple case first (it is just a normal, decimal number in while, fixed, or fractional notation, i.e. 1, 1.4, or 1/3)
-        if (Regex.IsMatch(s, @"^[+-]?([0-9]\d*)(\.\d+)?$")) {
-            BigInteger _ParseInt(string p) => BigInteger.Parse(p);
-
-            // is it a fixed?
-            var splits = s.Split('.');
-            if (splits.Length > 1 && splits[1].Length > 0) {
-                var wp = _ParseInt(splits[0] + splits[1]);
-                return new Fix(wp, splits[1].Length);
-            }
-            return new Int(_ParseInt(splits[0]));
-        }
-
-        // otherwise
+        // the sign: before a # (-#x10), or a bare number's, unless the base has + or - among its digits (a balanced
+        // base's numbers have no sign: #c+-0)
         var sign = '+';
-        if ("+-".Contains(s[0])) {
+        var bare = !s.TrimStart('+', '-').StartsWith('#');
+        if ("+-".Contains(s[0]) && !(bare && f.HasDigit(s[0]))) {
             sign = s[0];
             s = s.Substring(1);
         }
-
         if (s == "") return null;
 
+        Num? v;
+        if (s[0] == '#') v = ParseBased(s);
+        else {
+            if (source && !(s[0] >= '0' && s[0] <= '9')) return null;
+            if (f.IsDecimal) {
+                // a decimal number: an integer, or a fixed one (1.5)
+                if (!Regex.IsMatch(s, @"^[0-9]+(\.[0-9]+)?$")) return null;
+                var splits = s.Split('.');
+                v = splits.Length > 1 ? new Fix(BigInteger.Parse(splits[0] + splits[1]), splits[1].Length)
+                    : new Int(BigInteger.Parse(splits[0]));
+            }
+            else {
+                // in the base: its digits, and a radix point (once, with digits on both sides)
+                var dot = s.IndexOf('.');
+                if (dot == 0 || dot == s.Length - 1) return null;
+                var i = f.NewParser();
+                if (i.AddString(s) != s.Length) return null;
+                v = i.Num;
+            }
+        }
+        if (v == null) return null;
+        return sign == '-' ? -v : v;
+    }
+
+    // A number with a # of its own: a radix (#16rFF), digits of its own (#[01]101), or a named base (#xFF)
+    private static Num? ParseBased(string s) {
+        NumberParser? i = null;
         if (_customBaseRegex.IsMatch(s)) {
             var m = _customBaseRegex.Match(s);
             bool bal = false;
@@ -350,7 +402,7 @@ public class NumberParser {
             if (nbg.Count > 0 && nbg[0].Length > 0) {
                 var numberBase = int.Parse(nbg[0].Value);
                 if (numberBase < 2) return null;
-                valueChars = _customBaseStandardCharset.Substring(0, numberBase);
+                valueChars = CustomBaseStandardCharset.Substring(0, numberBase);
             }
             else {
                 // a digit set of its own: each digit once (#[0101]... isn't a number)
@@ -364,10 +416,7 @@ public class NumberParser {
             var value = m.Groups["value"].Captures[0].Value;
             var consumed = i.AddString(value);
             if (consumed != value.Length) return null;
-
-            var v = i.Num;
-            if (sign == '-') v = -v;
-            return v;
+            return i.Num;
         }
 
         foreach (var b in Bases.Values) {
@@ -389,23 +438,76 @@ public class NumberParser {
                     if (bmg[0].Value == "+") negBase = false;
                 }
 
-                var bg = m.Groups["bal"].Captures;
-                if (bg.Count > 0 && bg[0].Length > 0) {
-                    if (bg[0].Value == "=") bal = true;
-                }
-
                 i = new NumberParser(negBase, le, bal, b.ValueChars);
 
                 var value = m.Groups["value"].Captures[0].Value;
                 var consumed = i.AddString(value);
                 if (consumed != value.Length) return null;
-
-                var v = i.Num;
-                if (sign == '-') v = -v;
-                return v;
+                return i.Num;
             }
         }
 
         return null;    // (not a number: the reader makes it a symbol)
     }
+}
+
+// A base numbers are written and read in, as a base string names it ("x", "#x", "#16r", "c", "<x", "=16r", "[01]",
+// "d" ...): a named base's letter, a radix (2 to 80, "r"), or digits of its own ("[...]"), after its modifiers (<
+// least digit first, > most digit first, = balanced, + a positive base, - a negative one).  A string that starts with
+// # shows its prefix when a number is written in it (#xFF); one that doesn't, not (FF).  The current base (base's) is
+// what numbers are shown in and read in, everywhere: decimal at the start
+public class NumberFormat {
+    public string Spec { get; private set; } = "d";
+    public bool Prefix { get; private set; }
+    public string PrefixText { get; private set; } = "#d";   // what's written before the digits when the prefix is
+    public bool IsDecimal { get; private set; }
+    public int Base => NewParser().Base;
+
+    private string _chars = "0123456789";
+    private bool _le, _bal, _neg;
+
+    private static readonly Regex _spec = new Regex(@"^(?<pre>#?)(?<dir>[<>]?)(?<bal>=?)(?<sign>[+-]?)((?<radix>[0-9]{1,2})[rR]|\[(?<chars>[^\]]{2,80})\]|(?<letter>[A-Za-z]))$");
+
+    public static readonly NumberFormat Decimal = Of("d");
+    public static NumberFormat Current = Decimal;
+
+    // The format a base string names; an error (FormatException) if it names none
+    public static NumberFormat Of(string spec) {
+        var m = _spec.Match(spec ?? "");
+        if (!m.Success) throw new FormatException($"Invalid base specifier {spec}");
+        var f = new NumberFormat { Spec = spec!, Prefix = m.Groups["pre"].Value == "#" };
+        string dir = m.Groups["dir"].Value, sign = m.Groups["sign"].Value;
+        f.PrefixText = "#" + spec!.TrimStart('#');
+        if (m.Groups["letter"].Success) {
+            var c = char.ToLower(m.Groups["letter"].Value[0]);
+            if (!NumberParser.Bases.TryGetValue(c, out var bi)) throw new FormatException($"Invalid base specifier {spec}");
+            if (m.Groups["bal"].Value == "=") throw new FormatException($"Invalid base specifier {spec}: a named base is balanced or not already");
+            f._chars = bi.ValueChars;
+            f._bal = bi.IsBalanced;
+            f._le = dir == "" ? bi.IsLittleEndian : dir == "<";
+            f._neg = sign == "" ? bi.IsNegative : sign == "-";
+        }
+        else {
+            if (m.Groups["radix"].Success) {
+                var r = int.Parse(m.Groups["radix"].Value);
+                if (r < 2 || r > 80) throw new FormatException($"Invalid base specifier {spec}: a radix is 2 to 80");
+                f._chars = NumberParser.CustomBaseStandardCharset.Substring(0, r);
+            }
+            else {
+                f._chars = m.Groups["chars"].Value;
+                if (!NumberParser.IsUniqueSet(f._chars)) throw new FormatException($"Invalid base specifier {spec}: each digit once");
+            }
+            f._bal = m.Groups["bal"].Value == "=";
+            f._le = dir == "<";
+            f._neg = sign == "-";
+        }
+        f.IsDecimal = f._chars == "0123456789" && !f._bal && !f._le && !f._neg;
+        return f;
+    }
+
+    // A parser for numbers in this base (each read needs its own: it keeps its value as it goes)
+    public NumberParser NewParser() => new NumberParser(_neg, _le, _bal, _chars);
+
+    // Whether a character is one of the base's digits (in either case, unless its digits' case matters)
+    public bool HasDigit(char c) => NewParser().IsDigit(c);
 }

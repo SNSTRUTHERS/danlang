@@ -44,10 +44,10 @@ public partial class Builtins
         AddBuiltin(e, "one?", (e, a) => LVal.Bool(one.Equals(a[0])));
         AddBuiltin(e, "1+",   (e, a) => Apply(e, plus, a[0], one));
         AddBuiltin(e, "1-",   (e, a) => Apply(e, minus, a[0], one));
-        AddBuiltin(e, "abs",  (e, a) => {
+        AddBuiltin(e, "abs",  (e, a) => {                  // (A complex number's modulus: NumMath's)
             if (!a[0].IsNum) return LVal.Err("Cannot perform 'abs' on non-number");
-            var neg = Apply(e, lt, a[0], zero);
-            return neg.IsErr ? neg : neg.IsNIL ? a[0] : Apply(e, minus, a[0]);
+            try { return LVal.Number(NumMath.Abs(a[0].NumVal!)); }
+            catch (MathError m) { return LVal.Err(m.Message); }
         });
 
         // lists: an item as it's written

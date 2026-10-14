@@ -278,11 +278,11 @@ end takes what there is; a negative count is an error.
 | `(base)`, `(base b)` | The base numbers are shown and read in (a base string: `"d"` at the start); `b` makes it the base, and the one before it is the value (to put back).  Section 1, "The base" |
 | `(number-bytes x)`, `(bytes-number l)` | A number in the Hydra-16's stored format, its bytes (a list); the number bytes (a list or a buffer) hold, each number in its one form (an error otherwise).  A tag byte, then what it says: an integer of -64 to 63 the tag itself; `$80`-`$8F` or `$90`-`$9F` and a magnitude of 1 to 16 bytes, least first (positive or negative); `$A0` or `$A1`, a length (17-255) and the magnitude; a fixed decimal `$B0`+places (0-15), or `$C0` and its places in two bytes, then its digits, an integer; a rational `$C1`, its numerator, its denominator; a complex number `$C2`, its real part, its imaginary part |
 | `(val s)` | The number a string is written as (spaces around it allowed); not one, an error |
-| `(sqrt x)`, `(exp x)`, `(log x)` | The square root, e to the `x`, the natural logarithm; a negative number's square root or logarithm is complex (`(sqrt -4)` is `2i`), `(log 0)` an error |
-| `(sin x)`, `(cos x)`, `(tan x)`, `(atan x)` | The circle's functions, in radians |
+| `(sqrt x)`, `(exp x)`, `(log x)` | The square root, e to the `x`, the natural logarithm; a negative number's square root or logarithm is complex (`(sqrt -4)` is `2i`), `(log 0)` an error.  Of a complex number, the principal value (the root whose real part is above 0, the logarithm whose angle is above -pi and at most pi): `(sqrt 3+4i)` is `2+1i` |
+| `(sin x)`, `(cos x)`, `(tan x)`, `(atan x)` | The circle's functions, in radians; of a complex number, by cosh and sinh (`(sin 1i)` is `1.17520119364i`), `atan`'s principal value (odd: `(atan -x)` is `-(atan x)`), `(atan 1i)` and `(atan -1i)` errors |
 | `(pi)` | Pi |
-| `(pow x y)` | `x` to the power `y`: a whole `y` exactly, as the products are (any `x`; `(pow 2 -2)` is `1/4`); else `x` real and 0 or more (a negative one is an error), exact when the root is rational (`(pow 8 1/3)` is 2, `(pow 0.25 0.5)` 0.5) |
-| `(digits)`, `(digits n)` | The precision of the math functions' answers when they aren't exact: 12 significant digits at the start; `n` (1 to 100) makes it the precision, and the one before it is the value.  Each function is exact when its answer is (a perfect square's root is the root, of `x`'s kind; `(exp 0)` is 1, `(log 1)` 0, `(sin 0)` 0), else a fixed decimal of that many significant digits, correctly rounded (`(pi)` is `3.14159265359`; `(exp 100)` `26881171418200000000000000000000000000000000`).  `exp`'s argument, and a power's `y log x`, at most 20000 from 0 |
+| `(pow x y)` | `x` to the power `y`: a whole `y` exactly, as the products are (any `x`; `(pow 2 -2)` is `1/4`); else `x` real and 0 or more, exact when the root is rational (`(pow 8 1/3)` is 2, `(pow 0.25 0.5)` 0.5); else (a negative `x`, or a complex `x` or `y`) the principal value, `exp` of `y` times `log x`: `(pow -8 1/3)` is `1+1.73205080757i`, `(pow -4 1/2)` `2i`, `(pow 1i 1i)` the real `0.207879576351`.  0 to a complex power whose real part isn't above 0 is an error |
+| `(digits)`, `(digits n)` | The precision of the math functions' answers when they aren't exact: 12 significant digits at the start; `n` (1 to 100) makes it the precision, and the one before it is the value.  Each function is exact when its answer is (a perfect square's root is the root, of `x`'s kind; `(exp 0)` is 1, `(log 1)` 0, `(sin 0)` 0), else a fixed decimal of that many significant digits, correctly rounded (`(pi)` is `3.14159265359`; `(exp 100)` `26881171418200000000000000000000000000000000`); a complex answer's each part so, a part that's exactly 0 known from the argument and given as 0 (`(log 0.6+0.8i)` has no real part).  `exp`'s argument, and a power's `y log x`, at most 20000 from 0 |
 
 ### Comparison and types
 
@@ -391,7 +391,7 @@ of it, or a part).
 | `(not x)` | T for NIL, NIL for anything else |
 | `(== x y)`, `(>= x y)`, `(<= x y)` | `eq`, and the order's |
 | `(neg? x)`, `(pos? x)`, `(zero? x)`, `(one? x)` | Of a number |
-| `(1+ x)`, `(1- x)`, `(abs x)` | Of a number |
+| `(1+ x)`, `(1- x)`, `(abs x)` | Of a number; `abs` of a complex number is its modulus, its distance from 0 (`(abs 3-4i)` is 5) |
 | `(cons x l)` | `x` and the list's items, a list |
 | `(fst l)`, `(snd l)`, `(thd l)`, `(last l)`, `(nth i l)` | An item, as it's written |
 | `(take n l)`, `(drop n l)` | The first `n` items, or all but them |

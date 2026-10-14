@@ -5,7 +5,9 @@ using System.Numerics;
 // sin 0 ..., a power whole, or a root that's rational); else a fixed decimal of the precision's significant digits
 // (Digits: 12 at the start), correctly rounded: the value worked in binary fixed point with a bound on its error, and
 // worked again with more bits till everything the bound allows rounds the same (Ziv's way).  So any way of working it
-// that's right gives the same digits: the Hydra's math library's, and sim/tools/numref.js's.
+// that's right gives the same digits: the Hydra's math library's, and sim/tools/numref.js's.  A complex argument
+// (or a complex power, or a negative number to a power that isn't whole) gives the principal value, as mathematics
+// defines it, each part so rounded; abs of a complex number is its modulus.
 public class MathError : Exception {
     public MathError(string message) : base(message) {}
 }
@@ -256,6 +258,253 @@ public static class NumMath {
         return new Approx(sum >> (w - b), (Ew >> (w - b)) + 2, b, 0);
     }
 
+    // ---- Complex arguments (hydra-2's sim/tools/numref.js csqrt ... cpow, the math library's mtcplx.inc): the
+    // functions as mathematics defines them, their principal values (a number's argument above -pi and to pi; atan
+    // odd), each part correctly rounded as a real result is.  A part is worked as an approximation (an Approx, its
+    // error bounded) again with more bits till it rounds surely (ZivC); a part that's exactly 0 is known from the
+    // argument (a modulus of 1, an angle of whole quarter turns, a power with a 0 part), never worked: Ziv's way can't
+    // decide a 0 (and gives 0, past 1,024 bits, for one too small to tell from it).
+
+    static Approx AOne(int b) => new Approx(BigInteger.One << b, BigInteger.Zero, b, 0);
+    static Approx APi(int b) => new Approx(PiFixed(b), 2, b, 0);
+    static Approx AZero(int b) => new Approx(BigInteger.Zero, BigInteger.Zero, b, 0);
+    static Approx AK(Approx X, int K) {                   // (X as a multiple of 10^K)
+        if (X.K == K) return X;
+        var d = X.K - K;
+        if (d > 0) { var p = BigInteger.Pow(10, d); return new Approx(X.A * p, X.E * p, X.B, K); }
+        var q = BigInteger.Pow(10, -d);
+        return new Approx(X.A / q, X.E / q + 1, X.B, K);
+    }
+    static Approx AAdd(Approx X, Approx Y) {
+        var K = Math.Max(X.K, Y.K);
+        X = AK(X, K); Y = AK(Y, K);
+        return new Approx(X.A + Y.A, X.E + Y.E, X.B, K);
+    }
+    static Approx ANeg(Approx X) => X with { A = -X.A };
+    static Approx ASub(Approx X, Approx Y) => AAdd(X, ANeg(Y));
+    static Approx AShr(Approx X, int s) => new Approx(X.A >> s, (X.E >> s) + 1, X.B, X.K);
+    static Approx AMul(Approx X, Approx Y) =>
+        new Approx((X.A * Y.A) >> X.B, ((BigInteger.Abs(X.A) * Y.E + BigInteger.Abs(Y.A) * X.E + X.E * Y.E) >> X.B) + 2, X.B, X.K + Y.K);
+    static Approx AMulQ(Approx X, Rat f) =>              // (X times an exact fraction)
+        new Approx((X.A * f.num) / f.den, (X.E * BigInteger.Abs(f.num) + f.den - 1) / f.den + 1, X.B, X.K);
+    static Approx ADiv(Approx X, Approx Y) {
+        var ya = BigInteger.Abs(Y.A);
+        var K = X.K - Y.K;
+        if (ya <= Y.E) return new Approx(BigInteger.Zero, BigInteger.One << (2 * X.B), X.B, K);   // (Y not known from 0)
+        return new Approx((X.A << X.B) / Y.A, (((X.E * ya + BigInteger.Abs(X.A) * Y.E) << X.B) / ((ya - Y.E) * ya)) + 2, X.B, K);
+    }
+    static Approx ASqrt(Approx X) {                       // (X at or above 0)
+        if ((X.K & 1) != 0) X = AK(X, X.K - 1);
+        var lo = X.A - X.E;
+        var K = X.K / 2;
+        if (lo.Sign <= 0) return new Approx(BigInteger.Zero, Isqrt((X.A + X.E) << X.B) + 2, X.B, K);
+        return new Approx(Isqrt(X.A << X.B), ((X.E << X.B) / (2 * Isqrt(lo << X.B))) + 2, X.B, K);
+    }
+    static Approx AToB(Approx X, int b) { var s = X.B - b; return new Approx(X.A >> s, (X.E >> s) + 1, b, X.K); }
+    static Approx AExact(Rat v, int b) => new Approx(Fixed(v, b), 1, b, 0);
+    static Approx ATrig(Approx Z, int which, int b) {    // (sin or cos of an approximation: 1 its slope at most)
+        var T = Z.A.IsZero ? (which == 1 ? AOne(b) : AZero(b)) : TrigCore(new Rat(Z.A, BigInteger.One << Z.B), which, b);
+        return new Approx(T.A, T.E + (Z.E >> (Z.B - b)) + 1, b, 0);
+    }
+    static Num ZivC(Func<int, Approx> f) {
+        var n = Digits;
+        var need = (int)(n * 3.33) + 16;
+        var b = need + 8;
+        for (;;) {
+            var x = f(b);
+            var r = RoundSig(x.A, x.E, x.B, x.K, n);
+            if (r != null) return r;
+            if (b > 1024 && BigInteger.Abs(x.A) <= x.E) return new Int(0);
+            b += Math.Max(b / 2, need - (BitLen(x.A) - BitLen(x.E)) + 8);
+        }
+    }
+    static int W(int b) => b + 24;                          // (A part's working bits)
+    static Rat RNeg(Rat f) => new Rat(-f.num, f.den);
+    static Rat RDiv(Rat f, Rat g) => g.num.Sign < 0 ? new Rat(-f.num * g.den, f.den * -g.num) : new Rat(f.num * g.den, f.den * g.num);
+    static Num ModSq(Comp c) => (Num)c.r * c.r + (Num)c.im * c.im;   // (|x|^2, exactly)
+    static Num HalfOf(Comp c) => c.r is Fix || c.im is Fix ? new Fix(5, 1) : Num.Norm(new Rat(1, 2));
+    static Num MakeComp(Num re, Num im) => Num.Norm(new Comp((Int)re, (Int)im));
+
+    // x's square root if it's rational, else null
+    static Num? SqrtExact(Num x) {
+        var v = Rat.ToRat(x);
+        if (v.num.Sign < 0) return null;
+        BigInteger ra = Isqrt(v.num), rb = Isqrt(v.den);
+        return ra * ra == v.num && rb * rb == v.den ? Kind(x, new Rat(ra, rb)) : null;
+    }
+
+    // The argument (angle) of a + y i (not 0), at w bits
+    static Approx AArg(Rat a, Rat y, int w) {
+        if (a.num.IsZero) { var h = AShr(APi(w), 1); return y.num.Sign < 0 ? ANeg(h) : h; }
+        var t = y.num.IsZero ? AZero(w) : AtanCore(RDiv(y, a), w);
+        if (a.num.Sign > 0) return t;
+        return y.num.Sign < 0 ? ASub(t, APi(w)) : AAdd(t, APi(w));
+    }
+
+    // |x|: a real number's, or a complex number's modulus (the square root of re^2 + im^2: exact when it's rational)
+    public static Num Abs(Num x) => x is Comp c ? Sqrt(ModSq(c)) : (x.CompareTo(Num.Zero) < 0 ? -x : x);
+
+    // The square root (its real part above 0, or 0 and its imaginary part above 0): exact when its parts are rational
+    static Num CSqrt(Comp c) {
+        var s = SqrtExactC(c);
+        if (s != null) return s;
+        Rat a = Rat.ToRat(c.r), y = Rat.ToRat(c.im), m2 = Rat.ToRat(ModSq(c));
+        (Approx, Approx) Parts(int w) {                     // (the part not cancelling first: then y over twice it)
+            var R = ASqrt(AExact(m2, w));
+            var P = ASqrt(AShr(AAdd(R, AExact(a.num.Sign < 0 ? RNeg(a) : a, w)), 1));
+            var Q = ADiv(AExact(y.num.Sign < 0 && a.num.Sign < 0 ? RNeg(y) : y, w), AMulQ(P, new Rat(2, 1)));
+            if (a.num.Sign >= 0) return (P, Q);
+            return (Q, y.num.Sign < 0 ? ANeg(P) : P);
+        }
+        return MakeComp(ZivC(b => AToB(Parts(W(b)).Item1, b)), ZivC(b => AToB(Parts(W(b)).Item2, b)));
+    }
+
+    // A complex number's square root if both its parts are rational, else null
+    static Num? SqrtExactC(Comp c) {
+        var r = SqrtExact(ModSq(c));
+        if (r == null) return null;
+        var h = HalfOf(c);
+        var re = SqrtExact(((Num)r + (Num)c.r) * h);
+        var im = SqrtExact(((Num)r - (Num)c.r) * h);
+        if (re == null || im == null) return null;
+        return MakeComp(re, c.im.CompareTo(Num.Zero) < 0 ? -im : im);
+    }
+
+    // e to the x: e^a (cos y + i sin y)
+    static Num CExp(Comp c) {
+        Rat a = Rat.ToRat(c.r), y = Rat.ToRat(c.im);
+        Num Part(int k) => ZivC(b => {
+            var w = W(b);
+            var T = TrigCore(y, k == 0 ? 1 : 0, w);
+            if (a.num.IsZero) return AToB(T, b);
+            return AToB(AMul(ExpCore(Fixed(a, w + 48), BigInteger.One, w + 48, w, "exp"), T), b);
+        });
+        return MakeComp(Part(0), Part(1));
+    }
+
+    // The natural logarithm: log |x| + i arg x
+    static Num CLog(Comp c) {
+        Rat a = Rat.ToRat(c.r), y = Rat.ToRat(c.im), m2 = Rat.ToRat(ModSq(c));
+        var re = m2.num == m2.den ? new Int(0) : ZivC(b => AToB(AShr(LogCore(m2, W(b)), 1), b));
+        return MakeComp(re, ZivC(b => AToB(AArg(a, y, W(b)), b)));
+    }
+
+    // sin, cos or tan of a + y i: with cosh y and sinh y (from e^y and e^-y)
+    static Num CTrig(Comp c, int which) {
+        Rat a = Rat.ToRat(c.r), y = Rat.ToRat(c.im);
+        string name = which == 0 ? "sin" : which == 1 ? "cos" : "tan";
+        (Approx C, Approx S) Hyp(Rat v, int w) {
+            var bz = w + 48;
+            var P = ExpCore(Fixed(v, bz), BigInteger.One, bz, w, name);
+            var M = ExpCore(Fixed(RNeg(v), bz), BigInteger.One, bz, w, name);
+            return (AShr(AAdd(P, M), 1), AShr(ASub(P, M), 1));
+        }
+        Approx SinA(Rat v, int w) => TrigCore(v, 0, w);
+        Approx CosA(Rat v, int w) => v.num.IsZero ? AOne(w) : TrigCore(v, 1, w);
+        Func<int, Func<int, Approx>> f;
+        int zero;                                           // (the part with sin a in it: 0 when a is)
+        if (which == 2) {                                   // (tan: (sin 2a + i sinh 2y) / (cos 2a + cosh 2y))
+            Rat a2 = new Rat(2 * a.num, a.den), y2 = new Rat(2 * y.num, y.den);
+            f = k => b => { var w = W(b); var h = Hyp(y2, w); return AToB(ADiv(k == 1 ? h.S : SinA(a2, w), AAdd(CosA(a2, w), h.C)), b); };
+            zero = 0;
+        } else if (which == 0) {                            // (sin a cosh y + i cos a sinh y)
+            f = k => b => { var w = W(b); var h = Hyp(y, w); return AToB(k == 1 ? AMul(CosA(a, w), h.S) : AMul(SinA(a, w), h.C), b); };
+            zero = 0;
+        } else {                                            // (cos a cosh y - i sin a sinh y)
+            f = k => b => { var w = W(b); var h = Hyp(y, w); return AToB(k == 1 ? ANeg(AMul(SinA(a, w), h.S)) : AMul(CosA(a, w), h.C), b); };
+            zero = 1;
+        }
+        Num Part(int k) => a.num.IsZero && k == zero ? new Int(0) : ZivC(f(k));
+        return MakeComp(Part(0), Part(1));
+    }
+
+    // The arc tangent: (1/2) arg(1 - a^2 - y^2 + 2a i) + (i/4) log((a^2 + (y + 1)^2) / (a^2 + (y - 1)^2)); on the
+    // imaginary axis past i and -i, a quarter turn (atan is odd); of i and -i, an error
+    static Num CAtan(Comp c) {
+        Rat a = Rat.ToRat(c.r), y = Rat.ToRat(c.im);
+        if (a.num.IsZero && BigInteger.Abs(y.num) == y.den) throw new MathError("'atan': out of range");
+        var aa = (Num)c.r * c.r;
+        Num yp = (Num)c.im + 1, ym = (Num)c.im - 1;
+        Rat N = Rat.ToRat(aa + yp * yp), D = Rat.ToRat(aa + ym * ym);
+        var im = ZivC(b => AToB(AShr(LogCore(RDiv(N, D), W(b)), 2), b));
+        Num re;
+        if (a.num.IsZero) re = BigInteger.Abs(y.num) < y.den ? new Int(0) : ZivC(b => { var h = AShr(APi(W(b)), 1); return AToB(y.num.Sign < 0 ? ANeg(h) : h, b); });
+        else {
+            Rat den = Rat.ToRat((Num)new Int(1) - aa - (Num)c.im * c.im), num = new Rat(2 * a.num, a.den);
+            re = ZivC(b => AToB(AShr(AArg(den, num, W(b)), 1), b));
+        }
+        return MakeComp(re, im);
+    }
+
+    // x's square root if it's exact (x complex, or a negative real number), else null
+    static Num? CSqrtExact(Num x) {
+        if (x is Comp c) return SqrtExactC(c);
+        var r = SqrtExact(-x);
+        return r == null ? null : MakeComp(new Int(0), r);
+    }
+
+    // x to the power y, the principal value: exp(y log x).  y = n/2 exact when x's square root is; an angle that's a
+    // whole number of quarter turns exact, the parts with it
+    static Num CPow(Num x, Num y) {
+        var cy = Comp.Of(y);
+        Rat wr = Rat.ToRat(cy.r), wi = Rat.ToRat(cy.im);
+        if (x.IsZero) {
+            if (wr.num.Sign > 0) return new Int(0);
+            if (y is Comp) throw new MathError("'pow': out of range");
+            throw new DivideByZeroException("Division by zero.");
+        }
+        if (y is not Comp && wr.den == 2) { var s = CSqrtExact(x); if (s != null) return WholePow(s, wr.num); }
+        var c = Comp.Of(x);
+        Rat a = Rat.ToRat(c.r), v = Rat.ToRat(c.im), m2 = Rat.ToRat(ModSq(c));
+        var lre0 = m2.num == m2.den;                        // (log |x| is 0)
+        Rat? q = null;                                      // (arg x, when it's q pi)
+        if (v.num.IsZero) q = a.num.Sign > 0 ? new Rat(0, 1) : new Rat(1, 1);
+        else if (a.num.IsZero) q = new Rat(v.num.Sign > 0 ? 1 : -1, 2);
+        else if (a.num * v.den == v.num * a.den || a.num * v.den == -v.num * a.den)
+            q = new Rat((a.num.Sign > 0 ? 1 : 3) * (v.num.Sign > 0 ? 1 : -1), 4);
+        var arg0 = q != null && q.num.IsZero;
+        bool t1 = !wr.num.IsZero && !lre0, t2 = !wi.num.IsZero && !arg0;   // (Tre = wr log|x| - wi arg x)
+        bool t3 = !wr.num.IsZero && !arg0, t4 = !wi.num.IsZero && !lre0;   // (Tim = wr arg x + wi log|x|)
+        Rat? p = null;                                      // (Tim = p pi, when it's that)
+        if (!t4) { if (!t3) p = new Rat(0, 1); else if (q != null) p = new Rat(wr.num * q.num, wr.den * q.den); }
+        int Bits(Rat f) => Math.Max(BitLen(f.num) - BitLen(f.den), 0);
+        int BzOf(int w) => w + 48 + Bits(wr) + Bits(wi);
+        Approx Lre(int bz) => AShr(LogCore(m2, bz), 1);
+        Approx Lim(int bz) => q != null ? AMulQ(APi(bz), q) : AArg(a, v, bz);
+        Approx Tre(int bz) {
+            var T = AZero(bz);
+            if (t1) T = AAdd(T, AMulQ(Lre(bz), wr));
+            if (t2) T = ASub(T, AMulQ(Lim(bz), wi));
+            return T;
+        }
+        Approx Tim(int bz) {
+            if (p != null) return AMulQ(APi(bz), p);
+            var T = AZero(bz);
+            if (t3) T = AAdd(T, AMulQ(Lim(bz), wr));
+            if (t4) T = AAdd(T, AMulQ(Lre(bz), wi));
+            return T;
+        }
+        var mag0 = !t1 && !t2;                              // (|x^y| is 1)
+        Approx Mag(int w) { if (mag0) return AOne(w); var bz = BzOf(w); var Z = Tre(bz); return ExpCore(Z.A, Z.E, bz, w, "pow"); }
+        int cs = -1;                                        // (cos and sin of Tim, when they're 0 and 1s: (2p) mod 4)
+        if (p != null) {
+            var twice = new Rat(2 * p.num, p.den);
+            if ((twice.num % twice.den).IsZero) cs = (int)(((twice.num / twice.den) % 4 + 4) % 4);
+        }
+        Num Part(int k) {
+            if (cs >= 0) {
+                int[] cos = { 1, 0, -1, 0 }, sin = { 0, 1, 0, -1 };
+                var one = k == 0 ? cos[cs] : sin[cs];
+                if (one == 0) return new Int(0);
+                if (mag0) return new Int(one);
+                var m = ZivC(b => AToB(Mag(W(b)), b));
+                return one < 0 ? -m : m;
+            }
+            return ZivC(b => { var w = W(b); return AToB(AMul(Mag(w), ATrig(Tim(BzOf(w)), k == 0 ? 1 : 0, w)), b); });
+        }
+        return MakeComp(Part(0), Part(1));
+    }
+
     // ---- The functions
 
     static Rat Real(Num x, string name) {
@@ -268,6 +517,7 @@ public static class NumMath {
     public static Num Pi() => Precision(b => new Approx(PiFixed(b), 2, b, 0));
 
     public static Num Sqrt(Num x) {
+        if (x is Comp c) return CSqrt(c);
         var v = Real(x, "sqrt");
         if (v.num.Sign < 0) return Num.Norm(new Comp(new Int(0), (Int)Sqrt(Kind(x, new Rat(-v.num, v.den)))));
         if (v.num.IsZero) return x;
@@ -314,6 +564,7 @@ public static class NumMath {
     }
 
     public static Num Exp(Num x) {
+        if (x is Comp c) return CExp(c);
         var v = Real(x, "exp");
         if (v.num.IsZero) return new Int(1);
         return Precision(b => {
@@ -324,6 +575,7 @@ public static class NumMath {
     }
 
     public static Num Log(Num x) {
+        if (x is Comp c) return CLog(c);
         var v = Real(x, "log");
         if (v.num.IsZero) throw new MathError("'log': the logarithm of 0");
         if (v.num.Sign < 0) {
@@ -336,26 +588,29 @@ public static class NumMath {
     }
 
     public static Num Trig(Num x, int which) {
+        if (x is Comp c) return CTrig(c, which);
         var v = Real(x, which == 0 ? "sin" : which == 1 ? "cos" : "tan");
         if (v.num.IsZero) return new Int(which == 1 ? 1 : 0);
         return Precision(b => TrigCore(v, which, b));
     }
 
     public static Num Atan(Num x) {
+        if (x is Comp c) return CAtan(c);
         var v = Real(x, "atan");
         if (v.num.IsZero) return new Int(0);
         return Precision(b => AtanCore(v, b));
     }
 
     // x to the power y: a whole y's power exact (as the tower multiplies and divides: any x); else x real, 0 or more:
-    // exact when the root is rational (x's kind), else exp (y log x) at the precision
+    // exact when the root is rational (x's kind), else exp (y log x) at the precision; else (x below 0, or x or y
+    // complex) the principal value, CPow's
     public static Num Pow(Num x, Num y) {
-        if (y is Comp) throw new MathError("'pow' expects a real power");
+        if (y is Comp) return CPow(x, y);
         var yr = Rat.ToRat(y);
         if (yr.den.IsOne) return WholePow(x, yr.num);
-        if (x is Comp) throw new MathError("'pow' expects a real number when its power isn't whole");
+        if (x is Comp) return CPow(x, y);
         var v = Rat.ToRat(x);
-        if (v.num.Sign < 0) throw new MathError("'pow': a negative number to a power that isn't whole");
+        if (v.num.Sign < 0) return CPow(x, y);
         if (v.num.IsZero) {
             if (yr.num.Sign < 0) throw new DivideByZeroException("Division by zero.");
             return new Int(0);

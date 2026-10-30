@@ -17,7 +17,7 @@ public class NumberParser {
             IsComplemented = false;
             IsNegative = negativeBase;
             if (IsNegative) Base *= -1;
-            ParseRegex = _BuildParseRegex(baseChar, valueChars, balanced, IsCaseUnique(valueChars));
+            // (its ParseRegex made when it's first wanted)
         }
 
         public char BaseChar {get; private set;}
@@ -26,7 +26,8 @@ public class NumberParser {
         public bool IsBalanced {get; private set;}
         public bool IsComplemented {get; private set;}
         public bool IsNegative {get; private set;}
-        public Regex ParseRegex {get; private set;}
+        public Regex ParseRegex => _parseRegex ??= _BuildParseRegex(BaseChar, ValueChars, IsBalanced, IsCaseUnique(ValueChars));
+        private Regex? _parseRegex;
 
         public int Base {get; private set;}
     }
@@ -276,7 +277,21 @@ public class NumberParser {
             Num.Norm(new Rat(Val, _den ?? 1))); }    // (a rational whose denominator is 1: an integer)
 
     private const string _customBaseStandardCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-=+`~!@#$%^&*,;:|?";
-    private static Regex _customBaseRegex = new Regex(@"^#(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)((?<numberBase>([1-7]?[0-9]|80))[rR]|\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\])(?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
+    private static Regex? _customBase;      // (made when it's first wanted)
+    private static Regex _customBaseRegex => _customBase ??= new Regex(@"^#(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)((?<numberBase>([1-7]?[0-9]|80))[rR]|\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\])(?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
+
+    // Whether s is a plain decimal number, as ^[+-]?([0-9]\d*)(\.\d+)?$ says (\d any decimal digit, as char.IsDigit
+    // has it), without a Regex made for it
+    private static bool IsDecimal(string s) {
+        int i = s[0] == '+' || s[0] == '-' ? 1 : 0;
+        if (i == s.Length || s[i] < '0' || s[i] > '9') return false;
+        for (i++; i < s.Length && char.IsDigit(s[i]); i++) { }
+        if (i == s.Length) return true;
+        if (s[i] != '.') return false;
+        int from = ++i;
+        for (; i < s.Length && char.IsDigit(s[i]); i++) { }
+        return i > from && i == s.Length;
+    }
 
     public static Num? ParseString(string? s) {
         // read base
@@ -302,7 +317,7 @@ public class NumberParser {
         }
 
         // simple case first (it is just a normal, decimal number in while, fixed, or fractional notation, i.e. 1, 1.4, or 1/3)
-        if (Regex.IsMatch(s, @"^[+-]?([0-9]\d*)(\.\d+)?$")) {
+        if (IsDecimal(s)) {
             BigInteger _ParseInt(string p) => BigInteger.Parse(p);
 
             // is it a fixed?

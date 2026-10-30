@@ -458,6 +458,31 @@ public partial class LVal {
         // A function (not a built-in) called: its arguments' values (the first error stops them), or, for an fexpr,
         // as they're written; in tail position, a TAIL value for the Apply it goes back to
         private LVal CallFun(LEnv e, LVal f, FunInfo fi, int start, bool tail) {
+            if (!tail && !fi.IsFexpr && fi.Native == null && (fi.Env == null || fi.Env.Count == 0)
+                && fi.Formals!.FormalNames() is Name[] names && names.Length == _n - start)
+                return CallNew(fi, names, start, e);
+            return CallAny(e, f, fi, start, tail);
+        }
+
+        // (one of as many arguments as its formals, all different, with no values bound already and no native way:
+        // their values, then LVal.ApplyNew, as Apply would have it)
+        private LVal CallNew(FunInfo fi, Name[] names, int start, LEnv e) {
+            var vals = names.Length == 0 ? Array.Empty<LVal>() : new LVal[names.Length];
+            for (int k = 0; k < vals.Length; k++) {
+                var v = NodeAt(start + k).Eval(e);
+                if (v.IsErr) return v;
+                vals[k] = v;
+            }
+            _calls[_ncalls++] = _info;
+            try {
+                return ApplyNew(fi, names, vals);
+            }
+            finally {
+                _ncalls--;
+            }
+        }
+
+        private LVal CallAny(LEnv e, LVal f, FunInfo fi, int start, bool tail) {
             var args = _n == start ? NoArgs : new List<LVal>(_n - start);
             for (int k = start; k < _n; k++) {
                 if (fi.IsFexpr) {

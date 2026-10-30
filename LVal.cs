@@ -959,85 +959,110 @@ public partial class LVal {
     public static LVal Apply(LVal f, List<LVal> vals, bool argsChecked = false) {
         if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
         ++_depth;
-        Native? ran = null;     // (the native whose code ran instead, the way it went, and PlanEpoch at its start: the
-                                //   first's, so one called in its tail position needn't work its way out)
-        int way = 0;
-        long epoch = 0;
         try {
-            LVal r;
-            while (true) {
-                var intr = CheckInterrupt();
-                if (intr != null) return intr;
-                var fi = f.Fn!;
-                if (!argsChecked && !fi.IsFexpr) {
-                    for (int i = 0; i < vals.Count; i++) if (vals[i].IsErr) return vals[i];
-                }
-                argsChecked = false;
-
-                var nat = fi.Native;
-                if (nat != null) {
-                    var v = nat.Run(f, vals, MaxDepth - _depth, ran == null, out var w);
-                    if (v != null) {
-                        if (v.ValType != LE.TAIL) {
-                            r = v;
-                            break;
-                        }
-                        f = v.TailFn!;
-                        vals = v.TailArgs!;
-                        continue;
-                    }
-                    if (w >= 0 && ran == null) (ran, way, epoch) = (nat, w, PlanEpoch);
-                }
-
-                var formals = fi.Formals!.Cells!;
-                var scope = new LEnv(fi.Closure) { IsCall = true };
-                int k = 0;
-                if (fi.Env != null && fi.Env.Count > 0) scope.CopyFrom(fi.Env);
-                else if (fi.Formals!.FormalNames() is Name[] names) {
-                    // (the formals, all different, in a new scope: bound at once)
-                    k = Math.Min(vals.Count, names.Length);
-                    scope.BindNew(names, vals, k);
-                }
-
-                // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
-                LVal? extras = null;
-                for (int i = k; i < vals.Count; i++) {
-                    var val = vals[i];
-                    if (k < formals.Count) scope.Put(formals[k++].SymName, val);
-                    else {
-                        (extras ??= Qexpr()).Add(val);
-                        scope.Put(Extra(extras.Count), val);
-                    }
-                }
-                if (extras != null) scope.Put(Name.Rest, extras);     // (none: NIL, the call scope's own)
-
-                if (k < formals.Count) {
-                    var p = f.CloneFun();
-                    p.Formals = Qexpr();
-                    for (int i = k; i < formals.Count; i++) p.Formals.Add(formals[i]);
-                    p.Formals.Freeze();
-                    p.Env = new LEnv();
-                    foreach (var kv in scope.Entries) p.Env.SetLocal(kv.Key, kv.Value);
-                    return p;
-                }
-                var body = fi.Body!;
-                if (extras != null && !body.Mentions(Uses.Extras)) {
-                    var takes = vals.Count - extras.Count;
-                    return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
-                }
-
-                if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
-                r = body.CallOf().Tail(scope);
-                if (r.ValType != LE.TAIL) break;
-                f = r.TailFn!;
-                vals = r.TailArgs!;
-            }
-            if (ran != null && PlanEpoch == epoch && !r.IsErr) ran.Settled(way, epoch, Site);
-            return r;
+            return Calls(f, vals, argsChecked);
         }
         finally {
             --_depth;
         }
+    }
+
+    // A call of a function with no native way, no values bound already, and formals all different, as many as the
+    // values (none an error: CallNode's): as Apply does it, the values bound in the call's new scope as they are
+    internal static LVal ApplyNew(FunInfo fi, Name[] names, LVal[] vals) {
+        if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
+        ++_depth;
+        try {
+            var intr = CheckInterrupt();
+            if (intr != null) return intr;
+            var scope = new LEnv(fi.Closure) { IsCall = true };
+            scope.BindNew(names, vals);
+            var body = fi.Body!;
+            if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
+            var r = body.CallOf().Tail(scope);
+            return r.ValType != LE.TAIL ? r : Calls(r.TailFn!, r.TailArgs!, false);
+        }
+        finally {
+            --_depth;
+        }
+    }
+
+    // Apply's calls, one after another while each comes back as a TAIL value (the depth already counted)
+    private static LVal Calls(LVal f, List<LVal> vals, bool argsChecked) {
+        Native? ran = null;     // (the native whose code ran instead, the way it went, and PlanEpoch at its start: the
+                                //   first's, so one called in its tail position needn't work its way out)
+        int way = 0;
+        long epoch = 0;
+        LVal r;
+        while (true) {
+            var intr = CheckInterrupt();
+            if (intr != null) return intr;
+            var fi = f.Fn!;
+            if (!argsChecked && !fi.IsFexpr) {
+                for (int i = 0; i < vals.Count; i++) if (vals[i].IsErr) return vals[i];
+            }
+            argsChecked = false;
+
+            var nat = fi.Native;
+            if (nat != null) {
+                var v = nat.Run(f, vals, MaxDepth - _depth, ran == null, out var w);
+                if (v != null) {
+                    if (v.ValType != LE.TAIL) {
+                        r = v;
+                        break;
+                    }
+                    f = v.TailFn!;
+                    vals = v.TailArgs!;
+                    continue;
+                }
+                if (w >= 0 && ran == null) (ran, way, epoch) = (nat, w, PlanEpoch);
+            }
+
+            var formals = fi.Formals!.Cells!;
+            var scope = new LEnv(fi.Closure) { IsCall = true };
+            int k = 0;
+            if (fi.Env != null && fi.Env.Count > 0) scope.CopyFrom(fi.Env);
+            else if (fi.Formals!.FormalNames() is Name[] names) {
+                // (the formals, all different, in a new scope: bound at once)
+                k = Math.Min(vals.Count, names.Length);
+                scope.BindNew(names, vals, k);
+            }
+
+            // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
+            LVal? extras = null;
+            for (int i = k; i < vals.Count; i++) {
+                var val = vals[i];
+                if (k < formals.Count) scope.Put(formals[k++].SymName, val);
+                else {
+                    (extras ??= Qexpr()).Add(val);
+                    scope.Put(Extra(extras.Count), val);
+                }
+            }
+            if (extras != null) scope.Put(Name.Rest, extras);     // (none: NIL, the call scope's own)
+
+            if (k < formals.Count) {
+                var p = f.CloneFun();
+                p.Formals = Qexpr();
+                for (int i = k; i < formals.Count; i++) p.Formals.Add(formals[i]);
+                p.Formals.Freeze();
+                p.Env = new LEnv();
+                foreach (var kv in scope.Entries) p.Env.SetLocal(kv.Key, kv.Value);
+                return p;
+            }
+            var body = fi.Body!;
+            if (extras != null && !body.Mentions(Uses.Extras)) {
+                var takes = vals.Count - extras.Count;
+                return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
+            }
+
+            if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
+            r = body.CallOf().Tail(scope);
+            if (r.ValType != LE.TAIL) break;
+            f = r.TailFn!;
+            vals = r.TailArgs!;
+        }
+        if (ran != null && PlanEpoch == epoch && !r.IsErr) ran.Settled(way, epoch, Site);
+        return r;
     }
 
     // (exit code): the program ends with that status

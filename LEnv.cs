@@ -152,6 +152,19 @@ public class LEnv {
         }
         _n = n;
     }
+    internal void BindNew(Name[] names, LVal[] vals) {
+        int n = vals.Length;
+        if (n == 0) return;
+        _b = new Binding[n];
+        for (int i = 0; i < n; i++) {
+            var v = vals[i].Freeze();
+            var k = names[i];
+            if (!k.Local) k.MakeLocal();
+            _b[i].K = k;
+            _b[i].V = v;
+        }
+        _n = n;
+    }
 
     // A big scope's slot for k, if it has one
     public Slot? SlotOf(Name k) => _map != null && _map.TryGetValue(k, out var slot) ? slot : null;

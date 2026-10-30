@@ -1,0 +1,58 @@
+--- stdout
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got String, Expected Function.
+S-Expression starts with incorrect type. Got Character, Expected Function.
+S-Expression starts with incorrect type. Got Atom, Expected Function.
+S-Expression starts with incorrect type. Got T, Expected Function.
+S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+5 s :a {1 2} T NIL NIL 5 c 1/2
+"s" \c
+42 S-Expression starts with incorrect type. Got Number, Expected Function.
+7 S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function. 5 S-Expression starts with incorrect type. Got String, Expected Function.
+Error: S-Expression starts with incorrect type. Got Symbol, Expected Function.
+Error: S-Expression starts with incorrect type. Got Symbol, Expected Function.
+<hash>{{:k 1}} 1 NIL
+:k isn't a method: its value isn't a function
+NIL
+Unsupported key type Q-Expression
+7 <buffer>{7 7 7}
+A buffer is called with an index: (b i)
+'buffer-get': index 5 is outside the buffer
+'buffer-get': an index must be a whole number, not :x
+e
+Unbound Symbol 'undefined-fn'
+:exit exit
+First 'each' parameter must be a function or {name list}
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got String, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Atom, Expected Function.
+S-Expression starts with incorrect type. Got Atom, Expected Function.
+S-Expression starts with incorrect type. Got T, Expected Function.
+Second 'dotimes' parameter must be a function
+Second 'sort' parameter must be a function
+S-Expression starts with incorrect type. Got Number, Expected Function.
+5
+NIL NIL 0
+NIL 5 {5} 5 s
+0 1 1 NIL
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got String, Expected Function.
+
+NIL
+<function>(eq 1)
+:inner-called
+--- stderr
+Error: 21-non-functions.dl: S-Expression starts with incorrect type. Got Number, Expected Function.
+  at 21-non-functions.dl:82  {n 1}
+  called at 21-non-functions.dl:83  (call-n)
+--- exit 1

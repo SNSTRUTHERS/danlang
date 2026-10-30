@@ -1,0 +1,55 @@
+; 18-nested-fresh: lists made fresh (by list, [..], map, range, str-chars, &_, from#, zip, split, hash-values ...) and
+; kept inside other values (a list bound to a name, a hash's value, a partial application's argument, a closure's
+; variable, &_), then taken out and built on: joined (first, twice: no join may grow the one inside), consed onto,
+; reversed, sorted, viewed (tail, drop, take, init) and consed onto again, run as code; every container printed after.
+(fun {grow l} {list (join l {:j1}) (join l {:j2}) (cons :c1 l) (cons :c2 l) (cons :c3 (tail l)) (cons :c4 (tail l))
+  (reverse l) (sort l) (join (take 1 l) {:t1}) (join (take 1 l) {:t2}) (join (init l) {:i1}) (join (init l) {:i2})})
+(def {c} (list (list 1 2) [3 4] (range 3) (str-chars "ab") (map (fn {x} {* x 10}) {1 2})))
+(print "c" c)
+(print "grow" (map grow c))
+(print "grow again" (map grow c))
+(print "c" c)
+(print "joins" (join (fst c) (snd c)) (join (fst c) (fst c)) (join (snd c) (fst c) (thd c)) (join (fst c) {}) c)
+
+; kept in a hash, as a value and inside one
+(def {h} #({{:l (list 1 2 3)} {:n (list (list :in 1) (list :in 2))}}))
+(print "hash" (grow (h :l)) (grow (h :l)) (grow (fst (h :n))) (grow (snd (h :n))) h)
+(def {vals} (hash-values h))
+(print "hash-values" (grow (fst vals)) (grow (fst (snd vals))) vals h)
+(def {entries} (from# h))
+(print "from#" (grow (fst entries)) (grow (snd (fst entries))) entries (from# h))
+
+; a partial application's argument, a closure's variable, &_ and its items
+(fun {pair a b} {list a b})
+(def {p} (pair (list 1 2)))
+(print "partial" (grow (fst (p 0))) (grow (fst (p 1))) (p :x) p)
+(fun {keep l} {fn {} {l}})
+(def {k} (keep (map (fn {x} {list x}) {1 2})))
+(print "closure" (grow (k)) (grow (fst (k))) (grow (k)) (k))
+(fun {rest} {list &_ (grow &_) (grow (fst &_)) (grow (fst &_)) &_})
+(print "extras" (rest (list :e1 :e2) [:e3]) (rest (range 2)))
+
+; returned from a function that also keeps them
+(def {store} NIL)
+(fun {mk} {do (def {store} (list (list :s1 :s2) (list :s3))) (fst store)})
+(def {m} (mk))
+(print "kept and returned" (grow m) (grow (mk)) (grow m) m store)
+(fun {mk2} {do =(local (list (list :l1 :l2))) (set! {store} local) (fst local)})
+(print "kept and returned" (grow (mk2)) (grow (fst store)) store)
+
+; results of library functions, built of fresh lists
+(def {z} (zip {1 2 3} {:a :b :c}))
+(def {s} (split 2 {1 2 3 4}))
+(def {f} (flatten {{1 {2}} 3}))
+(def {r} (repeat 2 {list 1 2}))
+(print "library" (grow (fst z)) (grow (fst z)) (grow (fst s)) (grow (snd s)) (grow f) (grow (fst r)) (grow (snd r)))
+(print "library" z s f r)
+
+; run as code: a list kept inside another, run again and again
+(def {codes} (list (list + 1 2) (cons * {3 4}) (join {-} {10 1}) (list list :a (list + 1 1))))
+(print "code" (map (fn {cd} {eval cd}) codes) (map (fn {cd} {eval cd}) codes) (map (fn {cd} {eval (tail (cons list cd))}) codes) codes)
+(print "code" (eval (fst codes)) (eval (cons + (tail (fst codes)))) (eval (join (fst codes) {100})) (fst codes))
+(def {nested-code} (list (list do (list + 1 2) (list list 3 4))))
+(print "code" (eval (fst nested-code)) (eval (fst nested-code)) (eval (snd (fst nested-code))) nested-code)
+(each {cd codes} (print "  each" cd (eval cd) (grow cd)))
+(print "codes" codes)

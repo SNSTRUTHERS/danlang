@@ -1,0 +1,31 @@
+; 10-wrapped-cond-case: cond and case redefined as wrappers that note the call and hand the clauses to the saved
+; originals (apply, unpack, a direct call): the originals' code goes on to the next clause through the name cond
+; (case), so through the wrapper again, once a clause is false; a wrapper that's an fexpr (its clauses as written);
+; then the originals restored and the same calls made again; each value, the notes in order, and errors made right
+; after (their traces), with the wrappers and without
+(fun {p a b} {+ a b})
+(def {cond0 case0 minimum0} cond case minimum)
+(def {notes} {})
+(fun {cond} {do (def {notes} (cons (list :cond (len &_)) notes)) (unpack cond0 &_)})
+(fun {case x} {do (def {notes} (cons (list :case x (len &_)) notes)) (apply case0 (cons x &_))})
+(list (cond {NIL 1} {NIL 2} {T (mod 7 2)}) (case 3 {1 :a} {3 (floor 7/2)}) (reverse notes))
+(def {notes} {})
+(list (cond0 {NIL 1} {(> 2 1) :direct}) (case0 2 {1 0} {2 :direct-case}) (reverse notes))
+(def {notes} {})
+(fun {f x} {cond {(eq x 1) :one} {(eq x 2) (case x {1 0} {2 (list :two (even? x))})} {T (minimum (list x 0))}})
+(list (map f {1 2 3}) (len notes))
+(p 1 2 (f 1))
+(p 1 2 (f 2))
+(p 1 2 (f 3))
+(cond {NIL 1})
+(case 4 {1 1})
+(def {cond} (fexpr {} {do (def {notes} (cons :fexpr notes)) (apply cond0 &_)}))
+(cond {NIL 0} {T :through-fexpr})
+(f 2)
+(p 1 2 (f 2))
+(def {cond case} cond0 case0)
+(def {notes} {})
+(list (map f {1 2 3}) notes)
+(each {i (range 4)} (f 2))
+(p 1 2 (f 2))
+(p 1 2 (f 3))

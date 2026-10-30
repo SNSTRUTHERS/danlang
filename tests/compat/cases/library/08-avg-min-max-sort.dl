@@ -1,0 +1,67 @@
+; 08-avg-min-max-sort: avg, minimum and maximum (.{min &1}: the list's items run as code again by unpack, so an
+; S-expression in it is evaluated; among equal items the last one wins), sort-desc (sort reversed: equal items come
+; out in the other order), best-of, worst-of, top and bottom: numbers at the edges, mixed kinds (the order's kinds),
+; empty lists, wrong kinds, partial application, too many and too few arguments, errors.
+; Ends with avg's division by zero (an empty list), from a user function.
+
+(print minimum maximum avg sort-desc best-of worst-of top bottom)
+(def {mixed} {"b" 2 \c :a 7/2 NIL T {1} -1025 (x) sym 65536 "a" 9223372036854775808 -0.5})
+(print (minimum {3 1 2}) (maximum {3 1 2}) (minimum {1}) (minimum {65535 65536 -1024 -1025}) (maximum {9223372036854775807 9223372036854775808 -9223372036854775809}))
+(print (minimum mixed))
+(print (maximum {"b" 2 \c :a 7/2 NIL T {1} -1025 65536 "a"}) (minimum {"b" 2 \c :a 7/2 NIL {1} 65536 "a" -0.5}) (maximum {"b" 2 \c :a 7/2 NIL {1} {1 2} 65536 "a" -0.5}))
+(print (minimum {7/2 3.5}) (map fixed? [(minimum {7/2 3.5}) (minimum {3.5 7/2}) (maximum {7/2 3.5}) (maximum {3.5 7/2})]))
+(print (map fixed? [(minimum {-1 -1.0}) (minimum {-1.0 -1}) (maximum {2 2.0 2}) (maximum {2.0 2 2.0})]))
+(print (minimum {(+ 5 5) 3}) (maximum {(+ 5 5) 3}) (minimum {(- 0 65537) 1}))
+(print (minimum {x-unbound 1}))
+(print (minimum {"b" "a" "ab"}) (maximum {\a \b "a"}) (minimum {:b :a}) (maximum {{1 2} {1} {2}}) (minimum [T + (fn {x} {x}) 0]))
+(print (minimum NIL))
+(print (maximum NIL))
+(print (minimum))
+(print (minimum 5))
+(print (minimum "abc"))
+(print (minimum {3 1} {0}))
+(print (minimum (error "minimum's list")))
+(print (minimum (hash-create)) (maximum +) (avg (hash-create)) (avg +) (sort-desc (hash-create)) (best-of 1 +) (worst-of + {1}))
+
+; avg: (/ (sum s) (len s)), exact
+(print (avg {1 2 3 4}) (avg {1}) (avg {2.5 3.5}) (avg {1/2 1/3}) (avg {9223372036854775807 9223372036854775809}) (avg {65535 65536}) (avg {-1024 -1025}))
+(print (avg [(complex 1 1) 1]) (avg {0.1 0.2}) (avg {1 2.5 1/2}) (avg (range 100)) (type-of (avg {1 2})) (fixed? (avg {1.0 2})))
+(print (avg {(complex 1 1) 1}))
+(print (avg {"a" 1}))
+(print (avg {1 "a"}))
+(print (avg "abc"))
+(print (avg {1 2} 3))
+(print (avg))
+(print (avg (error "avg's list")))
+
+; sort-desc: the order's reverse; equal items reversed too
+(print (sort-desc {1 3 2}) (sort-desc NIL) (sort-desc {1}) (sort-desc {65536 -1025 9223372036854775808 7/2 3.5 -0.5}))
+(print (sort-desc mixed))
+(print (map fixed? (sort-desc {1.5 3/2 1.50 6/4})) (map fixed? (sort {1.5 3/2 1.50 6/4})))
+(print (sort-desc {(+ 1 2) 2 {3} "3"}))
+(print (sort-desc "cab"))
+(print (sort-desc 5))
+(print (sort-desc {1 3} 2))
+(print (sort-desc))
+(print (sort-desc (error "sort-desc's list")))
+
+; best-of, worst-of, top, bottom: (take n ...) of it sorted
+(print (best-of 2 {1 3 2}) (best-of 0 {1 3}) (best-of 9 {1 3 2}) (worst-of 2 {1 3 2}) (top 1 {5 9 7}) (bottom 2 {5 9 7}) (top 3 NIL))
+(print (best-of 2 {9223372036854775807 9223372036854775808 1}) (worst-of 2 {-1024 -1025 65536}) (top 2 mixed) (bottom 3 mixed))
+(print (best-of 2.0 {1 3 2}) (worst-of 4/2 {3 1 2}) (top 9223372036854775808 {1 2}))
+(print (best-of -1 {1 2}))
+(print (best-of 1.5 {1 2}))
+(print (best-of :a {1 2}))
+(print (best-of 1 "abc"))
+(print (best-of 1 5))
+(print (best-of 2))
+(print ((best-of 2) {4 6 5}))
+(print ((bottom 1) {4 6 5}))
+(print (worst-of 1 {1} 2))
+(print (top (error "top's n") {1}))
+(print (bottom 1 (error "bottom's list")))
+
+; avg of an empty list, from a user function: the program ends with its trace
+(fun {mean-of l} {list :mean (avg l)})
+(print (mean-of {2 4 9}))
+(mean-of (filter neg? {1 2 3}))

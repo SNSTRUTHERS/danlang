@@ -1,0 +1,35 @@
+--- stdout
+""
+"one\n"
+"1 2 three\nno newline45"
+"to stdout 1\nw2"
+"{1 \"two\" \\3}\n\"s\"\n"
+"\n\n"
+""
+"a\tb\x01\nc :d"
+"x\n"
+:string 4
+"outer 1\ninner\n\nouter 2\n"
+""
+"\"deep\""
+Error: inside output-of
+Division by zero.
+"Error: printed, not raised\n"
+"the handler printed this\n"
+Error: Unbound Symbol 'undefined-in-output-of'
+"stdout inside\n"
+"stdout write"
+"chatty 3\nchatty 4\n"
+"1,2,3,"
+"0\n1\n2\n"
+"chatty 1\nchatty 2\n"
+"noisy.dl line 1\nnoisy.dl line 2"
+"0\n1\n4\n9\n16\n" {"0" "1" "4" "9" "16" ""} 11
+T T
+"to stdout\n" to a file
+the end: stdout is stdout again
+a last write, no newline
+--- stderr
+stderr from inside output-of
+stderr write; 
+--- exit 0

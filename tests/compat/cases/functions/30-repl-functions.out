@@ -1,0 +1,93 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> <function>(fn {x} {* x 2})
+danlang>=> NIL
+danlang>=> <function>(fn {a b} {+ a b})
+danlang>=> <function>(fn {b} {+ a b})
+danlang>=> 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> <function>(eq 1)
+danlang>=> <function>(substring "hi")
+danlang>=> <function>(fn {x} {x})
+danlang>=> 0
+danlang>
+=> NIL
+danlang>:printed
+=> NIL
+danlang>=> NIL
+danlang>=> :f0-ran
+danlang><function>(fn NIL {:f0-ran})
+=> NIL
+danlang>=> NIL
+danlang>=> :made-and-called
+danlang><function>(fn NIL {:made-and-called})
+=> NIL
+danlang>=> NIL
+danlang>=> <function>(fn {x} {list :x x})
+danlang>=> {:x 5}
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> NIL
+danlang>=> 5
+danlang>=> "str"
+danlang>=> {1 2}
+danlang>=> {1 2}
+danlang>=> :atom
+danlang>=> \c
+danlang>=> NIL
+danlang>=> {:method {:m :v}}
+danlang>=> 7
+danlang>=> Error: Unbound Symbol '&0'
+danlang>=> Error: shown
+danlang>=> Error: arg
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'undefined-name'
+danlang>	) <	)} <	)} <=> NIL
+danlang>=> <function>(fn {a b} {list a b})
+danlang>=> {1 2}
+danlang>=> NIL
+danlang>=> 100
+danlang>=> Error: Too deep: more than 10000 calls nested
+danlang>=> 1
+danlang>=> {1 4 9}
+danlang>=> NIL
+danlang>=> {<function>(fn NIL {:a}) <function>(fn {x} {x})}
+danlang>=> :a
+danlang>=> <function>(fn {x} {x})
+danlang>=> g__1
+danlang>=> g__2
+danlang>=> ":captured\n"
+danlang>=> "caught"
+danlang>=> :do-last-called
+danlang>=> :if-branch-called
+danlang>=> exit
+--- stderr
+  at line 1  (add 1 2 3)
+  called at line 1  (add 1 2 3)
+  at line 1  (1 2)
+  at line 1  (hash-keys &0)
+  called at line 1  ((hash-get h :m))
+  at line 1  (error "shown")
+  at line 1  (error "arg")
+  at line 1  {undefined-name}
+  called at line 1  (f)
+  at line 1  (- n 1)
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+  called at line 1  (deep (- n 1))
+--- exit 0

@@ -1,0 +1,31 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>	) <=> 3
+danlang>	) <	)) <	))) <	)))} <=> {1 {2 {3 {4 5}}}}
+danlang>	} <	} <=> {a b c}
+danlang>	] <=> {1 2}
+danlang>	""" <	""" <=> "a here string\nover three\nlines"
+danlang>	""""" <=> "five quotes, three inside: \"\"\" and on\nthe next line"
+danlang>	) <=> NIL
+danlang>=> 42
+danlang>	) <	) <	) <first line of a do
+=> Error: 'len' requires parameter of type string, list, hash or buffer
+danlang>	) <=> Error: Unknown character name \nosuchname
+danlang>=> Error: Closed a SExpr without opening: 
+danlang>	) <=> Error: Closed a SExpr without opening: 
+danlang>	)""" <here string with "quotes" and
+a newline
+=> NIL
+danlang>	)""" <=> 1
+danlang>	)""""" <=> "\"\\n\\\"\\\"\\\" \""
+danlang>	) <	))} <	))}}} <=> NIL
+danlang>=> <hash>{{:a 1} {:b {2 3}}}
+danlang>=> {2 3}
+danlang>the input ends inside an open expression:
+=> NIL
+danlang>	) <	)) <=> Error: missing ))
+--- stderr
+  at line 3  (len 5)
+--- exit 0

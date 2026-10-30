@@ -1,0 +1,39 @@
+; 15-big-lists-many-views.dl - a list of 40,000 items and hundreds of views of it (tail, drop, take, init, subset),
+; conses and joins onto each, all kept at once; then the big list's own parts (each a quarter or less: copies, the rest
+; views) and their sums, checked against sums made another way; a list grown by cons 4,000 times, all its states
+; reachable from a few kept, and a queue of 1,000 run 3,000 steps
+
+(def {n} 40000)
+(def {big} (range n))
+(def {total} (sum big))
+(print (len big) total)
+(def {views} (map (fn {k} {drop (* k 197) big}) (range 200)))
+(def {heads} (map (fn {k} {take (* k 199) big}) (range 200)))
+(def {consed} (map (fn {v} {cons -1 v}) views))
+(def {joined} (map (fn {v} {join v [-2]}) heads))
+(print (len views) (map len (take 6 views)) (map len (take 6 heads)) (map fst (take 6 consed)) (map last (take 6 joined)))
+(print (sum (map len views)) (sum (map len heads)) (sum (map len consed)) (sum (map len joined)))
+(print (all? (fn {k} {eq (fst (nth k views)) (* k 197)}) (range 200)))
+(print (sum (map (fn {v} {sum v}) (take 20 views))) (sum (map (fn {v} {sum v}) (take 20 heads))))
+(print (eq big (range n)) (sum big))
+
+; parts of every size, each's sum against the formula
+(fun {sum-to k} {div (* k (- k 1)) 2})
+(def {sizes} {1 2 3 10 1000 9999 10000 10001 20000 30000 39999 40000})
+(print (map (fn {k} {eq (sum (take k big)) (sum-to k)}) sizes))
+(print (map (fn {k} {eq (sum (drop (- n k) big)) (- total (sum-to (- n k)))}) sizes))
+(print (map (fn {k} {len (init (take k big))}) sizes) (map (fn {k} {fst (tail (drop (- n k) big))}) (drop 1 sizes)))
+
+; cons 4,000 times; a few states kept
+(def {grow} NIL)
+(def {marks} NIL)
+(dotimes {i 4000} (do (set! {grow} (cons i grow)) (if (zero? (mod i 1000)) (set! {marks} (cons grow marks)))))
+(print (len grow) (fst grow) (last grow) (map len marks) (map fst marks) (sum grow))
+(def {g2} (cons :other (fst (reverse marks))))
+(print (take 3 g2) (len g2) (map len marks) (take 3 grow))
+
+; a queue: tail and join, 3,000 steps
+(fun {qstep l x} {join (tail l) [x]})
+(def {qu} (range 1000))
+(dotimes {i 3000} (set! {qu} (qstep qu (+ 1000 i))))
+(print (len qu) (fst qu) (last qu) (sum qu) (eq qu (range 3000 4000)))

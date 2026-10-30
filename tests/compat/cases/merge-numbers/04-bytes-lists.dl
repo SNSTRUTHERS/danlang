@@ -1,0 +1,7 @@
+; 04-bytes-lists: number-bytes and bytes-number with lists built by cons, tail, map; equality and sorting of results
+(def {ns} [0 1 -1 63 64 -64 -65 255 65536 1/3 2.50 (complex 1 2)])
+(each {n ns} (print (repr n) (number-bytes n) (eq n (bytes-number (number-bytes n)))))
+(def {bs} (map (fn {n} {number-bytes n}) (range 5)))
+(print bs (map len bs) (tail bs) (cons (number-bytes 99) (tail bs)))
+(print (sort (map (fn {i} {mod (* i 37) 11}) (range 12))))
+(print (digits 1/3 20) (digits (sqrt 2) 30))

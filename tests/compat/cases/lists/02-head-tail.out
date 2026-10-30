@@ -1,0 +1,50 @@
+--- stdout
+head {1} {x} {{1 2}} {NIL} {(+ 1 2)}
+tail {{2 3} "four" \5 :six} NIL {2} NIL {NIL} {(+ 2 3)}
+init {1 {2 3} "four" \5} NIL {1} {1} {{1}}
+end {:six} {x} {2} {NIL} {{2}}
+l {1 {2 3} "four" \5 :six}
+repr {"s"} {\c} {"b"} {"a" \b}
+types :list :list :sexpr :list
+tails {"four" \5 :six} {:six} NIL
+inits {1 {2 3} "four"} {1} NIL
+mixed {{2 3}} {\5} {{2 3} "four" \5} {{2 3} "four" \5} {:six} {1}
+inner {2} {3} {3} {2}
+   5 {1} {:six} {1 {2 3} "four" \5 :six}
+   4 {{2 3}} {:six} {{2 3} "four" \5 :six}
+   3 {"four"} {:six} {"four" \5 :six}
+   2 {\5} {:six} {\5 :six}
+   1 {:six} {:six} {:six}
+walked NIL {1 {2 3} "four" \5 :six}
+   5 {:six} {1 {2 3} "four" \5 :six}
+   4 {\5} {1 {2 3} "four" \5}
+   3 {"four"} {1 {2 3} "four"}
+   2 {{2 3}} {1 {2 3}}
+   1 {1} {1}
+walked NIL {1 {2 3} "four" \5 :six}
+NIL T T T
+{0} {999} 999 999 {1} {998} T
+Error: 'head' passed an empty list
+Error: 'head' passed an empty list
+Error: 'tail' passed an empty list
+Error: 'tail' passed an empty list
+Error: 'init' passed an empty list
+Error: 'end' passed an empty list
+Error: 'end' passed an empty list
+Error: 'head' expects a QExpr
+Error: 'tail' expects a QExpr
+Error: 'init' expects a QExpr
+Error: 'end' expects a QExpr
+Error: 'head' expects a QExpr
+Error: 'tail' expects a QExpr
+Error: given an error
+Error: 'tail' takes 1 argument, not 2
+Error: 'head' takes 1 argument, not 2
+<function>(head) <function>(tail) <function>(init) <function>(end) {9} {8}
+{{1} {3} {{4}}} {{2} NIL {5}} {{1} NIL} {{2} {3}}
+Error: 'head' passed an empty list
+Error: 'tail' expects a QExpr
+{1 {2 3} "four" \5 :six}
+--- stderr
+
+--- exit 0

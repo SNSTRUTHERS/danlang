@@ -1,0 +1,15 @@
+; 01-local-hd-remove-all: remove-all's code binds hd and tl once its list isn't NIL, even when every item goes (its
+; value NIL, as for NIL itself), and a name bound in a call is a local one from then on: calls headed by it take their
+; general way.  The probe: (hd v (g)) is Op2's (hd is +) while hd is no local's name, and an error made right after
+; says where (g)'s code was ({+ 70000 70001}); once hd is a local's name somewhere, (hd v (g))
+(def {hd} +)
+(fun {g} {+ 70000 70001})
+(fun {p a b} {+ a b})
+(fun {probe} {p v v (hd v (g))})
+(map (fn {l} {remove-all 1 l}) {NIL NIL NIL {1} {1 1} {1}})
+(def {v} 100003)
+(probe)
+(def {v} 100003)
+(probe)
+(def {v} 100003)
+(probe)

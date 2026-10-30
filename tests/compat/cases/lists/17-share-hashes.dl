@@ -1,0 +1,66 @@
+; 17-share-hashes.dl - lists put into hashes and taken out (a list is a value: the one taken out is as it was put, and
+; a list built on it doesn't change the hash); hashes put into lists (a hash is shared: a change shows through every
+; list that has it, and its tails and copies); hash-keys, hash-values, from# and to# making lists; a list isn't a key
+
+(def {l} {1 2 3})
+(def {h} (hash-create))
+(hash-put h [:list l] [:tail (tail l)] {:lit {a b}} {:made [1 (+ 1 1)]})
+(print (h :list) (h :tail) (h :lit) (h :made) (hash-get h :list) (hash-keys h) (hash-values h))
+(def {got} (h :list))
+(hash-put h [:list (cons 0 got)])
+(print got (h :list) l (eq got l))
+(def {got2} (h :list))
+(print (cons :front got2) (join got2 got2) (reverse got2) (h :list))
+(hash-put h [:list (join (h :list) {4})])
+(print (h :list) got got2 l)
+
+; from# and to#: lists of entries
+(print (from# h))
+(def {h2} (to# (from# h)))
+(print (from# h2) (eq h h2))
+(hash-put h2 {:lit {changed}})
+(print (h :lit) (h2 :lit) (eq h h2))
+
+; hash-clone: a copy whose list values are the same values
+(def {hc} (hash-clone h {:extra {x y}}))
+(hash-put hc [:list (tail (hc :list))])
+(print (h :list) (hc :list) (hc :extra) (hash-key? h :extra))
+
+; a hash in a list is shared: a change shows through every list that has it
+(def {inner} (hash-create {{:n 1}}))
+(def {lh} [inner inner (hash-create {{:n 1}})])
+(def {lt} (tail lh))
+(def {lr} (reverse lh))
+(def {lc} (cons :c lh))
+(print lh (eq (fst lh) (thd lh)))
+(hash-put inner {:n 2})
+(print lh (eq (fst lh) (thd lh)))
+(print lt lr lc)
+(hash-put inner {:m {1 2}})
+(print (map (fn {x} {x :n}) lh) (map (fn {x} {hash-get x :m}) lh) (fst lt))
+(hash-remove inner :n)
+(print lh (len (fst lh)) (map len lh))
+
+; a list of hashes sorted, searched, compared
+(def {hs} [(hash-create {{:k 3}}) (hash-create {{:k 1}}) (hash-create {{:k 2}})])
+(print (sort hs (fn {a b} {< (a :k) (b :k)})) hs)
+(print (find (fn {x} {eq (x :k) 2}) hs) (elem? (hash-create {{:k 1}}) hs) (index-of hs (hash-create {{:k 2}})))
+(hash-put (snd hs) {:k 9})
+(print hs (sort hs (fn {a b} {< (a :k) (b :k)})))
+
+; keys and values as lists
+(def {kv} (hash-create {{:b 1} {:a {2 3}} {"s" "t"} {7 NIL} {8 {}}}))
+(print (hash-keys kv) (hash-values kv) (len kv) (map type-of (hash-keys kv)))
+(print (sort (hash-keys (hash-create {{:b 1} {:a 2} {"c" 3} {1 4}}))))
+(print (map (fn {k} {kv k}) (hash-keys kv)) (zip (hash-keys kv) (hash-values kv)))
+
+; a list isn't a key; a list of entries makes a hash
+(print (hash-put h [{1} 2]))
+(print (hash-get h {1}))
+(print (hash-create {{:k [1 2]} {:q {a b}}}))
+(print (#({{:k {a b}}}) :k))
+(print (hash-create {:k {a b}}))
+(print (to# 5))
+(print (to# {{:a 1} {:b}}))
+(print (hash-create [[:x (list 1 2)] [:y {3}]]))
+(print l)

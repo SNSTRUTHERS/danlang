@@ -1,0 +1,278 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 2
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 100001
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 10000200001
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 10000200001
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 100001
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {100001 1}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {1 2 3}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {6 100001}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {1}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 5
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> :b
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> :b
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 100001
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 54321
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 0
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 23457
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> {12345 0}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> :b
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> {1.5 2}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 54444
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 151700859277037
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 1
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- x (g))
+  called at line 1  (probe)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  {+ 70000 1}
+  called at line 1  (probe2)
+  at line 1  (- v (g))
+  called at line 1  (probe2)
+--- exit 0

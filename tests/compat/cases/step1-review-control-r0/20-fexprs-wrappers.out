@@ -1,0 +1,21 @@
+--- stdout
+negative
+{50 :skipped} {:skipped NIL}
+:two :itself :one
+:b :c
+say 1
+say 1
+say T
+:a {:got :clause}
+say :ghost
+say 2
+:ghost :two
+{T :packed} :curried :applied
+Error: Case not found :partial-case Case not found
+say T
+say :made
+:made
+2 :method-other :method-other
+--- stderr
+
+--- exit 0

@@ -1,0 +1,16 @@
+--- stdout
+3 {T NIL T} Error: first
+4 first :after
+first :one
+first first first
+first first
+first first third
+first first first first
+first first first third
+NIL first '+' adds numbers, or joins values to a string
+first NIL Case not found
+the last: zip of a list holding an error, not caught
+--- stderr
+Error: 02-error-items.dl: first
+  at 02-error-items.dl:6  (error "first")
+--- exit 1

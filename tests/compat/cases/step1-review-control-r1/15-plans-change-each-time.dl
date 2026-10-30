@@ -1,0 +1,22 @@
+; 15-plans-change-each-time: cond and case in loops where something changes each time round that's a change to the
+; calls' plans (a global function reassigned and then called, a hash variable made anew and called, code read and
+; run), so the natives in their clauses can't use the place their code left last time: the values each time, the
+; order things print in, and at the end an error made right after, its trace
+(fun {p a b} {+ a b})
+(def {log} {})
+(fun {note x} {do (def {log} (cons x log)) x})
+(fun {step i} {cond {(even? i) (list :e (mod i 3) (floor (/ i 4)))} {(eq (mod i 3) 1) (note (list :m (div i 2)))} {T (case (mod i 4) {1 (zip (list i) {:z})} {3 (distinct (list i i 1))} {(mod i 4) :other})}})
+(def {out} {})
+(each {i (range 12)} (do (def {g} (fn {} {+ i 1})) (g) (def {h} (hash-create)) (hash-put h (list :k i)) (h :k) (eval (fst (read (+ "(+ " i " 1)")))) (def {out} (cons (step i) out))))
+(print (reverse out))
+(print (reverse log))
+(fun {k2 i} {case (mod i 3) {0 (pow 2 i)} {1 (round (/ i 3))} {2 (cond {(between? 0 5 i) (remove-all 2 (list 2 i 2))} {T (flatten (list i (list i)))})}})
+(def {out} {})
+(each {i (range 12)} (do (def {g} (fn {} {i})) (g) (def {out} (cons (k2 i) out))))
+(print (reverse out))
+(fun {k3 i} {cond {(starts-with? (to-str i) "1") (list :one (ends-with? (to-str i) "1"))} {(contains? (to-str i) "2") (avg (list i 2))} {T (?? NIL (has-element? (range i) 3))}})
+(def {out} {})
+(each {i (range 25)} (do (def {g} (fn {} {i})) (g) (def {out} (cons (k3 i) out))))
+(print (reverse out))
+(print "the last: an error made right after, the plans changed just before")
+(each {i (range 6)} (do (def {g} (fn {} {i})) (g) (if (eq i 5) (p 1 2 (step i)) (step i))))

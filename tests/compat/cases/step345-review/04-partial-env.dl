@@ -1,0 +1,40 @@
+; 04-partial-env: partial applications (a function with an Env of what it was given), of no arguments (an Env with
+; nothing in it: bound as a function's own call is), of partial applications, of methods; printed, compared, called
+; with the rest, with too many, and their formals' names each its own list (a new one for each partial application)
+(def {f3} (fn {a b c} {list a b c &_}))
+(def {p0} (f3))
+(def {p00} ((f3)))
+(def {p1} (f3 1))
+(def {p10} ((f3 1)))
+(def {p2} (f3 1 2))
+(print "p" (repr p0) (repr p00) (repr p1) (repr p10) (repr p2))
+(print "p call" (p0 1 2 3) (p00 1 2 3 4) (p1 2 3) (p10 2 3 4) (p2 3) (p2 3 4 5) ((p0 1) 2 3) (((p00) 1) 2 3))
+(print "p eq" (eq p0 f3) (eq p00 p0) (eq p1 p10) (eq p1 (f3 1)) (eq p1 (f3 2)) (eq p2 (p1 2)))
+(def {g3} (fn {a b c} {list a b c}))
+(print "p err" (try (g3 1 2 3 4) &err) (try ((g3) 1 2 3 4) &err) (try ((g3 1) 2 3 4) &err) (try ((g3 1 2) 3 4) &err))
+(print "p err" (try (((g3)) 1 2 3 4) &err) (try (((g3 1)) 2 3 4) &err) (try (((g3 1) 2) 3 4) &err))
+; many partial applications of one, each called: the formals left are a new list each time
+(def {parts} (map (fn {k} {unpack g3 (range k)}) (range 3)))
+(print "parts" parts (map (fn {p} {unpack p (range 10 (+ 10 (len (fst {a b c}))))}) {}) )
+(each {p parts} (print "part" (repr p) (try (p :x :y :z) &err) (try (p :x :y) &err)))
+; a zero-argument partial of a function whose formals repeat, and of one with 8 and 9 formals
+(def {d} (fn {x x y} {list x y}))
+(print "d" ((d) 1 2 3) (((d)) 1 2 3) ((d 1) 2 3) (((d) 1) 2 3))
+(def {e8} (fn {a b c d e f g h} {list a h &_}))
+(def {e9} (fn {a b c d e f g h i} {list a i &_}))
+(print "e8" ((e8) 1 2 3 4 5 6 7 8 9) (((e8 1 2 3 4)) 5 6 7 8 9 10) ((e9) 1 2 3 4 5 6 7 8 9 10) (((e9 1)) 2 3 4 5 6 7 8 9))
+; partial applications kept, then the function redefined: they keep the old one
+(fun {rd a b} {list :old a b})
+(def {rdp} (rd 1))
+(def {rdp0} (rd))
+(fun {rd a b} {list :new a b})
+(print "redef" (rdp 2) (rdp0 1 2) (rd 1 2) ((rd 1) 2))
+; closures made in a partial application's call: they see its Env's values
+(def {mk} (fn {a b} {fn {c} {list a b c}}))
+(def {mk1} (mk :one))
+(print "closure" ((mk1 :two) :three) ((mk :x :y) :z) (((mk) :p :q) :r))
+; a partial application of a fexpr
+(def {fx} (fexpr {a b} {list a b (eval a)}))
+(print "fexpr partial" ((fx (+ 1 2)) (* 3 4)) (((fx) (+ 1 1)) whatever))
+; the last: a partial application of no arguments given too many
+((g3) 1 2 3 4 5)

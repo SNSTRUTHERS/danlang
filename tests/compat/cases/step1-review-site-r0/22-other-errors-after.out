@@ -1,0 +1,69 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> Error: -4 isn't a method: its value isn't a function
+danlang>=> Error: 1 isn't a method: its value isn't a function
+danlang>=> Error: 'buffer-get': index 3 is outside the buffer
+danlang>=> Error: 'buffer-get': index 3 is outside the buffer
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run arity floor (list (list 7/2 T) (list 7/2 T) (list 7/...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run arity floor (list (list 7/2 T) (list -7/2 T) (list 7...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (run arity even? (list (list 4 T) (list 4 T) (list 4 T) (...
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  called at line 1  (run arity (fn {x} {zip x {1}}) (list (list {1} T) (list ...
+  at <BUNDLE>\lib\globals.dl:246  (>= &3 &1)
+  called at line 1  (run arity (fn {x} {between? 1 9 x}) (list (list 5 T) (li...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run head floor (list (list 7/2 T) (list 7/2 T) (list 7/2...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (run head round (list (list 5/2 T) (list 5/2 T) (list 5/2...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run head (fn {x} {mod x 2}) (list (list 7 T) (list 7 T) ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run setb floor (list (list 7/2 T) (list 7/2 T) (list 7/2...
+  at line 1  {pow 2 x}
+  called at line 1  (run setb (fn {x} {pow 2 x}) (list (list 3 T) (list 3 T) ...
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (run setb (fn {x} {remove-all 1 x}) (list (list {1 2} T) ...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run method floor (list (list 7/2 T) (list 7/2 T) (list 7...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (run method ceil (list (list 1/2 T) (list 1/2 T) (list 1/...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run byte floor (list (list 7/2 T) (list 7/2 T) (list 7/2...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run byte (fn {x} {div x 2}) (list (list 7 T) (list 7 T) ...
+--- exit 0

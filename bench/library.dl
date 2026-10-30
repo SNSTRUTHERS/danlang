@@ -1,0 +1,13 @@
+; library.dl - lib/globals.dl's functions in loops: arithmetic (mod, div, floor ...), cond and case, list functions
+(def {acc} 0)
+(dotimes {i 20000} (set! {acc} (+ acc (mod i 7) (div i 3) (floor (/ i 4)) (ceil (/ i 5)) (round (/ i 3)))))
+(dotimes {i 20000} (if (even? i) (set! {acc} (+ acc 1)) (if (odd? i) (set! {acc} (- acc 1)))))
+(dotimes {i 3000} (set! {acc} (+ acc (pow 3 (mod i 40)))))
+(dotimes {i 20000} (set! {acc} (+ acc (cond {(eq (mod i 3) 0) 1} {(eq (mod i 3) 1) 2} {T 3}))))
+(dotimes {i 20000} (set! {acc} (+ acc (case (mod i 4) {0 10} {1 20} {2 30} {3 40}))))
+(def {l} (range 300))
+(dotimes {i 100} (set! {acc} (+ acc (len (zip l l)) (len (flatten {{1 2} {3 {4 5}} 6})) (len (remove-all 5 l)))))
+(dotimes {i 20} (set! {acc} (+ acc (len (distinct (map (fn {x} {mod x 50}) l))))))
+(dotimes {i 300} (set! {acc} (+ acc (len (repeat 50 {+ 1 2})) (avg l) (sum l))))
+(dotimes {i 20000} (if (and (starts-with? "hello world" "hello") (between? 1 10 (mod i 12))) (set! {acc} (+ acc 1))))
+(print acc)

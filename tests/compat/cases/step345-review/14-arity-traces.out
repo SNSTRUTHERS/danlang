@@ -1,0 +1,33 @@
+--- stdout
+arity 0 The function takes 0 arguments, not 1 The function takes 0 arguments, not 2
+arity 1 The function takes 1 argument, not 2 The function takes 1 argument, not 3
+arity 2 The function takes 2 arguments, not 3 The function takes 2 arguments, not 4
+arity 3 The function takes 3 arguments, not 4 The function takes 3 arguments, not 5
+arity 4 The function takes 4 arguments, not 5 The function takes 4 arguments, not 6
+arity 5 The function takes 5 arguments, not 6 The function takes 5 arguments, not 7
+arity 6 The function takes 6 arguments, not 7 The function takes 6 arguments, not 8
+arity 7 The function takes 7 arguments, not 8 The function takes 7 arguments, not 9
+arity 8 The function takes 8 arguments, not 9 The function takes 8 arguments, not 10
+arity 9 The function takes 9 arguments, not 10 The function takes 9 arguments, not 11
+partial 1 S-Expression starts with incorrect type. Got Atom, Expected Function.
+partial 2 The function takes 1 argument, not 2
+partial 3 The function takes 2 arguments, not 3
+partial 4 The function takes 3 arguments, not 4
+partial 5 The function takes 4 arguments, not 5
+partial 6 The function takes 5 arguments, not 6
+partial 7 The function takes 6 arguments, not 7
+partial 8 The function takes 7 arguments, not 8
+partial 9 The function takes 8 arguments, not 9
+dup The function takes 2 arguments, not 3 The function takes 3 arguments, not 4
+method {1 <hash>{{:m <function>(fn {x} {list x &0})} {:n <function>(fn {x} {x})}}} The function takes 1 argument, not 2 {1 <hash>{{:m <function>(fn {x} {list x &0})} {:n <function>(fn {x} {x})}}}
+fexpr The function takes 1 argument, not 2 The function takes 0 arguments, not 1
+builtin 'len' takes 1 argument, not 2 'cons' takes 2 arguments, not 3 S-Expression starts with incorrect type. Got Number, Expected Function.
+fun The function takes 2 arguments, not 3 The function takes 1 argument, not 2 The function takes 2 arguments, not 3
+--- stderr
+Error: 14-arity-traces.dl: The function takes 2 arguments, not 3
+  at 14-arity-traces.dl:14  (two x x x)
+  called at 14-arity-traces.dl:14  (two x x x)
+  called at 14-arity-traces.dl:15  (level3 x)
+  called at 14-arity-traces.dl:16  (level2 x)
+  called at 14-arity-traces.dl:17  (level1 5)
+--- exit 1

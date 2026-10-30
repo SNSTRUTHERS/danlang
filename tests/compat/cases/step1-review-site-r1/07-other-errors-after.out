@@ -1,0 +1,96 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: -4 isn't a method: its value isn't a function
+danlang>=> Error: -3 isn't a method: its value isn't a function
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: 'buffer-get': index 4 is outside the buffer
+danlang>=> Error: 'buffer-get': index 9 is outside the buffer
+danlang>=> Error: 'buffer-get': index -4 is outside the buffer
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run pl (list (list floor 7/2 0) (list floor 7/2 0) (list...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run pl (list (list floor -7/2 0) (list floor -7/2 0) (li...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (run pl (list (list even? 4 0) (list even? 4 0) (list eve...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (run pl (list (list round -5/2 0) (list round -5/2 0) (li...
+  at line 1  (g x)
+  called at line 1  (run pl (list (list starts-with? "abc" 0) (list starts-wi...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run pl2 (list (list mod 7 2 0) (list mod 7 2 0) (list mo...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run pl2 (list (list div -7 2 0) (list div -7 2 0) (list ...
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (run pl2 (list (list starts-with? "abc" "c" 0) (list star...
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (run pl2 (list (list ends-with? "a" "abc" 0) (list ends-w...
+  at line 1  (g x y)
+  called at line 1  (run pl2 (list (list pow 2 3 0) (list pow 2 3 0) (list po...
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (run pl2 (list (list xor T NIL 0) (list xor T NIL 0) (lis...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run pd (list (list floor 7/2 0) (list floor 7/2 0) (list...
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (run pd (list (list ceil -7/2 0) (list ceil -7/2 0) (list...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (run pi (list (list even? -3 0) (list even? -3 0) (list e...
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (run pi (list (list >=0 5 0) (list >=0 5 0) (list >=0 5 0...
+  at <BUNDLE>\lib\globals.dl:32  (zero? n)
+  called at line 1  (run pa (list (list !=0 5 0) (list !=0 5 0) (list !=0 5 0...
+  at <BUNDLE>\lib\globals.dl:181  (pos? a)
+  called at line 1  (run pa (list (list positive? 5 0) (list positive? 5 0) (...
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (run po (list (list odd? 4 0) (list odd? 4 0) (list odd? ...
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (run po (list (list ?? NIL 0) (list ?? NIL 0) (list ?? NI...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  at (made, not read)  {<function>(min) 5}
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+--- exit 0

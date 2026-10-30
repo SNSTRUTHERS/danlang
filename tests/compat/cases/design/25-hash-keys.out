@@ -1,0 +1,24 @@
+--- stdout
+keys {5 "5" :5 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 0 "" :a "a"} 11
+lookups :int5 :int5 :int5 :int5 :str5 :atom5 :max :past-max
+lookups :max :min :past-min :zero :zero
+lookups :int5 :str-a :atom-a NIL T NIL
+in place :fixed-five :complex-zero {5 "5" :5 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 0 "" :a "a"} 11
+not keys A hash key must be an atom, a string or an integer, not 1.5 A hash key must be an atom, a string or an integer, not 1/2 A hash key must be an atom, a string or an integer, not 1+1i Unsupported key type Q-Expression Unsupported key type T
+not keys Unsupported key type Q-Expression Unsupported key type Character Unsupported key type Symbol Unsupported key type Function Unsupported key type Buffer
+not keys A hash key must be an atom, a string or an integer, not 1.5 Unsupported key type Q-Expression Unsupported key type Character A hash key must be an atom, a string or an integer, not 2.5
+not keys Unsupported key type Q-Expression A hash key must be an atom, a string or an integer, not 1.5 NIL First parameter to 'hash-get' must be a hash k
+methods :called <function>(fn NIL {:called}) {1 4} <function>(fn {x} {list x (len &0)}) {2 4} {1 2} {1 2} {1 2}
+methods :v isn't a method: its value isn't a function The function takes 0 arguments, not 1 The function takes 2 arguments, not 3 {3 4} Second parameter to 'hash-call' must be a key to a member function
+methods Second parameter to 'hash-call' must be a key to a member function First parameter to 'hash-call' must be a hash <hash>{{:f <function>(fn NIL {:called})} {:g <function>(fn {x} {list x (len &0)})} {:v 5} {:h <function>(fn {a b} {list a b})}} :none isn't a method: its value isn't a function NIL
+methods {9 5} Error: Unbound Symbol '&0' Unbound Symbol '&0'
+built-ins 3 3 0 T <function>(len)
+many 6000 5998 2999 3000 NIL
+many 5000 NIL 8 3 {"s0" 1 "s1" 2 "s2" "s3" 4 "s4" 5 "s5"}
+many 5500 {"s0" 1 "s1" 2 "s2" "s3" 4 "s4" 5 "s5"} 10623250
+many 6124750
+eq T T NIL NIL T T
+eq T 0 {<hash>{{:a 1} {:b 2}} <hash>{{:b 2} {:a 1}}} T T
+--- stderr
+
+--- exit 0

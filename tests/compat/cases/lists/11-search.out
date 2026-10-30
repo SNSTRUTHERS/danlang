@@ -1,0 +1,63 @@
+--- stdout
+T NIL -2 2
+NIL T NIL 0 0 NIL
+NIL T NIL 5 1 3
+    test 1
+    test -2
+  any? T
+    test 1
+  all? NIL
+    test 1
+    test -2
+  find -2
+    test 1
+    test -2
+    test 3
+    test -4
+    test 5
+  count 2
+    test -1
+    test -2
+  all? of negatives T
+    test 1
+    test 2
+  any? of positives NIL
+{2} NIL NIL (b c)
+T T NIL 2
+T :first 3
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: Cannot perform 'odd?' on non-number
+    at 1
+    at :q
+Error: '+' adds numbers, or joins values to a string
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: 'any?' expects a function and a list
+Error: 'all?' expects a function and a list
+Error: 'find' expects a function and a list
+Error: 'count' takes 2 arguments, not 3
+<function>(find) <function>(any?) <function>(all? <function>(neg?)) 2
+T NIL T NIL NIL NIL T NIL
+T T T T T
+NIL NIL NIL NIL T NIL
+T T T NIL T
+T T T NIL
+T NIL T NIL
+Error: 'elem?' expects a list
+Error: 'in?' expects a list
+Error: 'elem?' takes 2 arguments, not 3
+<function>(elem? 1) T {T NIL}
+0 5 1 4 6 6
+3 2 7 9 8 10
+-1 -1 -1 6 -1
+-1 -1 -1 0 0
+1 0 77 8
+<function>(index-of {a 1 "s" {1} 1 a NIL \c 1/2 "c" 0.5}) 2 {0 1 6 -1}
+Error: 'index-of' expects a String and a String
+Error: 'last-index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+1 3 2 -1
+{a 1 "s" {1} 1 a NIL \c 1/2 "c" 0.5}
+--- stderr
+
+--- exit 0

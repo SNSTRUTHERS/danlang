@@ -1,0 +1,19 @@
+--- stdout
+{:a :b} {:a} {:d 2}
+Selection not found Error: Case not found Case not found
+{0 2 4 6 8} 18
+{1 3 5 7 9} {1 2 5 8}
+T T 3
+5 {1 8 5} {3 "b"}
+{3 -4 3} {0 1 2 0 1 2 0} {T NIL T NIL T} {3 -3 0}
+255 {{1} {2 3} NIL} {{1 2} NIL}
+{{2 1} {1 1} {1}} {3 2 1}
+2 :b 2 4 5 5
+:hc -1 3
+The function takes 2 arguments, not 3 The function takes 2 arguments, not 3
+the last: an error made right after a method's floor (its fourth call), not caught
+--- stderr
+Error: 03-applied-by-builtins.dl: The function takes 2 arguments, not 3
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at 03-applied-by-builtins.dl:24  (p 1 2 (obj :fl 7/2))
+--- exit 1

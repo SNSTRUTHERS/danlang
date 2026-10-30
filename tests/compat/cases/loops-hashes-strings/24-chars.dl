@@ -1,0 +1,58 @@
+; 24-chars.dl - characters: char-at, char-code (a character's, or a string of one's), code-char (0-255), how every
+; one of the 256 prints (repr: a name, or the character itself), names read in other spellings, the tests (alpha?
+; digit? space? upper? lower?: ASCII's classes; of a string, every character of one that isn't empty), characters
+; compared and joined; the errors
+
+(print (repr (char-at "hello" 0)) (repr (char-at "hello" 4)) (repr (char-at "a b" 1)) (repr (char-at \z 0)) (repr (char-at "hello" 2.0)))
+(print (char-code (char-at "é" 0)) (char-code (char-at "é" 1)) (repr (char-at "日" 2)))
+(print (char-at "abc" 3))
+(print (char-at "abc" -1))
+(print (char-at "abc" 1.5))
+(print (char-at "" 0))
+(print (char-at 5 0))
+(print (char-at "abc" "0"))
+
+(print (char-code \a) (char-code "a") (char-code \space) (char-code \null) (char-code \delete) (char-code (code-char 255)))
+(print (char-code "ab"))
+(print (char-code ""))
+(print (char-code 65))
+(print (repr (code-char 65)) (repr (code-char 65.0)) (repr (code-char 130/2)) (type-of (code-char 0)))
+(print (code-char 256))
+(print (code-char -1))
+(print (code-char 1.5))
+(print (code-char "A"))
+
+; every character's repr, 16 to a line (with its code first)
+(dotimes {row 16}
+  (write (str-pad-left (to-str (* row 16)) 3) ":")
+  (dotimes {col 16} (write " " (repr (code-char (+ (* row 16) col)))))
+  (print))
+
+; names read in other spellings are the same characters
+(print (eq \sp \space) (eq \nl \lf) (eq \newline \linefeed) (eq \return \cr) (eq \esc \escape) (eq \del \delete))
+(print (repr \lp) (repr \rc) (repr \star) (repr \and) (repr \or) (repr \bslash) (repr \qm) (repr \ub) (repr \hyphen) (repr \pc))
+(print (repr \SPACE) (repr \Space) (repr \carriage-return) (repr \A) (repr \(  ) (repr \]))
+
+; the tests, of characters
+(def {samples} {\a \Z \m \0 \9 \space \tab \lf \cr \vtab \ff \null \_ \- \delete \escape \@ \[ \` \{})
+(each {c samples} (print (repr c) (char-code c) (alpha? c) (digit? c) (space? c) (upper? c) (lower? c)))
+(print (alpha? (code-char 200)) (alpha? (code-char 233)) (upper? (code-char 201)) (space? (code-char 160)) (space? (code-char 133)))
+
+; ... of strings: every character, and not empty
+(each {s {"" "abc" "aBc" "ABC" "123" "12a" " \t\n" " x " "é" "\r\n"}}
+  (print (repr s) (alpha? s) (digit? s) (space? s) (upper? s) (lower? s)))
+
+; how many of the 256 each test is true of
+(each {test {alpha? digit? space? upper? lower?}}
+  (def {hits} 0)
+  (dotimes {i 256} (if ((eval test) (code-char i)) (def {hits} (+ hits 1))))
+  (print test hits))
+
+; characters compared, sorted, joined, equal
+(print (< \a \b) (> \a \B) (cmp \a \a) (cmp \a "a") (cmp "a" \a) (eq \a "a") (eq \a \a) (eq (code-char 97) \a))
+(print (sort {\z \a \M \0 \space \~}) (min \b \a \c) (max \b \a \c))
+(print (repr (+ \a \b)) (repr (+ \a "b")) (repr (str-join {\a \b} "")))
+(print (alpha? 5))
+(print (digit? :a))
+(print (space? {}))
+(print (upper?))

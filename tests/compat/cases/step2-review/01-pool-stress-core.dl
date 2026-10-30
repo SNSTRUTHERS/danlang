@@ -1,0 +1,68 @@
+; 01-pool-stress-core.dl - a pool of eight lists, each step one built-in list operation (cons, tail, init, head, end,
+; take, drop, join, reverse, subset, sort, list, map, filter, split ...) on lists from the pool, its result put back in
+; a slot (the pool itself rebuilt from views: take, [v], drop), chosen by a fixed pseudo-random sequence.  Every list
+; in the pool is fingerprinted after every step, so an item claimed or overwritten in another list's storage shows
+; at once; the whole pool is printed every 25 steps.
+
+(def {seed} 12345)
+(fun {rnd n} {do (set! {seed} (bit-and (+ (* seed 1103515245) 12345) 2147483647)) (mod (shr seed 7) n)})
+
+(def {pool} [(range 10) {a b c} (list 1 2 3) NIL (cons 0 (range 5)) (tail (range 30)) (drop 3 (range 12)) [7]])
+
+(fun {pick} {nth (rnd (len pool)) pool})
+(fun {put i v} {set! {pool} (join (take i pool) [v] (drop (+ i 1) pool))})
+(fun {cap l} {if (> (len l) 40) (if (zero? (rnd 2)) (take 40 l) (drop (- (len l) 40) l)) l})
+(fun {flat3 y} {filter num? (take 3 y)})
+(fun {shallow l} {if (any? (fn {v} {and (qexpr? v) (any? qexpr? v)}) l) (map (fn {v} {if (qexpr? v) (flat3 v) v}) l) l})
+
+(def {names} {cons tail init head end take drop join join-self reverse subset sort list map filter split cons-nest
+  join3 cons2 tail2 init-join take-cons drop-cons reverse-cons})
+
+(fun {op k x y n} {
+  if (== k 0) (cons n x)
+  (if (== k 1) (if x (tail x) x)
+  (if (== k 2) (if x (init x) x)
+  (if (== k 3) (if x (head x) x)
+  (if (== k 4) (if x (end x) x)
+  (if (== k 5) (take (rnd 12) x)
+  (if (== k 6) (drop (rnd 12) x)
+  (if (== k 7) (join x y)
+  (if (== k 8) (join x x)
+  (if (== k 9) (reverse x)
+  (if (== k 10) (if x (subset x (rnd (len x)) (rnd 6)) x)
+  (if (== k 11) (sort x)
+  (if (== k 12) (list n (len x) (len y))
+  (if (== k 13) (map (fn {v} {if (num? v) (+ v 1) v}) x)
+  (if (== k 14) (filter (fn {v} {not (eq v n)}) x)
+  (if (== k 15) (fst (split (rnd 8) x))
+  (if (== k 16) (cons (flat3 y) x)
+  (if (== k 17) (join (tail (cons n x)) y (take 2 x))
+  (if (== k 18) (cons n (cons (+ n 1) x))
+  (if (== k 19) (if (> (len x) 1) (tail (tail x)) x)
+  (if (== k 20) (if x (join (init x) [n]) [n])
+  (if (== k 21) (take (rnd 6) (cons n x))
+  (if (== k 22) (drop (rnd 3) (cons n y))
+  (cons n (reverse (cons n x)))))))))))))))))))))))))
+})
+
+(def {fingerprint} (fn {l} {foldl (fn {a v} {bit-and (+ (* a 31) (if (num? v) v (+ 1000 (len v)))) 16777215}) (len l) l}))
+
+; (the growing ones weighted more, so the lists stay long enough to share storage; the result often goes back in
+; x's own slot, so a chain of operations works on one list's storage)
+(def {weights} {0 0 0 0 1 2 3 4 5 6 7 7 7 8 9 10 11 12 13 14 15 16 17 17 18 18 18 19 20 20 21 22 23 0 18 7})
+
+(fun {run steps} {
+  dotimes {s steps} (do
+    =(k (nth (rnd (len weights)) weights))
+    =(xi (rnd (len pool)))
+    =(x (nth xi pool))
+    =(y (pick))
+    =(r (shallow (cap (op k x y (rnd 100)))))
+    (put (if (zero? (rnd 3)) (rnd (len pool)) xi) r)
+    (print s (nth k names) (len r) (map fingerprint pool))
+    (if (zero? (mod (+ s 1) 25)) (print "pool" pool)))
+})
+
+(run 600)
+(print "final" pool)
+(print "sums" (map (fn {l} {sum (flatten l)}) pool))

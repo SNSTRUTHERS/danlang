@@ -1,0 +1,10 @@
+; 01-distinct-shared-item: distinct of a list whose first item is a list of one list twice, that one a list of one
+; list twice ..., 40 deep (one value shared all the way down: 2^40 ways through it), and whose second is a number.
+; Its code only compares the first with the second (eq of a list and a number: at once), so each call is quick: the
+; first, whose code runs, and the later ones, whose value its native has
+(def {x} {})
+(dotimes {i 40} (set! {x} (list x x)))
+(dotimes {i 5} (print (len (distinct (list x 1)))))
+(print (snd (distinct (list x 1))))
+(print (len (distinct (list 1 x 2))))
+(print "done")

@@ -1,0 +1,76 @@
+; 05-unpack-pack: unpack (apply, curry, the . prefix) and pack (uncurry).  (unpack f l) is (eval (cons f l)): the
+; list's items are run as code a second time, in unpack's own scope (its f and l visible there, the caller's
+; variables not), so symbols and S-expressions in it are evaluated; (pack f x...) is (f &_).  Built-ins, special
+; forms (if, do), lambdas, partial application, wrong kinds, too many arguments, errors, evaluation order.
+; Ends with an error from code that unpack runs, inside a user function.
+
+(print unpack pack apply curry uncurry)
+(print (unpack + {1 2 3}) (unpack + NIL) (unpack * {65536 65536}) (unpack - {9223372036854775807 -1}) (unpack max {3 9 2}))
+(print (apply + {1 2}) (curry * {2 3 4}) (uncurry sum 1 2 3) (uncurry len 1 2 3 4))
+(print .(+ {7/2 0.5 1}) .(list {:a "b" \c}) .(str-join {{"x" "y"} "+"}))
+(print (unpack (fn {x y} {- x y}) {10 3}) (unpack (fn {x} {list x &_}) {1 2 3}))
+
+; the items run again as code
+(print (unpack + [1 2 (+ 1 2)]))
+(print (unpack list {(+ 1 2) (list 4 5) {6}}))
+(print (unpack list {f l}))
+(print (unpack list {a b}))
+(def {a b} 1 2)
+(print (unpack list {a b}))
+(fun {shadow} {do =(a 10) (list (unpack list {a b}) (unpack list [a b]) (unpack list (list (fst {a}) (fst {b}))))})
+(print (shadow))
+(print (unpack list {(set {l} :changed) l}))
+(print (unpack + {1 "a" \b}))
+(print (unpack + {"a" 1 \b}))
+
+; special forms through unpack
+(print (unpack if {T :yes :no}))
+(print (unpack if {NIL (print :then-branch) (print :else-branch)}))
+(print (unpack do {(print 1) (print 2) 3}))
+(print (unpack and {T 1 NIL (print :never)}))
+(print (unpack or {NIL (print :printed) 7}))
+(print (unpack let {{{q 5}} (* q q)}))
+
+; partial application, too many, wrong kinds, errors
+(print (unpack))
+(print (unpack +))
+(print ((unpack +) {4 5}))
+(print (unpack (fn {x y} {- x y}) {10}))
+(print ((unpack (fn {x y} {- x y}) {10}) 4))
+(print (unpack (fn {x y} {- x y}) {10 3 1}))
+(print (unpack + {1} 2))
+(print (unpack 5 {}))
+(print (unpack 5 {1}))
+(print (unpack :k {1}))
+(print (unpack + 5))
+(print (unpack + "abc"))
+(print (unpack + :a))
+(print (unpack + (hash-create)))
+(print (unpack {a b} {1}))
+(print (unpack (error "unpack's f") {1}))
+(print (unpack + (error "unpack's l")))
+(print (unpack + {1 (error "an item")}))
+(print (unpack + {1 x-unbound}))
+
+; pack: f given the list of the rest
+(print (pack list 1 2 3) (pack len 1 2 3) (pack reverse 1 2 3) (pack (fn {l} {map square l}) 65536 -1025 7/2 0.1))
+(print (pack list))
+(print (pack sum))
+(print (pack))
+(print (pack 5 1 2))
+(print (pack + 1 2))
+(print (pack sum 1 2 3) (pack sum 9223372036854775807 1))
+(print (pack (fn {a b} {list b a}) 1))
+(print (pack (fn {a b} {list b a}) 1 2))
+(print (pack unpack +))
+(print (pack eval (+ 1 2)))
+(print (pack (error "pack's f") 1))
+(print (pack list (error "pack's arg") 1))
+(print (pack (do (print :f) list) (do (print :x1) 1) (do (print :x2) 2)))
+(print (unpack pack {list 1 2}))
+(print (pack (unpack list) {1 2}))
+
+; code unpack runs fails inside a user function: the program ends with its trace
+(fun {spread f l} {list :spread (unpack f l)})
+(print (spread + {1 2}))
+(spread + {1 (/ 1 0)})

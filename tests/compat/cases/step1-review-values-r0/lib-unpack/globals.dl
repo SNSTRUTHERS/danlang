@@ -1,0 +1,29 @@
+; lib-unpack: a library of its own (danlang loads the globals.dl in the folder it runs in before lib/'s; run as the
+; program too, it's the program once args is there): its unpack says when it's called, and cond, case, ??, minimum
+; and maximum are as lib/globals.dl has them, so they call it (cond and case for each clause after the first)
+(if (defined? args)
+  (do
+    (print (cond {NIL 1} {NIL 2} {T 3}))
+    (print (case 3 {1 :a} {2 :b} {3 :c}))
+    (print (?? NIL NIL 5) (?? NIL 6))
+    (print (minimum {3 1 2}) (maximum {3 1 2}))
+    (print (try (cond {NIL 1}) &err) (try (case 9 {1 2}) &err)))
+  (do
+    (fun {unpack f l}  {do (print "  unpack, items:" l) (eval (cons f l))})
+    (fun {?? a} ?{a a ?(&_ .(?? &_))})
+    (fun {cond} ?{
+      &_
+      ?((eval (head (fst &_)))
+        (eval (head (tail (fst &_))))
+        .(cond (tail &_)))
+      (error "Selection not found")
+    })
+    (fun {case x} ?{
+      &_
+      ?((eq x (eval (head (fst &_))))
+        (eval (head (tail (fst &_))))
+        .(case (cons x (tail &_))))
+      (error "Case not found")
+    })
+    (fun {minimum} .{min &1})
+    (fun {maximum} .{max &1})))

@@ -1,0 +1,29 @@
+--- stdout
+1 {"E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {1594323} {1/32} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested"}
+2 {"E:Too deep: more than 10000 calls nested" {3} {3} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {1594323} {1/32} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {T} {3} {T} {2} {:b} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {0}}
+3 {{1} {3} {3} {-3} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {1594323} {1/32} "E:Too deep: more than 10000 calls nested" {27} {T} {3} {T} {2} {:b} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {0}}
+4 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {0}}
+50 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {{1 2 3 4 5 6}} "E:Too deep: more than 10000 calls nested" "E:Too deep: more than 10000 calls nested" {49} "E:Too deep: more than 10000 calls nested" {0}}
+52 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} {50} "E:Too deep: more than 10000 calls nested" {50} {{1 2 3 4 5 6}} {50} {49} {49} {50} {0}}
+100 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} {50} "E:Too deep: more than 10000 calls nested" {50} {{1 2 3 4 5 6}} {50} {49} {49} {50} {0}}
+102 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} {50} "E:Too deep: more than 10000 calls nested" {50} {{1 2 3 4 5 6}} {50} {49} {49} {50} {0}}
+104 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} {50} "E:Too deep: more than 10000 calls nested" {50} {{1 2 3 4 5 6}} {50} {49} {49} {50} {0}}
+150 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} {50} {120} {50} {{1 2 3 4 5 6}} {50} {49} {49} {50} {0}}
+230 {{1} {3} {3} {-3} {NIL} {T} {1594323} {1/32} {{3 1}} {27} {T} {3} {T} {2} {:b} {50} {120} {50} {{1 2 3 4 5 6}} {50} {49} {49} {50} {0}}
+the last: too deep, at the top level
+--- stderr
+Error: 04-depth.dl: Too deep: more than 10000 calls nested
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at <BUNDLE>\lib\globals.dl:148  (floor (/ a b))
+  called at <BUNDLE>\lib\globals.dl:177  (mod n 2)
+  called at 04-depth.dl:20  (even? 7)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+  called at 04-depth.dl:4  (deep (- n 1) f)
+--- exit 1

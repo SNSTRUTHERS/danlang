@@ -1,0 +1,48 @@
+; 13-nil.dl - NIL in every position: as the list, as an item first, last and in the middle, lists of NILs, NIL made
+; every way ({}, NIL, nil, (list), [], (), an empty S-expression read inside a list); NIL items through head, tail,
+; fst, last, nth, take, drop, join, reverse, sort, map, filter, find, index-of, elem?, len, eq and cmp; truth
+
+(def {n3} {NIL NIL NIL})
+(def {front mid back} {NIL 1 2} {1 NIL 2} {1 2 NIL})
+(print n3 front mid back (len n3) (len front) (len {NIL}) (len NIL))
+(print (head front) (tail front) (init back) (end back) (head {NIL}) (tail {NIL}) (init {NIL}) (end {NIL}))
+(print (fst front) (snd mid) (last back) (nth 1 mid) (item-at back 2) (fst {NIL}) (repr (fst {NIL})))
+(print (cons NIL NIL) (cons NIL {1}) (cons 1 {NIL}) (cons NIL n3) (cons {} {}) (cons (list) [NIL]))
+(print (join n3 n3) (join {NIL} NIL {NIL}) (join NIL NIL) (join front back) (len (join n3 NIL n3)))
+(print (take 2 n3) (drop 2 n3) (take 1 front) (drop 2 back) (subset mid 1 1) (reverse front) (reverse back))
+(print (sort {NIL 1 {1} NIL {}}) (sort n3) (sort {{NIL} NIL {NIL NIL} {1}}) (sort mid (fn {a b} {NIL})))
+
+; NIL made every way: all the same value (with (cons 1 NIL) among them, which isn't; and the empty S-expression read
+; inside a list, which prints as NIL but isn't equal to it)
+(def {forms} [{} NIL nil (list) [] () (cons 1 NIL) (tail {1}) (take 0 {1}) (filter num? {a}) (range 0) (read "")])
+(print forms (map type-of forms) (map nil? forms))
+(print (map (fn {x} {eq x NIL}) forms) (map len forms))
+(print {() (()) {} {{}}} (map type-of {() {}}) (map nil? {() {} NIL}) (eq {()} {NIL}) (eq {()} {()}) (eq () NIL))
+(print (elem? NIL {()}) (elem? NIL {NIL}) (index-of {()} NIL) (index-of {1 () NIL} NIL) (repr (fst {()})) (sexpr? (fst {()})))
+(print (cmp NIL {}) (cmp NIL {NIL}) (cmp {NIL} {{}}) (cmp (fst {()}) NIL) (cmp NIL (fst {()})))
+
+; NIL items through map, filter, the folds and the search
+(print (map nil? {1 NIL 2 {} 3}) (map (fn {x} {cons x NIL}) n3) (map len {{} {NIL} {NIL NIL}}))
+(print (filter nil? {1 NIL 2 {}}) (filter (fn {x} {x}) {NIL 1 NIL}) (filter qexpr? n3) (filter (fn {x} {not x}) mid))
+(print (foldl (fn {acc x} {cons x acc}) NIL n3) (foldr cons NIL front) (foldl join NIL {NIL {NIL} NIL}))
+(print (find nil? mid) (find qexpr? mid) (count nil? mid) (any? nil? back) (all? nil? n3) (all? nil? NIL))
+(print (index-of mid NIL) (last-index-of n3 NIL) (index-of back NIL) (elem? NIL front) (elem? NIL {1 2}) (in? {} mid))
+(print (str-join n3 ",") (str-join {NIL 1} "-") (repr n3) (repr [NIL NIL]))
+
+; NIL as a list everywhere a list is taken
+(print (map 1+ NIL) (filter odd? NIL) (foldl + 0 NIL) (sum NIL) (product NIL) (reverse NIL) (sort NIL) (len NIL))
+(print (take 3 NIL) (drop 3 NIL) (subset NIL 0) (join NIL) (elem? 1 NIL) (index-of NIL 1) (any? odd? NIL) (all? odd? NIL))
+(print (head NIL))
+(print (tail NIL))
+(print (fst NIL))
+(print (last NIL))
+(print (unpack + NIL) (unpack list NIL) (eval NIL) (eval {}) (eval (list)))
+
+; truth: NIL is false, a list of NIL is true
+(print (if NIL :t :f) (if {} :t :f) (if {NIL} :t :f) (if n3 :t :f) (if (tail {1}) :t :f) (if (fst {()}) :t :f))
+(print (not NIL) (not {NIL}) (and {1} {}) (and {1} {NIL}) (or {} {2}) (or NIL (list)) (t? NIL) (nil? {NIL}))
+
+; NIL in a hash takes the entry out; a list of NIL stays
+(def {h} (hash-create {{:a 1} {:b {NIL}}}))
+(hash-put h {:a NIL})
+(print (hash-keys h) (h :b) (h :a) (hash-key? h :a))

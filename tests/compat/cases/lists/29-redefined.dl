@@ -1,0 +1,51 @@
+; flags: -w
+; 29-redefined.dl - list built-ins redefined by the program (def and fun; warnings on stderr, with -w) and put back:
+; calls already made once, in functions, see the new value at once, and the library's functions that use them too;
+; the same names bound locally (a formal, a let, set in a function) shadow the global for those calls only; a
+; built-in defined as a value of another kind
+
+(fun {use-fst l} {fst l})
+(fun {use-len l} {len l})
+(fun {use-map l} {map 1+ l})
+(fun {use-cons x l} {cons x l})
+(fun {use-head l} {head l})
+(print (use-fst {1 2}) (use-len {1 2 3}) (use-map {1 2}) (use-cons 0 {1}) (use-head {7 8}))
+(print (use-fst {1 2}) (use-len {1 2 3}) (use-map {1 2}) (use-cons 0 {1}) (use-head {7 8}))
+(def {saved-fst saved-len saved-map saved-cons saved-head} fst len map cons head)
+
+; redefined: every call sees the new one
+(def {fst} (fn {l} {list :my-fst l}))
+(fun {len l} {:my-len})
+(def {map} (fn {f l} {:my-map}))
+(def {cons} (fn {x l} {join l [x]}))
+(def {head} saved-len)
+(print (use-fst {1 2}) (use-len {1 2 3}) (use-map {1 2}) (use-cons 0 {1}) (use-head {7 8}))
+(print (fst {1}) (len {}) (map 1+ {1}) (cons 1 {2}) (head {4 5 6}))
+(print (zip {1 2} {3 4}) (distinct {1 2 1}) (remove-all 1 {1 2 1 3}))
+
+; put back
+(def {fst len map cons head} saved-fst saved-len saved-map saved-cons saved-head)
+(print (use-fst {1 2}) (use-len {1 2 3}) (use-map {1 2}) (use-cons 0 {1}) (use-head {7 8}))
+(print (zip {1 2} {3 4}) (distinct {1 2 1}) (remove-all 1 {1 2 1 3}))
+
+; shadowed: by a formal, a let, a set in a function
+(fun {with-formal fst l} {fst l})
+(print (with-formal last {1 2 3}) (with-formal (fn {x} {:formal}) {1}) (use-fst {7 8}) (fst {7 8}))
+(fun {with-let l} {let {{head tail}} (head l)})
+(print (with-let {1 2 3}) (head {1 2 3}) (use-head {1 2 3}))
+(fun {with-set l} {do =(len (fn {x} {:local-len})) (len l)})
+(print (with-set {1 2}) (len {1 2}) (use-len {1 2}))
+(fun {make-taker take} {fn {l} {take 1 l}})
+(def {taker} (make-taker (fn {n l} {:closure-take})))
+(print (taker {1 2}) (take 1 {1 2}))
+(print (map (fn {map} {map 1+ {1 2}}) [(fn {f l} {:shadowed-map})]) (map 1+ {1 2}))
+
+; a built-in defined as a value of another kind, then as a function again
+(def {reverse} 5)
+(print (reverse {1 2}))
+(print reverse)
+(def {reverse} (fn {l} {foldl (fn {acc x} {saved-cons x acc}) NIL l}))
+(print (reverse {1 2 3}) (sort-desc {1 3 2}))
+(def {sum} {not a function})
+(print (sum {1 2}))
+(print (avg {1 2}))

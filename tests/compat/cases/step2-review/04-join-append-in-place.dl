@@ -1,0 +1,64 @@
+; 04-join-append-in-place.dl - join's first list is a view of the list it's given, and what's joined to it goes in the
+; places after that list's end when no list has them: (join q x) and then (join q y) must not see each other's items,
+; nor (join (tail q) z) either; a queue made by (join (tail q) [x]) many times, its every state kept; join of a list
+; with itself, with its own tail, with a view of it; and the originals printed after each step.
+
+(def {q} (range 5))
+(def {j1} (join q {a}))
+(def {j2} (join q {b}))
+(print "j1 j2" q j1 j2)
+(def {j3} (join j1 {c}))
+(def {j4} (join (tail j1) {d} {e}))
+(def {j5} (join j3 {f g h}))
+(def {j6} (join j3 {i}))
+(print "j3-6" q j1 j2 j3 j4 j5 j6)
+(def {j7} (join (init j3) {k}))
+(def {j8} (join (take 6 j3) {l}))
+(def {j9} (join (drop 2 j3) {m}))
+(def {j10} (join (drop 2 j3) {n}))
+(print "j7-10" q j1 j3 j7 j8 j9 j10)
+
+; join with itself, its tail, its views
+(def {s} (list 1 2 3))
+(print (join s s) (join s (tail s)) (join (tail s) s) (join s s s) (join (init s) (tail s) (head s) (end s)) s)
+(def {ss} (join s s))
+(def {sss} (join ss s))
+(def {ss2} (join ss {x}))
+(print s ss sss ss2 (join sss sss))
+
+; a list made by list (the call's arguments, as it took them), joined onto twice
+(fun {mk} {list :p :q :r})
+(def {m} (mk))
+(def {m1} (join m [1]))
+(def {m2} (join m [2]))
+(def {m3} (join m1 [3]))
+(def {m4} (join m1 [4]))
+(print m m1 m2 m3 m4)
+
+; a queue: drop the first, add one at the end, 300 times; every 10th state kept
+(fun {qstep l x} {join (tail l) [x]})
+(def {kept} NIL)
+(def {cur} (range 8))
+(dotimes {i 300} (do
+  (set! {cur} (qstep cur i))
+  (if (zero? (mod i 10)) (set! {kept} (cons cur kept)))))
+(print cur)
+(print (len kept) (map fst kept) (map last kept))
+(print (all? (fn {l} {eq l (range (fst l) (+ (fst l) 8))}) kept))
+(print (take 3 kept))
+
+; two queues from one list, stepped in turns
+(def {qa} (range 10))
+(def {qb} qa)
+(dotimes {i 40} (do (set! {qa} (qstep qa (* i 100))) (set! {qb} (qstep qb (- i)))))
+(print qa qb)
+
+; append at the end, many lists from one list's states
+(def {acc} NIL)
+(def {states} NIL)
+(dotimes {i 60} (do (set! {acc} (join acc [i])) (set! {states} (cons acc states))))
+(print (map len (take 10 states)) (map last states))
+(print (all? (fn {l} {eq l (range (len l))}) states))
+(def {forks} (map (fn {l} {join l [:fork]}) states))
+(print (map last forks) (map len (take 5 forks)) (take 3 states))
+(print (all? (fn {l} {eq l (range (len l))}) states))

@@ -1,0 +1,31 @@
+; 01-formals-dup: formals that name one name twice (or more, in any case: names are case-insensitive) take the old
+; way of binding (each binding replaces the one before); with extras, partial application at every count, repr of
+; the partial applications, closures made in them, defined? and set! on a repeated name; 8 and 9 formals with a repeat
+(print "dup2" ((fn {x x} {x}) 1 2) ((fn {x X} {x}) 1 2) ((fn {X x} {list x}) :a :b) (((fn {x x} {x}) 1) 2))
+(print "dup3" ((fn {a b a} {list a b}) 1 2 3) ((fn {a a a} {a}) 1 2 3) ((fn {a A b B} {list a b}) 1 2 3 4))
+(print "dup-extras" ((fn {x x} {list x &_ &1}) 1 2 3 4) ((fn {x y x} {list x y &_}) 1 2 3))
+(print "dup-extras err" (try ((fn {x x} {x}) 1 2 3) &err) (try ((fn {a b a} {list a b}) 1 2 3 4 5) &err))
+(def {pd} (fn {p q p r} {list p q r}))
+(each {k (range 5)} (do
+  =(part (unpack pd (range k)))
+  (print "dup partial" k (repr part) (if (function? part) (try (unpack part (range 10 (+ 10 (- 4 k)))) &err) part))))
+(print "dup steps" ((((pd 1) 2) 3) 4) (((pd 1 2) 3) 4) ((pd 1) 2 3 4) (((pd) 1 2 3) 4))
+(def {cl} ((fn {v v} {fn {} {v}}) :first :second))
+(print "dup closure" (cl) ((fn {v v} {defined? v}) 1 2) ((fn {v v} {do (set! {v} :changed) v}) 1 2))
+(print "dup set" ((fn {v w v} {do =(v :local) (list v w)}) 1 2 3))
+(def {d8} (fn {a b c d e f g a} {list a b c d e f g}))
+(def {d9} (fn {a b c d e f g h a} {list a b c d e f g h}))
+(print "dup8" (d8 1 2 3 4 5 6 7 8) ((d8 1 2 3) 4 5 6 7 8) (try (d8 1 2 3 4 5 6 7 8 9) &err) (repr (d8 1 2 3 4 5 6 7)))
+(print "dup9" (d9 1 2 3 4 5 6 7 8 9) ((d9 1 2 3 4 5) 6 7 8 9) (try (d9 1 2 3 4 5 6 7 8 9 10) &err))
+(def {e8} (fn {a b c d e f g a} {list a b c d e f g &_}))
+(print "dup8 extras" (e8 1 2 3 4 5 6 7 8 9 10) (e8 1 2 3 4 5 6 7 8))
+(fun {dfun x y X} {list x y})
+(print "dup fun" (dfun 1 2 3) ((dfun 1) 2 3) (((dfun 1) 2) 3) dfun (repr (dfun 1 2)))
+; the same code with and without a repeat, alternately: each its own way
+(fun {mk fs} {fn fs {list &_}})
+(def {fa} (mk {u v}))
+(def {fb} (mk {u u}))
+(dotimes {i 3} (print "alt" i (fa 1 2 3) (fb 1 2 3) (try (fa 1 2) &err) (try ((fb 1) 2 3 4) &err)))
+(print "eq" (eq fa fb) (eq fa (mk {u v})) (eq fb (mk {u u})) (eq (fb 1) (fb 1)) (eq (fb 1) (fb 2)))
+; the last: a function with a repeated formal given one too many, uncaught
+((fn {z z} {z}) 1 2 3)

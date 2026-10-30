@@ -1,0 +1,93 @@
+; 12-hash-order.dl - the order of a hash's keys, values, entries (print, from#) and tags, which must not change from
+; one build to the next: the order they were put in; an entry taken out leaves its place free, and the next new
+; entries take the free places, the last freed first, before going at the end; a changed value keeps its place; a
+; clone has the entries in order with no free places; the same after the hash has grown
+
+(fun {show label hh} {print label (str-join (hash-keys hh) " ")})
+
+(def {h} (hash-create))
+(dotimes {i 20} (hash-put h [i (* i i)]))
+(show "start:" h)
+(print (hash-values h))
+
+; places freed: 5, 10, 15, 0 (in that order)
+(each {k {5 10 15 0}} (hash-remove h k))
+(show "removed 5 10 15 0:" h)
+
+; new entries take the freed places, the last freed first: 0's, then 15's, 10's, 5's; then the end
+(each {k {:a :b :c :d :e}} (hash-put h [k (len (hash-keys h))]))
+(show "added a-e:" h)
+(print (hash-values h))
+
+; a changed value keeps its place
+(hash-put h {:a :changed} {3 :three} {19 :last})
+(show "changed a 3 19:" h)
+(print h)
+
+; taken out and put back at once: the same place; two taken out, put back the other way round
+(hash-remove h 7)
+(hash-put h {7 :seven})
+(show "7 out and in:" h)
+(hash-remove h 1)
+(hash-remove h 2)
+(hash-put h {2 :two} {1 :one})
+(show "1 2 out, 2 1 in:" h)
+(hash-remove h 8)
+(hash-remove h 9)
+(hash-put h {8 :eight} {9 :nine})
+(show "8 9 out, 8 9 in (swapped):" h)
+
+; putting NIL takes an entry out (its place freed); NIL for a key that isn't there frees nothing
+(hash-put h {:b NIL})
+(hash-put h {:never NIL})
+(hash-put h {"s" :string})
+(show "b out by NIL, then s:" h)
+
+; a clone: the same order, no free places; a new entry goes at the end of the clone, but in a free place of the
+; original
+(hash-remove h 4)
+(hash-remove h :c)
+(def {c} (hash-clone h))
+(show "original:" h)
+(show "clone:   " c)
+(hash-put h {:new 1})
+(hash-put c {:new 1})
+(show "original + new:" h)
+(show "clone + new:   " c)
+(print (eq h c))
+
+; from# and print in the same order as hash-keys
+(def {small} #({{:z 1} {:y 2} {:x 3}}))
+(hash-remove small :y)
+(hash-put small {:w 4} {:v 5})
+(print small (from# small) (hash-keys small) (hash-values small))
+
+; many entries: every third taken out, then new ones (the first in the freed places, last freed first)
+(def {big} (hash-create))
+(dotimes {i 120} (hash-put big [i i]))
+(dotimes {i 40} (hash-remove big (* i 3)))
+(dotimes {i 50} (hash-put big [(+ 1000 i) i]))
+(show "big:" big)
+(print (len big))
+
+; freed places kept while the hash grows past its size: the first new entries take them
+(def {g} (hash-create))
+(dotimes {i 5} (hash-put g [i i]))
+(hash-remove g 1)
+(hash-remove g 3)
+(dotimes {i 40} (hash-put g [(+ 100 i) i]))
+(show "grown:" g)
+
+; mixed keys, and a key given twice when made
+(def {mixed} #({{"5" :s} {5 :i} {:5 :a} {-5 :neg} {"" :empty} {123456789012345678901234567890 :big} {5 :again}}))
+(print mixed)
+(hash-remove mixed "5")
+(hash-put mixed {:new :x})
+(print (hash-keys mixed))
+
+; tags: the hash's and an entry's, in the order they were added (an old one added again stays where it was)
+(def {tg} #({{:k 1 :t3 :t1} :h3 :h1}))
+(hash-add-tag tg :h2 :h1 {:k :t2} {:k :t3} :h0)
+(hash-put tg {:k 2 :t9 :t1})
+(print tg)
+(print (from# tg))

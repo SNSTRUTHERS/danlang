@@ -1,0 +1,58 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> -7
+danlang>=> 12345678901234567890
+danlang>=> {\a :a "" :b}
+danlang>=> {{1} {2} 1 T}
+danlang>=> {<function>(fn NIL {1}) <function>(fn NIL {2}) <hash>NIL <hash>{{:a 1}} 1 <hash>{{:a 1}}}
+danlang>=> {2 2 1+1i}
+danlang>=> 5
+danlang>=> 3
+danlang>=> {0}
+danlang>=> 7
+danlang>=> <function>(min)
+danlang>=> Error: 'cons' expects a list second
+danlang>=> Error: 'cons' expects a list second
+danlang>=> {{3 2 1} {1 3 2} {"b"}}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {2 2 2 1 2 2}
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:42  (cons f l)
+  called at line 1  (minimum 5)
+  at <BUNDLE>\lib\globals.dl:42  (cons f l)
+  called at line 1  (maximum "abc")
+  at (made, not read)  {<function>(min) 3 1 2}
+  called at line 1  (p 1 2 (minimum (list 3 1 2)))
+  at (made, not read)  {<function>(max) "b" "a" "c"}
+  called at line 1  (p 1 2 (maximum (list "b" "a" "c")))
+  at (made, not read)  {<function>(min) 7}
+  called at line 1  (p 1 2 (minimum (list 7)))
+  at (made, not read)  {<function>(min) f1 5}
+  called at line 1  (p 1 2 (minimum (list (to-sym "f1") 5)))
+  at <BUNDLE>\lib\globals.dl:217  (cons hd (remove-fst f tl))
+  called at line 1  (p 1 2 (remove-min (list 3 1 2)))
+  at (made, not read)  {<function>(min) 4 3 2}
+  called at line 1  (p 1 2 (lo n))
+  at (made, not read)  {<function>(max) 2 2 2}
+  called at line 1  (p 1 2 (lo n))
+--- exit 0

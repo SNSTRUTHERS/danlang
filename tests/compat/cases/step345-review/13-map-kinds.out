@@ -1,0 +1,21 @@
+--- stdout
+empty NIL NIL NIL NIL :list T
+one {a} {1} Error: S-Expression starts with incorrect type. Got Number, Expected Function. {NIL T NIL}
+extras {{1 {1}} {2 {2}}} {{1 NIL} {2 NIL}}
+partials {<function>(fn {b} {list a b}) <function>(fn {b} {list a b})} {{1 :b} {2 :b}}
+fexpr {{(+ 1 2) :sexpr} {y :symbol} {"s" :string}}
+method {{1 1} {2 1}} {{:a 1}}
+error midway three {3 2 1}
+error item item
+error value {NIL NIL NIL}
+bad S-Expression starts with incorrect type. Got Number, Expected Function. 'map' expects a function and a list 'map' expects a function and a list S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+as code {+ 1 2} 3 {1 2}
+as formals {1 2} {2 1} {p q}
+as entries {1 2 3} {1 4 9} 4
+many 100000 999000
+--- stderr
+Error: 13-map-kinds.dl: map stops at 2
+  at 13-map-kinds.dl:24  (error "map stops at 2")
+  called at 13-map-kinds.dl:25  (mapper {1 2 3})
+  called at 13-map-kinds.dl:26  (calls-mapper)
+--- exit 1

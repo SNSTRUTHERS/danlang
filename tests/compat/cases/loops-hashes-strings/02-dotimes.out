@@ -1,0 +1,60 @@
+--- stdout
+zero: NIL
+i=0 one: NIL
+01234five: NIL
+sum below 10000: 49995000
+0 :number T 0
+1 :number T 1
+2 :number T 2
+9223372036854775805 -9223372036854775806 0 9223372036854775806 -9223372036854775807 4611686018427387904 9223372036854775807 -9223372036854775808 9223372036854775808 9223372036854775808 -9223372036854775809 13835058055282163712 
+f0 f1 r0 r1 x0 x1 x2 c0 c1 
+negative: NIL NIL NIL
+0 1 2 Error: stopped at 3
+0 1 Error: stopped below 2^63
+0 1 Error: stopped at 2^63
+0 Error: stopped at 2^64+1
+0 Error: stopped at 2^32+1
+0 1 Error: fn stopped
+Error: 'dotimes': a count must be a whole number, not 5/2
+Error: 'dotimes': a count must be a whole number, not 1.5
+Error: 'dotimes': a count must be a whole number, not "3"
+Error: 'dotimes': a count must be a whole number, not :three
+Error: 'dotimes': a count must be a whole number, not {3}
+Error: 'dotimes': a count must be a whole number, not 2+1i
+Error: 'dotimes': a count must be a whole number, not \a
+Error: 'dotimes': a count must be a whole number, not 2.5
+Error: 'dotimes': a count must be a whole number, not "2"
+Error: count failed
+Error: count failed too
+count evaluated
+012NIL
+012NIL 100
+0
+1
+2
+fn got 0
+fn got 1
+&_ is NIL k is 0
+&_ is NIL k is 1
+{4 1 0}
+partial application only: NIL
+Error: The function takes 0 arguments, not 1
+:tagged 0
+:tagged 1
+NIL
+evaluated once, then not a function
+Error: Second 'dotimes' parameter must be a function
+Error: 'dotimes' expects {name value} or a function first
+Error: 'dotimes' expects {name value} or a function first
+Error: 'dotimes' expects {name value} or a function first
+Error: 'dotimes' expects {name value} or a function first
+Error: Second 'dotimes' parameter must be a function
+Error: Second 'dotimes' parameter must be a function
+Error: 'dotimes' expects a Number and a function
+Error: 'dotimes' supplied too few parameters
+Error: 'dotimes' supplied too few parameters
+Error: 'dotimes' supplied too few parameters
+:function <function>(dotimes)
+--- stderr
+
+--- exit 0

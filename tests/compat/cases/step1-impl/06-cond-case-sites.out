@@ -1,0 +1,91 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Selection not found
+danlang>=> Error: Selection not found
+danlang>=> Error: Case not found
+danlang>=> Error: Selection not found
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> NIL
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> NIL
+danlang>=> Error: Division by zero.
+danlang>=> :two
+danlang>=> Error: Case not found
+danlang>=> exit
+--- stderr
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {NIL 1} {T 2}))
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {NIL 1} {T 2}))
+  at line 1  (+ 1 2)
+  called at line 1  (f 1 2 (cond {NIL 1} {T (+ 1 2)}))
+  at line 1  (+ 1 2)
+  called at line 1  (f 1 2 (cond {NIL 1} {T (+ 1 2)}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (cond {(> 1 2) 1} {T (mod 7 2)}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (cond {(> 1 2) 1} {T (mod 7 2)}))
+  at (made, not read)  {:b}
+  called at line 1  (f 1 2 (case 2 {1 :a} {2 :b}))
+  at (made, not read)  {:b}
+  called at line 1  (f 1 2 (case 2 {1 :a} {2 :b}))
+  at (made, not read)  {:b}
+  called at line 1  (f 1 2 (case 100000 {1 :a} {100000 :b}))
+  at line 1  (len {1 2})
+  called at line 1  (f 1 2 (case 2 {1 :a} {(+ 1 1) (len {1 2})}))
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond (list NIL 1) (list T 2)))
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {NIL 1} (cons T {2})))
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1})
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1} {NIL 2})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case 5 {1 2})
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond)
+  at <BUNDLE>\lib\globals.dl:101  (head (tail (fst &_)))
+  called at line 1  (cond {T})
+  at <BUNDLE>\lib\globals.dl:101  (head (tail (fst &_)))
+  called at line 1  (cond {NIL 1} {T})
+  at line 1  (+ 1 "a")
+  called at line 1  (cond {(+ 1 "a") 2})
+  at line 1  (+ 1 "a")
+  called at line 1  (cond {T (+ 1 "a")})
+  at line 1  (+ 1 "a")
+  called at line 1  (case 1 {1 (+ 1 "a")})
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} 5)
+  at line 1  (+ x "s")
+  called at line 1  (g 1)
+  at line 1  (+ x "s")
+  called at line 1  (g 1)
+  at line 1  (/ x 0)
+  called at line 1  (h 1)
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (h 3)
+--- exit 0

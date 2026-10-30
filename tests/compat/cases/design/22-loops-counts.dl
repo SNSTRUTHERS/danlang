@@ -1,0 +1,45 @@
+; 22-loops-counts: dotimes's count of every kind: huge (past a long, so the loop is only stopped by an error in the
+; body, or an exit), a long's most, 0, negative (no error: nothing runs), whole numbers that aren't plain (2.0, 4/2,
+; (* 1.5 2)), not whole (an error), not a number, an error; the values i takes (plain integers, whatever the count's
+; kind); the same for the function form; each over lists and strings of every size; range near a long's edges.
+(fun {kind x} {?((int? x) :int ?((fixed? x) :fixed ?((rational? x) :rat (type-of x))))})
+(fun {stop-at k n} {try (dotimes {i n} (if (eq i k) (error (+ "stopped at " i)))) &err})
+(print "huge" (stop-at 5 1000000000000000000000000) (stop-at 3 9223372036854775808) (stop-at 2 9223372036854775807))
+(print "huge" (stop-at 0 (* 9223372036854775807 9223372036854775807)) (stop-at 4 (+ 9223372036854775807 1.0)))
+(print "huge fn" (try (dotimes 100000000000000000000 (fn {i} {if (eq i 3) (error "fn stopped at 3")})) &err))
+(def {seen} {})
+(print "huge set!" (try (dotimes {i 99999999999999999999} (do (set! {seen} (cons i seen)) (set! {i} 1000000) (if (eq (len seen) 4) (error "four")))) &err) seen)
+
+; counts of each kind: how many runs, and the kinds of i
+(fun {runs n} {do =(got {}) =(r (try (dotimes {i n} (set! {got} (cons (list i (kind i)) got))) &err)) (list r (reverse got))})
+(each {n [0 1 3 -1 -5 -9223372036854775808 2.0 4/2 (* 1.5 2) (/ 9 3) 10/5 0.0 -0.0 (complex 3 0)]} (print "count" (repr n) (runs n)))
+(each {n [2.5 1/2 -1/2 (complex 1 1) :a "3" {3} \3]} (print "bad count" (repr n) (runs n)))
+(print "error count" (dotimes {i (error "no count")} (print "never")) (dotimes (error "no count") print))
+(print "fn form" (dotimes 3 (fn {i} {write i (kind i) " "})) (dotimes 2.0 (fn {i} {write i " "})) (dotimes -2 print))
+(print "fn form" (try (dotimes 2.5 print) &err) (try (dotimes 3 5) &err) (try (dotimes 2 (fn {} {:no-formal})) &err))
+(print "fn form" (dotimes 2 (fn {} {write &1 " "})) (dotimes 2 +) (try (dotimes 2 (fn {a b} {list a b})) &err))
+(print "bad specs" (try (dotimes {i} 1) &err) (try (dotimes {i 1 2} 1) &err) (try (dotimes {1 2} 1) &err) (try (dotimes 2) &err))
+
+; each: lists and strings, empty and long; the item as it's written
+(print "each" (each {x {}} (print "never")) (each {c ""} (print "never")) (each {x {a (+ 1 2) {q}}} (write (type-of x) " ")))
+(def {cnt} 0)
+(each {x (range 5000)} (set! {cnt} (+ cnt x)))
+(each {c (str-repeat "ab" 1000)} (set! {cnt} (+ cnt (char-code c))))
+(print "each" cnt (try (each {x {1 2 3}} (if (eq x 2) (error "each stopped at 2") (write x " "))) &err))
+(print "each" (try (each {x 5} 1) &err) (try (each {x :a} 1) &err) (try (each 5 {1}) &err) (try (each print 5) &err))
+(each {x {1 2}} (print "each body" x) (print "second body" x))
+(each {x {1 2}} {write "q-body " x " "})
+(print)
+
+; range near a long's edges, and of each kind
+(print "range" (range 9223372036854775805 9223372036854775809) (range -9223372036854775807 -9223372036854775811 -1))
+(print "range" (map kind (range 9223372036854775806 9223372036854775810)) (range 0 1 1/4) (range 0 1 0.25) (range 1.0 4))
+(print "range" (map kind (range 1.0 4)) (map kind (range 0 2 2/2)) (range 3 0 -1) (range 0) (range -2) (try (range 1 2 0) &err))
+(print "range" (len (range 1000000)) (try (range 1000001) &err) (len (range 0 1 1/1000)) (try (range 0 1 0.1 2) &err))
+; the count, or the list, is evaluated once: a body that changes the name it came from changes nothing
+(fun {recount} {do =(n 3) =(runs 0) (dotimes {i n} (do (set! {n} 10) (set! {runs} (+ runs 1)))) (list runs n)})
+(fun {relist} {do =(l {1 2 3}) =(got {}) (each {x l} (do (set! {l} {9}) (set! {got} (cons x got)))) (list got l)})
+(print "once" (recount) (relist) (do =(k 2) (dotimes {i (do (set! {k} (+ k 1)) k)} (write i " ")) k))
+
+; the last: an error in a huge loop's body, uncaught
+(dotimes {i 1000000000000000000000} (if (eq i 7) (error (+ "the last error, at " i))))

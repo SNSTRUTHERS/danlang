@@ -1,0 +1,40 @@
+--- stdout
+1 2 -2 3 -4 {3 2} 2
+Error: Division by zero. Error: Division by zero. Error: Division by zero.
+Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'div' on non-numbers Error: Cannot perform 'divmod' on non-numbers
+1.5 1/2 2
+0.3333333333 0.6666 Error: Division by zero. Error: Cannot perform 'fdiv' on non-numbers 0.3333333333 Error: Division by zero.
+T NIL Error: Cannot perform 'odd?' on non-number Error: Cannot perform 'even?' on non-number NIL
+T NIL Error: Only numbers can be positive Error: Only numbers can be negative
+1024 1/4 1.41421356237 Error: 'pow' expects numbers Error: Division by zero.
+5/2 Error: Division by zero. Error: '+' adds numbers, or joins values to a string
+9 8 1/4 Error: Division by zero. Error: All parameters to operator '*' must be numbers.
+2 3 3 -3 -1 Error: 'truncate' expects a real number
+{{1 :a} {2 :b}} Error: 'fst' expects a list
+{1 2 3 4} Error: 'fst' expects a list
+{1 2 3} Error: 'fst' expects a list
+{2} {2 1} {3 2} NIL
+1 3 <function>(min) Error: 'cons' expects a list second
+T T T Error: 'index-of' expects a String and a String
+{3 2} {1 2} {3 2 1} Error: 'take': a count can't be negative
+T T NIL T
+{2 2 2} Error: in repeat Error: All parameters to operator '-' must be numbers.
+3 NIL Error: in ??
+{{1 2} {3}} Error: 'take': a count can't be negative
+9 -5 3 3 3
+Error: 'cons' expects a list second Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+T NIL 1 Error: 'nth': the list has no such item
+Error: no-such-library-at-all: not found
+{"Division by zero." NIL}
+{0 1 1 2} Error: Cannot perform 'odd?' on non-number
+the last: mod's division by zero, made in the library, from three calls down
+sizes: {1 2 0 1}
+Error: Division by zero.
+sizes: {2 0}
+--- stderr
+Error: 12-trace-library.dl: Division by zero.
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at 12-trace-library.dl:39  (mod n size)
+  called at 12-trace-library.dl:41  (spread l 0)
+  called at 12-trace-library.dl:43  (histogram {5 6})
+--- exit 1

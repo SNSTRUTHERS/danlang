@@ -1,0 +1,72 @@
+--- stdout
+<function>(eq 1)
+T NIL
+<function>(substring "hello")
+<function>(substring "hello")
+ello ell
+<function>(item-at {10 20 30})
+30
+<function>(len)
+3
+<function>(cons 1)
+{1 2 3}
+<function>(nth 1)
+:b
+<function>(str-replace "a-b-c")
+<function>(str-replace "a-b-c" "-")
+a+b+c
+a/b/c
+<function>(foldl <function>(+))
+106
+9
+<function>(map <function>(eq 2))
+{NIL T NIL}
+{"abcdef" "cdef" "ef"}
+{{:x 1} {:x 2}}
+{3 4}
+{1 2}
+0 1 NIL 
+"x"
+<function>(str-replace "a.b.c") <function>(str-replace "a.b.c" ".")
+a-b-c a+b+c a.B.c abc
+"cdef" a
+Error: S-Expression starts with incorrect type. Got String, Expected Function.
+{<function>(eq 1) <function>(eq 2) <function>(eq 3)}
+{NIL T NIL}
+Error: 'substring' takes at most 3 arguments, not 4
+Error: 'str-replace' takes 3 arguments, not 4
+Error: 'eq' takes 2 arguments, not 3
+Error: 'len' takes 1 argument, not 2
+Error: 'len' takes 1 argument, not 2
+Error: 'cons' takes 2 arguments, not 3
+Error: 'str-replace' takes 3 arguments, not 4
+Error: 'foldl' takes 3 arguments, not 4
+Error: into eq
+Error: into substring
+Error: first
+Error: first
+
+NIL
+"\n"
+T NIL NIL T
+T NIL
+{<function>(nth 0) <function>(take 2) <function>(cons :head) <function>(eq {3 4 5}) 0}
+{3 {3 4} {:head 3 4 5} T}
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+ed
+<function>(substring "hashed")
+'if' supplied too few parameters
+'let' supplied too few parameters
+Popping nonexistent item 0 from Expr
+'each' supplied too few parameters
+'dotimes' supplied too few parameters
+'while' supplied too few parameters
+Incorrect number of parameters passed to 'eval'
+'try' expects an expression and maybe a handler
+Too few parameters passed to '<=>' operator
+'if' supplied too few parameters
+Error: 'if' takes at most 3 arguments, not 4
+--- stderr
+Error: 03-partial-builtins.dl: 'substring' takes at most 3 arguments, not 4
+  at 03-partial-builtins.dl:96  (substring "hello")
+--- exit 1

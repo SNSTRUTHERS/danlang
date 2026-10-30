@@ -1,0 +1,54 @@
+; 28-output-of.dl - output-of: what its expressions print to stdout (print, write, print-to and write-to stdout,
+; save with no file, a loaded file's prints), as a string, instead of printing it; nested, the inner one's output is
+; its own; an error among the expressions is output-of's value (what was printed is lost); stderr isn't captured.
+; Its value repr'd, so the newlines and the rest show
+
+(print (repr (output-of)))
+(print (repr (output-of (print "one"))))
+(print (repr (output-of (print 1 2 "three") (write "no newline") (write 4 5))))
+(print (repr (output-of (print-to stdout "to stdout" 1) (write-to stdout "w" 2))))
+(print (repr (output-of (save {1 "two" \3}) (save "s"))))
+(print (repr (output-of (print) (print) (write ""))))
+(print (repr (output-of (+ 1 2))))
+(print (repr (output-of (print "a\tb\x01") (write \c \space :d))))
+
+; the value is the output, not the expressions' values
+(print (repr (output-of (do (print "x") 42))))
+(print (type-of (output-of (print 1))) (len (output-of (print 123))))
+
+; nested: the inner output-of's capture is its own
+(print (repr (output-of (print "outer 1") (print (output-of (print "inner"))) (print "outer 2"))))
+(print (repr (output-of (output-of (print "inner only")))))
+(print (repr (output-of (write (repr (output-of (write "deep")))))))
+
+; an error: the output-of's value, its capture lost; output before the output-of stays
+(print (output-of (print "lost") (error "inside output-of") (print "not run")))
+(print (try (output-of (print "lost too") (/ 1 0)) &err))
+(print (repr (output-of (print (error "printed, not raised")))))
+(print (repr (output-of (try (error "caught inside") (print "the handler printed this")))))
+(print (output-of (print "x") undefined-in-output-of))
+
+; stderr isn't captured: it goes out as it's printed
+(print (repr (output-of (print-to stderr "stderr from inside output-of") (print "stdout inside"))))
+(print (repr (output-of (write-to stderr "stderr write; ") (write "stdout write"))))
+
+; a function's prints, a loop's, a loaded file's
+(fun {chatty n} {do (print "chatty" n) (* n n)})
+(print (repr (output-of (chatty 3) (chatty 4))))
+(print (repr (output-of (each {x {1 2 3}} (write x ",")))))
+(print (repr (output-of (dotimes {i 3} (print i)))))
+(print (repr (output-of (map chatty {1 2}))))
+(write-file "noisy.dl" "(print \"noisy.dl line 1\")\n(write \"noisy.dl line 2\")\n")
+(print (repr (output-of (load "noisy"))))
+
+; output-of used as a value: split, counted, compared
+(def {captured} (output-of (dotimes {i 5} (print (* i i)))))
+(print (repr captured) (str-split captured "\n") (len captured))
+(print (eq (output-of (print "same")) "same\n") (eq (output-of (write "same")) "same"))
+
+; files written inside output-of aren't captured: only stdout
+(print (repr (output-of (write-file "w.txt" "to a file") (print "to stdout"))) (read-file "w.txt"))
+
+; after all of it, printing goes to stdout as before
+(print "the end: stdout is stdout again")
+(write "a last write, no newline")

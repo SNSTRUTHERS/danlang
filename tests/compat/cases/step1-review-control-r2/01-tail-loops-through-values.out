@@ -1,0 +1,14 @@
+--- stdout
+60000
+:done
+{:ping-done -1} {:ping-done 0}
+:cons-done
+{:named 0}
+Too deep: more than 10000 calls nested 500
+The function takes 2 arguments, not 3 The function takes 2 arguments, not 3 The function takes 2 arguments, not 3
+the last: an error made right after a loop through values, not caught
+--- stderr
+Error: 01-tail-loops-through-values.dl: The function takes 2 arguments, not 3
+  at 01-tail-loops-through-values.dl:11  (list :ping-done n)
+  called at 01-tail-loops-through-values.dl:22  (p 1 2 (ping 9))
+--- exit 1

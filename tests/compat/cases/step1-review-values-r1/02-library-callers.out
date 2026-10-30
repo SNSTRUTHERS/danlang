@@ -1,0 +1,11 @@
+--- stdout
+{3 2 1}:list {1 3 2}:list {2 2 0.5}:list {"a" "a"}:list {{1 2} {1 2}}:list NIL:list
+T:t NIL:list T:t T:t NIL:list T:t T:t NIL:list NIL:list
+{3 2.5 1/2 -1}:list {3 2}:list {1 2}:list {"b"}:list {{1 2} {3}}:list {{{1 3} {2 4}} NIL}:list
+1i -4i 3i T:t 3i {{1 3} {2 4}}:list 5/2r T:t 3i {1 2}:list
+{1 2 0}:list 12 {{3 0} {3 0}}:list {{{k k}} {{k k}}}:list
+{{a b} {b}}:list
+E:nonesuch: not found 3.5f 0.3333f 0.3333333333f 1/8r
+--- stderr
+
+--- exit 0

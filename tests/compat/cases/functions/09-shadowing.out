@@ -1,0 +1,44 @@
+--- stdout
+{:sees :global-n}
+{:formal :arg {:sees :global-n}}
+{:formal :arg2 {:sees :global-n}} {:sees :global-n}
+{:let-n {:sees :global-n}}
+:global-n
+{:wrap 1 {:show :global-item}} {:show :global-item}
+{:wrap {:from-call-wrap :global-item} {:show :global-item}}
+{{:wrap :a {:show :global-item}} {:wrap :b {:show :global-item}}}
+{{:c {:show :global-item}}}
+{1 5} :global-n
+{2 5} {:sees :n-changed}
+{:top {{:let :top} {:inner :inner-arg}} :top}
+{:len-is 3} 3
+{3 2 1} :mine
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+2
+:not-a-list {1 2}
+:test
+:then
+:else
+:local-if-called
+:real-if
+:evaluated
+{:local-and NIL NIL}
+NIL
+{1 2 3}
+3
+{:shadowed-print :hello}
+:real-print
+{{:global-helper NIL} :no-local}
+{{:global-helper 1} {:local-helper 1}}
+{{:global-helper NIL} :no-local}
+{:global-helper 2}
+{:passed :via-formal}
+{:global-helper 3}
+Unbound Symbol 'later-global'
+:now-defined
+{:now-defined :local-now} :now-defined
+--- stderr
+Error: 09-shadowing.dl: S-Expression starts with incorrect type. Got Number, Expected Function.
+  at 09-shadowing.dl:39  {len {1 2 3}}
+  called at 09-shadowing.dl:79  (calls-shadowed 42)
+--- exit 1

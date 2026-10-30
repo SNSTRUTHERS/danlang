@@ -1,0 +1,26 @@
+; 14-library-errors-in-clauses: errors the library's functions make (in their code: mod by zero, floor of a string,
+; pow of a power that isn't whole, even? of a list, zip of a number, between? of a function and a number, minimum
+; of nothing) when called in a clause's test, in its value and as case's key; each error's message and trace (where
+; in the library it was made, and the calls it was in: the clause's code, cond's call); the first call and later
+; ones (the natives' values used for the calls that work in between)
+(fun {f x} {cond {(even? x) (mod x 0)} {(> x 5) (pow 2 1/2)} {T (floor (list x))}})
+(f 2)
+(f 7)
+(f 3)
+(map (fn {x} {try (f x) &err}) {2 7 3 2 7 3})
+(f 2)
+(f 7)
+(fun {g x} {case (mod 10 x) {0 :divides} {(even? x) :even-key} {T (zip x x)}})
+(g 0)
+(g 5)
+(g 3)
+(map (fn {x} {try (g x) &err}) {5 3 5 3 4})
+(g 3)
+(cond {(even? {1 2}) 1} {T 2})
+(cond {(between? + 1 2) 1} {T 2})
+(case (minimum {}) {1 1})
+(cond {NIL 0} {T (maximum 5)})
+(fun {h x} {cond {(> x 0) (h (- x 1))} {T (divmod x "two")}})
+(h 3)
+(map (fn {x} {try (h x) &err}) {1 2 3})
+(h 1)

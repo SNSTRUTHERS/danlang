@@ -1,0 +1,5 @@
+; 08-exit-in-test: exit in a case's test (its key), inside output-of: the program ends with that status; what
+; output-of had captured isn't printed
+(print "before")
+(print (output-of (print "captured") (case 3 {(do (print "key 1") 1) :a} {(exit 4) :b} {3 :c})))
+(print "never printed")

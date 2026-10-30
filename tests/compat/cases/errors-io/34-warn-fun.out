@@ -1,0 +1,34 @@
+--- stdout
+{:hello :hello}
+{:goodbye :goodbye}
+T NIL 8
+:my-even NIL 16
+9 27
+{:my-square 3} Error: All parameters to operator '*' must be numbers.
+6 2
+:my-sum Error: All parameters to operator '/' must be numbers.
+:my-elem :my-elem NIL
+{:my-take 1} {{:my-take 1} {2 3}} {:my-take 2}
+:now-a-function
+:replaced
+:my-neg :my-neg
+:my-pos :my-pos :loaded
+Error: 'fun' expects {name formals...} first Error: 'fun' expects {name formals...} first Error: 'fun' expects a QExpr body Error: 'fun' expects {name formals...} first
+2 :my-abs :my-abs 
+the last: print replaced: the rest prints through it
+my-print:{1 2 3}
+my-print:{"a" {b}}
+my-print:{1}
+my-print:{2}
+print-to isn't print
+--- stderr
+34-warn-fun.dl:24: warning: fun replaces the built-in sum with a function
+34-warn-fun.dl:26: warning: fun replaces the built-in elem? with a function
+34-warn-fun.dl:28: warning: fun replaces the built-in take with a function
+34-warn-fun.dl:33: warning: fun replaces a number, setting, with a function
+34-warn-fun.dl:36: warning: fun replaces a number, local-at-top, with a function
+34-warn-fun.dl:40: warning: fun replaces the built-in neg? with a function
+funs.dl:3: warning: fun replaces the built-in pos? with a function
+34-warn-fun.dl:51: warning: fun replaces the built-in abs with a function
+34-warn-fun.dl:55: warning: fun replaces the built-in print with a function
+--- exit 0

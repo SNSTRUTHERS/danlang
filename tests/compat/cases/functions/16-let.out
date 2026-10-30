@@ -1,0 +1,47 @@
+--- stdout
+{1 2 20}
+NIL
+:first
+:second
+:last
+:run-as-code
+:last
+2
+{1 2}
+{+ 1 2}
+3
+3
+1
+15
+10
+Unbound Symbol 'lx'
+3
+{a 1}
+{1 2}
+:inner :outer
+3 Unbound Symbol 'b'
+{2 2}
+{11 1}
+{{1 1} {2 4} {3 9}}
+1 2 1 3
+:inside 5 10 15
+{5 "Unbound Symbol 'z'"}
+:made-a
+Error: in b
+Error: in body
+Error: in code body
+'let' supplied too few parameters
+A 'let' binding is {name value}
+'let' expects a list of bindings first
+A 'let' binding is {name value}
+A 'let' binding is {name value}
+A 'let' binding is {name value}
+A 'let' binding is {name value}
+5
+3000000
+:code-form-done
+--- stderr
+Error: 16-let.dl: '+' adds numbers, or joins values to a string
+  at 16-let.dl:65  (+ a :x)
+  called at 16-let.dl:66  (bad-let)
+--- exit 1

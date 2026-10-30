@@ -1,0 +1,5 @@
+(print (mod 7 0))
+(print mod)
+(print (mod 1 2 3))
+(fun {f x} {mod x 0})
+(f 3)

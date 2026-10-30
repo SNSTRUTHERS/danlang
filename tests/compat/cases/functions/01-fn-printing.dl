@@ -1,0 +1,77 @@
+; 01-fn-printing: how fn, fun and fexpr make functions, how every kind of function prints (print and repr), the
+; errors made as one is made, fun's value, type-of and function?, and equality of functions (formals and body only)
+
+; plain functions, as print and repr show them
+(print (fn {x} {+ x 1}))
+(print (repr (fn {x} {+ x 1})))
+(print (fn {} {}))
+(print (fn {a b c} {list c b a}))
+(print (fn {s} {+ s "a \"quoted\" string\n"}))
+(print (repr (fn {s} {+ s "tab\there"})))
+(print (fn {c} {list c \a \space \lparen}))
+(print (fn {} {{nested {deeply {quoted}}} (inner (call 1 2))}))
+(print (fn {} {[1 2 (+ 1 2)]}))
+(print (fn {n} ?{(zero? n) 1 0}))
+(print (fn {x} {do =(y x) :(z y) ~("{}" z) #({:k 1}) @({q} {q})}))
+(print (fn {} {1.50 7/2 #xff -0 1_000}))
+(print (fn {} {:atom T NIL () exit}))
+
+; fun defines globally and is NIL; the name is case-insensitive
+(print (fun {Twice X} {* X 2}))
+(print twice)
+(print (TWICE 21))
+(print (repr twice))
+
+; fexpr prints as fn does
+(print (fexpr {x} {x}))
+(print (fexpr {} {&_}))
+
+; built-ins print by name
+(print +)
+(print fn fun fexpr def set set! let do if)
+(print (repr print))
+
+; type-of and function?
+(print (type-of twice) (type-of +) (type-of (fexpr {x} {x})) (type-of (twice)))
+(print (function? twice) (function? if) (function? :twice) (function? {fn}))
+
+; equality: by formals and body (not the scope a function was made in)
+(fun {make-k k} {fn {x} {+ x k}})
+(print (eq (make-k 1) (make-k 2)))
+(print (eq (fn {x} {x}) (fn {x} {x})))
+(print (eq (fn {x} {x}) (fn {y} {y})))
+(print (eq (fn {x} {x}) (fexpr {x} {x})))
+(print (eq + +) (eq + -) (eq twice twice))
+(print (cmp (fn {a} {a}) (fn {b} {b})) (cmp (fn {b} {b}) (fn {a} {a})) (cmp + (fn {} {})))
+
+; errors as a function is made
+(print (fn {1} {1}))
+(print (fn 5 {1}))
+(print (fn {x} 1))
+(print (fn {x "y"} {x}))
+(print (fexpr {"x"} {1}))
+(print (fexpr {x} :body))
+(print (fun {} {1}))
+(print (fun {f x} 1))
+(print (fun {"f" x} {x}))
+(print (fun 5 {1}))
+(print (fn {x} {x} {extra}))
+
+; a body written as an S-expression is evaluated as fn is called (fn is an ordinary built-in)
+(def {bx} 10)
+(print (fn {x} (+ bx 1)))
+(print (fn {x} (list + bx)))
+(print (fn (list (to-sym "a")) {a}))
+(print ((fn (list (to-sym "a")) {* a a}) 9))
+
+; a function's body is its own list: changing a copy doesn't change the function
+(def {body} {+ 1 2})
+(def {f3} (fn {} body))
+(print f3 (f3))
+(def {body} {+ 10 20})
+(print f3 (f3))
+
+; the last: fn given too few arguments is partially applied; this one is an error ending the program
+(print (fn {x}))
+(print ((fn {x}) {* x 3}))
+(fun {f x} 1)

@@ -1,0 +1,71 @@
+; 19-hash-loop-workload.dl - loops, hashes and strings doing real work together (the paths a faster interpreter
+; changes most): a sieve with a hash of composites, a memo hash for a recursive function, counting characters,
+; a breadth-first search with string keys, a hash of hashes updated in loops, word wrapping; each result printed
+
+; primes below 2000: a hash of the composites
+(def {composite} (hash-create))
+(def {primes} {})
+(dotimes {n 2000}
+  (if (and (> n 1) (not (hash-key? composite n)))
+    (do (def {primes} (cons n primes))
+        (def {m} (* n n))
+        (while (< m 2000) (hash-put composite [m T]) (def {m} (+ m n))))))
+(print (len primes) (take 10 primes) (len composite))
+
+; a recursive function remembering its values in a hash
+(def {memo} #({{0 0} {1 1}}))
+(fun {mfib n} {
+  if (hash-key? memo n) (memo n)
+    (do =(v (+ (mfib (- n 1)) (mfib (- n 2)))) (hash-put memo [n v]) v)
+})
+(print (mfib 150))
+(print (len memo) (eq (mfib 150) (fib 150)) (take 8 (hash-keys memo)))
+
+; counting characters of a generated text; the counts in order of first appearance, then sorted
+(def {text} "")
+(dotimes {i 300} (def {text} (+ text (char-at "the quick brown fox " (mod (* i 7) 20)))))
+(def {freq} (hash-create))
+(each {c text} (hash-put freq [(to-str c) (+ 1 (or (freq (to-str c)) 0))]))
+(print (len text) (len freq))
+(print (map (fn {k} {list k (freq k)}) (hash-keys freq)))
+(print (sort (map (fn {k} {list (freq k) k}) (hash-keys freq))))
+
+; breadth-first search on a grid with walls: the visited hash keyed by "r,c" strings
+(def {grid} {"....#..." ".##.#.#." "....#.#." ".####.#." "......#." ".#####.." "........"})
+(fun {open? r c} {and (>= r 0) (< r (len grid)) (>= c 0) (< c 8) (eq (char-at (nth r grid) c) \dot)})
+(def {dist} #({{"0,0" 0}}))
+(def {queue} {{0 0}})
+(while queue
+  =(cell (fst queue))
+  (def {queue} (tail queue))
+  =(d (dist (format "{},{}" (fst cell) (snd cell))))
+  (each {step {{0 1} {1 0} {0 -1} {-1 0}}}
+    =(r (+ (fst cell) (fst step)))
+    =(c (+ (snd cell) (snd step)))
+    =(key (format "{},{}" r c))
+    (if (and (open? r c) (not (hash-key? dist key)))
+      (do (hash-put dist [key (+ d 1)]) (def {queue} (join queue (list (list r c))))))))
+(print (len dist) (dist "6,7") (dist "0,7") (dist "2,5"))
+(print (take 12 (hash-keys dist)))
+
+; a hash of hashes, updated in loops
+(def {stock} (hash-create))
+(each {item {{"apple" 3} {"pear" 5} {"apple" 4} {"fig" 1} {"pear" -2} {"kiwi" 0} {"fig" 9}}}
+  =(name (fst item))
+  (if (not (hash-key? stock name)) (hash-put stock [name #({{:count 0} {:moves 0}})]))
+  =(rec (stock name))
+  (hash-put rec {:count (+ (rec :count) (snd item))} {:moves (+ 1 (rec :moves))}))
+(print stock)
+(each {name (hash-keys stock)} (print (str-pad-right name 6) ((stock name) :count) ((stock name) :moves)))
+
+; word wrapping at 24 columns
+(def {words} (str-split "loops and hashes and strings together make the interpreter work hard so they should stay the same" " "))
+(def {lines} {})
+(def {line} "")
+(each {w words}
+  (if (> (+ (len line) (len w) 1) 24)
+    (do (def {lines} (join lines (list line))) (def {line} w))
+    (def {line} (if (eq line "") w (+ line " " w)))))
+(def {lines} (join lines (list line)))
+(each {l lines} (print (+ "|" (str-pad-right l 24) "|")))
+(print (len lines) (map len lines))

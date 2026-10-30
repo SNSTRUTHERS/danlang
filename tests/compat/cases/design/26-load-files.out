@@ -1,0 +1,22 @@
+--- stdout
+in redef.dl :file-floor :file-floor
+load NIL Error: All parameters to operator '*' must be numbers. Error: All parameters to operator '*' must be numbers. :file-floor NIL
+again NIL 1 -4 T T 1 1
+used NIL NIL {"globals.dl"} 1
+1
+reader bad-reader.dl:2: missing ) bad-q.dl:1: missing } bad-char.dl:1: Unknown character name \nosuchchar
+run bad-run.dl: Division by zero. 1 Unbound Symbol 'never'
+missing no-such-file.dl: not found {"no-such-file: not found" :noent} 'load' passed non-string parameter(s)
+value Error: bad-run.dl: Division by zero. bad-run.dl: Division by zero. T
+file fns 1024 Division by zero. <function>(fn {x} {pow 2 x})
+nested load NIL :yes Division by zero.
+unbound in file ends.dl: Unbound Symbol 'exit-not-really' 1
+--- stderr
+Error: 26-load-files.dl: Division by zero.
+  at <BUNDLE>\lib\globals.dl:142  (/ a b)
+  called at lib-a.dl:1  (div x 0)
+  called at lib-a.dl:2  (file-fn x)
+  called at 26-load-files.dl:37  (file-b n)
+  called at 26-load-files.dl:38  (main-fn 3)
+  called at 26-load-files.dl:39  (main-outer)
+--- exit 1

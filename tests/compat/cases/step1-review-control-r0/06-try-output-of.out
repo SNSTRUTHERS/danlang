@@ -1,0 +1,22 @@
+--- stdout
+t1 :caught h:v1
+{"Case not found" NIL} {:handler "Selection not found"} Selection not found
+{"coded" :mine} :kc
+"t1\nt2\nv2\n"
+"xk1k2v2"
+a
+b
+Error: Selection not found Selection not found
+"in\ne\n"
+ :empty
+pos
+{NIL "f:neg" "f:zero"}
+one two! three Case not found
+Selection not found
+:b
+the last: an error from a value, through try's handler
+--- stderr
+Error: 06-try-output-of.dl: second, after first
+  at 06-try-output-of.dl:19  (error (+ "second, after " &err))
+  called at 06-try-output-of.dl:19  (cond {NIL 1} {T (error (+ "second, after " &err))})
+--- exit 1

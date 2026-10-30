@@ -1,0 +1,43 @@
+; 03-trace-depth15.dl - an error fifteen calls deep, each call on a line of its own: the trace shows the place it was
+; made and the twelve innermost calls of functions it was in, no more (the outer three, and the top level's call,
+; left out).  Before that, the same chain as values: a result through all fifteen, errors caught at each depth
+
+(fun {f1 x} {+ 1 (f2 x)})
+(fun {f2 x} {+ 1 (f3 x)})
+(fun {f3 x} {+ 1 (f4 x)})
+(fun {f4 x} {+ 1 (f5 x)})
+(fun {f5 x} {+ 1 (f6 x)})
+(fun {f6 x} {+ 1 (f7 x)})
+(fun {f7 x} {+ 1 (f8 x)})
+(fun {f8 x} {+ 1 (f9 x)})
+(fun {f9 x} {+ 1 (f10 x)})
+(fun {f10 x} {+ 1 (f11 x)})
+(fun {f11 x} {+ 1 (f12 x)})
+(fun {f12 x} {+ 1 (f13 x)})
+(fun {f13 x} {+ 1 (f14 x)})
+(fun {f14 x} {+ 1 (f15 x)})
+(fun {f15 x} {if (eq x :boom) (error (+ "boom at the bottom, " 15 " deep")) (* x 1)})
+
+(print (f1 0) (f1 100) (f8 0) (f15 7))
+(print (f1 :boom))
+(print (f14 :boom))
+(print (error-message (f1 :boom)))
+(print (map (fn {x} {try (f1 x) :caught}) {1 :boom 2}))
+
+; the bottom one's argument not a number: the error is *'s, made at the bottom
+(print (f1 "a"))
+(print (f1 {}))
+
+; a chain that catches the error part way up and makes its own, from there
+(fun {g1 x} {+ 1 (g2 x)})
+(fun {g2 x} {try (f1 x) (fn {m} {error (+ "g2 caught: " m)})})
+(print (g1 :boom))
+(print (g1 5))
+
+; recursion fifteen deep (each call the same line)
+(fun {down n} {if (zero? n) (error "down at zero") (+ 1 (down (- n 1)))})
+(print (down 15))
+(print (try (down 15) &err))
+
+(print "the last: the error fifteen deep, its trace twelve calls long")
+(f1 :boom)

@@ -1,0 +1,258 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: 'fst' expects a list
+danlang>=> Error: 'fst' expects a list
+danlang>=> Error: 'fst' expects a list
+danlang>=> Error: Selection not found
+danlang>=> Error: Case not found
+danlang>=> exit
+--- stderr
+  at (made, not read)  {zz}
+  called at line 1  (wc 4)
+  at (made, not read)  {5}
+  called at line 1  (wc2 4)
+  at (made, not read)  {n}
+  called at line 1  (wc3 4)
+  at (made, not read)  {{quoted}}
+  called at line 1  (wc4 4)
+  at line 1  (+ n 1)
+  called at line 1  (wc5 4)
+  at (made, not read)  {0}
+  called at line 1  (wc6 4)
+  at (made, not read)  {:x-big}
+  called at line 1  (wc7 4)
+  at (made, not read)  {zz}
+  called at line 1  (wk 4)
+  at line 1  (+ 1 1)
+  called at line 1  (wk2 4)
+  at (made, not read)  {:two}
+  called at line 1  (wk3 4)
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (w2 ?? NIL 2 4)
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (w2 ?? 1 2 4)
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (w1 ?? 1 4)
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (w1 ?? NIL 4)
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (w3 ?? NIL NIL 3 4)
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (w3 ?? NIL NIL NIL 4)
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (w2 zip {1 2} {3 4} 4)
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (w2 zip {1 2 3} {4} 4)
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  called at line 1  (w2 zip NIL {1} 4)
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  called at line 1  (w2 zip {1} NIL 4)
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (w1 flatten {1 {2 3} 4} 4)
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (w1 flatten {{1} {2}} 4)
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (w1 flatten {1 2} 4)
+  at <BUNDLE>\lib\globals.dl:82  {if l (if (qexpr? (fst l)) (join (flatten (fst l)) (flatt...
+  called at line 1  (w1 flatten NIL 4)
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (w1 distinct {1 2 1 3} 4)
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (w1 distinct {1} 4)
+  at <BUNDLE>\lib\globals.dl:91  {if l (cons (fst l) (distinct (remove-all (fst l) (tail l...
+  called at line 1  (w1 distinct NIL 4)
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-all f tl))
+  called at line 1  (w2 remove-all 1 {1 2 1} 4)
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-all f tl))
+  called at line 1  (w2 remove-all 9 {1 2} 4)
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-all f tl))
+  called at line 1  (w2 remove-all 1 {2 1} 4)
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (w2 remove-all 1 NIL 4)
+  at <BUNDLE>\lib\globals.dl:215  (eq f hd)
+  called at line 1  (w2 remove-fst 1 {1 2 1} 4)
+  at <BUNDLE>\lib\globals.dl:217  (cons hd (remove-fst f tl))
+  called at line 1  (w2 remove-fst 2 {1 2 1} 4)
+  at <BUNDLE>\lib\globals.dl:217  (cons hd (remove-fst f tl))
+  called at line 1  (w2 remove-fst 9 {1 2} 4)
+  at <BUNDLE>\lib\globals.dl:209  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (w2 remove-fst 1 NIL 4)
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  (w2 has-element? {1 2} 2 4)
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  (w2 has-element? NIL 2 4)
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (w2 starts-with? "abc" "a" 4)
+  at <BUNDLE>\lib\globals.dl:190  (index-of s sub)
+  called at line 1  (w2 starts-with? "abc" "z" 4)
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (w2 ends-with? "abc" "c" 4)
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (w2 ends-with? "abc" "z" 4)
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (w2 ends-with? "a" "abc" 4)
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (w2 contains? "abc" "b" 4)
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (w2 contains? {1 2} 2 4)
+  at <BUNDLE>\lib\globals.dl:195  (cons (eval d) (repeat (1- n) d))
+  called at line 1  (w2 repeat 2 {:r} 4)
+  at <BUNDLE>\lib\globals.dl:195  (=0 n)
+  called at line 1  (w2 repeat 0 {:r} 4)
+  at (made, not read)  {<function>(+) 1 2}
+  called at line 1  (w2 unpack + {1 2} 4)
+  at (made, not read)  {<function>(list)}
+  called at line 1  (w2 unpack list NIL 4)
+  at <BUNDLE>\lib\globals.dl:12  {f b a}
+  called at line 1  (w3 flip - 1 2 4)
+  at <BUNDLE>\lib\globals.dl:14  {f (g x)}
+  called at line 1  (w3 comp 1+ 1+ 1 4)
+  at (made, not read)  {<function>(+) 1 2}
+  called at line 1  (w3 ghost + 1 2 4)
+  at <BUNDLE>\lib\globals.dl:60  (list (take n l) (drop n l))
+  called at line 1  (w2 split 1 {1 2} 4)
+  at <BUNDLE>\lib\globals.dl:239  {reverse (sort l)}
+  called at line 1  (w1 sort-desc {1 3 2} 4)
+  at <BUNDLE>\lib\globals.dl:241  {take n (sort-desc l)}
+  called at line 1  (w2 best-of 2 {1 3 2} 4)
+  at <BUNDLE>\lib\globals.dl:242  {take n (sort l)}
+  called at line 1  (w2 worst-of 2 {1 3 2} 4)
+  at (made, not read)  {<function>(min) 3 1 2}
+  called at line 1  (w1 minimum {3 1 2} 4)
+  at (made, not read)  {<function>(max) 3 1 2}
+  called at line 1  (w1 maximum {3 1 2} 4)
+  at <BUNDLE>\lib\globals.dl:217  (cons hd (remove-fst f tl))
+  called at line 1  (w1 remove-min {3 1 2} 4)
+  at <BUNDLE>\lib\globals.dl:215  (eq f hd)
+  called at line 1  (w1 remove-max {3 1 2} 4)
+  at <BUNDLE>\lib\globals.dl:162  (to-fixed (/ a b) (if (and (defined? &1) (num? &1)) &1 10))
+  called at line 1  (w2 fdiv 1 3 4)
+  at <BUNDLE>\lib\globals.dl:162  (to-fixed (/ a b) (if (and (defined? &1) (num? &1)) &1 10))
+  called at line 1  (w1 frecip 3 4)
+  at <BUNDLE>\lib\globals.dl:251  {if &3 (and (between? &1 &2 (fst &3)) (all-between? &1 &2...
+  called at line 1  (w3 all-between? 1 3 {2 2} 4)
+  at <BUNDLE>\lib\globals.dl:251  {if &3 (and (between? &1 &2 (fst &3)) (all-between? &1 &2...
+  called at line 1  (w3 all-between? 1 3 NIL 4)
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (w3 not-between? 1 3 2 4)
+  at <BUNDLE>\lib\globals.dl:254  {if &3 (and (not-between? &1 &2 (fst &3)) (all-not-betwee...
+  called at line 1  (w3 all-not-between? 1 3 {5} 4)
+  at <BUNDLE>\lib\globals.dl:251  {if &3 (and (between? &1 &2 (fst &3)) (all-between? &1 &2...
+  called at line 1  (w3 not-all-between? 1 3 {2} 4)
+  at <BUNDLE>\lib\globals.dl:43  {f &_}
+  called at line 1  (w2 pack list 1 4)
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  (w2 has-element? {1} 1 4)
+  at (made, not read)  {1}
+  at (made, not read)  {2}
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  at <BUNDLE>\lib\globals.dl:75  (fst a)
+  called at line 1  (f x y)
+  called at line 1  (w2 zip "ab" {1} 4)
+  at <BUNDLE>\lib\globals.dl:86  (fst l)
+  called at line 1  (f x)
+  called at line 1  (w1 flatten "ab" 4)
+  at <BUNDLE>\lib\globals.dl:228  (fst l)
+  called at line 1  (f x y)
+  called at line 1  (w2 remove-all 1 "ab" 4)
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (f x)
+  called at line 1  (w1 cond {NIL 1} 4)
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (f x y)
+  called at line 1  (w2 case 1 {2 :b} 4)
+--- exit 0

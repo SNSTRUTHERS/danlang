@@ -1,0 +1,45 @@
+; 26-string-order.dl - strings compared and sorted: by their bytes (so "B" before "a", "10" before "9", the empty
+; string first, a string before any longer one it starts, bytes past ASCII last); cmp, <, >, <=, >=, ==, eq, neq,
+; min, max; sort (stable, by cmp or a function), sort-desc, best-of, distinct; strings among other kinds (numbers,
+; characters, strings, atoms, symbols ... in that order); a character is never equal to a string
+
+(def {words} {"banana" "Apple" "apple" "" "a" "ab" "abc" "B" "b" "10" "9" "1" "é" "z" "Z" " " "~" "apple"})
+(print (sort words))
+(print (sort-desc words))
+(print (best-of 3 words) (worst-of 3 words))
+(print (distinct words))
+(print (min "pear" "apple" "fig") (max "pear" "apple" "fig") (minimum {"b" "a" "c"}) (maximum {"b" "a" "c"}))
+
+; cmp and the comparisons
+(each {pair {{"a" "b"} {"b" "a"} {"a" "a"} {"a" "ab"} {"ab" "a"} {"" "a"} {"" ""} {"B" "a"} {"é" "z"} {"abc" "abd"} {"a\x00" "a"}}}
+  =(x (fst pair))
+  =(y (snd pair))
+  (print (repr x) (repr y) (cmp x y) (< x y) (> x y) (<= x y) (>= x y) (== x y) (eq x y) (neq x y)))
+
+; strings, characters and other kinds: the kinds' order first
+(print (sort (list "b" \a :c 1 "a" \B :a 2.5 (to-sym "sym") {1} T "" \space (fst (read "(x)")))))
+(print (cmp \a "a") (cmp "a" \a) (cmp "a" :a) (cmp :a "a") (cmp 5 "5") (cmp "5" (to-sym "five")))
+(print (eq \a "a") (eq "a" :a) (eq "5" 5) (eq "" NIL) (eq "" {}) (eq "a" "a") (eq "a" "A"))
+(print (< "abc" 5) (> "abc" 5) (< "z" :a) (< "a" {}))
+
+; sort with a function: stable (equal items keep their order)
+(print (sort {"bb" "a" "ccc" "dd" "e" "fff"} (fn {x y} {< (len x) (len y)})))
+(print (sort {"b" "a" "c"} >))
+(print (sort {"Banana" "apple" "Cherry"} (fn {x y} {< (str-lower x) (str-lower y)})))
+(print (sort {"x10" "x9" "x100" "x1"}))
+
+; comparing in loops: the alphabetically first and last word, by hand
+(def {first-word} NIL)
+(def {last-word} NIL)
+(each {w (str-split "the quick brown fox jumps over the lazy dog" " ")}
+  (if (or (nil? first-word) (< w first-word)) (def {first-word} w))
+  (if (or (nil? last-word) (> w last-word)) (def {last-word} w)))
+(print first-word last-word)
+
+; strings as list items: equality by text, elem?, remove-all, index-of
+(def {l} {"x" "y" "x" "z"})
+(print (elem? "x" l) (elem? \x l) (in? "q" l) (remove-all "x" l) (remove-fst "x" l) (index-of l "z"))
+(print (eq {"a" "b"} {"a" "b"}) (eq {"a" "b"} {"a" "B"}) (cmp {"a" "b"} {"a" "c"}) (cmp {"a"} {"a" "b"}))
+
+; between? and friends on strings
+(print (between? "a" "m" "f") (between? "m" "a" "f") (not-between? "a" "m" "z") (between? "a" "b" "abc"))

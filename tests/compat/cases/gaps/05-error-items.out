@@ -1,0 +1,59 @@
+--- stdout
+el {NIL Error: bee NIL Error: dee} 4 {:list :error :list :error} <hash>{{:a 1} {:c 3}}
+nums {1 Error: b2 3} {:number :error :number} <hash>{{:a 10} {:c 30}}
+only {Error: only Error: y} :list 2 {"only" "y"}
+zip Error: bee {{1 NIL}} NIL {{1 7}} Error: b2
+flatten Error: bee Error: b2 {1}
+distinct Error: bee Error: b2 {1}
+remove-all Error: bee Error: b2 {1}
+remove-fst {Error: bee NIL Error: dee} {Error: b2 3} Error: b2 Error: b2
+remove-min/max Error: b2 Error: b2 Error: bee
+minimum Error: bee Error: b2 Error: only
+has-element? NIL T Error: x
+avg Error: '+' adds numbers, or joins values to a string Error: b2 1
+?? Error: bee Error: b2 Error: b2 Error: bee Error: bee
+cond Error: bee Error: bee :fine
+case Error: bee Error: bee Error: only
+between? Error: bee T Error: b2 T
+sort-desc {Error: dee Error: bee NIL NIL} {Error: b2 3} {Error: only} {{NIL Error: bee} {NIL Error: dee}}
+repeat Error: bee {2 2}
+first... NIL Error: bee 3 Error: dee
+unpack Error: bee {NIL} Error: b2 Error: b2
+pack 2 1
+contains? Error: bee NIL T
+map {:list :error :list :error} Error: bee {NIL T NIL T} {NIL "bee" NIL "dee"}
+filter {Error: bee Error: dee} {NIL NIL} Error: bee
+folds Error: bee Error: dee Error: b2
+search 2 T NIL Error: bee 1 Error: only
+sort {NIL NIL Error: bee Error: dee} {1 3 Error: b2} {1 3 NIL NIL Error: b2 Error: bee Error: dee} Error: only
+order T T 1 0
+index 0 2 T T -1
+parts {Error: dee NIL Error: bee NIL} {NIL Error: bee NIL Error: dee 9} {0 NIL Error: bee NIL Error: dee} {NIL Error: bee} {Error: dee} {NIL Error: bee NIL} {NIL} {Error: dee} {Error: y}
+items NIL Error: bee Error: dee Error: dee Error: bee {Error: bee NIL} y
+strings NIL,Error: bee,NIL,Error: dee Error: onlyError: y Error: bee el={NIL Error: bee NIL Error: dee} {NIL Error: bee NIL Error: dee}
+repr {NIL Error: bee NIL Error: dee} {Error: only Error: y}
+{{} error bee {} error dee}
+{error only error y}
+len 4 12 4
+NIL
+eval Error: bee NIL Error: 'type-of' takes 1 argument, not 3
+fexpr {:list {:error :list :error}} {:error {:list :error}}
+each
+  item NIL NIL
+  item Error: bee T
+  item NIL NIL
+  item Error: dee T
+  each fn NIL
+each fn Error: bee
+   0 NIL
+   1 Error: bee
+   2 NIL
+   3 Error: dee
+dotimes NIL
+to# bee <buffer>{1}
+set {:error} T only
+fn {4 :error T} {2 :error T} Error: only
+done
+--- stderr
+
+--- exit 0

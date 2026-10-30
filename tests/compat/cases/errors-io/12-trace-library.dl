@@ -1,0 +1,43 @@
+; 12-trace-library.dl - errors from the library's functions (lib/globals.dl, danlang code): their messages, as
+; values, and their own checks ("Cannot perform 'mod' on non-numbers" ...).  An error made inside one has the
+; library's file and line in its trace, and the library function's call, when it isn't in tail position, is one of
+; the calls.  The last error is mod's division by zero, from a user function three calls down
+
+(print (mod 7 3) (mod -7 3) (mod 7 -3) (div 7 2) (div -7 2) (divmod 17 5) (% 10 4))
+(print (mod 1 0) (div 1 0) (divmod 1 0))
+(print (mod "a" 2) (div 1 :b) (divmod {} 1))
+(print (mod 5.5 2) (mod 7/2 1) (div 5.5 2))
+(print (fdiv 1 3) (fdiv 2 3 4) (fdiv 1 0) (fdiv "x" 1) (frecip 3) (frecip 0))
+(print (odd? 3) (even? 3) (odd? "x") (even? :y) (odd? 2.5))
+(print (positive? 5) (negative? 5) (positive? "5") (negative? {}))
+(print (pow 2 10) (pow 2 -2) (pow 2 0.5) (pow "a" 2) (pow 0 -1))
+(print (avg {1 2 3 4}) (avg {}) (avg {1 "a"}))
+(print (square 3) (cube 2) (recip 4) (recip 0) (square "x"))
+(print (floor 2.5) (ceil 2.5) (round 2.5) (round -2.5) (floor -0.5) (floor :x))
+(print (zip {1 2 3} {:a :b}) (zip 5 {1}))
+(print (flatten {1 {2 {3}} 4}) (flatten 5))
+(print (distinct {1 2 1 3 2}) (distinct 5))
+(print (remove-all 1 {1 2 1}) (remove-fst 1 {1 2 1}) (remove-min {3 1 2}) (remove-max {}))
+(print (minimum {3 1 2}) (maximum {3 1 2}) (minimum {}) (maximum 5))
+(print (starts-with? "hello" "he") (ends-with? "hello" "lo") (contains? "hello" "ll") (starts-with? 5 "x"))
+(print (best-of 2 {3 1 2}) (worst-of 2 {3 1 2}) (sort-desc {1 3 2}) (best-of -1 {1}))
+(print (between? 1 5 3) (between? 5 1 3) (between? 1 5 9) (between? 1 :a 3))
+(print (repeat 3 {+ 1 1}) (repeat 2 {error "in repeat"}) (repeat :x {1}))
+(print (?? NIL NIL 3) (?? NIL) (?? (error "in ??") 1))
+(print (split 2 {1 2 3}) (split -1 {1 2}))
+(print (flip - 1 10) (comp - abs -5) (ghost + 1 2) (unpack + {1 2}) (pack len 1 2 3))
+(print (unpack + 5) (comp len 5 6))
+(print (xor T NIL) (xor T T) (first {1 2}) (tenth {1 2}))
+(print (use "no-such-library-at-all"))
+(print (try (mod 1 0) (list &err &code)))
+
+; a library function's error, inside user functions: the library's own checks
+(fun {halve-odd n} {if (odd? n) (/ (- n 1) 2) (/ n 2)})
+(print (map halve-odd {1 2 3 4}) (halve-odd "q"))
+
+(print "the last: mod's division by zero, made in the library, from three calls down")
+(fun {bucket n size} {+ 0 (mod n size)})
+(fun {spread l size} {map (fn {n} {bucket n size}) l})
+(fun {histogram l} {do (print "sizes:" (spread l 3)) (len (spread l 0))})
+(print (histogram {1 2 3 4}))
+(+ 1 (histogram {5 6}))

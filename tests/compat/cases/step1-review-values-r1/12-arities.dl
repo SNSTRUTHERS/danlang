@@ -1,0 +1,14 @@
+; 12-arities: each natived function given fewer arguments than it takes (a partial application: a copy, with no
+; native way, its code run when it has them all), as many, and more (an error, unless its code names &_ or &N); the
+; partial applications completed; each three times over
+(fun {three g} {let {{r (map (fn {i} {try (repr (g)) (+ "E:" &err)}) {1 2 3})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(def {fs} (list floor ceil round mod % div divmod even? odd? pow square cube >=0 <=0 >0 <0 !=0 !=1 positive? +? negative? -?
+  between? ><? xor avg ?? starts-with? ends-with? contains? zip flatten distinct remove-all remove-fst has-element? cond case minimum maximum))
+(def {names} {floor ceil round mod % div divmod even? odd? pow square cube >=0 <=0 >0 <0 !=0 !=1 positive? +? negative? -?
+  between? ><? xor avg ?? starts-with? ends-with? contains? zip flatten distinct remove-all remove-fst has-element? cond case minimum maximum})
+(def {args} (list 7 {3 1 3} "ab" 2))
+(each {k (range (len fs))} (do
+  (def {f} (nth k fs))
+  (print (nth k names) (three (fn {} {f})) (three (fn {} {f 7})) (three (fn {} {f 7 2})) (three (fn {} {f 9 1 5})) (three (fn {} {f 1 2 3 4}))
+    (three (fn {} {(f 7) 2})) (three (fn {} {((f) 7) 2})) (three (fn {} {(f {3 1 3}) 3})) (three (fn {} {((f "abc") "b")}))
+    (three (fn {} {unpack f args})) (three (fn {} {unpack (f {1 2}) {{3 4}}})))))

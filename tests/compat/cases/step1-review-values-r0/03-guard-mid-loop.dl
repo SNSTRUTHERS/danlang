@@ -1,0 +1,69 @@
+; 03-guard-mid-loop: what the library's code calls, changed in the middle of a loop (def, set!, set, fun) and put back:
+; each call's value is its code's, with what's there at the time; and a library function redefined while its old
+; value is still held (an alias, a variable): the old one's code calls what's there now
+(def {trunc0 minus0 cons0 list0 eq0 elem0 index0 unpack0 min0 sum0 not0 and0 zero0} trunc - cons list eq elem? index-of unpack min sum not and zero?)
+(fun {times k f} {map (fn {i} {f}) (range k)})
+(fun {loop k at change back f} {map (fn {i} {do (if (== i at) (change)) (if (== i back) (back-fn)) (f)}) (range k)})
+; trunc: by def, then put back by set!
+(print "trunc" (map (fn {i} {do
+  (if (== i 3) (def {trunc} (fn {x} {if (int? x) x (+ (trunc0 x) 1)})))
+  (if (== i 6) (set! {trunc} trunc0))
+  (list (floor -7/2) (ceil 7/2) (mod -7 2) (div 7 2) (round 5/2) (round -5/2) (divmod 7 2))}) (range 9)))
+; - by set at the top level, and put back
+(set {-} +)
+(print "- set" (times 4 (fn {} {list (mod 7 2) (round -5/2) (try (pow 2 -2) &err) (try (ends-with? "abc" "c") &err) (div -7 2)})))
+(set {-} minus0)
+(print "- back" (times 4 (fn {} {list (mod 7 2) (round -5/2) (pow 2 -2) (ends-with? "abc" "c")})))
+; cons and list, mid-loop (the lists the code builds)
+(print "cons" (map (fn {i} {do
+  (if (== i 2) (def {cons} (fn {x l} {join l (list0 x)})))
+  (if (== i 5) (def {cons} cons0))
+  (list (zip {1 2 3} {4 5 6}) (flatten {1 {2 3} 4}) (distinct {3 1 3 2}) (remove-all 1 {1 2 3 1}) (remove-fst 2 {1 2 3}) (divmod 9 4))}) (range 7)))
+(print "list" (map (fn {i} {do
+  (if (== i 2) (fun {list} {join {:l} &_}))
+  (if (== i 5) (def {list} list0))
+  (list0 (zip {1 2} {3 4}) (divmod 9 4))}) (range 7)))
+; the tests: =0 (even?, starts-with?), eq (remove-all, remove-fst, case), elem? (has-element?), index-of
+(print "=0" (map (fn {i} {do
+  (if (== i 2) (def {=0} not))
+  (if (== i 5) (def {=0} zero0))
+  (list0 (even? 4) (even? 3) (starts-with? "abc" "a") (starts-with? "abc" "b"))}) (range 7)))
+(print "eq" (map (fn {i} {do
+  (if (== i 2) (def {eq} (fn {a b} {eq0 (type-of a) (type-of b)})))
+  (if (== i 5) (def {eq} eq0))
+  (list0 (remove-all 1 {1 2 :a 1}) (remove-fst 1 {2 1 3}) (case 2 {1 :one} {2 :two}) (distinct {1 2 1}))}) (range 7)))
+(print "elem? index-of" (map (fn {i} {do
+  (if (== i 2) (def {elem? index-of} (fn {x l} {not0 (elem0 x l)}) (fn {s x} {0})))
+  (if (== i 5) (def {elem? index-of} elem0 index0))
+  (list0 (has-element? {1 2} 2) (starts-with? "abc" "c") (contains? "abc" "x"))}) (range 7)))
+; unpack, min, sum, not, and
+(print "unpack min sum" (map (fn {i} {do
+  (if (== i 2) (def {unpack min sum} (fn {f l} {:unpacked}) max (fn {l} {100})))
+  (if (== i 5) (def {unpack min sum} unpack0 min0 sum0))
+  (list0 (cond {NIL 1} {T 2}) (case 3 {1 :a} {3 :c}) (?? NIL NIL 4) (minimum {3 1 2}) (avg {1 2 3}))}) (range 7)))
+(print "not and" (map (fn {i} {do
+  (if (== i 2) (def {not and} (fn {x} {:nope}) (fn {a b} {:and})))
+  (if (== i 5) (def {not and} not0 and0))
+  (list0 (xor T NIL) (xor T T) (!=0 5) (!=1 1) (between? 1 9 5) (between? 9 1 0))}) (range 7)))
+; library functions redefined, their old values still held
+(def {mod0 floor0 zip0 even0 cond0 between0 remove-all0} mod floor zip even? cond between? remove-all)
+(fun {mod a b} {:new-mod})
+(print "old mod" (times 4 (fn {} {list0 (% 7 2) (mod0 -7 2) (even? 4) (odd? 3) (divmod 7 2)})))
+(fun {floor a} {:new-floor})
+(print "old floor" (times 4 (fn {} {list0 (floor0 7/2) (floor0 -7/2) (div 7 2) (round 5/2) (try (mod0 7 2) &err) (try (pow 2 3) &err)})))
+(def {mod floor} mod0 floor0)
+(print "back" (times 4 (fn {} {list0 (% 7 2) (mod 7 2) (div 7 2) (round 5/2) (even? 4) (pow 2 3)})))
+(def {zip} (fn {a b} {:z}))
+(print "old zip" (times 3 (fn {} {try (zip0 {1 2} {3 4}) &err})))
+(def {zip} zip0)
+(print "zip back" (times 3 (fn {} {zip0 {1 2} {3 4}})))
+(def {remove-all} (fn {f l} {:r}))
+(print "old remove-all" (times 3 (fn {} {list0 (try (remove-all0 1 {1 2 1}) &err) (try (distinct {1 2 1}) &err)})))
+(def {remove-all} remove-all0)
+(def {between?} (fn {} {:b}))
+(print "old between?" (times 3 (fn {} {list0 (between0 1 9 5) (try (between0 9 1 5) &err) (try (><? 9 1 5) &err) (><? 1 9 0)})))
+(def {between?} between0)
+(def {cond} (fn {} {:c}))
+(print "old cond" (times 3 (fn {} {list0 (try (cond0 {NIL 1} {T 2}) &err) (cond0 {T 3}) (case 1 {1 :x})})))
+(def {cond} cond0)
+(print "all back" (times 3 (fn {} {list0 (cond {NIL 1} {T 2}) (between? 9 1 5) (distinct {1 2 1}) (zip {1} {2})})))

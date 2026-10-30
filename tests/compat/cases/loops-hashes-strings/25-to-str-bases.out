@@ -1,0 +1,62 @@
+--- stdout
+"42" "-7" "1/3" "2.5" "1+2i"
+"s" "c" ":a" "{1 \"a\" \\b}" "T" "NIL"
+"<hash>{{:k \"v\"}}" "<function>(print)" "<function>(fn {x} {x})" "a\nb"
+x     FF -FF 0 1 1/3 2.8
+#x    #xFF -#xFF #x0 #x1 #x1/#x3 #x2.8
+#16r  #16rFF -#16rFF #16r0 #16r1 #16r1/#16r3 #16r2.8
+X     FF -FF 0 1 1/3 2.8
+b     11111111 -11111111 0 1 1/11 10.1
+#b    #b11111111 -#b11111111 #b0 #b1 #b1/#b11 #b10.1
+#2r   #2r11111111 -#2r11111111 #2r0 #2r1 #2r1/#2r11 #2r10.1
+o     377 -377 0 1 1/3 2.4
+#8r   #8r377 -#8r377 #8r0 #8r1 #8r1/#8r3 #8r2.4
+d     255 -255 0 1 1/3 2.5
+#10r  #10r255 -#10r255 #10r0 #10r1 #10r1/#10r3 #10r2.5
+z     73 -73 0 1 0.C 2.I
+#36r  #36r73 -#36r73 #36r0 #36r1 #36r0.C #36r2.I
+#7r   #7r513 -#7r513 #7r0 #7r1 #7r1/#7r3 #7r5/#7r2
+#80r  #80r3F -#80r3F #80r0 #80r1 #80r1/#80r3 #80r2.e
+c   0++00+ 0--00- 0 +-+ +/-+
+e   0+0# 0-0= 0 #+ +/#
+g   *+=+ ~-#- 0 0+ +/#
+i   ONNOON OUUOOU O NUN N/UN
+j   ONOM OUOW O MN N/M
+m   asp uDe S Dl t/p
+t   100110 -100110 0 21 1/2
+q   3333 -3333 0 13 0.2
+v   2010 -2010 0 12 1/2
+f   1103 -1103 0 11 0.3
+s   513 -513 0 10 1/2
+n   313 -313 0 7 1/2
+k   IL VY 0 G A/B
+y   Ej eJ 0 G A/B
+<x     FF -FF A 4321 1/4321
+>x     FF -FF A 1234 1/1234
++x     FF -FF A 1234 1/1234
+-x     11F 1F01 A 1F3D4 1/1F3D4
+#-x    #-x11F #-x1F01 #-xA #-x1F3D4 #-x1/#-x1F3D4
+#<16r  #<16rFF -#<16rFF #<16rA #<16r4321 #<16r1/#<16r4321
+#>16r  #>16rFF -#>16rFF #>16rA #>16r1234 #>16r1/#>16r1234
+#-10r  #-10r355 #-10r1865 #-10r190 #-10r16740 #-10r1/#-10r16740
+#+10r  #+10r255 -#+10r255 #+10r10 #+10r4660 #+10r1/#+10r4660
+-2     Error: Invalid base specifier -2 Error: Invalid base specifier -2 Error: Invalid base specifier -2 Error: Invalid base specifier -2 Error: Invalid base specifier -2
+18EE90FF6C373E0EE4E3F0AD2 -8000000000000001 10000000000000000000000000000000000000000000000000000000000000000
+#2r1111101000 #3r1101001 #4r33220 #5r13000 #6r4344 #7r2626 #8r1750 #9r1331 #10r1000 #11r82A #12r6B4 #13r5BC #14r516 #15r46A #16r3E8 #17r37E #18r31A #19r2EC #20r2A0 #21r25D #22r21A #23r1KB #24r1HG #25r1F0 #26r1CC #27r1A1 #28r17K #29r15E #30r13A #31r118 #32rV8 #33rUA #34rTE #35rSK #36rRS #37rR1 #38rQC #39rPP #40rP0 #41rOG #42rNY #43rNB #44rMW #45rMA #46rLY #47rLD #48rKe #49rKK #50rK0 #51rJV #52rJC #53rIk #54rIS #55rIA #56rHm #57rHV #58rHE #59rGu #60rGe #61rGO #62rG8 #63rFt #64rFe #65rFP #66rFA #67rE- #68rEm #69rEY #70rEK #71rE6 #72rD+ #73rDp #74rDc #75rDP #76rDC #77rC; #78rC+ #79rCq #80rCe
+4CB2F/186A0 -1/111 #7r3.1 +/-+
+1+2i
+Error: Invalid base specifier q?
+Error: Invalid base specifier 
+Error: Invalid base specifier #1r: a radix is 2 to 80
+Error: Invalid base specifier #81r: a radix is 2 to 80
+Error: Invalid base specifier =x: a named base is balanced or not already
+#[01]11111111
+Error: Second 'to-str' parameter must be a String
+Error: Second 'to-str' parameter must be a String
+Error: Only a Number has a base for 'to-str'
+Error: Only a Number has a base for 'to-str'
+Error: 'to-str' takes at most 2 arguments, not 3
+<function>(to-str)
+--- stderr
+
+--- exit 0

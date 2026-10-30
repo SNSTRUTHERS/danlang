@@ -1,0 +1,77 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Selection not found
+danlang>=> Error: Selection not found
+danlang>=> Error: Selection not found
+danlang>=> Error: Case not found
+danlang>=> Error: Case not found
+danlang>=> NIL
+danlang>=> Error: Selection not found
+danlang>=> NIL
+danlang>=> Error: Case not found
+danlang>=> NIL
+danlang>=> Error: Selection not found
+danlang>=> Error: Selection not found
+danlang>=> Error: Case not found
+danlang>=> Error: Selection not found
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> "an a"
+danlang>=> Error: Case not found
+danlang>=> Error: Selection not found
+danlang>=> Error: Case not found
+danlang>=> Error: Selection not found
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1})
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1} {NIL 2})
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1} {NIL 2} {NIL 3} {NIL 4} {NIL 5} {NIL 6} {NI...
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case :z {:a 1})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case :z {:a 1} {:b 2} {:c 3} {:d 4} {:e 5} {:f 6} {:g 7}...
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (pick 3)
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case x {1 :one} {2 :two})
+  called at line 1  (pick2 3)
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  called at line 1  (down (- n 1))
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (obj :kind :c)
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1} (cons NIL {2}))
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case 5 {1 :a} (cons 2 {:b}))
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {(do (def {fst} fst) NIL) 1})
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (f 1 2 (try (cond {NIL 1}) 3))
+  at line 1  (+ 1 3)
+  called at line 1  (f 1 2 (try (case 1 {2 3}) (+ 1 3)))
+--- exit 0

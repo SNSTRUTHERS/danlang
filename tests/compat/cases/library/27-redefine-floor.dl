@@ -1,0 +1,56 @@
+; flags: -w
+; 27-redefine-floor: the library's functions call each other by name, at the time of the call, so redefining one
+; changes the others: floor redefined (with fun, printing its argument) changes mod, div, %, divmod, round, odd?,
+; even? and pow (through even?), but not ceil (which doesn't call it); floor made a number (def: -w warns that a
+; function became a value) breaks them; floor made trunc's function changes the results of negative numbers.
+; With -w: the warnings on stderr.  Ends with mod's error from calling a number, inside a user function.
+
+(print (mod 7 2) (div 7 2) (round 5/2) (ceil 5/2) (divmod 7 2) (odd? 3) (even? 3) (% -7 2) (pow 2 5))
+(fun {floor x} {do (print "my floor of" x) 100})
+(print (floor 5/2))
+(print floor)
+(print (mod 7 2))
+(print (div 7 2))
+(print (% 7 2))
+(print (round 5/2))
+(print (round -5/2))
+(print (ceil 5/2))
+(print (divmod 7 2))
+(print (odd? 3) (even? 3))
+(print (pow 2 3))
+(print (mod 9223372036854775808 2) (div -1025 1024))
+(print mod %)
+(print (mod 7 (error "mod's b")) (div "a" 2))
+
+; floor a number: whatever calls it fails
+(def {floor} 5)
+(print floor)
+(print (mod 7 2))
+(print (div 7 2))
+(print (round 1/2))
+(print (ceil 1/2))
+(print (odd? 1))
+(print (pow 2 2))
+(print (pow 2 0))
+
+; floor as trunc: rounding toward zero instead
+(def {floor} (fn {x} {trunc x}))
+(print (mod -7 2) (div -7 2) (divmod -7 2) (% 7 -2) (round -5/2) (round 5/2) (odd? -1) (even? -2))
+(print (map (fn {x} {mod x 3}) (range -4 5)))
+(print (map (fn {x} {div x 3}) (range -4 5)))
+
+; floor a function of two: mod passes one, so it's partially applied
+(fun {floor x y} {list :floor-of x y})
+(print (div 7 2))
+(print (mod 7 2))
+(print (round 5/2))
+
+; floor that fails
+(fun {floor x} {error (+ "no floor for " x)})
+(print (div 7 2))
+(print (round 7/2))
+
+; the program ends with an error from inside mod, called from a user function
+(def {floor} 5)
+(fun {clock-hour h} {list :hour (mod h 12)})
+(clock-hour 15)

@@ -1,0 +1,117 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> {{1} {2} {3} {4} {5}}
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> {NIL NIL NIL NIL NIL}
+danlang>=> {NIL NIL NIL NIL NIL}
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> {5 5 5 5 5}
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>5
+5
+5
+5
+5
+=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>6
+6
+6
+6
+6
+=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> {NIL NIL NIL NIL NIL}
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> exit
+--- stderr
+  at line 1  (hd v (g))
+  called at line 1  (probe-hd)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-hd)
+  at line 1  (tl v (g))
+  called at line 1  (probe-tl)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-tl)
+  at line 1  (&1 v (g))
+  called at line 1  (probe-1)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-1)
+  at line 1  (&3 v (g))
+  called at line 1  (probe-3)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-3)
+  at line 1  (&4 v (g))
+  called at line 1  (probe-4)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-4)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-hd)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-tl)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-1)
+  at line 1  (&1 v (g))
+  called at line 1  (probe-1)
+  at line 1  (&3 v (g))
+  called at line 1  (probe-3)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe-4)
+  at line 1  (&4 v (g))
+  called at line 1  (probe-4)
+  at line 1  (hd v (g))
+  called at line 1  (probe-hd)
+  at line 1  (tl v (g))
+  called at line 1  (probe-tl)
+--- exit 0

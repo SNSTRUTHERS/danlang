@@ -1,0 +1,68 @@
+--- stdout
+1,2,3,list: NIL
+nil: NIL NIL NIL
+\a \b \c string: NIL
+empty string: NIL
+\Ã 195 :char
+\© 169 :char
+\bang 33 :char
+230 151 165 230 156 172 
+:sexpr (+ 1 2)
+:symbol undefined-name
+:string "s"
+:char \c
+:list {1 (+ 2 3)}
+:atom :a
+:number 1/2
+:number 2.5
+:t T
+:list NIL
+3
+"evaluated by list"
+a1 b1 q1 a2 b2 q2 
+q1 1
+q2 1
+q1 2
+q2 2
+NIL
+symbol body: NIL
+body ran with Error: Unbound Symbol 'x'
+body ran with Error: Unbound Symbol 'x'
+eval body: NIL
+list evaluated
+1 2 3 {0 0 0 1 2 3}
+:p
+1
+s
+1 4 9 
+pre: :a
+pre: :b
+counter: 10
+partial only: NIL
+Error: The function takes 0 arguments, not 1
+extras: {1} 1
+extras: {"two"} two
+a and &_: :x NIL
+NIL
+:a=1 :b=2 
+Error: 'each' expects a list or a String
+Error: 'each' expects a list or a String
+Error: 'each' expects a list or a String
+Error: list failed
+Error: 'each' expects a list or a String
+Error: First 'each' parameter must be a function or {name list}
+Error: First 'each' parameter must be a function or {name list}
+Error: First 'each' parameter must be a function or {name list}
+Error: fn failed
+Error: list failed too
+Error: 'each' expects a function and a list
+Error: 'each' expects {name value} or a function first
+Error: 'each' expects {name value} or a function first
+Error: 'each' expects {name value} or a function first
+Error: 'each' supplied too few parameters
+Error: 'each' supplied too few parameters
+Error: 'each' supplied too few parameters
+:function <function>(each)
+--- stderr
+
+--- exit 0

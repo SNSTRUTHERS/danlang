@@ -1,0 +1,51 @@
+; 03-sign-tests: >=0 <=0 >0 <0 !=0 !=1 (library functions of one argument, by the order's comparison with 0, or by
+; zero? and one?): integers at the small-integer range's edges, near and past 2^63, rationals, fixed decimals,
+; complex numbers (ordered by their real part, then imaginary), and every other kind, which the order puts after the
+; numbers; partial application (none: a function of one given none is itself), too many, errors as arguments.
+; Ends with a sign test's error, passed on from a user function.
+
+(print >=0 <=0 >0 <0 !=0 !=1)
+(def {nums} {0 1 -1 65535 65536 -65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 7/2 -7/2 1/65536 -1/1025 2.5 -2.50 0.1 -0.1 0.0 -0.0 1.0})
+(def {others} [(complex 1 2) (complex -1 2) (complex 0 1) (complex 0 -1) (complex 1 0) "s" "" "-1" \a \0 {1} {-1} NIL () T :a :-1 + (fn {x} {x}) (to-sym "neg") (hash-create) (buffer 1)])
+(print nums)
+(print others)
+(fun {row name f} {print name (map f nums)})
+(row :>=0 >=0)
+(row :<=0 <=0)
+(row :>0 >0)
+(row :<0 <0)
+(row :!=0 !=0)
+(row :!=1 !=1)
+(fun {row2 name f} {print name (map f others)})
+(row2 :>=0 >=0)
+(row2 :<=0 <=0)
+(row2 :>0 >0)
+(row2 :<0 <0)
+(row2 :!=0 !=0)
+(row2 :!=1 !=1)
+
+; called directly, as written (not through a variable)
+(print (>=0 65536) (>=0 -1025) (<=0 -1024) (<=0 65535) (>0 9223372036854775808) (<0 -9223372036854775809))
+(print (>0 7/2) (<0 -7/2) (>=0 -0.0) (<=0 0.0) (!=0 0/1) (!=1 4/4) (!=1 1.000) (!=0 0.000))
+(print (>0 math.pi) (<0 (- math.e)) (!=0 math.gamma) (!=1 (/ math.phi math.phi)))
+(print (>0 "s") (<0 "s") (>=0 NIL) (<=0 NIL) (>0 T) (<0 :a) (!=0 "0") (!=1 \1))
+
+; computed arguments, at the edges
+(print (>=0 (- 65536 65537)) (>0 (+ 65535 1)) (<0 (- -1024 1)) (<=0 (* 9223372036854775807 0)) (>0 (- 9223372036854775808 1)))
+(print (!=0 (- 9223372036854775807 9223372036854775807)) (!=1 (- 9223372036854775808 9223372036854775807)) (!=1 (/ 7 7)))
+
+; fewer arguments: the function itself; more: an error; an error: itself
+(print (>=0))
+(print (!=1))
+(print (>=0 1 2))
+(print (<0 1 2))
+(print (!=0 1 2))
+(print (>0 (error "into >0")))
+(print (!=1 (error "into !=1")))
+(print (map >0 {1 -1 (error "as written: an S-expression")}))
+(print (map >0 [1 -1 0]))
+
+; a sign test inside a user function whose argument is an error: the program ends with it
+(fun {classify n} {list (>0 n) (<0 n) (!=0 n)})
+(print (classify 5) (classify -5) (classify 0) (classify "five"))
+(classify (+ 1 "x"))

@@ -1,0 +1,31 @@
+--- stdout
+NIL T T T T T
+NIL NIL NIL NIL NIL NIL
+T T NIL T T
+'defined?' takes at most 1 argument, not 2
+{T NIL T T}
+:before NIL
+:after T
+T NIL
+T NIL
+{T NIL}
+NIL
+{NIL NIL NIL NIL} {T NIL T NIL} {T T T NIL}
+{T NIL NIL} {T T T}
+{NIL T} {T T}
+NIL NIL T
+{NIL :unbound NIL NIL} {NIL :o NIL NIL} {T :i T {:i}}
+NIL NIL NIL
+{T T}
+NIL NIL
+{"e" NIL NIL}
+T T
+{:default 1} {:given 2} {:given NIL}
+T T
+NIL
+T
+--- stderr
+Error: 19-defined.dl: Unbound Symbol 'not-there'
+  at 19-defined.dl:62  (+ not-there 1)
+  called at 19-defined.dl:63  (use-it)
+--- exit 1

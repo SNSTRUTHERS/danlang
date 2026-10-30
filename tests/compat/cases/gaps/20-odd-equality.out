@@ -1,0 +1,25 @@
+--- stdout
+self {NIL NIL NIL NIL NIL T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T}
+cmp self {0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0}
+next {{NIL T NIL T 0} {NIL T NIL T 1} {NIL T NIL T 1} {NIL T NIL T 1} {NIL T NIL T 1} {T NIL T NIL 0} {NIL T NIL T -1} {NIL T NIL T 1} {NIL T NIL T 1} {NIL T NIL T -1} {NIL T NIL T -1} {NIL T NIL T -1} {T NIL T NIL 0} {NIL T NIL T 1} {T NIL T NIL 0} {NIL T NIL T -1} {NIL T NIL T 0} {NIL T NIL T 1} {T NIL T NIL 0} {NIL T NIL T -1} {T NIL T NIL 0} {NIL T NIL T 1} {T NIL T NIL 0} {T NIL T NIL 0} {T NIL T NIL 0} {NIL T NIL T 1} {T NIL T NIL 0} {NIL T NIL T -1} {NIL T NIL T 1} {NIL T NIL T 1} {NIL T NIL T -1} {NIL T NIL T -1}}
+kinds T T NIL NIL NIL NIL T T T
+fns T NIL T T T T NIL
+hashes T NIL T T NIL
+distinct {exit exit 1 exit} {<stream> <stream> <stream>} {<function>(fn {x} {x}) <function>(fn {y} {y})} {<function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})} {<function>(eq 1) <function>(eq 2)} {<hash>{{:k exit}} <hash>NIL}
+distinct {1 "1" :1 \1} {NIL {NIL}} {1/2}
+remove-all {exit 1 exit} {<stream> 2} {3} {<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})} {"1"} {<hash>{{:k exit}}}
+remove-fst {exit 1} {<stream>} {<function>(eq 2) <function>(eq 1)} {1 0.5} {1 NIL}
+has-element? NIL NIL T T T T
+elem? NIL NIL T NIL
+index-of -1 -1 0 2 0 0
+case Case not found Case not found :f :m :one :h Case not found :empty
+count 0 3 NIL {exit 1} 3
+sort ties {1 "s" <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {x} {x}) <stream> exit exit} {:number :number :number} T NIL
+min/max exit <stream> <stream> <function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <hash>{{:k exit}}
+between T T T T
+xor T NIL T
+keys {1 "1" :1}
+odd kinds to the library {{:error "Cannot perform 'mod' on non-numbers"} {:error "'truncate' expects a real number"} {:error "'+' adds numbers, or joins values to a string"} {:error "Cannot perform 'even?' on non-number"} {:error "All parameters to operator '*' must be numbers."} {:error "'pow' expects numbers"} T T {:error "'+' adds numbers, or joins values to a string"} exit 1 {:error "'index-of' expects a String and a String"} {:error "'fst' expects a list"} {exit stdout} T {:error "Only numbers can be positive"} {<stream>} {:error "Cannot perform 'divmod' on non-numbers"}}
+--- stderr
+
+--- exit 0

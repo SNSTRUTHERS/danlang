@@ -1,0 +1,10 @@
+--- stdout
+x
+x
+x
+5
+--- stderr
+Error: 16-ends-with-num-given-midway.dl: Unbound Symbol 'y'
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at 16-ends-with-num-given-midway.dl:4  (run ends-with? (list (list {"abcd" "abcde"} "x" T) (list...
+--- exit 1

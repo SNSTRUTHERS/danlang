@@ -1,0 +1,77 @@
+--- stdout
+values (+ 1 2 3) (list :a (q b)) {(* 2 3) x (a (b c)) {q (r)}} (+ 1 2 3) :sexpr {:sexpr :symbol :sexpr :list} T NIL T NIL
+printed s=(+ 1 2 3) (+ 1 2 3) (list :a (q b)) (* 2 3)|x|(a (b c))|{q (r)} (+ 1 2 3) {(+ 1 2 3) {s}}
+(+ 1 2 3)
+{(* 2 3) x (a (b c)) {q (r)}}
+eval 6 6 {:a b} 6 (+ 1 2 3) (list :a (q b))
+compare T T NIL 1 -1 -1 T
+sorted {1 "s" {+ 1 2 3} {a} NIL (+ 1 2 3) (a) T}
+min/max {z} T Error: Unbound Symbol 'a'
+built-in {tail s} {:error "'tail' expects a QExpr"}
+built-in {head s} {:error "'head' expects a QExpr"}
+built-in {init s} {:error "'init' expects a QExpr"}
+built-in {end s} {:error "'end' expects a QExpr"}
+built-in {len s} {:error "'len' requires parameter of type string, list, hash or buffer"}
+built-in {fst s} {:error "'fst' expects a list"}
+built-in {snd s} {:error "'snd' expects a list"}
+built-in {nth 1 s} {:error "'nth' expects a list"}
+built-in {last s} {:error "'last' expects a list"}
+built-in {take 2 s} {:error "'take' expects a list"}
+built-in {drop 1 s} {:error "'drop' expects a list"}
+built-in {reverse s} {:error "'reverse' expects a QExpr or a String"}
+built-in {join s {4}} {:error "Invalid parameter passed to 'join'.  Expected QExpr."}
+built-in {join {0} s} {:error "Invalid parameter passed to 'join'.  Expected QExpr."}
+built-in {cons 0 s} {:error "'cons' expects a list second"}
+built-in {sort s} {:error "'sort' expects a QExpr"}
+built-in {map (fn {x} {x}) s} {:error "'map' expects a function and a list"}
+built-in {filter (fn {x} {T}) s} {:error "'filter' expects a function and a list"}
+built-in {subset s 1} {:error "First 'subset' parameter must be a QExpr"}
+built-in {item-at s 1} {:error "First 'item-at' parameter must be a QExpr"}
+built-in {elem? 1 s} {:error "'elem?' expects a list"}
+built-in {in? 1 s} {:error "'in?' expects a list"}
+built-in {index-of s 1} {:error "'index-of' expects a String and a String"}
+built-in {foldl (fn {a x} {x}) NIL s} {:error "'foldl' expects a function, a value and a list"}
+built-in {foldr (fn {x a} {x}) NIL s} {:error "'foldr' expects a function, a value and a list"}
+built-in {str-join s} {:error "'str-join' expects a QExpr"}
+built-in {to# s} {:error "First parameter to 'to#' must be a QExpr"}
+built-in {count num? s} {:error "'count' expects a function and a list"}
+built-in {any? num? s} {:error "'any?' expects a function and a list"}
+built-in {all? num? s} {:error "'all?' expects a function and a list"}
+built-in {find num? s} {:error "'find' expects a function and a list"}
+built-in {sum s} {:error "'sum' expects a list"}
+built-in {product s} {:error "'product' expects a list"}
+built-in {buffer s} {:error "'buffer': a size must be a whole number, not (+ 1 2 3)"}
+built-in {from-bytes s} {:error "'from-bytes' expects a list of bytes, or a buffer"}
+built-in {each (fn {x} {x}) s} {:error "'each' expects a list or a String"}
+built-in {str-chars s} {:error "'str-chars' expects a String"}
+built-in {range s} {:error "'range' expects Numbers"}
+library {zip s s} {:error "'fst' expects a list"}
+library {zip {1} s} {:error "'fst' expects a list"}
+library {flatten s} {:error "'fst' expects a list"}
+library {distinct s} {:error "'fst' expects a list"}
+library {remove-all 1 s} {:error "'fst' expects a list"}
+library {remove-fst 1 s} {:error "'fst' expects a list"}
+library {has-element? s 1} {:error "'elem?' expects a list"}
+library {avg s} {:error "'sum' expects a list"}
+library {minimum s} {:error "'cons' expects a list second"}
+library {maximum s} {:error "'cons' expects a list second"}
+library {sort-desc s} {:error "'sort' expects a QExpr"}
+library {best-of 1 s} {:error "'sort' expects a QExpr"}
+library {split 1 s} {:error "'take' expects a list"}
+library {repeat 2 s} {6 6}
+library {starts-with? s "+"} {:error "'index-of' expects a String and a String"}
+library {contains? s 1} {:error "'index-of' expects a String and a String"}
+library {ends-with? s "3"} {:error "'len' requires parameter of type string, list, hash or buffer"}
+library {unpack list s} {:error "'cons' expects a list second"}
+library {apply + s} {:error "'cons' expects a list second"}
+library {first s} {:error "'nth' expects a list"}
+library {second s} {:error "'nth' expects a list"}
+library {all-between? 0 9 s} {:error "'fst' expects a list"}
+case :value :same T
+cond :true (+ 1 2 3)
+hash <hash>{{:code (+ 1 2 3)}} (+ 1 2 3) 6 {(+ 1 2 3)} {{:code (+ 1 2 3)}}
+kept {6 6} {6 6} {6 {:a b}} (+ 1 2 3)
+fexpr items (a b) {a b} NIL (NIL) :sexpr NIL T
+--- stderr
+
+--- exit 0

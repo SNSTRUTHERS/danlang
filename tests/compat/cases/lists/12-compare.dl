@@ -1,0 +1,38 @@
+; 12-compare.dl - eq, neq, ==, cmp, <, >, <= and >= on lists: item by item, by value across kinds of number, nested;
+; a Q-expression against an S-expression and against other kinds; min and max of lists, and which of equal values
+; they give (the last one), the same through every way of calling them (2, 3, 4 and more arguments; foldl, unpack,
+; eval of a list made, map, the library's minimum and maximum)
+
+(print (eq {1 2} {1 2}) (eq {1 2} {2 1}) (eq {1 2} {1 2 3}) (eq {} NIL) (eq {{}} {NIL}) (eq {1 {2 {3}}} [1 [2 [3]]]))
+(print (eq {1 2.0 1/2} {1.0 2 0.5}) (eq {"a"} {\a}) (eq {a} {A}) (eq {:a} {a}) (eq {(+ 1 2)} {3}) (eq {(+ 1 2)} {(+ 1 2)}))
+(print (eq (fst {(a b)}) {a b}) (eq {} ()) (eq NIL 0) (eq {} "") (eq {T} {T}) (eq {T} {t}) (eq {nil} {()}))
+(print (neq {1} {1}) (neq {1} {2}) (== {1 2} {1 2}) (== {1} {1.0}) (eq) (eq {1}) ((eq {1}) {1}) (map (eq {}) {NIL {} {NIL}}))
+(print (eq (range 100) (range 100)) (eq (range 100) (range 101)) (eq (range 100) (cons 0 (range 1 100))))
+
+(print (cmp {1 2} {1 3}) (cmp {1 3} {1 2}) (cmp {1 2} {1 2}) (cmp {1} {1 2}) (cmp {1 2} {1}) (cmp {} {}) (cmp {} {0}))
+(print (cmp {2} {1 9 9}) (cmp {{1}} {{2}}) (cmp {{1 2}} {{1}}) (cmp {a} {b}) (cmp {"b"} {"a"}) (cmp {1} {1.0}) (cmp {1/2} {0.5}))
+(print (cmp {1} 1) (cmp 1 {1}) (cmp {} "z") (cmp {} :z) (cmp {} (fst {z})) (cmp {} T) (cmp {z} (fst {(z)})) (cmp (fst {(z)}) {z}))
+(print (< {1} {2}) (> {1} {2}) (< {1 2} {1}) (> {1 2} {1}) (<= {1} {1.0}) (>= {1} {1.0}) (<= {2} {1}) (>= {} {}))
+(print (< {"a"} {:a}) (< {:a} {a}) (< {a} {{}}) (< {{}} {T}) (< {1} {\a}) (< {T} {+}) (> {(fst {(x)})} {{x}}))
+(print (map (fn {p} {cmp (fst p) (snd p)}) {{{1} {2}} {{2} {1}} {{1} {1}} {{} {}} {{{}} {}} {{1 {2}} {1 {3}}}}))
+
+; min and max of lists, and of lists among other values
+(print (min {1 2} {1 3}) (max {1 2} {1 3}) (min {} {1}) (max {9} {1 1}) (min {b} {a} {c}) (max {1} 1 "s"))
+(print (min 3 {1} "s" :a) (max 3 {1} "s" :a T) (minimum {3 1 2}) (maximum {3 1 2}) (minimum {{2} {1}}) (maximum {"b" "c" "a"}))
+
+; ties: the last of the equal values (1/2 and 0.5 are equal, and print differently)
+(print (min 1/2 0.5) (min 0.5 1/2) (max 1/2 0.5) (max 0.5 1/2))
+(print (min 1/2 0.5 2) (max 2 1/2 0.5 2.0) (min 0.5 1/2 0.5) (max 1/2 0.5 1/2))
+(print (min 0.5 1/2 0.5 1/2 0.5) (max 1/2 0.5 1/2 0.5 1/2 0.5) (min 1 1/2 0.5 2 3) (max 0.5 1/2 0 -1))
+(print (foldl min 1/2 {0.5}) (foldl max 0.5 {1/2}) (foldl min 1/2 {0.5 1/2 0.5}) (foldr max 1/2 {0.5}))
+(print (unpack min {1/2 0.5}) (unpack max {0.5 1/2}) (apply min {0.5 1/2 0.5}) (apply max {1/2 0.5 1/2 0.5}))
+(print (eval (list min 1/2 0.5)) (eval (cons max {0.5 1/2})) (eval [min 0.5 1/2 0.5 1/2]))
+(print (map (fn {p} {min (fst p) (snd p)}) {{1/2 0.5} {0.5 1/2}}) (map (fn {p} {unpack max p}) {{1/2 0.5} {0.5 1/2}}))
+(print (minimum {1/2 0.5}) (maximum {0.5 1/2}) (minimum {0.5 1/2 0.5 1/2}) (min {1/2} {0.5}) (max {0.5} {1/2}))
+(fun {my-min a b} {min a b})
+(print (my-min 1/2 0.5) (my-min 0.5 1/2) ((fn {&x} {min 1/2 0.5}) 0))
+(print (min 5) (max "only") (min) ((min) 1/2 0.5) (max {1/2 0.5}))
+
+; strings, characters and lists, ordered
+(print (min "b" "a" "c") (max \a \c \b) (min {"b"} {"a"}) (max :b :a) (min "a" \z) (max "a" \z))
+(print (sort (list {3} {1 2} {1} {1 1}) <) (sort (list {3} {1 2} {1} {1 1}) >))

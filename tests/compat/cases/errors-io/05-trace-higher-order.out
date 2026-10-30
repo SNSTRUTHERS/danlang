@@ -1,0 +1,40 @@
+--- stdout
+<1><2><3>Error: bad item 3
+<1><2><3>Error: bad item 3
+<1><2><3>Error: bad item 3
+<5><4><3>Error: bad item 3
+<1><2><3>Error: bad item 3
+<1><2><3>Error: bad item 3
+<1><2><3>Error: bad item 3
+<1><2><3>Error: bad item 3
+Error: can't sort 3
+<1><2><3>Error: bad item 3
+<1><2><3>Error: bad item 3
+<0><1><2><3>Error: bad item 3
+<1><2>{10 20} {2 3} 6 {1 2 3}
+T NIL 2 2
+Error: 'cons' expects a list second
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: 'len' requires parameter of type string, list, hash or buffer
+Error: '+' adds numbers, or joins values to a string
+{1 1} {<function>(fn {b} {+ a b}) <function>(fn {b} {+ a b})}
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: 'map' takes 2 arguments, not 3
+1
+2
+NIL
+Error: 'if' can't be applied to values: it's a special form
+Error: 'if' can't be applied to values: it's a special form
+Error: The function takes 0 arguments, not 1
+{<function>(fn {b} {list a b}) <function>(fn {b} {list a b})}
+Error: Division by zero.
+{{12 6} :row-failed {3 2}}
+the last: an error in a foldl's lambda, in a map's, in three functions
+report: {90}
+--- stderr
+Error: 05-trace-higher-order.dl: Division by zero.
+  at 05-trace-higher-order.dl:45  (/ 60 x)
+  called at 05-trace-higher-order.dl:46  (total r)
+  called at 05-trace-higher-order.dl:47  (totals rows)
+  called at 05-trace-higher-order.dl:48  (report {{1 2} {3 0} {4 5}})
+--- exit 1

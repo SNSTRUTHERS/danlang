@@ -1,0 +1,44 @@
+(+ 1
+   2)
+(list 1
+  (list 2
+    (list 3
+      {4
+       5})))
+{a
+ b
+ c}
+[1
+ 2]
+"""a here string
+over three
+lines"""
+"""""five quotes, three inside: """ and on
+the next line"""""
+(fun {two-line x}
+  {* x 2})
+(two-line 21)
+(do
+  (print "first line of a do")
+  (+ 1 (len 5))
+  (print "not reached"))
+(list 1
+  \nosuchname
+  3)
+(list 1 2
+  (+ 3 4))) (print "after a closer too many")
+(print """here string with "quotes" and
+a newline""")
+(len """
+""")
+(repr """""
+""" """"")
+(def {multi-def}
+  #({{:a 1}
+     {:b {2
+          3}}}))
+multi-def
+(multi-def :b)
+(print "the input ends inside an open expression:")
+(list 1
+  (list 2

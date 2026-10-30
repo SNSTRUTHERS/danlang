@@ -1,0 +1,41 @@
+; 11-type-table: type-of and every type test (t? nil? num? int? fixed? rational? complex? atom? symbol? string? char?
+; function? error? qexpr? sexpr? buffer?, and zero? one?) over every kind of value: integers small, long-sized and big
+; at the edges, whole numbers of other kinds (2.0, 4/2, 2+0i), fractions, complex numbers, characters, strings,
+; atoms, symbols, lists, S-expressions, T, NIL, exit, functions of each sort, hashes, buffers, streams and errors.
+(def {tests} (list
+  (list :t? t?) (list :nil? nil?) (list :num? num?) (list :int? int?) (list :fixed? fixed?) (list :rational? rational?)
+  (list :complex? complex?) (list :atom? atom?) (list :symbol? symbol?) (list :string? string?) (list :char? char?)
+  (list :function? function?) (list :error? error?) (list :qexpr? qexpr?) (list :sexpr? sexpr?) (list :buffer? buffer?)
+  (list :zero? zero?) (list :one? one?)))
+(fun {true-of v} {map fst (filter (fn {tt} {(snd tt) v}) tests)})
+(def {sx} ((fexpr {x} {x}) (+ 1 2)))
+(def {values} (list
+  0 1 -1 255 256 65535 65536 -65536 2147483648 9223372036854775807 -9223372036854775807 -9223372036854775808
+  9223372036854775808 -9223372036854775809 18446744073709551616 (* 9223372036854775807 2) (- -9223372036854775808 1)
+  (+ 9223372036854775807 1 -1) (- (shl 1 64) (shl 1 64) 7) (/ (shl 1 64) (shl 1 63))
+  2.0 0.0 -0.0 2.5 1.000 10.00 math.pi 4/2 1/2 -7/3 (/ 6 4) (/ 9223372036854775808 2) 1/9223372036854775808
+  (complex 1 2) (complex 0 1) (complex 2 0) (complex 1/2 -1.5) (* (complex 0 1) (complex 0 1)) (+ (complex 1 1) (complex 1 -1))
+  \a \space \null (code-char 255) (code-char 0) "" "a" "abc" "\x00" (str-repeat "x" 3) :a :ABC (to-atom "") (to-atom 5)
+  (to-sym "s") (fst {x}) (to-sym "T") (fst {nil}) NIL {} () (list) {1} {{}} {(+ 1 2)} sx (read "(a b) c")
+  T exit + (eq 1) (fn {x} {x}) (fn {} {1}) (fexpr {x} {x}) mod (mod 7) if print first
+  (hash-create) #({{:a 1}}) (buffer 2) (buffer 0) stdout stderr stdin))
+(each {v values} (print (repr v) (type-of v) (true-of v)))
+
+; an error, taken as a value by the type tests (and an argument to any other function: the call is that error)
+(def {e} (error "e"))
+(print "error" (type-of e) (t? e) (nil? e) (num? e) (int? e) (fixed? e) (rational? e) (complex? e) (atom? e) (symbol? e)
+  (string? e) (char? e) (function? e) (error? e) (qexpr? e) (sexpr? e) (buffer? e))
+(print "error" (zero? e) (one? e) (not e) (true-of e) (map (fn {tt} {(snd tt) (error "x")}) (take 3 tests)))
+(print "coded" (type-of (error "c" :mine)) (error? (error "c" :mine)) (error-code (error "c" :mine)))
+
+; the same tests through other ways in: partial application (none: each takes one), map, filter, as methods
+(print "partial" (t?) (int?) (error?) (try (int? 1 2) &err) (try (type-of 1 2) &err) (try (zero? 1 2) &err))
+(print "map" (map int? {1 1.0 1/2 x}) (filter symbol? {a :a "a" \a}) (map type-of [1 "s" \c :a NIL T]))
+(def {h} #({{:is-int int?} {:kind type-of}}))
+(print "method" (h :is-int 5) (h :kind :x) (h :is-int 5.5))
+(print "defined" (defined? x) (defined? T) (defined? NIL) (defined? int?) (defined? values) (defined? {values tests}) (defined? {values zz}))
+(print "expr?" (expr?) (expr? 1) (expr? NIL) (expr? (error "e")) (expr? zz) (try (expr? 1 2) &err))
+(fun {probe} {list (expr?) (expr? &_)})
+(print "expr? in a function" (probe) (probe 1 2))
+(fun {opt x} {if (expr? &1) (list x &1) (list x :none)})
+(print "optional" (opt 1) (opt 1 2) (opt NIL NIL))

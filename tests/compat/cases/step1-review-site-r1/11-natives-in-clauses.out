@@ -1,0 +1,90 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Selection not found
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Selection not found
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Case not found
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run c1 (list (list 4 f3) (list 4 f3) (list 4 f3) (list 8...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (run c1 (list (list 4 f3) (list 4 f3) (list 4 f3) (list 7...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (run c1 (list (list 7 f3) (list 7 f3) (list 7 f3) (list 9...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (run c1 (list (list -7 f3) (list -7 f3) (list -7 f3) (lis...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (run c1 (list (list 4 f3) (list 7 f3) (list -7 f3) (list ...
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (run c2 (list (list "abc" f3) (list "abc" f3) (list "abc"...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (run c2 (list (list "xbc" f3) (list "xbc" f3) (list "xbc"...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (run c2 (list (list "xyz" f3) (list "xyz" f3) (list "xyz"...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run c3 (list (list 4 f3) (list 4 f3) (list 4 f3) (list 6...
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {(even? x) (floor x)} {(odd? x) x})
+  called at line 1  (run c3 (list (list 3 f3) (list 3 f3) (list 3 f3) (list 7...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run c4 (list (list 7 f3) (list 7 f3) (list 7 f3) (list -...
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {(!=0 x) (div x 2)} {(xor x T) (mod x 2)})
+  called at line 1  (run c4 (list (list 7 f3) (list 7 f3) (list 7 f3) (list 0...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run k1 (list (list 6 f3) (list 6 f3) (list 6 f3) (list 9...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run k1 (list (list 7 f3) (list 7 f3) (list 7 f3) (list 1...
+  at line 1  (pow 2 x)
+  called at line 1  (run k1 (list (list 8 f3) (list 8 f3) (list 8 f3) (list 5...
+  at line 1  (pow 2 x)
+  called at line 1  (run k1 (list (list 6 f3) (list 7 f3) (list 8 f3) (list 6...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (run k2 (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (run k2 (list (list -7/2 f3) (list -7/2 f3) (list -7/2 f3...
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case (floor x) {3 (ceil x)} {-4 (round x)})
+  called at line 1  (run k2 (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run k3 (list (list 3 f3) (list 3 f3) (list 3 f3) (list 4...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (run k3 (list (list 4 f3) (list 4 f3) (list 4 f3) (list 5...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run k3 (list (list 5 f3) (list 5 f3) (list 5 f3) (list 3...
+--- exit 0

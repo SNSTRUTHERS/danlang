@@ -1,0 +1,22 @@
+--- stdout
+exit exit :exit {exit} {exit}
+NIL NIL NIL NIL
+Error: 'exit' expects a Number Error: 'exit' expects a Number Error: 'exit' expects a Number Error: 'exit' expects a Number
+Error: the code is an error
+{:caught "'exit' expects a Number"}
+exit :exit
+{:passed exit}
+<hash>{{:e exit}}
+exit
+
+:true 1 exit
+{:would-leave 3}
+to stdout, with a newline
+stage1: finished (not when it exits)
+NIL
+{:stage1 :stage2 :stage3 {:stage4 1} :stage3-after :stage3 {:stage4 2} :stage3-after :stage2-after}
+the last: exit 3, four calls down, in a map's function, in a try
+exiting from stage4; 
+--- stderr
+to stderr, before the exit
+--- exit 3

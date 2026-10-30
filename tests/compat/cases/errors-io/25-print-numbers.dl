@@ -1,0 +1,53 @@
+; 25-print-numbers.dl - how numbers print (print, write and repr show them alike): integers of every size (the
+; long-sized ones and past them, both ways), fixed decimals (their places kept, no zeros at the end), rationals (in
+; lowest terms, an integer when whole), complex numbers (a real one when the imaginary part is 0), numbers read in
+; other bases, and to-str's, hex's and bin's forms; numbers inside lists, strings and format
+
+(print 0 -0 +5 1 -1 255 256 65535 65536 -65536 1_000_000)
+(print 9223372036854775807 -9223372036854775808 9223372036854775808 -9223372036854775809)
+(print (+ 9223372036854775807 1) (- -9223372036854775808 1) (* 3037000500 3037000500) (* 3037000499 3037000499))
+(print (- -9223372036854775808) (abs -9223372036854775808) (- 0 -9223372036854775808) (* -1 -9223372036854775808))
+(print (+ 4611686018427387904 4611686018427387904) (- 4611686018427387904 -4611686018427387904))
+(print (- (+ 9223372036854775807 1) 1) (/ (* 9223372036854775807 2) 2))
+(print (foldl * 1 (range 1 31)) (- (foldl * 1 (range 1 26))))
+(print (pow 2 100) (pow -3 41) (* (pow 10 30) (pow 10 30)))
+(write 1 -2 3000000000000000000000 "\n")
+(print (repr 12) (repr -9223372036854775809) (repr (pow 2 70)))
+
+; fixed decimals
+(print 3.14159_26535 0.000 100.00 1.50 -0.5 0.25 -0.0 1.0)
+(print (+ 0.1 0.2) (- 0.3 0.1) (* 1.5 1.5) (* 0.1 0.1) (+ 1 0.5) (- 2 2.0) (* 2.50 4))
+(print (/ 1.0 3) (/ 1.5 0.5) (/ 3.0 2) (to-fixed 1/3) (to-fixed 2/3 3) (to-fixed 1/3 0) (to-fixed -1/3 2))
+(print (fdiv 1 7) (fdiv 22 7 20) (to-fixed 5) (to-fixed 1.23456 2) (truncate 2.75) (truncate -2.75))
+(print math.pi)
+(print math.e math.phi math.gamma)
+(print (repr 1.50) (repr -0.250) (to-str 2.50))
+
+; rationals
+(print 1/3 -2/4 720/84 4/2 -6/3 (/ 6 4) (/ 1 3) (/ -1 3) (/ 1 -3) (/ 4))
+(print (+ 1/2 1/2) (+ 1/3 1/6) (* 2/3 3/2) (- 1/2 1/3) (+ 1/3 0.5) (* 1/3 1.5) (+ 1/2 1))
+(print (rational.n 6/8) (rational.d 6/8) (rational.n 0.75) (rational.d 0.75) (to-rational 0.125) (to-rational 2.0))
+(print (/ (pow 2 70) (pow 3 40)) (/ 9223372036854775807 9223372036854775806))
+(print (repr 7/2) (repr -1/2))
+
+; complex numbers
+(print (complex 1 2) (complex 0 1) (complex 0 -1) (complex 1 0) (complex -1.5 2.25) (complex 1/2 -1/3))
+(print (* (complex 0 1) (complex 0 1)) (+ (complex 1 2) (complex 1 -2)) (/ (complex 1 1) 2) (/ 1 (complex 0 1)))
+(print (* (complex 1 1) (complex 1 -1)) (- (complex 3 4)) (* 2.5 (complex 2 2)) (+ 1/2 (complex 0 1)))
+(print (complex (pow 2 70) -1) (repr (complex 3 -4)))
+
+; bases, read
+(print #xff #xFF #b1010 #o17 #z10 #zZZ #16rFF #36rzz #2r1111 -#x10 #x-10)
+(print #c+- #c+0- #t12 #q33 #v44 #f55 #s66 #n88 #d99)
+(print #x0.8 #b0.1 #x1/#x3 #[01]101 #[ab]ba #<x01 #>x10)
+
+; to-str in bases, hex, bin
+(print (to-str 255 "x") (to-str 255 "#x") (to-str 255 "#16r") (to-str 255 "b") (to-str 255 "#b") (to-str -255 "x"))
+(print (to-str 1/3 "#x") (to-str 2.5 "x") (to-str 2.5 "#x") (to-str 0 "x") (to-str (pow 2 70) "#x"))
+(print (to-str 10 "c") (to-str 10 "#c") (to-str 100 "k") (to-str 7 "m") (to-str 35 "z") (to-str 35 "#36r"))
+(print (hex 255) (hex 255 4) (hex 0) (hex -1) (bin 5) (bin 5 8) (bin 0) (hex (pow 2 64)))
+
+; numbers in other values
+(print {1 2.5 1/3 -4} (list (complex 1 1) 9223372036854775808) (+ "n=" 5 " r=" 1/2 " f=" 1.50))
+(print (str-join (list 1 2.5 3/4) ", ") (format "{} and {}" 1/3 0.10) (to-str 42) (repr (to-str 42)))
+(print (val "42") (val " -7 ") (val "1/3") (val "2.50") (val "#xff") (val "1_000"))

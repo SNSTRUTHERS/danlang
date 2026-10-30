@@ -1,0 +1,91 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>NIL NIL
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>T T
+=> Error: The function takes 2 arguments, not 3
+danlang>{{T NIL T} {NIL T T} {T T T} {T NIL T} {NIL NIL NIL}}
+=> NIL
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:190  (index-of s sub)
+  called at line 1  (sw s "y")
+  at <BUNDLE>\lib\globals.dl:190  (index-of s sub)
+  called at line 1  (sw s "y")
+  at <BUNDLE>\lib\globals.dl:190  (index-of s sub)
+  called at line 1  (sw s2 "xyz")
+  at <BUNDLE>\lib\globals.dl:190  (index-of s sub)
+  called at line 1  (sw s "q")
+  at <BUNDLE>\lib\globals.dl:190  (index-of s sub)
+  called at line 1  (sw e1 "x")
+  at <BUNDLE>\lib\globals.dl:190  (index-of s sub)
+  called at line 1  (sw e2 "x")
+  at <BUNDLE>\lib\globals.dl:191  (len sub)
+  called at line 1  (ew "ab" s)
+  at <BUNDLE>\lib\globals.dl:191  (len sub)
+  called at line 1  (ew "ab" s)
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (ew s "xyz")
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (ew s2 "xyz")
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (ew s s)
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (ew e1 "cx")
+  at <BUNDLE>\lib\globals.dl:191  (len sub)
+  called at line 1  (ew "x" e2)
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (cw s "yz")
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (cw s "yz")
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (cw s "q")
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (cw e1 "x")
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (cw e2 "x")
+--- exit 0

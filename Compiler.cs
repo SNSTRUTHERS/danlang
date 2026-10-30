@@ -19,6 +19,10 @@ public partial class LVal {
             return (File != null ? File + ":" + Line : Line > 0 ? "line " + Line : "(made, not read)") + "  " + code;
         }
         internal Uses? Uses;    // the names a function's body has (&_ or &1 ..., &0), anywhere in it
+        internal Name[]? Names; // a function's formals': their names, if all different (LVal.FormalNames)
+        internal bool NamesKnown;
+        internal LVal? Test, Value;     // a clause's (cond's, case's): its first item and its second, each made a list
+                                        //   (as head makes it), for eval to run (Natives.cs)
     }
 
     // What a function's body names, anywhere in it: its extra arguments (&_, &1 ...), the hash it's a method of (&0)
@@ -59,6 +63,11 @@ public partial class LVal {
     // Where evaluation is: the call being made (an error made now was made there), and the calls of functions it's in
     // (a stack, the outermost first), for an error's trace
     internal static CodeInfo? Site;
+
+    // The plans' count of changes: one more whenever a call's plan changes (Learn) or a name becomes a local one
+    // (Name.Local), so code run twice with no change between goes the same way, and leaves the same Site (Natives.cs);
+    // and when on-note's function is given Ctrl-C's note, in the middle of what's running
+    internal static long PlanEpoch;
     private static readonly CodeInfo?[] _calls = new CodeInfo?[MaxDepth + 2];
     private static int _ncalls;
     // (the profiler's look: the call being made, and the innermost function's call)
@@ -157,13 +166,13 @@ public partial class LVal {
 
     // A call: a list's items, the first the function
     internal sealed class CallNode : Node {
-        private readonly List<LVal> _cells;
+        private readonly LList _cells;
         private readonly Node?[] _nodes;      // each item's, as it's needed
         private readonly CodeInfo _info;      // (its place, for an error's trace)
         private readonly int _n;              // (its items: how many)
 
         public CallNode(LVal code, CodeInfo info) {
-            _cells = code.Cells ?? new List<LVal>();
+            _cells = code.Cells ?? new LList();
             _n = _cells.Count;
             _nodes = new Node?[_n];
             _info = info;
@@ -223,12 +232,22 @@ public partial class LVal {
             return Err($"S-Expression starts with incorrect type. Got {LEName(g.ValType)}, Expected {LEName(LE.FUN)}.");
         }
 
-        // The plan for the first item's value f (none: its name isn't a global's, or bound in another scope too)
+        // The plan for the first item's value f (none: its name isn't a global's, or bound in another scope too); a
+        // plan other than the one it had is a change (PlanEpoch)
         private void Learn(LEnv e, LVal f) {
+            var had = _plan;
             _plan = Plan.None;
-            if (_nodes[0] is not SymNode s || !s.Global(e, out var root, out var slot) || !ReferenceEquals(slot.Value, f)) return;
+            if (_nodes[0] is not SymNode s || !s.Global(e, out var root, out var slot) || !ReferenceEquals(slot.Value, f)) {
+                if (had != Plan.None) PlanEpoch++;
+                return;
+            }
             var p = PlanFor(f);
-            if (p == Plan.None) return;
+            if (p == Plan.None) {
+                if (had != Plan.None) PlanEpoch++;
+                return;
+            }
+            if (p != had || !ReferenceEquals(f, _hval) || !ReferenceEquals(slot, _hslot) || !ReferenceEquals(root, _hroot)
+                || !ReferenceEquals(s.Name, _hname)) PlanEpoch++;
             (_hname, _hroot, _hslot, _hval, _plan) = (s.Name, root, slot, f, p);
         }
 
@@ -439,6 +458,31 @@ public partial class LVal {
         // A function (not a built-in) called: its arguments' values (the first error stops them), or, for an fexpr,
         // as they're written; in tail position, a TAIL value for the Apply it goes back to
         private LVal CallFun(LEnv e, LVal f, FunInfo fi, int start, bool tail) {
+            if (!tail && !fi.IsFexpr && fi.Native == null && (fi.Env == null || fi.Env.Count == 0)
+                && fi.Formals!.FormalNames() is Name[] names && names.Length == _n - start)
+                return CallNew(fi, names, start, e);
+            return CallAny(e, f, fi, start, tail);
+        }
+
+        // (one of as many arguments as its formals, all different, with no values bound already and no native way:
+        // their values, then LVal.ApplyNew, as Apply would have it)
+        private LVal CallNew(FunInfo fi, Name[] names, int start, LEnv e) {
+            var vals = names.Length == 0 ? Array.Empty<LVal>() : new LVal[names.Length];
+            for (int k = 0; k < vals.Length; k++) {
+                var v = NodeAt(start + k).Eval(e);
+                if (v.IsErr) return v;
+                vals[k] = v;
+            }
+            _calls[_ncalls++] = _info;
+            try {
+                return ApplyNew(fi, names, vals);
+            }
+            finally {
+                _ncalls--;
+            }
+        }
+
+        private LVal CallAny(LEnv e, LVal f, FunInfo fi, int start, bool tail) {
             var args = _n == start ? NoArgs : new List<LVal>(_n - start);
             for (int k = start; k < _n; k++) {
                 if (fi.IsFexpr) {

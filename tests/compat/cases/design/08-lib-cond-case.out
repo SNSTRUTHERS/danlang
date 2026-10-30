@@ -1,0 +1,28 @@
+--- stdout
+{:neg :zero :pos} :pos :zero
+{1 :pos} {-1 :nonpos} :global-y
+1 2 3
+test 1
+test 2
+value 2
+2
+2 42 :called :test-was-called
+
+NIL <function>(len) <function>(fn {x} {x}) 2 :empty-string
+:plus-zero :key-called :b 1
+:three Case not found
+:b Case not found :list
+:second Unbound Symbol 'nope'
+Error: Selection not found Error: Selection not found Error: Case not found Error: Case not found Error: in test Error: in value
+Error: 'head' expects a QExpr Error: 'head' passed an empty list Error: 'head' passed an empty list Error: 'head' passed an empty list Error: 'head' passed an empty list Error: 'head' expects a QExpr Error: 'head' expects a QExpr
+levels Too deep: more than 10000 calls nested 10000
+cl1 :done :done Error: Too deep: more than 10000 calls nested
+ca1 :done :done Error: Too deep: more than 10000 calls nested
+cl2 :done :done :done :done :done
+:hijacked
+{:new-cond 2} {:new-cond 1}
+{:new-case 3 {{3 :b}}} {:new-case 3 {{3 :c}}}
+:fake-head :real :b {1 :pos}
+--- stderr
+
+--- exit 0

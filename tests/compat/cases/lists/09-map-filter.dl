@@ -1,0 +1,63 @@
+; 09-map-filter.dl - map and filter: f of each item in turn, left to right (shown by printing), with built-ins,
+; partial applications, lambdas and closures; NIL and {} as the list; the first error stops them (the items after it
+; aren't visited); f that isn't a function (with items, and with none), a special form, a hash; a function of the
+; wrong arity; items given as they're written; the list unchanged
+
+(def {l} {1 2 3 4 5})
+; ((+ 10) is 10, not a partial application: + takes any number of arguments; so that map is the error)
+(print (map 1+ l) (map - l) (map (fn {x} {* x x}) l) (map (+ 10) l) (map str-upper {"a" "b"}) (map list l))
+(print (map 1+ NIL) (map 1+ {}) (map 5 NIL) (filter 5 {}) (filter odd? NIL) (map (fn {x} {error "never"}) NIL))
+(print (filter odd? l) (filter even? l) (filter (fn {x} {> x 2}) l) (filter (fn {x} {T}) l) (filter (fn {x} {NIL}) l))
+(print (filter (fn {x} {x}) {1 NIL 2 {} 3 {4} T}) (filter num? {1 "a" 2 :b {3} 4.5}) (filter qexpr? {1 {2} {} (3)}))
+(print (map type-of {a (b) {c} "d" 1 \e}) (map (fn {x} {x}) {(+ 1 2) x}) (filter sexpr? {a (b) {c} ()}))
+(print l)
+
+; each item in turn, left to right
+(print (map (fn {x} {do (print "  map sees" x) (* x 10)}) {1 2 3}))
+(print (filter (fn {x} {do (print "  filter sees" x) (odd? x)}) {1 2 3}))
+(print (map (fn {x} {do (print "  outer" x) (map (fn {y} {do (print "    inner" x y) (+ x y)}) {10 20})}) {1 2}))
+
+; the first error stops them
+(print (map (fn {x} {do (print "  visit" x) (+ x 0)}) {1 2 :three 4}))
+(print (filter (fn {x} {do (print "  test" x) (odd? x)}) {1 2 "three" 4}))
+(print (map (fn {x} {if (eq x 3) (error "three!") x}) l))
+(print (filter (fn {x} {if (eq x 2) (error "two!") T}) l))
+
+; f's value can be anything, lists too
+(print (map (fn {x} {range x}) {0 1 2 3}) (map (fn {x} {NIL}) {1 2}) (map (fn {x} {[x x]}) {:a :b}) (map (fn {x} {+}) {1}))
+
+; partial applications and closures
+(fun {adder n} {fn {x} {+ x n}})
+(print (map (adder 100) l) (map (adder -1) l) (map (fn {f} {f 1}) (map adder l)))
+(print (map (map 1+) {{1 2} {3} NIL}) (map (filter odd?) {{1 2 3} {4}}) (map (fn {x y} {+ x y}) {1 2}))
+(print ((map 1+) {7 8}) (map 1+) (filter odd?) (map) (filter))
+(def {k} 1000)
+(fun {add-k l} {map (fn {x} {+ x k}) l})
+(fun {shadow-k k l} {add-k l})
+(print (add-k {1 2}) (shadow-k 5 {1 2}) (map (fn {x} {+ x k}) {1}) ((fn {k} {map (fn {x} {+ x k}) {1}}) 7))
+
+; f must be a function
+(print (map 5 {1}))
+(print (filter :key {1}))
+(print (map {1+} {1}))
+(print (map "s" {1}))
+(print (map if {1}))
+(print (filter and {1}))
+(print (map (hash-create {{:a 1}}) {:a}))
+(print (map 1+ 5))
+(print (filter odd? "abc"))
+(print (map 1+ {1} {2}))
+(print (map (error "no f") (do (print "  never: an error stops the arguments") {1})))
+(print (map (do (print "  f first") 5) (do (print "  then the list") {1})))
+
+; a function of the wrong arity
+(print (map (fn {} {1}) {1}))
+(print (map (fn {a b c} {a}) {1 2}))
+(print (filter (fn {a b} {a}) {1 2}))
+
+; chained
+(print (map 1+ (filter odd? (map (fn {x} {* x 3}) (range 10)))))
+(print (filter (fn {l} {> (len l) 1}) (map (fn {n} {range n}) (range 5))))
+(print (map (fn {p} {+ (fst p) (snd p)}) (zip l (reverse l))))
+(print (map len (map (fn {n} {filter (fn {d} {zero? (mod n d)}) (range 1 (+ n 1))}) (range 1 13))))
+(print l)

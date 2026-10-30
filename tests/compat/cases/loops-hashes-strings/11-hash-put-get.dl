@@ -1,0 +1,81 @@
+; 11-hash-put-get.dl - hash-put, hash-get, hash-remove, hash-key?, len and (h key): put's value (the old value, NIL
+; for none; several entries: a list of them, errors included, not stopping), NIL putting an entry out, tags in
+; entries ({tag} alone: a tag on the hash), computed keys with [k v] (whose value is evaluated again), a value
+; evaluated where hash-put is called (not where the entry was written), a hash shared wherever it's kept; the errors
+
+(def {h} (hash-create))
+(print (hash-put h {:a 1}) (hash-put h {:a 2}) (hash-put h {:b (+ 1 2)}) h)
+(print (hash-put h {:c 3} {:d 4} {:a 5}))
+(print h (len h))
+(print (hash-get h :a) (h :a) (hash-get h :none) (h :none) (hash-get NIL :a))
+(print (hash-key? h :a) (hash-key? h :none) (hash-key? h "a"))
+
+; NIL puts the entry out (the old value back); putting NIL where there's none is NIL
+(print (hash-put h {:a NIL}) (hash-key? h :a) (h :a) (len h))
+(print (hash-put h {:zz NIL}) (hash-key? h :zz))
+(print (hash-put h {:b (if NIL 1)}) h)
+
+; tags in entries; {tag} alone is a tag on the hash ({key} of a key it has: nothing)
+(print (hash-put h {:e 5 :t1 :t2}) h)
+(print (hash-put h {:e 6 :t3}) h)
+(print (hash-put h {:only}) (hash-put h {:c}) h)
+
+; computed keys: [k v] is a list of the values, and the value is then evaluated again (a symbol: its value)
+(def {key} "computed")
+(print (hash-put h [key (* 6 7)]) (h "computed"))
+(def {zz} :zz-value)
+(print (hash-put h [:sym (to-sym "zz")]) (h :sym))
+(dotimes {i 3} (hash-put h [i (* i i)]))
+(print h)
+
+; the value is evaluated where hash-put is called: an entry made in a function, put elsewhere
+(fun {entry-of} {do =(local 7) {:m local}})
+(print (entry-of))
+(print (hash-put h (entry-of)))
+(def {local} :global-local)
+(print (hash-put h (entry-of)) (h :m))
+(def {ent} {:e2 (+ 40 2)})
+(print (hash-put h ent) (h :e2))
+
+; several entries: a list of what each gave, an error among them not stopping the rest
+(def {g} #())
+(print (hash-put g {:a 1} 5 {:b 2} {:c 1 2} {:d 4}))
+(print g)
+(print (hash-put g {:a (do (write "[1]") 10)} {:b (do (write "[2]") 20)}))
+
+; remove: the value taken out, or NIL
+(print (hash-remove g :a) (hash-remove g :a) (hash-remove g "b") g)
+
+; a hash is shared: one value wherever it's kept
+(def {g2} g)
+(hash-put g2 {:shared :yes})
+(print (g :shared) (eq g g2))
+(fun {add-to hh} {hash-put hh {:from-fn T}})
+(add-to g)
+(print g)
+
+; (h key) is the value; (h) the hash; a key that's an expression is evaluated
+(print (g (if T :shared :d)) (g) (eq (g) g))
+
+; the errors
+(print (hash-put g 5))
+(print (hash-put g {}))
+(print (hash-put g {5}))
+(print (hash-put g {:x 1 "t"}))
+(print (hash-put g {:x (error "value failed")}) (hash-key? g :x))
+(print (hash-put g {1.5 1}))
+(print (hash-put 5 {:a 1}))
+(print (hash-put NIL {:a 1}))
+(print (hash-get 5 :a))
+(print (hash-get g {1}))
+(print (hash-get g 1.5))
+(print (hash-remove 5 :a))
+(print (hash-remove g \c))
+(print (hash-key? 5 :a))
+(print (hash-key? g 1.5))
+(print (g :d 1))
+(print (g 1.5))
+(print (g (error "key failed")))
+(print (hash-put g))
+(print (hash-get g))
+(print (hash-get g :a :b))

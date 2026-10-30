@@ -20,8 +20,9 @@ An error that ends a program is shown with where it was made (the file, the line
 of functions it was in (a call in tail position takes its caller's place: it isn't one of them); one at the REPL too.
 A file that can't be read says the line (`file.dl:12: missing )}`: the line of the bracket left open).
 
-For speed, use the Release build (`dotnet build -c Release`, then `bin/Release/net6.0/danlang`).  It runs on the
-newest .NET runtime installed (6 or later: 8 is a fifth faster).
+For speed, publish the Release build (`dotnet publish -c Release`, then `bin/Release/net8.0/win-x64/publish/danlang`,
+or `linux-x64` ... for another system): compiled ahead of time, it starts sooner than `dotnet build -c Release`'s
+`bin/Release/net8.0/danlang`.  It runs on the newest .NET runtime installed (8 or later).
 
 ## The language
 
@@ -122,3 +123,13 @@ example programs.
 `buffers` and `library`.  Every
 built-in and every library function has checks; a new one should too.  The suite is in danlang itself, so another
 implementation of the language (hylang, on the Hydra-16) can run it as it is.
+
+## The compatibility corpus and the benchmarks
+
+`tests/compat/cases/`: programs (`name.dl`, run as a program, or `name.repl`, the REPL's input) whose whole output,
+stdout, stderr and the exit status, is kept beside each (`name.out`): what this interpreter does, to the byte, its
+traces and quirks too, so a change to how it does it (a faster way) can be checked to change nothing.  A bundle is a
+build with `lib/` beside it (`tests/compat/compat.sh bundle DIR`); `compat.sh check DIR` runs every case with it and
+shows what differs, `compat.sh diff A B` compares two bundles, and `compat.sh expect DIR` keeps the outputs of a new
+case (from the build whose behaviour is the one to keep).  `bench/run.sh A B ...`: the benchmarks' times with each
+bundle, and each one's speed-up against the first's.

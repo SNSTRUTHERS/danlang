@@ -1,0 +1,40 @@
+; 26-repr.dl - how lists print: print, write and repr of nested and empty lists (an empty list or S-expression is
+; NIL, at any depth), lists holding strings with every escape, every named character, numbers of every kind, atoms,
+; symbols, S-expressions, functions (built-in, partially applied, lambdas), hashes, buffers, errors; to-str, format
+; and str-join of lists; output-of print of a list
+
+(print {} {{}} {{} {}} {{{}}} {()} {(())} {(() {})} [[]] [NIL [NIL]])
+(print (repr {}) (repr {{}}) (repr {()}) (repr [NIL]) (repr (list)))
+(print {1 {2 {3 {4 {5}}}}} {{1} {2} {3}} {a (b (c (d)))} {(a {b (c {d})})})
+(print {"plain" "with space" "" "tab\there" "nl\nhere" "cr\rhere" "q\"uote" "back\\slash"})
+(print {"\0" "\a" "\b" "\f" "\v" "\e" "\x01" "\x1f" "\x7f" "\x41" "it's"})
+(print (repr {"\0\a\b\f\n\r\t\v\e\\\""}) (repr "{not a list}") (repr {"{" "}"}))
+(print {\a \Z \0 \9 \space \tab \lf \cr \null \bell \backspace \ff \vtab \escape \delete})
+(print {\( \) \{ \} \[ \] \\ \" \' \` \; \: \. \, \~ \! \@ \# \$ \% \^ \& \| \* \< \> \? \_ \- \+ \/})
+(print [(code-char 0) (code-char 7) (code-char 31) (code-char 127) (code-char 65)])
+(print {1 -1 +1 1.5 -0.25 1/3 -7/2 100000000000000000000 3.14159_26535 #xff #b101 1_000})
+(print [(complex 1 2) (complex 0 1) (complex 0 -1) (complex 1.5 -2) (complex 1/2 1/3) (/ 1 3) (/ 6 3) (to-fixed 1/3 4)])
+(print {:a :B :long-atom a B long-symbol T NIL exit})
+(print {(+ 1 2) (f) () (a . b)} (fst {(+ 1 2)}) (repr (fst {(+ 1 2)})))
+(print [+ (take 1) (cons {a}) (fn {x} {* x 2}) (fn {} {}) (fexpr {x} {x}) (map 1+) (nth 0)])
+(print [(hash-create {{:k {1 2}} {"s" "t"}}) (hash-create) (buffer {0 1 255}) (buffer 0)])
+(print [stdin exit T])
+
+; print shows a string's text, but inside a list strings and characters are in repr form
+(print "a" \b {"a" \b})
+(write "a" \b {"a" \b} "\n")
+(print (repr "a") (repr \b) (repr {"a" \b}) (repr [(repr "a")]))
+(print (to-str {1 "a" \b}) (repr (to-str {1 "a" \b})) (to-str {}) (repr (to-str NIL)))
+(print (format "list: {}, empty: {}, nested: {}" {1 "a"} {} {{}}) (+ "join: " {1 2}) (+ "" {"s"}))
+(print (str-join [{1} {"a"} NIL] "/") (repr (output-of (print {"x" \y}))) (repr (output-of (write {"x" \y}))))
+
+; an error inside a list can't be made (it stops the call), but its message prints as part of print
+(print [1 (error "never in a list")])
+(print 1 (error "printed as an argument") {2})
+(print (repr (error "repr of an error")) (repr (try (head {}) &err)))
+
+; long and wide
+(print (range 40))
+(print (map (fn {i} {range i}) (range 8)))
+(print (map (fn {i} {str-repeat "x" i}) (range 6)))
+(print (repr (map (fn {i} {code-char (+ 65 i)}) (range 26))))

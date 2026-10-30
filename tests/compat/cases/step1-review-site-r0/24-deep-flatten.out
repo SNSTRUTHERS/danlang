@@ -1,0 +1,9 @@
+--- stdout
+{1}
+1
+1
+1
+--- stderr
+Error: 24-deep-flatten.dl: Unbound Symbol 'y'
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+--- exit 1

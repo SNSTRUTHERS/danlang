@@ -1,0 +1,25 @@
+--- stdout
+set NIL one one :string "one"
+kinds NIL "a b c 3" NIL "42" NIL x x NIL "sym"
+changed NIL two NIL 1/2 NIL one
+unset NIL NIL NIL NIL NIL NIL
+in a function {"one" "one" NIL} NIL {NIL NIL NIL} NIL {"back" "back" NIL}
+dollar {(env "DLGAP_A")} {(env "DLGAP_A")} back {"back" NIL}
+errors {"'setenv' expects a path" :inval} {": invalid argument" :inval} {"A=B: invalid argument" :inval} {"'env' expects a path" :inval} {"'unsetenv' expects a path" :inval}
+errors NIL NIL {"'env' expects a path" :inval}
+partial <function>(setenv "DLGAP_P") NIL p {"'env' takes at most 1 argument, not 2" NIL} <function>(unsetenv) {"'setenv' takes 2 arguments, not 3" NIL}
+machine :windows NIL 200 :atom {"'platform' takes 0 arguments, not 1" NIL} {"'tick-rate' takes 0 arguments, not 1" NIL} {"'hydra?' takes 0 arguments, not 1" NIL}
+seconds-of 0 86400 1 -1
+seconds-of 762525015 -946684800 5184000 3160857600 0
+seconds-of 31622400 172800 43200
+seconds-of {"2023: invalid argument" :inval} {"2000: invalid argument" :inval} {"2000: invalid argument" :inval} {"A date's part must be an integer" :inval}
+seconds-of <function>(seconds-of 2000 1) {"'seconds-of' takes at most 6 arguments, not 7" NIL} {"A date's part must be an integer" :inval} {"0: invalid argument" :inval}
+on-note NIL NIL NIL NIL {"'on-note' expects a function or NIL" NIL} {"'on-note' expects a function or NIL" NIL}
+on-note <function>(on-note) {"'on-note' takes 1 argument, not 2" NIL} NIL NIL
+stdin NIL NIL "" NIL NIL
+stdin NIL <buffer>{0 0 0} "" NIL NIL NIL
+stdin {"Cannot read from this stream" NIL} {"Cannot read from this stream" NIL} {"'read-line' expects a stream" NIL} NIL
+args {"14-system-pure.dl"} :list 1 14-system-pure.dl
+--- stderr
+
+--- exit 0

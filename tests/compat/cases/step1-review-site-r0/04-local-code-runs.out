@@ -1,0 +1,39 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {101 99 101 0}
+danlang>=> {101 99 101 0}
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> {2}
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> 5
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> exit
+--- stderr
+  at line 1  (hd (id 100) 1)
+  called at line 1  (g1)
+  at line 1  (tl (id 100) 1)
+  called at line 1  (g2)
+  at line 1  (&3 (id 100) 1)
+  called at line 1  (g3)
+  at line 1  (hd (id 100) 1)
+  called at line 1  (g1)
+  at line 1  (tl (id 100) 1)
+  called at line 1  (g2)
+  at line 1  (&3 (id 100) 1)
+  called at line 1  (g3)
+--- exit 0

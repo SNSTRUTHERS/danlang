@@ -1,0 +1,16 @@
+--- stdout
+dotimes fns {4 3 2 1 0} :global-i
+dotimes qs {{2 20} {1 10} {0 0}} {{2 20} {1 10} {0 0}} :global-i
+set in body {{2 4} {1 1} {0 0}} Unbound Symbol 'sq' NIL
+set! after {102 101 100} :global-i
+0 10 20 30 40 :replaced :replaced :replaced {1} {2} {3} 
+fun in body 2 b NIL
+each {{3} 3 0 1 2 \c \b \a}
+nested {{:y 1 \q} {:y 1 \p} {:y 0 \q} {:y 0 \p} {:x 1 \q} {:x 1 \p} {:x 0 \q} {:x 0 \p} {2 1} {2 0} {1 1} {1 0} {0 1} {0 0}}
+while {3 3 3} {3 3 3}
+fn forms {{:e :q} {:e :p} {:d 2} {:d 1} {:d 0}}
+in a function {202 201 200} {202 201 200}
+many 1500 2248500 {2998 2996 2994} 0
+--- stderr
+
+--- exit 0

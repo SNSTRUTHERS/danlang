@@ -1,0 +1,54 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> {1 2 NIL}
+danlang>=> {1 2 {3}}
+danlang>=> <function>(fn {b} {list a b &_})
+danlang>=> {1 2 {3 4}}
+danlang>=> <function>(fn {a b} {list a b &_})
+danlang>=> 2
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> NIL
+danlang>=> {1 8}
+danlang>=> Error: The function takes 8 arguments, not 9
+danlang>=> <function>(fn {d e f g h} {list a h})
+danlang>=> {2 {2}}
+danlang>012=> NIL
+danlang>=> Error: stop at 2
+danlang>=> Error: stop past a long
+danlang>=> Error: 'dotimes': a count must be a whole number, not 2.5
+danlang>12=> NIL
+danlang>=> {0 1 4 9 16}
+danlang>=> Error: three
+danlang>=> NIL
+danlang>=> 103
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'not-bound-here'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'not-bound-here'
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> <function>(fn {a a} {a})
+danlang>=> (+ 3 4)
+danlang>=> exit
+--- stderr
+  at line 1  (fn {x x} {x})
+  called at line 1  ((fn {x x} {x}) 1 2 3)
+  at line 1  (fn {x} {x})
+  called at line 1  ((fn {x} {x}) 1 2)
+  at line 1  (g 1 2 3 4 5 6 7 8 9)
+  called at line 1  (g 1 2 3 4 5 6 7 8 9)
+  at line 1  (error "stop at 2")
+  at line 1  (error "stop past a long")
+  at line 1  (dotimes {i 2.5} 1)
+  at line 1  (error "three")
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (after)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (after)
+  called at line 1  (outer)
+  at line 1  (fn {a b} {a})
+  called at line 1  ((fn {a b} {a}) 1 2 3)
+--- exit 0

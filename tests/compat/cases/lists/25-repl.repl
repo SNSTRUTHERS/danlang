@@ -1,0 +1,48 @@
+{1 "two" \3 :four five (six) {7}}
+{}
+NIL
+()
+(list)
+[]
+[1 [2 [3 NIL]]]
+{"a\tb" "q\"uote" "back\\slash" "\x01\x7f" "\e"}
+{\space \tab \lf \cr \null \( \) \{ \} \[ \] \\ \" \' \; \a \Z \0}
+(str-chars "a b\n")
+(cons {} NIL)
+(cons 1 {2 3})
+(head {})
+(tail 5)
+(map 1+ {1 2})
+(map (fn {x} {* x x}))
+(take 2)
+(nth 1)
+[+ (+ 1) (fn {x} {x}) fst (take 1)]
+(tail {x})
+(repr {"a" \b})
+(print {"a" \b})
+(write {"a" \b} "c" \d)
+(save {1 "a" \b {c} :d})
+(save {NIL {} ()})
+(read "1 (+ 2 3) {x}")
+(range 10)
+(def {l} {1 2 3})
+l
+(tail l)
+(cons 0 l)
+l
+[l l]
+{l l}
+(hash-create {{:k {1 2}}})
+(list (hash-create {{:k {1 2}}}) (buffer {1 2}))
+{1 2
+ 3 4}
+[(+ 1 2)
+ (+ 3 4)]
+{a {b
+ {c}} d}
+(sort {3 1 2})
+(eval {+ 1 2})
+(eval (cons + {1 2}))
+(fst {(+ 1 2)})
+(list 1 (error "inside a list") 3)
+(join {1} 2)

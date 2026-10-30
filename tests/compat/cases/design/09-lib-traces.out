@@ -1,0 +1,107 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Cannot perform 'even?' on non-number
+danlang>=> Error: Cannot perform 'odd?' on non-number
+danlang>=> 1.41421356237
+danlang>=> Error: Division by zero.
+danlang>=> Error: 'truncate' expects a real number
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: Cannot perform 'mod' on non-numbers
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Selection not found
+danlang>=> Error: Case not found
+danlang>=> Error: in a clause
+danlang>=> Error: 'fst' expects a list
+danlang>=> Error: 'nth': the list has no such item
+danlang>=> Error: 'fst' expects a list
+danlang>=> NIL
+danlang>=> Error: Division by zero.
+danlang>=> NIL
+danlang>=> Error: Division by zero.
+danlang>=> NIL
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+danlang>=> Error: Division by zero.
+danlang>=> Error: Division by zero.
+danlang>=> <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+danlang>=> <function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+danlang>=> <function>(nth 0)
+danlang>=> <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+danlang>=> Error: Unbound Symbol '&3'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod 7 0)
+  at <BUNDLE>\lib\globals.dl:142  (/ a b)
+  called at line 1  (div 1 0)
+  at <BUNDLE>\lib\globals.dl:142  (/ a b)
+  called at <BUNDLE>\lib\globals.dl:156  (div a b)
+  called at line 1  (divmod 7 0)
+  at <BUNDLE>\lib\globals.dl:178  (error "Cannot perform 'even?' on non-number")
+  called at line 1  (even? :a)
+  at <BUNDLE>\lib\globals.dl:172  (error "Cannot perform 'odd?' on non-number")
+  called at line 1  (odd? "x")
+  at line 1  (pow 0 -2)
+  at <BUNDLE>\lib\globals.dl:121  (trunc a)
+  called at line 1  (floor "x")
+  at <BUNDLE>\lib\globals.dl:136  (+ a 1/2)
+  called at line 1  (round :r)
+  at <BUNDLE>\lib\globals.dl:149  (error "Cannot perform 'mod' on non-numbers")
+  called at line 1  (mod 7 :a)
+  at <BUNDLE>\lib\globals.dl:162  (/ a b)
+  called at line 1  (fdiv 1 0)
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (avg NIL)
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case 3 {1 :a})
+  at line 1  (error "in a clause")
+  called at line 1  (cond {T (error "in a clause")})
+  at <BUNDLE>\lib\globals.dl:75  (fst a)
+  called at line 1  (zip 5 {1})
+  at line 1  (tenth {1})
+  at <BUNDLE>\lib\globals.dl:228  (fst l)
+  called at line 1  (remove-all 1 5)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod x 0)
+  called at line 1  (f 5)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod x 0)
+  called at line 1  (g 5)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod x 0)
+  called at line 1  (g x)
+  called at line 1  (h 5)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod a 0)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  {mod 1 0}
+  called at line 1  (repeat 3 {mod 1 0})
+  at <BUNDLE>\lib\globals.dl:142  (/ a b)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (unpack mod {1 0})
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (flip mod 0 1)
+  at <BUNDLE>\lib\globals.dl:14  (g x)
+  called at line 1  (comp even? :a 1)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod 1 x)
+  at <BUNDLE>\lib\globals.dl:142  (/ a b)
+  called at line 1  (div 1 (- 1 i))
+  at <BUNDLE>\lib\globals.dl:246  (>= &3 &1)
+  called at line 1  (between? 1 5)
+--- exit 0

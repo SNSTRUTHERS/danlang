@@ -1,0 +1,194 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> NIL
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> NIL
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> NIL
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> NIL
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> NIL
+danlang>=> Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+danlang>=> NIL
+danlang>=> Error: S-Expression starts with incorrect type. Got String, Expected Function.
+danlang>=> NIL
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (g 1 (mod 9 4))
+  called at line 1  (wa 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (g 1 (floor -5/2))
+  called at line 1  (wa2 4)
+  at line 1  (+ n 1)
+  called at line 1  (g 1 (cond {T (+ n 1)}))
+  called at line 1  (wa3 4)
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (g 1 (zip {1} {2}))
+  called at line 1  (wa4 4)
+  at (made, not read)  {5}
+  called at line 1  (wb 4)
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (wb2 4)
+  at (made, not read)  {"str"}
+  called at line 1  (wb3 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wb4 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wc 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (wd 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (we 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (wf 4)
+  at <BUNDLE>\lib\globals.dl:246  (>= &3 &1)
+  called at line 1  (wf2 4)
+  at <BUNDLE>\lib\globals.dl:156  (cons (div a b) (list (mod a b)))
+  called at line 1  (wg 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wh 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (wh2 4)
+  at line 1  {< (mod a 5) (mod b 5)}
+  called at line 1  (wh3 4)
+  at line 1  {+ acc (square x)}
+  called at line 1  (wh4 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (wh5 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wi 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (wi2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (ev (round 5/2))
+  called at line 1  (wj 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wk 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (wk2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wl 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (wl2 4)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (wm 4)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (wm2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wn 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wn2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wo 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wp 4)
+  at line 1  (+ (mod 7 2) (floor 5/2))
+  called at line 1  (wq 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wr 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wt 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (wt2 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (ws 4)
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (ws2 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (wu 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wu2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wv 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (wv2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wv3 4)
+--- exit 0

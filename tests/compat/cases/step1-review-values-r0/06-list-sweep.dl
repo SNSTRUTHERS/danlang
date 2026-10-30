@@ -1,0 +1,18 @@
+; 06-list-sweep: the library's list and string functions (zip flatten distinct remove-all remove-fst has-element?
+; minimum maximum starts-with? ends-with? contains?) over lists of every kind of item: numbers of each kind that are
+; equal (1 1.0 2/2), characters and strings, atoms and symbols, nested lists, T and NIL, functions, hashes, buffers,
+; streams; each call four times over (from the third it can be a native way's value), MISMATCH if the four differ
+(fun {four g} {let {{r (map (fn {i} {try (repr (g)) (+ "E:" &err)}) {1 2 3 4})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(def {big} 9223372036854775808)
+(def {h1 h2} #({{:k 1}}) #({{:k 1}}))
+(def {lists} [NIL {} {1} {1 1.0 2/2 (+ 0 1) 1.5 3/2} (list 1 1.0 2/2 1.5 3/2 big (- big 1) big) {a b a :a "a" \a}
+  {"x" "y" "x" \x "X"} {{1 2} {1 2} {1 2.0} {2 1} {} NIL} {T NIL T {} NIL ()} (list + - + (fn {x} {x}) (fn {x} {x}))
+  (list h1 h2 h1 #({{:k 2}})) (list (buffer "ab") (buffer "ab") (buffer "b")) (list stdin stdout stdin)
+  {1 {2 {3 {4 {5}}}} {} {{}} 6} (range 40) (map (fn {i} {% i 3}) (range 30)) (list 65535 65536 -1024 -1025 65535 65536)])
+(def {items} [1 1.0 1.5 big :a (to-sym "a") "a" \a {1 2} {} NIL T + h1 (buffer "ab") stdin 0 65536])
+(each {l lists} (print (repr l) "|" (four (fn {} {zip l l})) (four (fn {} {zip l {7 8 9}})) (four (fn {} {flatten l}))
+  (four (fn {} {distinct l})) (four (fn {} {minimum l})) (four (fn {} {maximum l}))
+  (map (fn {x} {list (four (fn {} {remove-all x l})) (four (fn {} {remove-fst x l})) (four (fn {} {has-element? l x}))}) items)))
+(def {strs} ["" "a" "ab" "abc" "bc" "c" "abcabc" "\x00a" "\xff" "aA" "A" \a \c \A])
+(each {s strs} (print (repr s) (map (fn {u} {list (four (fn {} {starts-with? s u})) (four (fn {} {ends-with? s u})) (four (fn {} {contains? s u}))}) strs)))
+(each {s [{1 2 3} {"a" "b"} {\a "a"} {{1} 1} NIL]} (print (repr s) (map (fn {u} {list (four (fn {} {starts-with? s u})) (four (fn {} {contains? s u}))}) [1 2 3 "a" \a "b" {1} 1.0 NIL])))

@@ -1,0 +1,67 @@
+; 15-repeat-times: (repeat n d) and its alias times: a list of n runs of d (eval: a Q-expression run as code where
+; it was written, anything else itself), each run in turn (side effects printed), the counts 0, 2.0 and 4/2; a
+; negative or fractional count never reaches 0 (Too deep); a non-number count (1-'s error, after one run of d);
+; d's errors stop it; partial application, too many arguments; a closure's variable changed by each run.
+; Ends with an error from the code repeat runs, inside a user function.
+
+(print repeat times (eq repeat times))
+(print (repeat 3 {:x}) (repeat 0 {:x}) (repeat 1 {+ 1 2}) (times 2 {list 1}) (repeat 2.0 {:f}) (repeat 4/2 {:r}) (repeat 1 {}))
+(def {n} 0)
+(print (repeat 4 {set! {n} (+ n 1)}))
+(print n)
+(print (repeat 3 {do (set! {n} (+ n 1)) n}))
+(print (times 3 {do (print :run n) (set! {n} (* n 4294967296)) n}))
+(print n)
+(fun {counter} {do =(c 0) (repeat 3 {do (set! {c} (+ c 10)) c})})
+(print (counter) (counter))
+(fun {make-counter} {do =(c 0) (fn {k} {repeat k {do (set! {c} (1+ c)) c}})})
+(def {ctr} (make-counter))
+(print (ctr 2) (ctr 3) (ctr 0) (ctr 1))
+(print (repeat 2 {print :side}))
+(print (repeat 3 {(fn {} {:called})}))
+
+; d other than a Q-expression: itself, not run
+(print (repeat 2 :atom) (repeat 2 5) (repeat 2 "s") (repeat 2 NIL) (repeat 2 65536) (repeat 2 -1025) (repeat 1 9223372036854775808))
+(print (repeat 2 (fn {} {:not-called})))
+(print (repeat 2 +))
+(print (repeat 2 {+}))
+(print (repeat 2 (hash-create)))
+
+; d's scope: where it was written
+(print (repeat 2 {n}))
+(print (repeat 2 {d}))
+(print (repeat 1 {defined? n}))
+(fun {local-d} {do =(n :local) (repeat 2 {n})})
+(print (local-d))
+(print (repeat 2 (list (fst {n}))))
+(print (repeat 2 (cons (fst {n}) NIL)))
+(print (repeat 2 (cons (fst {d}) NIL)))
+
+; errors in d stop it
+(print (repeat 3 {error "in body"}))
+(print (repeat 3 {do (print :before-error) (error "after a print")}))
+(def {n} 4)
+(print (repeat 3 {do (set! {n} (1- n)) (print :n-is n) (if (< n 3) (error "n fell below 3") n)}))
+(print n)
+
+; counts that aren't whole numbers or never reach 0
+(print (repeat -1 {:neg}))
+(print (repeat 1.5 {:half}))
+(print (repeat "3" {print :ran-once-for-a-string}))
+(print (repeat NIL {:nil}))
+(print (repeat :a {:atom}))
+(print (repeat (error "repeat's n") {:x}))
+(print (repeat 2 (error "repeat's d")))
+
+; partial application, too many
+(print (repeat))
+(print (repeat 3))
+(print ((repeat 3) {:later}))
+(print ((times 2) {1+ 65535}))
+(print (repeat 3 {:x} 4))
+(print (map (fn {k} {len (repeat k {:k})}) {0 1 2 3 10 100}))
+
+; an error from the code repeat runs, inside a user function: the program ends with its trace
+(fun {roll-all k} {list :rolls (repeat k {/ 6 (- 3 (len "abc"))})})
+(print (roll-all 0))
+(roll-all 2)

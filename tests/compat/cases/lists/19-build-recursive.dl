@@ -1,0 +1,59 @@
+; 19-build-recursive.dl - lists built by recursive functions of the program's own, with cons, fst, tail, join and
+; [..]: zip-like and map-like ones, filter, reverse, flatten, interleave, chunks, transpose, quicksort, permutations,
+; power sets, run-length coding; and the library's own (zip, flatten, distinct, remove-fst, remove-all, repeat)
+
+(fun {my-zip a b} ?{(and a b) (cons [(fst a) (fst b)] (my-zip (tail a) (tail b))) NIL})
+(fun {zip3 a b c} ?{(and a b c) (cons [(fst a) (fst b) (fst c)] (zip3 (tail a) (tail b) (tail c))) NIL})
+(fun {zip-with f a b} ?{(and a b) (cons (f (fst a) (fst b)) (zip-with f (tail a) (tail b))) NIL})
+(print (my-zip {1 2 3} {a b c}) (my-zip {1 2 3} {a}) (my-zip NIL {a}) (zip3 {1 2} {3 4} {5 6 7}))
+(print (zip-with + {1 2 3} {10 20 30}) (zip-with list {1 2} {3 4}) (zip-with cons {1 2} {{a} {b}}))
+
+(fun {my-map f l} ?{l (cons (f (fst l)) (my-map f (tail l))) NIL})
+(fun {my-filter f l} ?{l ?((f (fst l)) (cons (fst l) (my-filter f (tail l))) (my-filter f (tail l))) NIL})
+(fun {my-rev l} ?{l (join (my-rev (tail l)) (head l)) NIL})
+(fun {my-foldr f z l} ?{l (f (fst l) (my-foldr f z (tail l))) z})
+(print (my-map 1+ {1 2 3}) (my-map (fn {x} {[x]}) {a b}) (my-map head {{1 2} {3}}) (my-map 1+ NIL))
+(print (my-filter odd? (range 10)) (my-rev {1 2 3 4}) (my-rev NIL) (my-foldr cons NIL {1 2 3}) (my-foldr + 0 (range 5)))
+(print (eq (my-map 1+ (range 50)) (map 1+ (range 50))) (eq (my-rev (range 50)) (reverse (range 50))))
+
+; order: my-map calls f on the way down, cons builds on the way up
+(print (my-map (fn {x} {do (print "  f" x) x}) {1 2 3}))
+
+(fun {my-flatten l} ?{l ?((qexpr? (fst l)) (join (my-flatten (fst l)) (my-flatten (tail l))) (cons (fst l) (my-flatten (tail l)))) NIL})
+(print (my-flatten {1 {2 {3 {4}}} 5 {} {{6}}}) (flatten {1 {2 {3 {4}}} 5 {} {{6}}}) (my-flatten {NIL}) (flatten {(a b) {c}}))
+
+(fun {interleave a b} ?{a (cons (fst a) (interleave b (tail a))) b})
+(print (interleave {1 2 3} {a b c}) (interleave {1} {a b c}) (interleave NIL {x}) (interleave {1 2 3} NIL))
+
+(fun {chunks n l} ?{l (cons (take n l) (chunks n (drop n l))) NIL})
+(print (chunks 2 (range 7)) (chunks 3 {a b c}) (chunks 5 {1 2}) (chunks 1 NIL))
+
+(fun {transpose m} ?{(fst m) (cons (map fst m) (transpose (map tail m))) NIL})
+(print (transpose {{1 2 3} {4 5 6}}) (transpose {{1} {2} {3}}) (transpose (transpose {{1 2} {3 4}})))
+
+(fun {qsort l} ?{l (do =(p (fst l)) (join (qsort (filter (fn {x} {< x p}) (tail l))) (head l) (qsort (filter (fn {x} {>= x p}) (tail l))))) NIL})
+(print (qsort {3 1 4 1 5 9 2 6 5 3 5}) (qsort NIL) (qsort {"b" "a" "c"}) (eq (qsort (reverse (range 40))) (range 40)))
+
+(fun {insert x l} ?{(and l (< (fst l) x)) (cons (fst l) (insert x (tail l))) (cons x l)})
+(fun {isort l} {foldl (fn {acc x} {insert x acc}) NIL l})
+(print (isort {5 2 8 1 9}) (isort NIL) (insert 4 {1 3 5 7}))
+
+(fun {perms l} ?{l (foldl join NIL (map (fn {x} {map (cons x) (perms (remove-fst x l))}) l)) {NIL}})
+(print (perms {1 2 3}) (len (perms {1 2 3 4})) (perms {a}) (perms NIL))
+
+(fun {powerset l} ?{l (do =(rest (powerset (tail l))) (join rest (map (cons (fst l)) rest))) {NIL}})
+(print (powerset {a b c}) (len (powerset (range 6))) (powerset NIL))
+
+(fun {rle l} ?{l (do =(run (len (filter (fn {x} {eq x (fst l)}) (take-while-eq (fst l) l)))) (cons [(fst l) run] (rle (drop run l)))) NIL})
+(fun {take-while-eq x l} ?{(and l (eq (fst l) x)) (cons (fst l) (take-while-eq x (tail l))) NIL})
+(print (rle {a a b c c c a}) (rle (str-chars "aaabccd")) (rle NIL))
+
+(fun {my-range a b} ?{(< a b) (cons a (my-range (+ a 1) b)) NIL})
+(fun {nest n} ?{(zero? n) NIL [(nest (- n 1))]})
+(print (my-range 3 8) (my-range 5 5) (nest 0) (nest 1) (nest 4) (len (nest 4)) (my-flatten (nest 4)))
+
+; the library's
+(print (zip {1 2 3} {4 5}) (distinct {1 2 1 3 2 1}) (distinct {{1} {1} 1}) (remove-fst 2 {1 2 3 2}) (remove-all 2 {1 2 3 2}))
+(print (repeat 3 {:x}) (times 2 {+ 1 1}) (repeat 0 {:never}) (split 2 {1 2 3}) (has-element? {1 2} 2))
+(def {counter} 0)
+(print (repeat 4 {do (set! {counter} (+ counter 1)) counter}) counter)

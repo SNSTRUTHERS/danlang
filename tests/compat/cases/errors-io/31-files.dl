@@ -1,0 +1,67 @@
+; 31-files.dl - files and directories, in a folder this case makes: write-file, append-file, read-file, read-lines
+; (LF or CR LF, a last line with no LF), exists?, dir?, file?, stat (its :name, :length and :dir; not :mtime), ls
+; and dir (sorted), glob, mkdir, remove, rename, copy-file, cd and cwd; their errors, each a text after the name it's
+; about and a code
+
+(print (exists? "fs") (mkdir "fs") (exists? "fs") (dir? "fs") (file? "fs"))
+(print (ls "fs") (dir "fs") (glob "fs/*"))
+
+; writing and reading: the values as print shows them, joined
+(print (write-file "fs/a.txt" "line one\n" 2 " " :three \4 " " 1/2 "\n"))
+(print (repr (read-file "fs/a.txt")) (read-lines "fs/a.txt"))
+(print (append-file "fs/a.txt" "appended" " " {list 1}) (repr (read-file "fs/a.txt")) (read-lines "fs/a.txt"))
+(print (append-file "fs/made.txt" "append makes it") (read-file "fs/made.txt"))
+(print (write-file "fs/a.txt") (repr (read-file "fs/a.txt")) (read-lines "fs/a.txt"))
+(write-file "fs/crlf.txt" "one\r\ntwo\r\n\r\nfour")
+(print (read-lines "fs/crlf.txt") (repr (read-file "fs/crlf.txt")))
+(write-file "fs/trail.txt" "x\ny\n\n")
+(print (read-lines "fs/trail.txt"))
+(write-file "fs/bytes.txt" "caf\xC3\xA9 \xFF\x00end")
+(print (repr (read-file "fs/bytes.txt")) (len (read-file "fs/bytes.txt")))
+
+; stat: the name, the length, whether it's a directory
+(def {sa} (stat "fs/crlf.txt"))
+(print (sa :name) (sa :length) (sa :dir) (hash-keys sa) (type-of (sa :mtime)))
+(def {sd} (stat "fs"))
+(print (sd :name) (sd :length) (sd :dir) (hash-keys sd))
+(print ((stat "fs/a.txt") :length) ((stat "fs/bytes.txt") :length))
+
+; directories: ls and dir sorted, glob's patterns
+(mkdir "fs/sub")
+(write-file "fs/sub/inner.txt" "inner")
+(write-file "fs/b.dat" "b")
+(print (ls "fs") (ls "fs/sub") (ls "fs/a.txt"))
+(print (map (fn {s} {list (s :name) (s :length) (s :dir)}) (dir "fs")))
+(print (glob "fs/*.txt") (glob "fs/?.*") (glob "fs/[ab]*") (glob "fs/[~a]*") (glob "fs/*/*") (glob "fs/none*"))
+(print (glob "fs/[a-c].*") (glob "fs/sub") (glob "fs"))
+
+; rename, copy, remove
+(print (copy-file "fs/a.txt" "fs/copy.txt") (repr (read-file "fs/copy.txt")))
+(print (rename "fs/copy.txt" "fs/moved.txt") (exists? "fs/copy.txt") (exists? "fs/moved.txt"))
+(print (rename "fs/sub" "fs/sub2") (ls "fs/sub2") (dir? "fs/sub"))
+(print (remove "fs/moved.txt") (exists? "fs/moved.txt"))
+
+; cd and cwd: relative paths from the new place
+(def {home} (cwd))
+(print (cd "fs/sub2") (ls) (read-file "inner.txt") (exists? "../a.txt"))
+(print (cd "..") (ls))
+(print (cd home) (eq (cwd) home) (exists? "fs"))
+
+; paths as atoms and symbols: their names
+(print (exists? :fs) (dir? (fst {fs})) (file? :nothing))
+
+; the errors: a text after the name, and a code
+(print (read-file "fs/none.txt") (error-code (read-file "fs/none.txt")))
+(print (read-file "fs") (error-code (read-file "fs")) (read-lines "fs/none.txt"))
+(print (write-file "fs/no/such.txt" "x") (append-file "fs/no/such.txt" "x"))
+(print (mkdir "fs") (error-code (mkdir "fs")) (mkdir "fs/no/deeper") (error-code (mkdir "fs/no/deeper")))
+(print (remove "fs/none") (error-code (remove "fs/none")) (remove "fs/sub2") (error-code (remove "fs/sub2")))
+(print (rename "fs/none" "fs/x") (rename "fs/a.txt" "fs/b.dat") (error-code (rename "fs/a.txt" "fs/b.dat")))
+(print (copy-file "fs/none" "fs/x") (copy-file "fs/a.txt" "fs/b.dat") (copy-file "fs/sub2" "fs/x"))
+(print (stat "fs/none") (ls "fs/none") (dir "fs/none") (error-code (ls "fs/none")))
+(print (cd "fs/none") (error-code (cd "fs/none")) (cd "fs/a.txt") (error-code (cd "fs/a.txt")))
+(print (read-file 5) (write-file 5 "x") (exists? 5) (mkdir {}) (stat))
+
+; cleaning up: the tree removed, bottom up
+(fun {rm-tree p} {if (dir? p) (do (each {n (ls p)} (rm-tree (+ p "/" n))) (remove p)) (remove p)})
+(print (rm-tree "fs") (exists? "fs"))

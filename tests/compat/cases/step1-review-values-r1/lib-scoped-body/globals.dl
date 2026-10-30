@@ -1,0 +1,23 @@
+; lib-scoped-body: a library of its own (danlang loads the globals.dl in the folder it runs in; run as the program too,
+; it's the program once args is there) whose floor's code is lib/globals.dl's, item for item, but made by join, so its
+; {do ...} remembers the scope it was evaluated in (the global one): let runs it there, where a is the global a and
+; tr is set globally; it prints as lib/globals.dl's floor does
+(if (defined? args)
+  (do
+    (def {a} 10)
+    (print (map (fn {x} {floor x}) {7/2 7/2 7/2 7/2 -7/2 -7/2}))
+    (print (map (fn {x} {mod x 2}) {7 7 7 7 -7 -7}) (map (fn {x} {div x 2}) {7 7 7 7}))
+    (print floor tr))
+  (do
+    :(trunc truncate)
+    (def {floor} (fn {a} (join {let} (list {do =(tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}))))
+    (fun {div a b} ?{
+      (and (num? a) (num? b))
+      (floor (/ a b))
+      (error "Cannot perform 'div' on non-numbers")
+    })
+    (fun {mod a b} ?{
+      (and (num? a) (num? b))
+      (- a (* b (floor (/ a b))))
+      (error "Cannot perform 'mod' on non-numbers")
+    })))

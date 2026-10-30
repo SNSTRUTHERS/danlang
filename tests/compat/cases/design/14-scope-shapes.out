@@ -1,0 +1,26 @@
+--- stdout
+f :global-x :local-x :global-x :local-x :local-x :global-x :global-x :global-x
+g {NIL NIL :global-x :no-p} {T T :local-x :p} {NIL T :local-x :no-p} {T NIL :global-x :p} {NIL NIL :global-x :no-p} {T T :local-x :p}
+loop 0 :global-x {T NIL :global-x :p}
+loop 1 :local-x {NIL T :local-x :no-p}
+loop 2 :global-x {T NIL :global-x :p}
+loop 3 :local-x {NIL T :local-x :no-p}
+loop 4 :global-x {T NIL :global-x :p}
+loop 5 :local-x {NIL T :local-x :no-p}
+g2 {"Unbound Symbol 'a'" "Unbound Symbol 'b'" "Unbound Symbol 'c'" :global-x} {1 2 3 :global-x} {1 "Unbound Symbol 'b'" "Unbound Symbol 'c'" :global-x} {1 2 "Unbound Symbol 'c'" :global-x} {"Unbound Symbol 'a'" "Unbound Symbol 'b'" "Unbound Symbol 'c'" :global-x}
+late Unbound Symbol 'maybe-later'
+late {:global-x :now-defined}
+late {:global-x :set-at-top}
+h2 :global-y :local-y :global-y :local-y :global-y
+h3 :set-at-top :set-at-top
+h3 :read-local :global-y :global-y :listed-top :listed-top
+h4 :global-y :listed-local :global-y :global-y
+h5 {:global-y :global-y} {:read-in-h5 :read-in-h5} {:global-y :global-y} :global-y
+rc {:global-x :global-y :global-z} {1 :global-y :global-z} {2 1 :global-z} {3 2 1} {4 :global-y :global-z} {6 5 :global-z} {:global-x :global-y :global-z} {9 8 7} {{10 :global-y :global-z} {10 :global-y :global-z}} {:global-x :global-y :global-z}
+rc {:fe-x 1 :global-z} {:global-x :ff-y :ff-z} {2 :global-y :global-z} {:global-x :ff-y :ff-z} {:fe-x 3 :global-z} {:global-x :global-y :global-z}
+fexpr :global-x 1 2 {3 4} 5 :global-x 7 {8 9}
+fexpr2 {:fexpr-own-x :global-x} {:fexpr-own-x :u4-x} {:fexpr-own-x {:global-x}} {:fexpr-own-x :again}
+set! {:changed NIL} {:changed NIL} {:changed NIL} {:changed T} {:changed NIL} {:changed NIL} {:changed NIL} {:changed T} {:changed NIL}
+--- stderr
+
+--- exit 0

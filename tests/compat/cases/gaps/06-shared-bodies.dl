@@ -1,0 +1,76 @@
+; 06-shared-bodies: one body (the same list) made the body of several functions whose formals differ in names, order
+; and number, and one formals list given to functions with different bodies: each function binds its own formals,
+; however the body's code was laid out or looked its names up when another function ran it.  Also functions made
+; from one body in a loop, partial applications of them, fexprs and methods with the body, recursion through two
+; functions sharing a body, and a body that remembers a scope (a function's body runs in its call's scope, not there).
+(def {body} {list a b (if (defined? c) c :no-c)})
+(def {f-ab} (fn {a b} body))
+(def {f-ba} (fn {b a} body))
+(def {f-abc} (fn {a b c} body))
+(def {f-cab} (fn {c a b} body))
+(def {f-bca} (fn {b c a} body))
+(fun {s-ab a b} body)
+(fun {s-ba b a} body)
+(def {fx} (fexpr {b a} body))
+(print "once" (f-ab 1 2) (f-ba 1 2) (f-abc 1 2 3) (f-cab 1 2 3) (f-bca 1 2 3) (s-ab 1 2) (s-ba 1 2) (fx (+ 1 2) zz))
+(print "printed" f-ab f-ba f-cab (eq f-ab s-ab) (eq f-ab f-ba) fx)
+(dotimes {i 4} (print "round" i (f-ab i :x) (f-ba i :x) (f-abc i :x :y) (f-cab i :x :y) (f-bca i :x :y) (s-ba i :x)))
+(def {calls} (map (fn {f} {f :p :q :r}) (list f-abc f-cab f-bca f-cab f-abc)))
+(print "mapped" calls (map (fn {f} {f 1 2}) (list f-ab f-ba s-ab s-ba f-ba)))
+
+; partial applications of functions sharing the body, and their printing
+(def {p-ba} (f-ba 1))
+(def {p-cab} (f-cab 1 2))
+(def {p-bca} (f-bca :b))
+(print "partial" (p-ba 2) (p-cab 3) (p-bca :c :a) ((p-bca :c) :a) (p-ba :again) p-cab p-bca)
+(print "too many" (try (f-ab 1 2 3) &err) (try (p-cab 3 4) &err) (try (fx 1 2 3) &err))
+
+; one formals list, other bodies
+(def {formals} {x y})
+(def {sum2} (fn formals {+ x y}))
+(def {rev2} (fn formals {list y x}))
+(def {cat2} (fn formals {+ (to-str x) "/" (to-str y)}))
+(print "formals" (sum2 1 2) (rev2 1 2) (cat2 1 2) (sum2 10 20) (rev2 :a :b) ((rev2 :only) :second) formals)
+
+; functions made in a loop from one body, each with its formals in another order
+(def {b3} {list p q r})
+(def {orders} {{p q r} {r q p} {q r p} {p r q}})
+(def {made} (map (fn {names} {fn names b3}) orders))
+(print "made" (map (fn {f} {f 1 2 3}) made) (map (fn {f} {(f 1) 2 3}) made) (map (fn {f} {f :a :b :c}) (reverse made)))
+(def {made2} {})
+(each {names orders} (set! {made2} (cons (fn names {list r q p}) made2)))
+(print "made2" (map (fn {f} {f 1 2 3}) made2))
+
+; a body that sets a name of its own: the call's scope has the formals then that name, in each function's order
+(def {sb} {do (set {z} (+ a 1)) (list a z (if (defined? w) w :no-w))})
+(def {s1} (fn {a} sb))
+(def {s2} (fn {w a} sb))
+(def {s3} (fn {a w} sb))
+(def {s4} (fn {z a} sb))
+(print "set" (s1 1) (s2 :w 2) (s3 3 :w) (s4 :z 4) (s1 5) (s3 6 :w2) (s2 :w3 7) (s4 :z2 8))
+
+; recursion through two functions sharing one body (formals the other way round)
+(def {rb} {if (zero? n) (list :end acc) (self (- n 1) (cons n acc))})
+(def {self} (fn {n acc} rb))
+(def {other} (fn {acc n} rb))
+(print "recursion" (self 3 NIL) (other {:start} 2) (self 2 {:x}) (other NIL 0))
+(def {cb} {if (zero? n) acc (ping (- n 1) (cons (list :ping n) acc))})
+(def {ping} (fn {n acc} {pong (- n 1) (cons (list :pang n) acc)}))
+(def {pong} (fn {n acc} cb))
+(print "ping-pong" (pong 4 NIL) (ping 5 NIL))
+
+; the body as a method's, with &0 named or not
+(def {mb} {list a (if (defined? &0) (len &0) :no-self)})
+(def {obj} #({{:m1 (fn {a} mb)} {:m2 (fn {x a} mb)} {:v 1}}))
+(print "method" (obj :m1 1) (obj :m2 :x 2) ((hash-get obj :m1) 3) (hash-call obj :m2 :y 4) ((fn {a} mb) 5))
+
+; a body that remembers a scope (written in a function): a function's body runs in its call's scope, eval in its own
+(fun {mk-body} {do =(hidden :mk) {list hidden y}})
+(def {hb} (mk-body))
+(def {y} :global-y)
+(def {hf} (fn {y} hb))
+(def {hg} (fn {hidden} hb))
+(print "remembered" (try (hf 1) &err) (hg :formal) (eval hb) (try (hf 2) &err) (hg :again))
+(def {a} :ga)
+(def {b} :gb)
+(print "eval" (eval body) (let {{a 1} {b 2}} body) (let {{a 1} {b 2}} (eval body)) (f-ab :last :one))

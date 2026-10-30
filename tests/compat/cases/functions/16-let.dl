@@ -1,0 +1,66 @@
+; 16-let: both forms of let.  (let {{a 1} {b (+ a 1)}} body...): bindings made in turn in a scope of its own (a
+; later one sees an earlier), {a} alone NIL, a body expression written as a Q-expression run as code, anything else
+; evaluated (a name's value as it is, a list too); (let {code}): the code run in a scope of its own.  Nothing
+; leaks out; errors stop it; its last expression is in tail position (a million iterations); its malformed forms.
+
+(print (let {{a 1} {b (+ a 1)} {c (* b 10)}} (list a b c)))
+(print (let {{a}} a))
+(print (let {{a 1}} (print :first) (print :second) :last))
+(print (let {{a 1}} {print :run-as-code} :last))
+(print (let {{a 1}} {+ a 1}))
+(print (let {{a {1 2}}} a))
+(print (let {{a {+ 1 2}}} a))
+(print (let {{a {+ 1 2}}} (eval a)))
+(print (let {{a 1}} a 2 {3}))
+(print (let {{a 1}} {a}))
+(print (let {{f (fn {x} {* x 3})}} (f 5)))
+
+; the code form: its own scope
+(print (let {do =(lx 5) (* lx 2)}))
+(print (try lx &err))
+(print (let {+ 1 2}))
+(print (let {{a 1}}))
+(print (let {list 1 2}))
+
+; nothing leaks: bindings and sets
+(def {outer-v} :outer)
+(print (let {{outer-v :inner}} outer-v) outer-v)
+(print (let {{a 1}} =(b 2) (+ a b)) (try b &err))
+(print (let {{a 1}} (let {{a 2} {b a}} (list a b))))
+(print (let {{a 1}} (list (let {{a (+ a 10)}} a) a)))
+
+; closures over a let's variables: each let its own scope
+(def {made} (map (fn {n} {let {{sq (* n n)}} (fn {} {list n sq})}) {1 2 3}))
+(print (map (fn {f} {f}) made))
+(fun {let-counter} {let {{c 0}} (fn {} {do (set! {c} (+ c 1)) c})})
+(def {lc1 lc2} (let-counter) (let-counter))
+(print (lc1) (lc1) (lc2) (lc1))
+
+; a let inside a function: sees the formals; set inside it is the let's
+(fun {f-let x} {do (let {{y (* x 2)}} =(z (+ x y)) (print :inside x y z)) (list x (try z &err))})
+(print (f-let 5))
+
+; errors stop it: in a binding (the rest not made), in a body expression
+(print (let {{a (print :made-a)} {b (error "in b")} {c (print :never)}} :never))
+(print (let {{a 1}} (error "in body") (print :never)))
+(print (let {{a 1}} {error "in code body"}))
+
+; malformed
+(print (try (let) &err))
+(print (try (let {{1 2}} 3) &err))
+(print (try (let 5 3) &err))
+(print (try (let {{a 1 2}} 3) &err))
+(print (try (let {a} 3) &err))
+(print (try (let {{}} 3) &err))
+(print (try (let {{"a" 1}} 3) &err))
+(print (try (let 5) &err))
+
+; tail position: a million iterations through let's last expression
+(fun {count-let n acc} {let {{m (- n 1)} {a (+ acc 3)}} ?((< m 0) acc (count-let m a))})
+(print (count-let 1000000 0))
+(fun {count-let-code n} {let {if (zero? n) :code-form-done (count-let-code (- n 1))}})
+(print (count-let-code 100000))
+
+; the last: an error in a let's binding inside a function ends the program
+(fun {bad-let} {let {{a 1} {b (+ a :x)}} b})
+(bad-let)

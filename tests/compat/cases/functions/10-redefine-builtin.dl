@@ -1,0 +1,80 @@
+; flags: -w
+; 10-redefine-builtin: (fun {len l} ...) replaces the built-in len for every later call: calls already written in
+; functions, the library's functions that use len (avg, ends-with?), map given len, partials of len made after;
+; one kept before (def {orig-len} len) is still the built-in.  Restoring it, replacing it with a number, and + and
+; 1+ replaced too.  With -w each replacement says so on stderr (the place: file and line), the others don't.
+
+(def {orig-len} len)
+(fun {uses-len l} {len l})
+(fun {loop-len l n} {if (zero? n) (len l) (loop-len l (- n 1))})
+(print (map len {{1 2} {3}}) (uses-len {1 2 3}) (avg {2 4 6}) (ends-with? "hello" "lo") (loop-len {1} 3))
+(def {old-partial} (len))
+
+; replaced: every call now calls the new len, the library's too
+(fun {len l} {do (write "[my-len] ") 99})
+(print len)
+(print (len {1 2}))
+(print (uses-len {1 2 3}))
+(print (loop-len {1} 3))
+(print (avg {2 4 6}))
+(print (ends-with? "hello" "lo"))
+(print (map len {{1} {2}}))
+(print ((len) {1}))
+(print (try (len {1} 2) &err))
+(print (old-partial {1 2 3 4}))
+(print (orig-len {1 2}))
+(print (eq orig-len len) (eq orig-len old-partial))
+(print (len (error "an error stops it")))
+
+; a built-in that the library's built-ins use isn't changed by this (they're built in)
+(print (sum {1 2 3}) (count (fn {x} {> x 1}) {1 2 3}) (str-join {"a" "b"} "-"))
+
+; restored: the built-in again (a function replacing a function: no warning)
+(def {len} orig-len)
+(print (len {1 2}) (uses-len {1 2 3}) (avg {2 4 6}) (loop-len {1 2} 3))
+
+; replaced by a number: calling it is an error; then a function again
+(def {len} 5)
+(print len)
+(print (try (len {1}) &err))
+(print (try (uses-len {1}) &err))
+(print (try (avg {1 2}) &err))
+(def {len} orig-len)
+(print (uses-len {1 2 3 4}))
+
+; + replaced: calls of + change; sum and 1+ are built in apart from it
+(def {orig-plus} +)
+(fun {+ a b} {list :plus a b})
+(print (+ 1 2))
+(print (try (+ 1 2 3) &err))
+(print (sum {1 2 3}) (1+ 5))
+(print (map (+ 10) {1 2}))
+(def {+} -)
+(print (+ 10 3))
+(def {+} orig-plus)
+(print (+ 1 2 3))
+
+; a fun replacing a fun, and a def of a value replacing a function and back (warned)
+(fun {my-f} {:first})
+(fun {my-f} {:second})
+(print (my-f))
+(def {my-f} 7)
+(print my-f)
+(fun {my-f} {:third})
+(print (my-f))
+
+; set inside a function shadows a built-in only there (no warning: not a global)
+(fun {local-len} {do =(len (fn {l} {:local-len})) (len {1})})
+(print (local-len) (len {1}))
+
+; def inside a function replaces the global (warned at that line)
+(fun {redef-inside} {def {print} (fn {x} {orig-print (list :wrapped x)})})
+(def {orig-print} print)
+(redef-inside)
+(print :hello)
+(def {print} orig-print)
+(print :restored)
+
+; the last: len replaced by a number, called, ends the program
+(def {len} :not-a-function)
+(uses-len {1})

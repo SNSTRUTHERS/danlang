@@ -1,0 +1,8 @@
+--- stdout
+:zero {:caught "Value was either too large or too small for an Int32."} Value was either too large or too small for an Int32.
+the last: not caught
+--- stderr
+Error: 04b-host-exception-in-test.dl: Value was either too large or too small for an Int32.
+  at 04b-host-exception-in-test.dl:4  (* x 99999999999999999999)
+  called at 04b-host-exception-in-test.dl:7  (f 2)
+--- exit 1

@@ -1,0 +1,62 @@
+; flags: -w
+; 09-loop-redefine.dl - globals changed while a loop runs (danlang -w: the warnings on stderr): a function the body
+; calls redefined part way (the next run calls the new one), a built-in replaced, a function replaced by a value, the
+; while test's function redefined; each's function and list are taken once; a loop variable named as a built-in
+; shadows it in the body only; + replaced at the end (the library's built-ins keep the one they had)
+
+(fun {f x} {* x 2})
+(dotimes {i 4} (print i (f i)) (if (eq i 1) (fun {f x} {* x 100})))
+(print "f after:" (f 1))
+
+; each's function is evaluated once: redefining it in the loop doesn't change what each calls
+(def {g} (fn {x} {print :old x}))
+(each g (do (def {g} (fn {x} {list :new x})) {1 2}))
+(print (g 0))
+(each {x {1 2 3}} (print (g x)) (def {g} (fn {x} {list :newer x})))
+
+; a built-in replaced by a function part way through a loop (warned), then put back
+(def {saved-len} len)
+(each {x {1 2 3}} (print "len:" (len "abc")) (if (eq x 1) (def {len} (fn {s} {:my-len}))))
+(print (len "abc"))
+(def {len} saved-len)
+(print (len "abc") len)
+
+; a function replaced by a value (warned): (g) is then the value, (g 1) an error
+(def {h} (fn {} {:called}))
+(dotimes {i 3} (print "h:" (h)) (if (eq i 0) (def {h} 42)))
+(print (h) (h 1))
+(def {h} (fn {} {:function-again}))
+(print (h))
+
+; the while test's function redefined in the body
+(fun {keep-going?} {T})
+(def {runs} 0)
+(while (keep-going?) (set! {runs} (+ runs 1)) (if (eq runs 3) (fun {keep-going?} {NIL})))
+(print "runs:" runs)
+
+; a function defined inside a loop, a new one each time (no warning: function for function)
+(dotimes {i 3} (fun {made-in-loop} {list :made i}))
+(print (made-in-loop))
+
+; a loop variable named as a built-in shadows it in the body; outside it's the built-in still
+(fun {use-len s} {len s})
+(print (use-len "abcd"))
+(each {len {1 2}} (print "len is" len (use-len "xy")))
+(print (try (each {len {1}} (len "abc")) &err))
+(print (use-len "abcd") (len "abcd"))
+(dotimes {print 2} (write print " "))
+(print "print is back")
+
+; a built-in's name set in the body: a variable of the iteration's, the built-in again at the next one
+(each {x {1 2}} (print "len before set:" (len "ab")) =(len (* x 100)) (print "len after set:" len))
+(print (len "abc"))
+
+; a name used as a function in the loop body, then bound as a variable in the loop's own scope
+(fun {k} {:global-k})
+(dotimes {i 2} (print "k:" (k)) =(k (fn {} {:local-k})) (print "k now:" (k)))
+(print "k after:" (k))
+
+; + replaced (warned): calls of + see the new one; the library's built-ins (sum, 1+) keep the one they had
+(def {+} -)
+(dotimes {i 3} (write (+ 10 i) " "))
+(print (sum {1 2 3}) (1+ 5) (+ 1 1))

@@ -1,0 +1,83 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (loop1 tf {7/2 7/2 7/2 7/2}))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (loop1 tf {7/2 7/2 7/2 -7/2}))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (loop1 floor {-7/2 -7/2 -7/2 -7/2}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (loop1 floor {-7/2 -7/2 -7/2 4}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (loop2 div {{7 2} {7 2} {7 2} {7 2}}))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (loop2 div {{7 2} {7 2} {7 2} {-7 2}}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (loop2 div {{-7 2} {-7 2} {-7 2} {8 2}}))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (loop2 div {{7/2 2} {7/2 2} {7/2 2} {-7/2 2}}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (loop2 tdiv {{7 2} {7 2} {7 2} {7 2}}))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (f 1 2 (loop2 contains? {{"abc" "b"} {"abc" "b"} {"abc" "...
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (f 1 2 (loop2 remove-all {{1 {1 1 2}} {1 {1 1 2}} {1 {1 1...
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-all f tl))
+  called at line 1  (f 1 2 (loop2 remove-all {{1 {1 1 1}} {1 {1 1 1}} {1 {1 1...
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (f 1 2 (loop2 remove-all {{1 {2 1 1}} {1 {2 1 1}} {1 {2 1...
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (f 1 2 (loop2 ?? {{NIL 2} {NIL 2} {NIL 2} {NIL NIL}}))
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (f 1 2 (loop2 ?? {{NIL NIL} {NIL NIL} {NIL NIL} {NIL 2}}))
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (f 1 2 (loop3 between? {{10 1 5} {10 1 5} {10 1 5} {10 1 ...
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (f 1 2 (loop3 between? {{1 10 5} {1 10 5} {1 10 5} {10 1 ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (loop1 tc {7/2 7/2 7/2 -7/2 -7/2 -7/2 7/2}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (loop1 tk {1 1 1 2 2 2 5/2 5/2 5/2 1}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (loop1 ti {5/2 5/2 5/2 -5 -5 -5 5/2}))
+--- exit 0

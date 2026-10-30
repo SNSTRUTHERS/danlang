@@ -1,0 +1,16 @@
+; 07-plan-churn: a loop that changes a call's plan at every step (a global hash, and a global function, given a new
+; value and called each time), so no native way's value is ever kept for the plans there are: each call is its
+; code's, and its native only works out the way; then the same calls with no change between them
+(def {state} #({{:n 0}}))
+(def {g} (fn {} 0))
+(def {big} (range 3000))
+(def {s} (+ (str-repeat "ab" 3000) "z"))
+(fun {calls i} {list (mod i 7) (div i -3) (floor (/ i 4)) (round (/ i 3)) (even? i) (pow 2 (% i 9)) (avg (list i 1))
+  (has-element? big i) (starts-with? big i) (contains? s "z") (ends-with? s "bz") (zip (list i) {1}) (flatten (list i {i}))
+  (distinct (list i 1 i)) (remove-all 1 (list i 1)) (remove-fst i (list 1 i i)) (?? NIL i) (between? 0 9 i) (xor i NIL)
+  (cond {(> i 5) :big} {T :small}) (case (% i 3) {0 :zero} {1 :one} {2 :two}) (minimum (list i 5)) (maximum (list i 5))})
+(fun {churn i} {do (def {state} #({{:n i}})) (state :n) (def {g} (fn {} {i})) (g) (calls i)})
+(def {a} (map churn (range 12)))
+(def {b} (map calls (range 12)))
+(print (eq a b))
+(print a)

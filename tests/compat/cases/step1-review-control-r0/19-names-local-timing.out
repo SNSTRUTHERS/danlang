@@ -1,0 +1,70 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 1
+danlang>=> 1
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> :a
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 1
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 2
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (x v (g))
+  called at line 1  (px)
+  at line 1  {+ 70000 70001}
+  called at line 1  (px)
+  at line 1  (&3 v (g))
+  called at line 1  (p3)
+  at line 1  {+ 70000 70001}
+  called at line 1  (p3)
+  at line 1  (f v (g))
+  called at line 1  (pf)
+  at line 1  {+ 70000 70001}
+  called at line 1  (pf)
+  at line 1  {+ 70000 70001}
+  called at line 1  (px)
+  at line 1  {+ 70000 70001}
+  called at line 1  (p3)
+  at line 1  {+ 70000 70001}
+  called at line 1  (pf)
+  at line 1  (x v (g))
+  called at line 1  (px)
+  at line 1  {+ 70000 70001}
+  called at line 1  (p3)
+  at line 1  {+ 70000 70001}
+  called at line 1  (pf)
+  at line 1  (&3 v (g))
+  called at line 1  (p3)
+  at line 1  {+ 70000 70001}
+  called at line 1  (pf)
+  at line 1  (f v (g))
+  called at line 1  (pf)
+--- exit 0

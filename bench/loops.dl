@@ -1,0 +1,11 @@
+; loops.dl - while, dotimes and each, with set! of globals and of a function's own variables
+(def {s} 0) (def {i} 0)
+(while {< i 300000} (set! {s} (+ s i)) (set! {i} (+ i 1)))
+(def {c} 0)
+(dotimes {k 300000} (set! {c} (+ c k)))
+(def {l} (range 100000))
+(def {tot} 0)
+(each {x l} (set! {tot} (+ tot x)))
+(fun {nested n} {do (set {acc} 0) (dotimes {a n} (dotimes {b n} (set! {acc} (+ acc (* a b))))) acc})
+(each (fn {x} {set! {tot} (- tot x)}) l)
+(print s c tot (nested 300))

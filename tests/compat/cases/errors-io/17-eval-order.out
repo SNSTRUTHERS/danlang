@@ -1,0 +1,49 @@
+--- stdout
+:a {:f1-ran 1}
+:a :b :c {:f3-ran 1 2 3}
+:a :b! Error: boom at :b
+:a :b :c :d :e! Error: boom at :e
+:a! Error: boom at :a
+:a :b <function>(fn {c} {list :f3-ran a b c})
+:a :b :c! Error: boom at :c
+:head :arg {:f1-ran 1}
+:head! Error: boom at :head
+:head Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+:a 2
+:a! Error: boom at :a
+:a :b 3
+:a! Error: boom at :a
+:a :b! Error: boom at :b
+:a :b :c! Error: boom at :c
+:a :b :c bc
+:a :b :c :d 10
+:a :b :c! Error: boom at :c
+:a :b :c :d :e! Error: boom at :e
+:a :b! Error: boom at :b
+:a :b :c x-y
+:a :b! Error: boom at :b
+:a :b! Error: boom at :b
+:a :b :c :d 12
+:a :b! Error: boom at :b
+:test :then 1
+:test! Error: boom at :test
+:a :b :a :b NIL 2
+:a :b! Error: boom at :b
+:a :b! Error: boom at :b
+:a :b! Error: boom at :b
+:set! :after-set :error
+:def! :after-def boom at :def
+:set! :next Error: boom at :set
+:set! 5
+:key :a :b {1 2}
+:key :a! Error: boom at :a
+:key! Error: boom at :key
+the last: a five-argument built-in, stopped part way, in a function
+:one :two :three :four! Error: boom at :four
+:one :two :three :four! 
+--- stderr
+Error: 17-eval-order.dl: boom at :four
+  at 17-eval-order.dl:8  (error (+ "boom at " label))
+  called at 17-eval-order.dl:69  (boom :four)
+  called at 17-eval-order.dl:71  (assemble 3)
+--- exit 1

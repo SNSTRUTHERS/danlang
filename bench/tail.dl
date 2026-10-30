@@ -1,0 +1,6 @@
+; tail.dl - loops by tail calls: a countdown with an accumulator, mutual recursion, a loop through do and let
+(fun {count-down n acc} {if (zero? n) acc (count-down (- n 1) (+ acc 1))})
+(fun {my-even? n} {if (zero? n) T (my-odd? (- n 1))})
+(fun {my-odd? n} {if (zero? n) NIL (my-even? (- n 1))})
+(fun {steps n acc} {do (set {m} (- n 1)) (if (< m 0) acc (let {{k (+ acc 2)}} (steps m k)))})
+(print (count-down 1000000 0) (my-even? 300000) (steps 200000 0))

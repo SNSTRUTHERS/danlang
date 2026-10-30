@@ -1,0 +1,66 @@
+; 10-lists-alias: lists that could share their items' storage (tail and drop as views, cons claiming the slot before a
+; list's first item): every alias printed again after each step, so an item claimed or overwritten in place (in
+; another list's storage) shows.
+(def {a} (range 10))
+(def {b} (tail a))
+(def {c} (cons 99 b))
+(def {d} (cons 77 b))
+(print "abcd" a b c d)
+(def {e} (cons 55 c))
+(def {f} (cons 66 c))
+(def {g} (tail (tail b)))
+(def {h} (cons 44 g))
+(def {i} (cons 33 (tail a)))
+(def {j} (cons 22 (cons 11 g)))
+(print "a-j" a b c d e f g h i j)
+
+; views of views: drop, take, init; and conses onto each
+(def {v1} (drop 3 a))
+(def {v2} (drop 2 v1))
+(def {v3} (cons :x v2))
+(def {v4} (cons :y v2))
+(def {v5} (take 3 v1))
+(def {v6} (cons :z v5))
+(def {v7} (cons :w (init v1)))
+(def {v8} (cons :u (drop 1 v3)))
+(print "views" a v1 v2 v3 v4 v5 v6 v7 v8)
+
+; the operations on views, and the originals after them
+(print "join" (join b c) (join g h) (join (init a) {:end}) (join (take 3 a) {:t}) (join (drop 7 a) {:d}) a b g)
+(print "join adjacent" (join (take 3 a) (drop 3 a)) (join (drop 3 a) (take 3 a)) (join (tail a) (tail a)) a)
+(print "reverse sort" (reverse b) (reverse g) (sort (cons 5 b)) (sort c >) (sort (reverse h)) a b c g h)
+(print "split" (split 3 b) (split 0 g) (split 20 g) (split 2 (cons :s g)) b g)
+(print "pieces" (init b) (end b) (head b) (subset b 2 3) (subset g 1) (item-at g 0) (nth 2 b) (last b) (fst (tail g)))
+(print "len" (map len [a b c d e f g h i j v1 v2 v3 v4 v5 v6 v7 v8]))
+
+; a list built by cons, then forked: each fork its own
+(def {acc} NIL)
+(dotimes {k 5} (set! {acc} (cons k acc)))
+(def {forks} (map (fn {x} {cons x acc}) {:p :q :r}))
+(def {tforks} (map (fn {x} {cons x (tail acc)}) {:s :t}))
+(def {dforks} (map (fn {x} {cons x (drop 3 acc)}) {:m :n}))
+(print "forks" acc forks tforks dforks)
+(def {base} (cons 1 NIL))
+(def {x1} (cons 2 base))
+(def {x2} (cons 3 base))
+(def {x3} (cons 4 x1))
+(def {x4} (cons 5 x1))
+(def {x5} (cons 6 (tail x4)))
+(def {x6} (cons 7 (tail x3)))
+(print "cons tree" base x1 x2 x3 x4 x5 x6 (eq x5 x6) (eq (tail x5) x1))
+
+; lists inside lists, sharing tails
+(def {nest} (list b (tail b) (cons 0 (tail b)) (cons 1 (tail b)) (drop 2 b) [(tail b) (tail b)]))
+(print "nest" nest (map len nest) (map fst nest))
+(def {nest2} (map (fn {l} {cons :head l}) nest))
+(print "nest2" nest2 nest b)
+(print "flatten" (flatten nest) (distinct (flatten (take 4 nest))) (zip b (tail b)) b)
+
+; the same, at a size where a copy and a view differ in cost (only the values show)
+(def {big} (range 100000))
+(def {bt} (drop 50000 big))
+(def {bc} (cons :c bt))
+(def {bd} (cons :d bt))
+(print "big" (len big) (len bt) (fst bt) (last bt) (len bc) (fst bc) (snd bc) (fst bd) (snd bd) (nth 50000 big))
+(print "big again" (fst (drop 99999 big)) (len (cons 1 (drop 1 big))) (fst (cons 1 (drop 1 big))) (fst big) (snd big)
+  (len (join bt bt)) (nth 49999 (reverse bt)) (len (take 99999 (tail big))) (last (init big)))

@@ -1,0 +1,16 @@
+--- stdout
+:cond-9999 :bottom
+:case-10 :bottom 11
+:case-20000 Error: Too deep: more than 10000 calls nested :levels-run 10000
+:if-20000 :bottom :levels-run 20001
+5050 9223372036855276307
+1 1 2432902008176640000 51090942171709440000 15511210043330985984000000
+111 16 862
+:trail-level 3
+:trail-level 2
+:trail-level 1
+:trail-bottom
+:done
+--- stderr
+
+--- exit 0

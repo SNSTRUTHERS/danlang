@@ -1,0 +1,24 @@
+; 03-applied-by-builtins: cond, case, minimum, maximum and the library's functions given to the built-ins that apply
+; a function to values (map, filter, foldl, foldr, sort's less, any?, all?, find, count, each, hash-call, a method):
+; their clauses as list items have no scope (the code's way) or one (list's); the values, and the place an error made
+; right after says it was, after each has run often enough for the natives' values to be used
+(fun {p a b} {+ a b})
+(def {cls} (list (list NIL 1) (list T 2)))
+(print (map cond (list (list T :a) (list (> 2 1) :b))) (try (map cond {{T :a}}) &err) (map (fn {c} {cond c {T :d}}) cls))
+(print (try (map cond (list (list T :a) (list NIL :b))) &err) (map (case 2) (list (list 2 :one) (list 2 :two))) (try (map (case 2) {{2 :two}}) &err))
+(print (filter (fn {x} {cond {(even? x) T} {T NIL}}) (range 10)) (foldl (fn {a x} {case (mod x 3) {0 (+ a x)} {(mod x 3) a}}) 0 (range 10)))
+(print (foldr (fn {x a} {cond {(odd? x) (cons x a)} {T a}}) NIL (range 10)) (sort {5 2 8 1} (fn {a b} {cond {(< a b) T} {T NIL}})))
+(print (any? (fn {x} {case x {3 T} {x NIL}}) (range 5)) (all? (fn {x} {cond {(>=0 x) T}}) (range 5)) (find (fn {x} {cond {(> x 2) T} {T NIL}}) (range 5)))
+(print (count (fn {x} {case (even? x) {T T} {NIL NIL}}) (range 9)) (map minimum (list {3 1 2} {9 8} (list 5))) (map maximum (list {3 1 2} {"b" "a"})))
+(print (map floor (list 7/2 -7/2 3)) (map (fn {x} {mod x 3}) (range -3 4)) (map even? (range 5)) (map round (list 5/2 -5/2 1/3)))
+(print (foldl (fn {a x} {+ a (pow 2 x)}) 0 (range 8)) (map (fn {l} {distinct l}) (list {1 1} {2 3 2} {})) (map flatten (list {{1} 2} {})))
+(print (sort (list {2 1} {1 1} {1}) (fn {a b} {< (minimum a) (minimum b)})) (sort (list 3 1 2) (fn {a b} {between? 0 a b})))
+(def {obj} (hash-create))
+(hash-put obj (list :pick cond) (list :key case) (list :low minimum) (list :fl floor) (list :self (fn {x} {cond {(eq x 1) (len (hash-keys &0))} {T x}})))
+(print (obj :pick (list NIL 1) (list T 2)) (obj :key 2 (list 1 :a) (list 2 :b)) (obj :low {4 2 9}) (obj :fl 9/2) (obj :self 1) (obj :self 5))
+(print (hash-call obj :pick (list T :hc)) (hash-call obj :fl -1/3) (hash-call obj :low (list 7 3)))
+(each {i (range 4)} (obj :pick (list NIL 1) (list (even? i) i) (list T :odd)))
+(each {i (range 4)} (map (fn {x} {cond {(>0 x) (floor (/ x 2))} {T (mod x 3)}}) (range -2 3)))
+(print (try (map (fn {x} {p 1 2 (floor x)}) (list 7/2 7/2 7/2 7/2)) &err) (try (foldl (fn {a x} {p a x (obj :fl x)}) 0 {1/2 3/2}) &err))
+(print "the last: an error made right after a method's floor (its fourth call), not caught")
+(each {x (list 1 2 3 4)} (if (eq x 4) (p 1 2 (obj :fl 7/2)) (obj :fl 7/2)))

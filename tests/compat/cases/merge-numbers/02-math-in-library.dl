@@ -1,0 +1,10 @@
+; 02-math-in-library: the new math built-ins (pow, sqrt, abs of complex numbers) through library functions with natives
+; and their traces: a value made by them given to mod, floor, between?, avg, distinct
+(print (pow 2 10) (pow 2 0.5) (abs (complex 3 4)) (sqrt 16) (sqrt -4))
+(print (mod (pow 2 20) 7) (floor (sqrt 10)) (even? (pow 3 4)) (between? 1 10 (pow 2 3)))
+(print (avg (map (fn {i} {pow i 2}) (range 10))) (distinct (map (fn {i} {mod (pow i 2) 5}) (range 20))))
+(dotimes {i 3} (print (mod (pow 7 i) 4) (div (pow 7 i) 4)))
+(fun {f a b} {+ a b})
+(print (try (f 1 2 (mod (pow 2 5) 3)) &err))
+(print (try (f 1 2 (floor (sqrt 2))) &err))
+(f 1 2 (mod (pow 3 3) 5))

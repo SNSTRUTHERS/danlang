@@ -1,0 +1,9 @@
+--- stdout
+never printed: the file is read first
+42
+1
+2
+3
+--- stderr
+
+--- exit 7

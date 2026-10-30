@@ -1,0 +1,110 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Division by zero.
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Unbound Symbol '&3'
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (map floor {7/2 7/2 7/2 7/2}))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (map floor {7/2 7/2 7/2 -7/2}))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (map floor {7/2 -7/2 7/2 -7/2 7/2 -7/2}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (map floor {-7/2 -7/2 -7/2 3}))
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (f 1 2 (map ceil {7/2 7/2 7/2 -7/2 -7/2 -7/2 4}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (map round {5/2 5/2 5/2 -5/2 -5/2 -5/2 5/2}))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (map even? {1 2 3 4 5 6 -7 -9}))
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (f 1 2 (map odd? {1 2 3 4 5 6}))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (filter even? {-3 -5 -7 -9 100000000000000000001}))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (filter (fn {x} {even? x}) {1 2 3 4 5 6}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (foldl mod 1000 {7 5 3 2}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (foldl div 1000 {7 5 3 2}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (foldl div -1000 {7 5 3 2}))
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  at line 1  (foldl pow 2 {1 2 2 0})
+  called at line 1  (f 1 2 (foldl pow 2 {1 2 2 0}))
+  at <BUNDLE>\lib\globals.dl:25  (or a b)
+  called at line 1  (f 1 2 (foldl xor NIL {T NIL T NIL NIL}))
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (f 1 2 (sort {3 1 2 5 4} xor))
+  at <BUNDLE>\lib\globals.dl:82  {if l (if (qexpr? (fst l)) (join (flatten (fst l)) (flatt...
+  called at line 1  (f 1 2 (map flatten {{{1} 2} {{1} 2} {{1} 2} {1 {2}} {1 {...
+  at <BUNDLE>\lib\globals.dl:91  {if l (cons (fst l) (distinct (remove-all (fst l) (tail l...
+  called at line 1  (f 1 2 (map distinct {{1 2 1} {1 2 1} {1 2 1} {1} {1} {1}...
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (f 1 2 (map (fn {l} {remove-all 1 l}) {{1 2 1} {1 2 1} {1...
+  at <BUNDLE>\lib\globals.dl:209  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (f 1 2 (map (fn {l} {remove-fst 1 l}) {{1 2} {1 2} {1 2} ...
+  at (made, not read)  {<function>(min) 3 1 2}
+  called at line 1  (f 1 2 (map minimum {{3 1 2} {3 1 2} {3 1 2}}))
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (f 1 2 (map ?? {1 NIL 2 NIL NIL}))
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (f 1 2 (map (fn {s} {starts-with? s "a"}) {"ab" "ab" "ab"...
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (f 1 2 (map (fn {s} {ends-with? s "abc"}) {"ab" "ab" "ab"...
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (f 1 2 (map (fn {s} {contains? s "b"}) {"ab" "ab" "ab" "x...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (each floor {7/2 7/2 7/2 -7/2}))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (dotimes 5 even?))
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (f 1 2 (dotimes 5 square))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (map (mod 7) {2 3 4 5}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (map (div 7) {2 3 4 5}))
+  at <BUNDLE>\lib\globals.dl:246  (>= &3 &1)
+  called at line 1  (between? 1 10)
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  called at line 1  (f 1 2 (map (zip {1 2}) {{3 4} {3 4} {3 4} NIL NIL NIL}))
+--- exit 0

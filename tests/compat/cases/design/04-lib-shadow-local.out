@@ -1,0 +1,24 @@
+--- stdout
+global {1 1 -4 T T 32 3 81 "Cannot perform 'mod' on non-numbers"}
+formals {1 1 -4 T T 32 3 81 "Cannot perform 'mod' on non-numbers"}
+direct {1 1 -4 T "Cannot perform 'mod' on non-numbers"}
+let {1 1 -4 T T 32 3 81 "Cannot perform 'mod' on non-numbers"}
+let direct {1 1/2 4}
+set {6 {1 1 -4 T T 32 3 81 "Cannot perform 'mod' on non-numbers"}}
+dotimes floor 0 1 -4
+dotimes floor 1 1 -4
+each num? 1 1 NIL
+each num? 2 1 T
+each trunc a -4
+each trunc b -4
+fexpr {(whatever) 99 1 T 99}
+method {10 20 1 -4 {:floor :m}} {30 40 1 -4 {:floor :m}}
+try {"boom" 1 -1}
+weird-mod -193 1 T T T
+my-even? Error: Cannot perform 'even?' on non-number T T <function>(fn {n} {if (num? n) (=0 (mod n 2)) (error "Cannot perform 'even?' on non-number")})
+same-floor -1 3 -1 T
+copy-mod 1 1 Error: Cannot perform 'mod' on non-numbers T
+global again T {1 1 -4 T T 32 3 81 "Cannot perform 'mod' on non-numbers"}
+--- stderr
+
+--- exit 0

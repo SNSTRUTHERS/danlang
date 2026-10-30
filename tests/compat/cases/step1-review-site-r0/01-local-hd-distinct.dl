@@ -1,0 +1,12 @@
+; 01-local-hd-distinct: a name the library's code binds is a local one from then on (Name.Local), so a call that
+; starts with it, as a global's name, no longer goes its plan's way.  distinct's code binds hd (remove-all's, for the
+; rest of a list of two items or more), and after that (hd (id 100) 1), hd +, says where it is again: an error made
+; right after it (&1, unbound) says it was made there, not where id's code left evaluation.  distinct's value for
+; {1 1} goes the same way as for {1}, whose code binds no hd
+(def {hd} +)
+(fun {id v} {do v})
+(fun {g} {list (hd (id 100) 1) &1})
+(g 0)
+(g 0)
+(map distinct (list {1} {1} {1} {1 1}))
+(g)

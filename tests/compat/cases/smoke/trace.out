@@ -1,0 +1,9 @@
+--- stdout
+Error: Division by zero.
+<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+Error: The function takes 2 arguments, not 3
+--- stderr
+Error: trace.dl: Division by zero.
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at trace.dl:5  (f 3)
+--- exit 1

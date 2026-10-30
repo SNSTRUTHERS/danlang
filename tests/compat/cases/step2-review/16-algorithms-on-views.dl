@@ -1,0 +1,42 @@
+; 16-algorithms-on-views.dl - recursive programs that go down lists by tail and drop and build them up by cons and
+; join (so their lists are views of each other and conses that take the places before them): merge sort, quick sort
+; by filter, insertion sort, permutations, the power set, a running sum, a list's rotations, run-length coding,
+; each result checked against sort's, and the inputs printed after
+
+(fun {merge a b} {
+  if (nil? a) b
+  (if (nil? b) a
+  (if (<= (fst a) (fst b)) (cons (fst a) (merge (tail a) b)) (cons (fst b) (merge a (tail b)))))})
+(fun {msort l} {if (< (len l) 2) l (do =(h (div (len l) 2)) (merge (msort (take h l)) (msort (drop h l))))})
+(fun {qsort l} {if (nil? l) l (do =(p (fst l)) =(r (tail l))
+  (join (qsort (filter (fn {x} {< x p}) r)) [p] (qsort (filter (fn {x} {>= x p}) r))))})
+(fun {insert x l} {if (nil? l) [x] (if (<= x (fst l)) (cons x l) (cons (fst l) (insert x (tail l))))})
+(fun {isort l} {foldl (fn {acc x} {insert x acc}) NIL l})
+
+(def {seed} 99)
+(fun {rnd n} {do (set! {seed} (bit-and (+ (* seed 1103515245) 12345) 2147483647)) (mod (shr seed 7) n)})
+(def {data} (map (fn {i} {rnd 1000}) (range 300)))
+(def {ref} (sort data))
+(print (eq (msort data) ref) (eq (qsort data) ref) (eq (isort data) ref) (take 10 ref) (drop 290 ref))
+(print (eq (msort (tail data)) (sort (tail data))) (eq (qsort (drop 100 data)) (sort (drop 100 data))))
+(print (eq (msort (cons 5000 data)) (join ref [5000])) (eq (isort (take 50 data)) (sort (take 50 data))))
+(print (take 12 data) (len data))
+
+(fun {perms l} {if (nil? l) [NIL]
+  (foldl join NIL (map (fn {x} {map (fn {p} {cons x p}) (perms (remove-fst x l))}) l))})
+(def {p4} (perms {1 2 3 4}))
+(print (len p4) (take 6 p4) (eq (sort p4) p4) (len (distinct p4)))
+(fun {powerset l} {if (nil? l) [NIL] (do =(r (powerset (tail l))) (join r (map (fn {s} {cons (fst l) s}) r)))})
+(def {ps} (powerset {a b c d e}))
+(print (len ps) (take 8 ps) (last ps) (len (distinct ps)))
+
+(fun {running l acc} {if (nil? l) NIL (do =(s (+ acc (fst l))) (cons s (running (tail l) s)))})
+(print (running (take 20 data) 0) (eq (last (running data 0)) (sum data)))
+(fun {rotations l n} {if (zero? n) NIL (cons l (rotations (join (tail l) (head l)) (- n 1)))})
+(def {rots} (rotations {1 2 3 4 5 6} 6))
+(print rots (map fst rots) (all? (fn {r} {eq (sort r) {1 2 3 4 5 6}}) rots))
+(fun {rle l} {if (nil? l) NIL (do =(x (fst l)) =(n (len (take-while x l))) (cons [x n] (rle (drop n l))))})
+(fun {take-while x l} {if (and l (eq (fst l) x)) (cons x (take-while x (tail l))) NIL})
+(def {runs} (msort (map (fn {i} {rnd 4}) (range 60))))
+(print (rle runs) (sum (map snd (rle runs))))
+(print (take 12 data) (eq ref (sort data)) runs)

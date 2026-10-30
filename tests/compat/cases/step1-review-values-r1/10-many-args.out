@@ -1,0 +1,10 @@
+--- stdout
+5 "s" NIL {1 2} :a 0 {1} Error: Unbound Symbol 'x'
+299 0 "Selection not found"
+89401 "Case not found"
+0 10006 0 "s99" 0
+{T T NIL NIL T} {NIL T T NIL}
+300 299 600 T
+--- stderr
+
+--- exit 0

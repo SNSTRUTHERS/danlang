@@ -1,0 +1,31 @@
+"tab\there \"quoted\" \x01 é"
+"""here "string" \n"""
+\space
+\a
+(code-char 200)
+(str-chars "a\tb")
+#({{:a 1} {"s" "x\ny"} {3 \c} {:in #({{:x 1} :t})} :htag})
+#()
+(hash-keys #({{:z 1} {:y 2} {:x 3}}))
+(def {h} #({{:n 0} {:inc @({} {hash-put &0 {:n (+ 1 (&0 :n))}})}}))
+(h :inc)
+(h :inc)
+h
+(h :n 1)
+(h :secret-method)
+(dotimes {i 3} (write i " "))
+(each {c "ab"}
+  (print (repr c)))
+(while NIL)
+(repeat 2 {"r"})
+(format "{} and {}" "s" \c)
+(format "{}")
+(+ "s" 1/2 :a {"q"})
+(substring "hello" 9)
+(fun {walk l} {each {x l} (+ x 1)})
+(walk {1 :two 3})
+(dotimes {i 2} (write i)) (+ 1 2)
+"one line" "two values"
+(to-str 255 "x")
+(save #({{:k "v"}}))
+exit

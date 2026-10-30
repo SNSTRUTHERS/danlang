@@ -1,0 +1,49 @@
+--- stdout
+<function>(fn {s sub} {=0 (index-of s sub)})
+<function>(fn {s sub} {and (>= (len s) (len sub)) (eq (substring s (- (len s) (len sub))) sub)})
+<function>(fn {s sub} {>=0 (index-of s sub)})
+T T T NIL NIL T
+T NIL NIL NIL T
+T T T NIL T NIL T
+T T T T NIL T NIL
+Error: 'len' requires parameter of type string, list, hash or buffer
+T T T T 2
+T T T T T
+T T T
+T T T
+T NIL NIL T NIL T
+T T T NIL NIL
+Error: First 'substring' parameter must be a String
+Error: First 'substring' parameter must be a String
+NIL
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+Error: 'len' requires parameter of type string, list, hash or buffer
+Error: 'len' requires parameter of type string, list, hash or buffer
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+NIL
+NIL
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+<function>(fn {sub} {=0 (index-of s sub)})
+T T NIL
+<function>(fn {s sub} {=0 (index-of s sub)})
+Error: The function takes 2 arguments, not 3
+Error: The function takes 2 arguments, not 3
+Error: s's s
+Error: e's sub
+:s-first
+:sub-second
+T
+{"banana" "blue"}
+{{T T T} {T NIL T} {NIL T T} {NIL NIL T} {NIL NIL NIL}}
+{:suffix T} {:suffix NIL}
+--- stderr
+Error: 14-string-helpers.dl: First 'substring' parameter must be a String
+  at <BUNDLE>\lib\globals.dl:191  (substring s (- (len s) (len sub)))
+  called at 14-string-helpers.dl:56  (ends-with? s suffix)
+  called at 14-string-helpers.dl:58  (has-suffix? {"file" "dl"} {"dl"})
+--- exit 1

@@ -1,0 +1,60 @@
+; 04-trace-tail.dl - a call in tail position takes its caller's place: it isn't one of the calls in a trace, and a
+; tail-recursive loop runs in constant space (past the 10,000 calls that may nest).  The tail positions: a body's
+; last expression, through if (and ?), do, let, eval, a method, unpack (its body an eval), and a partially applied
+; function's call.  Not one: a cond or case clause's value (the library runs it as (eval {(f x)}), a call whose
+; first item is (f x)), so it's one of the calls in a trace.  The last error goes through a chain of nineteen
+; functions; the calls of nine of them are in tail position, so the trace has the other ten, the cond's and the
+; case's clauses, and the top level's call: twelve, all of them shown
+
+; loops 20,000 deep, in tail position through each form
+(fun {loop-if n} {if (zero? n) :if-done (loop-if (- n 1))})
+(fun {loop-q n} ?{(zero? n) :q-done (loop-q (- n 1))})
+(fun {loop-do n} {do (if (zero? n) :do-done (loop-do (- n 1)))})
+(fun {loop-let n} {let {{m (- n 1)}} (if (< m 0) :let-done (loop-let m))})
+(fun {loop-eval n} {if (zero? n) :eval-done (eval {loop-eval (- n 1)})})
+(def {counter} #({{:down @({n} {if (zero? n) :method-done (counter :down (- n 1))})}}))
+(fun {loop-unpack n} {if (zero? n) :unpack-done (unpack loop-unpack (list (- n 1)))})
+(print (loop-if 20000) (loop-q 20000) (loop-do 20000) (loop-let 20000))
+(print (loop-eval 20000) (counter :down 20000) (loop-unpack 20000))
+(fun {even-odd n} {if (zero? n) :even (odd-even (- n 1))})
+(fun {odd-even n} {if (zero? n) :odd (even-odd (- n 1))})
+(print (even-odd 20001) (even-odd 20000))
+; cond's clauses nest (not in tail position), but 3,000 is not too deep
+(fun {loop-cond n} {cond {(zero? n) :cond-done} {T (loop-cond (- n 1))}})
+(print (loop-cond 3000))
+
+; not in tail position, the same loop nests, and is too deep
+(fun {nest n} {if (zero? n) 0 (+ 1 (nest (- n 1)))})
+(print (nest 9000))
+(print (nest 20000))
+
+; the chain: each h calls a k (not in tail position: + is waiting), each k calls the next h in tail position
+(def {obj} #({{:m @({x} {h6 x})}}))
+(fun {h1 x} {+ 1 (k1 x)})
+(fun {k1 x} {if T (h2 x) :never})
+(fun {h2 x} {+ 1 (k2 x)})
+(fun {k2 x} {do (* 1 1) (h3 x)})
+(fun {h3 x} {+ 1 (k3 x)})
+(fun {k3 x} {let {{y x}} (h4 y)})
+(fun {h4 x} {+ 1 (k4 x)})
+(fun {k4 x} {eval {h5 x}})
+(fun {h5 x} {+ 1 (k5 x)})
+(fun {k5 x} {obj :m x})
+(fun {h6 x} {+ 1 (k6 x)})
+(fun {k6 x} {cond {(eq x -1) :never} {T (h7 x)}})
+(fun {h7 x} {+ 1 (k7 x)})
+(fun {k7 x} {case 2 {1 :never} {2 (h8 x)}})
+(fun {h8 x} {+ 1 (k8 x)})
+(fun {k8 x} {unpack h9 (list x)})
+(fun {h9 x} {+ 1 (k9 x)})
+(fun {k9 x} {(h10 x) 0})
+(fun {h10 x y} {if (eq x :boom) (error "boom, through the tail calls") (+ x y)})
+
+(print (h1 5) (h1 100))
+(print (h1 :boom))
+(print (try (h1 :boom) &err))
+(print (map h1 {0 1 2}))
+(print (k9 1) (k5 1) (k1 1))
+
+(print "the last: the chain's error, twelve calls in its trace")
+(h1 :boom)

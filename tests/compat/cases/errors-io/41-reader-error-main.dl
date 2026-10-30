@@ -1,0 +1,32 @@
+; 41-reader-error-main.dl - a program file that can't be read: the whole file is read before any of it runs, so
+; nothing here is run or printed; the error on stderr is the file's name, the line and the message, status 1.  The
+; trace under it is kept as it is: its "at" is the last call made before (the library's last definition, in
+; lib/globals.dl, as it was loaded), not anything in this file
+
+(print "never printed: the file is read first")
+(def {x} 1)
+(fun {f a} {+ a x})
+(print (f 41))
+(write-file "never-written.txt" "the file can't be read, so this never runs")
+(each {i {1 2 3}}
+  (print i))
+(exit 7)
+
+; the line the reader stops at: a plain string with a line's end in it, then more that's fine
+(print "this string
+goes over a line")
+
+(print "and more lines after it, never read either")
+(fun {g} {:g})
+(g)
+(print [1 2 3] {4 5} #({{:k :v}}))
+(print """a here string
+is fine""")
+(print \space \tab \lparen)
+(print (+ 1 2))
+(print (/ 1 0))
+(+ 1 (len 5))
+; a second reader error, later: only the first one is said
+(print "another
+unclosed string")
+(print "the end")

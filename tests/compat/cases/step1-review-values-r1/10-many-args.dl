@@ -1,0 +1,19 @@
+; 10-many-args: the natived functions given many arguments or long lists: ?? with hundreds of arguments (NIL but the
+; last, items of each kind), cond and case with hundreds of clauses (the last the one), minimum and maximum of
+; thousands of items, between? and xor through apply; each call three times over
+(fun {three g} {let {{r (map (fn {i} {try (repr (g)) (+ "E:" &err)}) {1 2 3})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(def {nils} (map (fn {i} {NIL}) (range 300)))
+(print (three (fn {} {apply ?? (join nils {5})})) (three (fn {} {apply ?? (join nils (list "s" 1/2))})) (three (fn {} {apply ?? nils}))
+  (three (fn {} {apply ?? (join nils (list (list 1 2)))})) (three (fn {} {apply ?? (join nils (list :a))})) (three (fn {} {len &_}))
+  (three (fn {} {try (apply ?? (join nils (list (cons 1 NIL)))) &err})) (three (fn {} {apply ?? (join nils {x})})))
+(def {x} :x-global)
+(fun {clauses n hit} {map (fn {i} {list (== i hit) i}) (range n)})
+(fun {clauses-q n hit} {map (fn {i} {eval (list list (list == i hit) i)}) (range n)})
+(print (three (fn {} {apply cond (clauses 300 299)})) (three (fn {} {apply cond (clauses 300 0)})) (three (fn {} {try (apply cond (clauses 300 999)) &err})))
+(print (three (fn {} {apply case (cons 299 (map (fn {i} {list i (* i i)}) (range 300)))})) (three (fn {} {try (apply case (cons :no (map (fn {i} {list i i}) (range 300)))) &err})))
+(def {nums} (map (fn {i} {% (* i 7919) 10007}) (range 4000)))
+(print (three (fn {} {minimum nums})) (three (fn {} {maximum nums})) (three (fn {} {minimum (map (fn {i} {/ i 7}) nums)}))
+  (three (fn {} {maximum (map (fn {i} {+ "s" i}) (range 300))})) (three (fn {} {minimum (join nums {"a" \b :c})})))
+(print (three (fn {} {map (fn {abc} {apply between? abc}) {{1 9 5} {9 1 5} {1 9 10} {9 1 0} {5 5 5}}})) (three (fn {} {map (fn {p} {apply xor p}) {{T T} {T NIL} {NIL T} {NIL NIL}}})))
+(def {few} (take 300 nums))
+(print (three (fn {} {len (distinct few)})) (three (fn {} {len (remove-all 0 few)})) (three (fn {} {len (flatten (zip few few))})) (three (fn {} {has-element? nums 10006})))

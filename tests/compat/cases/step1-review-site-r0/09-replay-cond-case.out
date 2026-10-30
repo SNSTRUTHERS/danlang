@@ -1,0 +1,116 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> Error: 'head' passed an empty list
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>8
+=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> Error: Selection not found
+danlang>=> NIL
+danlang>=> Error: Case not found
+danlang>=> exit
+--- stderr
+  at (made, not read)  {:neg}
+  called at line 1  (run classify (list (list -1 T) (list -1 T) (list -1 T) (...
+  at (made, not read)  {:neg}
+  called at line 1  (run classify (list (list -1 T) (list 0 T) (list 5 T) (li...
+  at (made, not read)  {:zero}
+  called at line 1  (run classify (list (list -1 T) (list -1 T) (list -1 T) (...
+  at line 1  (+ "small:" x)
+  called at line 1  (run classify (list (list 5 T) (list 5 T) (list 5 T) (lis...
+  at line 1  (list x)
+  called at line 1  (run classify (list (list 5 T) (list 5 T) (list 5 T) (lis...
+  at line 1  (+ "small:" x)
+  called at line 1  (run classify (list (list 50 T) (list 50 T) (list 50 T) (...
+  at (made, not read)  {"one"}
+  called at line 1  (run named (list (list 1 T) (list 1 T) (list 1 T) (list 1...
+  at line 1  (+ "tw" "o")
+  called at line 1  (run named (list (list 1 T) (list 2 T) (list 3 T) (list 4...
+  at (made, not read)  {:three}
+  called at line 1  (run named (list (list 3 T) (list 3 T) (list 3 T) (list 3...
+  at (made, not read)  {n}
+  called at line 1  (run named (list (list 3 T) (list 3 T) (list 3 T) (list 9...
+  at (made, not read)  {n}
+  called at line 1  (run named (list (list :a T) (list :a T) (list :a T) (lis...
+  at (made, not read)  {:huge}
+  called at line 1  (run nested (list (list 60 T) (list 60 T) (list 60 T) (li...
+  at (made, not read)  {:big}
+  called at line 1  (run nested (list (list 60 T) (list 6 T) (list 1 T) (list...
+  at (made, not read)  {:other}
+  called at line 1  (run nested (list (list 1 T) (list 1 T) (list 1 T) (list ...
+  at (made, not read)  {{-1}}
+  called at line 1  (run made (list (list 1 T) (list 1 T) (list 1 T) (list -1...
+  at (made, not read)  {:pos}
+  called at line 1  (run made (list (list -1 T) (list -1 T) (list -1 T) (list...
+  at (made, not read)  {:zero}
+  called at line 1  (run odd-shapes (list (list 0 T) (list 0 T) (list 0 T) (l...
+  at (made, not read)  {:x}
+  called at line 1  (run odd-shapes (list (list 0 T) (list 0 T) (list 0 T) (l...
+  at <BUNDLE>\lib\globals.dl:101  (head (tail (fst &_)))
+  called at line 1  (f x)
+  called at line 1  (run short (list (list 1 T) (list 1 T) (list 1 T) (list 0...
+  at (made, not read)  {:other}
+  called at line 1  (run busy (list (list 1 T) (list -1 T) (list 1 T) (list -...
+  at (made, not read)  {:other}
+  called at line 1  (run rebind (list (list 1 T) (list -1 T) (list 1 T) (list...
+  at line 1  (def {head} head0)
+  called at line 1  (run rebind2 (list (list 1 T) (list -1 T) (list 1 T) (lis...
+  at (made, not read)  {:pos}
+  called at line 1  (run rebind2 (list (list -1 T) (list -1 T) (list -1 T) (l...
+  at line 1  (+ x "no")
+  called at line 1  (f x)
+  called at line 1  (run err-test (list (list 0 T) (list 0 T) (list 0 T) (lis...
+  at (made, not read)  {:zero}
+  called at line 1  (run err-test (list (list 0 T) (list 0 T) (list 0 T) (lis...
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (f x)
+  called at line 1  (run no-match (list (list 0 T) (list 1 T) (list 0 T) (lis...
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (f x)
+  called at line 1  (run no-case (list (list 0 T) (list 1 T) (list 0 T) (list...
+--- exit 0

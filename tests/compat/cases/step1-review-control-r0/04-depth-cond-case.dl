@@ -1,0 +1,20 @@
+; 04-depth-cond-case: cond, case, minimum and maximum called with 0 to 6 levels of calls left (10000 nest at most):
+; a test's call, a value's call, a value that's a function's name (a tail call: no level), recursion through a value
+; (a level each), cond not in tail position (two each), a hand-over (a clause cons made, evaluated again), a test that
+; defines a global, no clause left, a clause that isn't one.  The same "Too deep" where the code's would be, the same
+; value a level further away; at the end one not caught, its trace
+(fun {deep n f} {if (zero? n) (f) (fst (list (deep (- n 1) f)))})
+(fun {at k f} {try (deep (- 9999 k) f) (+ "E:" &err)})
+(fun {g} {+ 1 2})
+(fun {c1 n} {cond {(zero? n) :done} {T (c1 (- n 1))}})
+(fun {c2 n} {fst (list (cond {(zero? n) :done} {T (c2 (- n 1))}))})
+(fun {k1 n} {case (zero? n) {T :done} {NIL (k1 (- n 1))}})
+(def {tests} [
+  (fn {} {cond {(g) 1}}) (fn {} {cond {NIL 0} {(g) 1}}) (fn {} {cond {T (g)}}) (fn {} {cond {NIL 0} {T g}})
+  (fn {} {case 3 {(g) 1}}) (fn {} {case 3 {1 0} {3 (g)}}) (fn {} {minimum {3 1 2}}) (fn {} {maximum (list 3 (g))})
+  (fn {} {c1 0}) (fn {} {c1 1}) (fn {} {c1 2}) (fn {} {c2 1}) (fn {} {k1 1}) (fn {} {k1 2})
+  (fn {} {cond {NIL 0} (cons T {1}) {T 2}}) (fn {} {cond {(do (def {zz} 1) NIL) 0} {T (g)}})
+  (fn {} {cond {NIL 0}}) (fn {} {case 1 {2 0}}) (fn {} {cond {NIL 0} 5})])
+(each {k [0 1 2 3 4 5 6]} (print k (map (fn {th} {at k th}) tests)))
+(print "the last: too deep in a clause's test, not caught")
+(deep 9999 (fn {} {cond {NIL 0} {(zero? (g)) 1} {T 2}}))

@@ -1,0 +1,46 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> "tab\there \"quoted\" \x01 Ã©"
+danlang>=> "here \"string\" \\n"
+danlang>=> \space
+danlang>=> \a
+danlang>=> \È
+danlang>=> {\a \tab \b}
+danlang>=> <hash>{{:a 1} {"s" "x\ny"} {3 \c} {:in {{:x 1} :t}} :htag}
+danlang>=> <hash>NIL
+danlang>=> {:z :y :x}
+danlang>=> NIL
+danlang>=> 0
+danlang>=> 1
+danlang>=> <hash>{{:n 2} {:inc <function>(fn NIL {hash-put &0 {:n (+ 1 (&0 :n))}})}}
+danlang>=> Error: :n isn't a method: its value isn't a function
+danlang>=> NIL
+danlang>0 1 2 => NIL
+danlang>	) <\a
+\b
+=> NIL
+danlang>=> NIL
+danlang>=> {"r" "r"}
+danlang>=> "s and c"
+danlang>=> Error: 'format' has too few arguments for its {}s
+danlang>=> "s1/2:a{\"q\"}"
+danlang>=> Error: 'substring': index 9 is outside the string
+danlang>=> NIL
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>01=> Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+danlang>=> Error: S-Expression starts with incorrect type. Got String, Expected Function.
+danlang>=> "FF"
+danlang>#({{:k "v"}})
+=> NIL
+danlang>=> exit
+--- stderr
+  at line 1  (h :n 1)
+  at line 1  (format "{}")
+  at line 1  (substring "hello" 9)
+  at line 1  (+ x 1)
+  called at line 1  (walk {1 :two 3})
+  at line 1  (write i)
+  at line 1  ("one line" "two values")
+--- exit 0

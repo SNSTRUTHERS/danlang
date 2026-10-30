@@ -1,0 +1,77 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run mod (list (list {7 2} T) (list {7 2} T) (list {7 2} ...
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (run mod (list (list {7 2} T) (list {7 2} T) (list {7 2} ...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run mod (list (list {7 2} T) (list {7 2} T) (list {7 2} ...
+  at <BUNDLE>\lib\globals.dl:149  (error "Cannot perform 'mod' on non-numbers")
+  called at line 1  (run mod (list (list {7 2} T) (list {7 2} T) (list {7 2} ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run floor (list (list {7/2} T) (list {7/2} T) (list {7/2...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run floor (list (list {7/2} T) (list {7/2} T) (list {7/2...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (run even? (list (list {4} T) (list {4} T) (list {4} T) (...
+  at (made, not read)  {<function>(pow) 2 3}
+  called at line 1  (run pow (list (list {2 3} T) (list {2 3} T) (list {2 3} ...
+  at (made, not read)  {<function>(pow) 2 1/2}
+  called at line 1  (run pow (list (list {2 3} T) (list {2 3} T) (list {2 3} ...
+  at (made, not read)  {<function>(pow) 2 3}
+  called at line 1  (run pow (list (list {2 3} T) (list {2 3} T) (list {2 3} ...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (run zip (list (list {{1} {2}} T) (list {{1} {2}} T) (lis...
+  at <BUNDLE>\lib\globals.dl:75  (fst b)
+  called at line 1  (run zip (list (list {{1} {2}} T) (list {{1} {2}} T) (lis...
+  at (made, not read)  {1}
+  called at line 1  (run cond (list (list {{T 1}} T) (list {{T 1}} T) (list {...
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (run cond (list (list {{T 1}} T) (list {{T 1}} T) (list {...
+  at (made, not read)  {2}
+  called at line 1  (run case (list (list {1 {1 2}} T) (list {1 {1 2}} T) (li...
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (run case (list (list {1 {1 2}} T) (list {1 {1 2}} T) (li...
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (run avg (list (list {{1 2}} T) (list {{1 2}} T) (list {N...
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (run avg (list (list {{1 2}} T) (list {{1 2}} T) (list {N...
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (run between? (list (list {1 5 3} T) (list {1 5 3} T) (li...
+  at <BUNDLE>\lib\globals.dl:246  (>= &3 &1)
+  called at line 1  (run between? (list (list {1 5 3} T) (list {1 5 3} T) (li...
+  at (made, not read)  {<function>(min) 3 1 2}
+  called at line 1  (run minimum (list (list {{3 1 2}} T) (list {{3 1 2}} T) ...
+  at (made, not read)  {<function>(min)}
+  called at line 1  (run minimum (list (list {{3 1 2}} T) (list {{3 1 2}} T) ...
+--- exit 0

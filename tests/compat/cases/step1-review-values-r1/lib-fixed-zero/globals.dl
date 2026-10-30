@@ -1,0 +1,14 @@
+; lib-fixed-zero: a library of its own (danlang loads the globals.dl in the folder it runs in; run as the program too,
+; it's the program once args is there) whose >=0 compares with 0.0, a fixed decimal with no places, which prints as
+; 0 does, so its code reads as lib/globals.dl's: (>= n 0.0) gives n a Num (CompareTo), as (>= n 0) doesn't, so after
+; (>=0 y) the call (- y (g)) isn't the one Op2 does in the call, and an error made right after says it was made there
+(if (defined? args)
+  (do
+    (fun {f a b} {+ a b})
+    (fun {g} {+ 1 1})
+    (fun {probe x y} {do (>=0 x) (>=0 y) (f 1 2 (- y (g)))})
+    (print (try (probe 1 3) &err))
+    (print (map (fn {x} {>=0 x}) {5 -5 0 1/2 -1/2 0.0 :a}))
+    (probe (+ 100000 1) (+ 100000 2)))
+  (do
+    (fun {>=0 n} {>= n 0.0})))

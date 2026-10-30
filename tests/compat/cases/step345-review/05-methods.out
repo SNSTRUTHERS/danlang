@@ -1,0 +1,14 @@
+--- stdout
+self 12 {1 12} {1 2} {1 {2 3}}
+f0 {7 8} {7 8} {1 2 NIL 12} {3 2 {3} 12} {3 2 {3} 12}
+dup {2 12} {2 12} {2 12}
+part {:pa :pb :pc 12} {:pa :pb :pc 12} {1 2 {:self :keys :plain :plain-ex :f0 :f1 :dup :part :part0 :ex :secret :peek}} {1 2 {:self :keys :plain :plain-ex :f0 :f1 :dup :part :part0 :ex :secret :peek}}
+ex Error: Unbound Symbol '&1' {1 {2 3} 2 12} The function takes 2 arguments, not 3 42
+hash-call {5 12} {:c :b {:c} 12} {1 2}
+repr <function>(fn {x} {list x (len (hash-keys &0))}) <function>(fn {x y} {list x y}) <function>(fn {y} {list &0 y}) <function>(fn {b c} {list a b c (len (hash-keys &0))})
+many 93300
+changed {1 13} {2 13}
+o2 {(+ 1 2) 3 3} 6 Error: :bip isn't a method: its value isn't a function
+--- stderr
+
+--- exit 0

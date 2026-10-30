@@ -1,0 +1,99 @@
+--- stdout
+0 :number {:num? :int? :zero?}
+1 :number {:num? :int? :one?}
+-1 :number {:num? :int?}
+255 :number {:num? :int?}
+256 :number {:num? :int?}
+65535 :number {:num? :int?}
+65536 :number {:num? :int?}
+-65536 :number {:num? :int?}
+2147483648 :number {:num? :int?}
+9223372036854775807 :number {:num? :int?}
+-9223372036854775807 :number {:num? :int?}
+-9223372036854775808 :number {:num? :int?}
+9223372036854775808 :number {:num? :int?}
+-9223372036854775809 :number {:num? :int?}
+18446744073709551616 :number {:num? :int?}
+18446744073709551614 :number {:num? :int?}
+-9223372036854775809 :number {:num? :int?}
+9223372036854775807 :number {:num? :int?}
+-7 :number {:num? :int?}
+2 :number {:num? :int?}
+2 :number {:num? :fixed?}
+0 :number {:num? :fixed? :zero?}
+0 :number {:num? :fixed? :zero?}
+2.5 :number {:num? :fixed?}
+1 :number {:num? :fixed? :one?}
+10 :number {:num? :fixed?}
+3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384 :number {:num? :fixed?}
+2 :number {:num? :int?}
+1/2 :number {:num? :rational?}
+-7/3 :number {:num? :rational?}
+3/2 :number {:num? :rational?}
+4611686018427387904 :number {:num? :int?}
+1/9223372036854775808 :number {:num? :rational?}
+1+2i :number {:num? :complex?}
+1i :number {:num? :complex?}
+2 :number {:num? :int?}
+1/2-1.5i :number {:num? :complex?}
+-1 :number {:num? :int?}
+2 :number {:num? :int?}
+\a :char {:char?}
+\space :char {:char?}
+\null :char {:char?}
+\ÿ :char {:char?}
+\null :char {:char?}
+"" :string {:string?}
+"a" :string {:string?}
+"abc" :string {:string?}
+"\0" :string {:string?}
+"xxx" :string {:string?}
+:a :atom {:atom?}
+:abc :atom {:atom?}
+: :atom {:atom?}
+:5 :atom {:atom?}
+s :symbol {:symbol?}
+x :symbol {:symbol?}
+t :symbol {:symbol?}
+NIL :list {:nil? :qexpr?}
+NIL :list {:nil? :qexpr?}
+NIL :list {:nil? :qexpr?}
+NIL :list {:nil? :qexpr?}
+NIL :list {:nil? :qexpr?}
+{1} :list {:qexpr?}
+{NIL} :list {:qexpr?}
+{(+ 1 2)} :list {:qexpr?}
+(+ 1 2) :sexpr {:sexpr?}
+{(a b) c} :list {:qexpr?}
+T :t {:t?}
+exit :exit NIL
+<function>(+) :function {:function?}
+<function>(eq 1) :function {:function?}
+<function>(fn {x} {x}) :function {:function?}
+<function>(fn NIL {1}) :function {:function?}
+<function>(fn {x} {x}) :function {:function?}
+<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) :function {:function?}
+<function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) :function {:function?}
+<function>(if) :function {:function?}
+<function>(print) :function {:function?}
+<function>(nth 0) :function {:function?}
+<hash>NIL :hash NIL
+<hash>{{:a 1}} :hash NIL
+<buffer>{0 0} :buffer {:buffer?}
+<buffer>{} :buffer {:buffer?}
+<stream> :stream NIL
+<stream> :stream NIL
+<stream> :stream NIL
+error :error NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL T NIL NIL NIL
+error Error: e Error: e Error: e Error: e {NIL NIL NIL}
+coded :error T :mine
+partial <function>(t?) <function>(int?) <function>(error?) 'int?' takes 1 argument, not 2 'type-of' takes 1 argument, not 2 'zero?' takes 1 argument, not 2
+map {T NIL NIL NIL} {a} {:number :string :char :atom :list :t}
+method T :atom NIL
+defined NIL T T T T T NIL
+expr? NIL T T T T 'expr?' takes at most 1 argument, not 2
+expr? in a function {NIL T} {NIL T}
+optional Error: Unbound Symbol '&1' {1 2} {NIL NIL}
+--- stderr
+
+--- exit 0

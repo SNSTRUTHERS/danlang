@@ -1,0 +1,8 @@
+; 04b-host-exception-in-test: in a program, an exception the host throws in a clause's test (exit given a number too
+; big for a status) is eval's call's error, the test's value, so cond's: caught by try, then not caught (the program
+; stops with it, its trace the place it was made); the clauses after it never run
+(fun {f x} {cond {(eq x 0) :zero} {(exit (* x 99999999999999999999)) :never} {T (print "never printed")}})
+(print (f 0) (try (f 1) (list :caught &err)) (try (case 2 {1 0} {(exit -99999999999999999999) 2}) &err))
+(print "the last: not caught")
+(f 2)
+(print "never printed")

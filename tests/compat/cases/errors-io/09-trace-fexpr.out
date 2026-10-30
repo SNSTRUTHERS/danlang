@@ -1,0 +1,30 @@
+--- stdout
+(error "never made") :sexpr
+3 {:caught "made" :mine} {:caught "Division by zero." NIL} {:caught "Unbound Symbol 'undefined-here'" NIL}
+side effect; side effect; {5 5}
+NIL 2
+{1 {(+ 1 1) {q} undefined-name} {:sexpr :list :symbol}}
+<function>(fn {a} {list a &_ (map type-of &_)})
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+<function>(fn {x} {do (set v (eval x)) (if (error? v) (list :caught (error-message v) (error-code v)) v)}) <function>(fn {x} {list (eval x) (eval x)}) :function
+{v :local-v {:local-v}}
+3 Error: '+' adds numbers, or joins values to a string Error: inner
+{:caught "inner" NIL}
+Error: through a function
+{:caught "an argument of plain" NIL}
+Error: The function takes 1 argument, not 2
+1 {1 2 3}
+{(+ 1 2) a 3}
+{3 {:caught "'len' requires parameter of type string, list, hash or buffer" NIL} 3}
+{:outer {:inner 3}}
+Error: '+' adds numbers, or joins values to a string
+the last: an argument written in a function, evaluated by an fexpr it calls
+checking :ratio
+3
+checking :ratio
+--- stderr
+Error: 09-trace-fexpr.dl: Division by zero.
+  at 09-trace-fexpr.dl:51  (/ a b)
+  called at 09-trace-fexpr.dl:51  (checked2 :ratio (/ a b))
+  called at 09-trace-fexpr.dl:53  (compute 1 0)
+--- exit 1

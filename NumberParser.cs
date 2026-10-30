@@ -17,7 +17,7 @@ public class NumberParser {
             IsComplemented = false;
             IsNegative = negativeBase;
             if (IsNegative) Base *= -1;
-            ParseRegex = _BuildParseRegex(baseChar, valueChars, balanced, IsCaseUnique(valueChars));
+            // (its ParseRegex made when it's first wanted)
         }
 
         public char BaseChar {get; private set;}
@@ -26,7 +26,8 @@ public class NumberParser {
         public bool IsBalanced {get; private set;}
         public bool IsComplemented {get; private set;}
         public bool IsNegative {get; private set;}
-        public Regex ParseRegex {get; private set;}
+        public Regex ParseRegex => _parseRegex ??= _BuildParseRegex(BaseChar, ValueChars, IsBalanced, IsCaseUnique(ValueChars));
+        private Regex? _parseRegex;
 
         public int Base {get; private set;}
     }
@@ -292,7 +293,8 @@ public class NumberParser {
             Num.Norm(new Rat(Val, _den ?? 1))); }    // (a rational whose denominator is 1: an integer)
 
     public const string CustomBaseStandardCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-=+`~!@#$%^&*,;:|?";
-    private static Regex _customBaseRegex = new Regex(@"^#(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)((?<numberBase>([1-7]?[0-9]|80))[rR]|\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\])(?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
+    private static Regex? _customBase;      // (made when it's first wanted)
+    private static Regex _customBaseRegex => _customBase ??= new Regex(@"^#(?<dir>[<>]?)(?<bal>=?)(?<baseMod>[+-]?)((?<numberBase>([1-7]?[0-9]|80))[rR]|\[(?<chars>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]{2,80})\])(?<value>[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+(\.[0-9a-zA-Z`~!@#$%^&*\-=+|;:,?]+)?)$");
 
     // ---- Reading a number
 

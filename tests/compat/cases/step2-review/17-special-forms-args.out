@@ -1,0 +1,21 @@
+--- stdout
+40
+{1 2 3} 3 {0 1 2 3} {1 2 3 1 2 3} {1 2 3}
+{2 3} {4 5} NIL {3} NIL {7} NIL
+{:pos 5} {:neg} 0
+{{1 2} {0 1 2} {1 2} {1 2 1 2}}
+{5 4 3 2 1 0} {5 4 3 2 1 0}
+{:d 1}
+{:four 4}
+{:a :b :c :d :e :f :g :h :i :j} {:b :c :d :e :f :g :h :i :j} {:z :a :b :c :d :e :f :g :h :i :j} {:a :b :c :d :e :f :g :h :i :j :a :b :c :d :e :f :g :h :i :j} {:a :b :c :d :e :f :g :h :i :j} {:a :b :c :d :e :f :g :h :i :j}
+{NIL NIL NIL NIL} <hash>{{:a 1} {:b {2 3}} {:c {4}} {:d {5}}}
+<function>(head) <function>(cons 1) :function {1 2} <function>(join) NIL
+got (+ 1 2) :sexpr
+got (list 1 2) :sexpr
+got {tail {a b c}} :list
+3 {1 2} {b c}
+{2 {3 4} {5}} NIL
+{3 4} {0 0 9} {:x :x :x :x}
+--- stderr
+
+--- exit 0

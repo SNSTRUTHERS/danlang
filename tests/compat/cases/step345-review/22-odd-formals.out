@@ -1,0 +1,19 @@
+--- stdout
+not symbols 'fn' expects a list of symbols first 'fn' expects a list of symbols first 'fn' expects a list of symbols first 'fn' expects a list of symbols first 'fn' expects a list of symbols first 'fn' expects a list of symbols first 'fn' expects a list of symbols first 'fn' expects a list of symbols first 'fun' expects {name formals...} first
+8th &_ {1 7 {9 10} 9} {1 7 8}
+8th &1 {1 7 9 {9}} {8}
+8 partial <function>(fn {h} {list a b c d e f g h}) {1 2 3 4 5 6 7 8} The function takes 1 argument, not 2
+to-sym 2 2 {3 2 1} <function>(fn {q} {q})
+&0 twice 6 <function>(fn {&0} {&0}) {3 2} {3 2}
+sort {3 1 2} {3 2 1} {1 2 3} {1 2 3}
+foldl 3 60 {{0 1} 2}
+foldr {1 2 3} {1 {2 :z}}
+filter {1 2} {2 3} {2 3}
+any find count T 2 2
+012each dotimes NIL NIL
+errors The function takes 1 argument, not 2 <function>(fn {c} {a}) The function takes 0 arguments, not 1
+--- stderr
+Error: 22-odd-formals.dl: The function takes 1 argument, not 2
+  at 22-odd-formals.dl:28  (p 8 9)
+  called at 22-odd-formals.dl:28  (p 8 9)
+--- exit 1

@@ -1,0 +1,54 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run mod (list (list {7 2} nop T) (list {7 2} nop T) (lis...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run mod (list (list {7 2} nop T) (list {7 2} nop T) (lis...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run mod (list (list {7 2} nop T) (list {7 2} nop T) (lis...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run div (list (list {-7 2} nop T) (list {-7 2} nop T) (l...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (run round (list (list {-5/2} nop T) (list {-5/2} nop T) ...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run floor (list (list {-7/2} nop T) (list {-7/2} nop T) ...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run floor (list (list {-7/2} nop T) (list {-7/2} nop T) ...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run floor (list (list {-7/2} nop T) (list {-7/2} nop T) ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run floor (list (list {7/2} nop T) (list {7/2} nop T) (l...
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (run ceil (list (list {7/2} nop T) (list {-7/2} nop T) (l...
+--- exit 0

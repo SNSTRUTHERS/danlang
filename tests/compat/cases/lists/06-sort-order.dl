@@ -1,0 +1,47 @@
+; 06-sort-order.dl - sort by cmp's order: numbers (of every kind, by value: a complex number by its real part, then its
+; imaginary), characters, strings (by their bytes), atoms, symbols, lists (item by item, one that starts another
+; first), S-expressions, T, functions, hashes; equal values (1/2 and 0.5, 2 and 2.0) kept in the order they came
+; (stable); the list sorted isn't changed; sort's errors
+
+(print (sort {3 1 2}) (sort {}) (sort NIL) (sort {1}) (sort {2 1}) (sort {1 1 1}) (sort {1 2 3}))
+(print (sort {10 -3 7/2 3.5 0 -0.5 1/3 0.33 100000000000000000000 -100000000000000000000 65536 -1025}))
+(print (sort [(complex 1 2) (complex 1 -1) 1 (complex 0 5) 2 (complex 1 0) (complex -1 9)]))
+(print (sort {"b" "a" "B" "A" "ab" "" "aa" "a " "Z" "~" "0" "a"}))
+(print (map char-code (sort {"\xff" "a" "\x01" "\x80" " " "\x7f"})))
+(print (sort {\b \a \B \space \~ \0 \a}))
+(print (sort {:b :a :B :aa :a1 :-}))
+(print (sort {b a c aa a1 _ -x B}))
+(print (sort {{2} {1 2 3} {1 2} {} {1} {1 1} {0 9 9}}))
+(print (sort {{b} {a} {"a"} {1} {\a} {:a} {{}} {T}}))
+(print (sort {(b) (a) {b} {a} (a 1) (a) ()}))
+(print (sort {T NIL 1 "s" :a s {s} (s) \s}))
+(print (sort [T + (fn {x} {x}) 1 {1} (hash-create {{:a 1}}) "s" (take 1) len]))
+
+; every kind together: the same order whichever way round it starts
+(def {mixed} [T {2} :c 1 {1 2} {1} (fst {x}) "s" \c 2.5 (fst {(f)}) NIL -1 1/2 "r" :b (fst {w})])
+(print (sort mixed))
+(print (eq (sort mixed) (sort (reverse mixed))) (eq (sort mixed) (sort (sort mixed))))
+(print mixed)
+
+; stable: equal values keep their order (kinds that print differently, or that type tests tell apart)
+(print (sort {1/2 0.5 1 0.25 1/4 1.0 0.50}))
+(print (map rational? (sort {1/2 0.5 1/4 0.25 3/4 0.75 0.5 1/2})))
+(print (map fixed? (sort {2 2.0 1 1.0 2.00 1/1 1.000})))
+(print (sort {sym SYM Sym}) (sort {:k :K}) (sort {{1 0.5} {1 1/2} {1.0 0.25} {1 1/4}}))
+(print (sort [(complex 1 0) 1 1.0 1/1]) (map int? (sort [1.0 1 2.0 2])))
+
+; long ones: sorted, reversed, repeated
+(def {r} (range 30))
+(print (eq (sort r) r) (eq (sort (reverse r)) r))
+(print (sort (join r (reverse r))))
+(print (sort (map (fn {i} {- 15 i}) r)))
+(print (sort (map (fn {i} {bit-and (* i 7) 15}) r)))
+(print (sort (str-chars "the quick brown fox jumps over the lazy dog")))
+(print (sort (str-split "the quick brown fox jumps over the lazy dog" " ")))
+
+; errors
+(print (sort 5))
+(print (sort "cba"))
+(print (sort (fst {(3 2 1)})))
+(print (sort {1} > 3))
+(print (sort) ((sort) {2 1}))

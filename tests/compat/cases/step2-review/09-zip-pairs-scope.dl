@@ -1,0 +1,35 @@
+; 09-zip-pairs-scope.dl - zip's pairs are each a list made in a call of its own, remembering that call's scope, where a
+; and b are the lists left then (the natively made tails share the lists' storage); eval of a pair runs it there, so
+; each pair shows the a and b it saw.  zip run many times (its native way learned, then used), on views, conses and
+; joins of one list, and the lists and the pairs printed again after
+
+(def {fa} {print print print print print})
+(def {fb} {a b a b a})
+(fun {show-pairs ps} {each {p ps} (eval p)})
+(dotimes {i 3} (do (print "run" i) (show-pairs (zip fa fb))))
+
+(def {base} (cons print (cons print (cons print NIL))))
+(def {va} (cons print base))
+(def {vb} (cons print base))
+(def {sym} (join (take 2 fb) (drop 3 fb)))
+(dotimes {i 3} (do (print "views" i) (show-pairs (zip va sym)) (show-pairs (zip (tail va) (tail sym)))))
+(print base va vb sym)
+
+; the pairs themselves, kept: each one's scope still has its own a and b
+(def {ps} (zip va sym))
+(def {ps2} (zip va sym))
+(print ps ps2 (eq ps ps2) (len ps))
+(each {p (reverse ps)} (eval p))
+(each {p ps2} (eval (cons print (tail p))))
+(print (map (fn {p} {eval (cons list (tail p))}) ps) (map (fn {p} {eval p}) (take 2 ps)))
+
+; zip of long views, many times, its pairs' lengths only
+(def {long} (range 300))
+(def {la} (drop 50 long))
+(def {lb} (cons -1 (take 200 long)))
+(dotimes {i 4} (do
+  =(z (zip la lb))
+  (print i (len z) (fst z) (last z) (sum (map fst z)) (sum (map snd z)))))
+(print (len long) (sum long) (len la) (len lb))
+(def {nested} (zip (zip la lb) (zip lb la)))
+(print (len nested) (fst nested) (last nested))

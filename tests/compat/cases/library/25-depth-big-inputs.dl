@@ -1,0 +1,41 @@
+; 25-depth-big-inputs: library recursions on inputs big enough to pass the 10,000-call limit by themselves: repeat
+; of 10,005 (it nests before it conses, so it fails at once), repeat of a count that never reaches 0, flatten of
+; lists nested 10,005 deep and 9,998/9,999 deep (the last that works, the first that doesn't); and inputs of
+; hundreds or thousands called from inside a user recursion already 5,000 or 9,500 deep: just under the limit, and
+; just over.  (Lists of 10,005 items for zip, remove-all and distinct take too long here: each level copies its
+; tail.)  The error comes back as a value through every level.
+; Ends with repeat's "Too deep" on 10,005 runs (the trace: the innermost 12 calls, in lib\globals.dl).
+
+(fun {deep n thunk} {if (=0 n) (thunk) (fst (list (deep (1- n) thunk)))})
+(fun {wrap l k} {foldl (fn {acc x} {list acc}) l (range k)})
+
+; by themselves
+(print :repeat-10005 (repeat 10005 {:x}))
+(print :repeat-negative (repeat -1 {:x}))
+(print :repeat-fraction (repeat 1/2 {:x}))
+(def {nest-4990} (wrap {:core} 4990))
+(def {nest-5010} (wrap nest-4990 20))
+(def {nest-9998} (wrap nest-5010 4988))
+(def {nest-9999} (list nest-9998))
+(def {nest-10005} (wrap nest-9999 6))
+(print (len nest-10005) (len (fst nest-10005)) (eq (fst nest-9999) nest-9998))
+(print :flatten-nested-10005 (flatten nest-10005))
+(print :flatten-nested-9998 (flatten nest-9998))
+(print :flatten-nested-9999 (flatten nest-9999))
+
+; from inside a recursion 5,000 deep
+(print :d5000-flatten-4990 (deep 5000 (fn {} {flatten nest-4990})))
+(print :d5000-flatten-5010 (deep 5000 (fn {} {flatten nest-5010})))
+(print :d5000-repeat-5010 (deep 5000 (fn {} {repeat 5010 {:x}})))
+
+; from inside a recursion 9,500 deep
+(print :d9500-zip-490 (deep 9500 (fn {} {len (zip (range 490) (range 490))})))
+(print :d9500-zip-510 (deep 9500 (fn {} {len (zip (range 510) (range 510))})))
+(print :d9500-remove-fst-510 (deep 9500 (fn {} {len (remove-fst -1 (range 510))})))
+(print :d9500-remove-all-510 (deep 9500 (fn {} {len (remove-all -1 (range 510))})))
+(print :d9500-distinct-510 (deep 9500 (fn {} {len (distinct (range 510))})))
+(print :d9500-all-between-510 (deep 9500 (fn {} {all-between? 0 5 (map (fn {x} {5}) (range 510))})))
+(print :d9500-flatten-490 (deep 9500 (fn {} {len (flatten (range 490))})))
+
+; repeat of 10,005 runs: the program ends with its trace
+(repeat 10005 {:x})

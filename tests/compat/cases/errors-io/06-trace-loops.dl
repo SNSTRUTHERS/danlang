@@ -1,0 +1,71 @@
+; 06-trace-loops.dl - errors in the bodies of each, dotimes and while: the loop stops at the first (the steps
+; before it done, with their side effects) and it's the loop's value; in a body of several expressions, the ones after
+; it aren't run.  A loop is a special form, not a function: it isn't a call in a trace.  The last error is made in a
+; dotimes body, in a while body, in an each body, in a function
+
+; each over a list, a string; with a body, or a function
+(print (each {x {1 2 3 4}} (write x " ") (if (eq x 3) (error "each stopped at 3")) (write "after " x "; ")))
+(print (each {c "abcd"} (write c) (if (eq c \c) (+ c 1))))
+(print (each (fn {x} {do (write x) (if (> x 1) (error "fn stopped") x)}) {1 2 3}))
+(print (each {x {}} (error "never")))
+(print (each {x (error "the list is an error")} (print x)))
+(print (each {x {1 2}} {write "q" x} (write ";")))
+(print (each {x {1 2}} {error "in a q-expression"}))
+
+; dotimes, with a body or a function
+(print (dotimes {i 5} (write i) (if (eq i 2) (error (+ "dotimes stopped at " i)))))
+(print (dotimes 4 (fn {i} {if (eq i 3) (error "fn at 3") (write i)})))
+(print (dotimes {i 0} (error "never")))
+(print (dotimes {i (error "the count is an error")} (print i)))
+(print (dotimes {i -1} (print i)))
+
+; while: its test, and its body
+(print (do =(n 0) (while (< n 10) =(n (+ n 1)) (write n) (if (eq n 4) (error "while stopped at 4"))) n))
+(print (do =(n 0) (while (if (< n 3) T (error "the test failed")) =(n (+ n 1)) (write n))))
+(print (do =(n 0) (while {< n 3} {=(n (+ n 1))} {write n}) n))
+(print (do =(n 0) (while {< n 3} {=(n (+ n 1))} {error "in a q-expression body"})))
+(print (while NIL (error "never")))
+
+; the loop's variable and its scope: each's x is its own, set in the body stays in it
+(def {x} :global-x)
+(print (each {x {1 2}} (write x)) x)
+(print (do (each {i {1 2}} =(seen i)) (defined? seen)))
+; each step a scope of its own: a set in one isn't in the next, a closure keeps its step's variable (while has none)
+(each {x {1 2 3}} (write (defined? seen-before) " ") =(seen-before x))
+(dotimes {i 3} (write (defined? seen-before2) " ") =(seen-before2 i))
+(print)
+(def {fs} {})
+(each {x {1 2 3}} (def {fs} (cons (fn {} {x}) fs)))
+(def {gs} {})
+(dotimes {i 3} (def {gs} (cons (fn {} {i}) gs)))
+(def {hs} {})
+(do =(n 0) (while (< n 3) (def {hs} (cons (fn {} {n}) hs)) =(n (+ n 1))))
+(print (map (fn {g} {(g)}) fs) (map (fn {g} {(g)}) gs) (map (fn {g} {(g)}) hs))
+(print (let {{a 1}} (each {x {1 2}} =(a x)) a) (let {{a 1}} (each {x {1 2}} (set! {a} x)) a))
+; a count that's a whole number of another kind: the variable an integer
+(dotimes {i 2.0} (write i (int? i) " "))
+(dotimes {i 4/2} (write i (int? i) " "))
+(print)
+
+; nested loops: the inner error stops the outer
+(print (each {a {1 2 3}} (dotimes {b 3} (write a b " ") (if (and (eq a 2) (eq b 1)) (error "inner at 2,1")))))
+(print (each {a {1 2 3}} (try (dotimes {b 3} (write a b " ") (if (eq b 1) (error "inner"))) (write "caught "))))
+
+; a loop in a function called from a loop
+(fun {scan l} {each {x l} (if (num? x) (write x) (error (+ "not a number: " (repr x))))})
+(print (dotimes {k 2} (scan {1 2}) (scan {3 :four 5})))
+
+(print "the last: an error in a dotimes, in a while, in an each, in a function")
+(fun {grid rows} {
+  each {r rows}
+    (write "row " r ": ")
+    =(n 0)
+    (while (< n 2)
+      (dotimes {i 3}
+        (write (* r n i) " ")
+        (if (eq (* r n i) 4) (/ 1 0)))
+      =(n (+ n 1)))
+    (print)
+})
+(print (grid {1}))
+(grid {1 2 3})

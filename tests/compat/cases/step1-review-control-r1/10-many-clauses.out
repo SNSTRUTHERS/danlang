@@ -1,0 +1,51 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{:at 399 199} 400}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{:at 399 199} 399}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {:sexpr {:read 299 5} 300 299 0}
+danlang>=> {:case 399 NIL}
+danlang>=> {:case 399}
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: Case not found
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (&400 v (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (apply cond (map (fn {i} {if (eq i 300) 5 (list NIL i)}) ...
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (apply case (cons 1000 (map (fn {i} {list i i}) (range 40...
+  at (made, not read)  {{:at 399 199}}
+  called at line 1  (p 1 2 (apply cond (map cl (range 400))))
+  at line 1  (list :read 299 (mod 299 7))
+  called at line 1  (p 1 2 (eval (fst code)))
+  at line 1  (&400 v (g))
+  called at line 1  (probe)
+--- exit 0

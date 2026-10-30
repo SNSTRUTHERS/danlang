@@ -1,0 +1,71 @@
+; 17-eval-order.dl - the order things are evaluated in, seen by side effects, and where an error stops it: a call's
+; arguments left to right, the first error the call's value (the rest not evaluated, the function not run), for
+; functions and for built-ins of one, two, three and more arguments (the interpreter's different ways); the head
+; first; special forms in their own orders; set and def bind an error as a value (do goes on).  The last error stops a
+; five-argument built-in call part way, in a function
+
+(fun {tk label v} {do (write label " ") v})
+(fun {boom label} {do (write label "! ") (error (+ "boom at " label))})
+
+; a function's arguments: left to right; the first error stops them, the function isn't run
+(fun {f0} {:f0-ran})
+(fun {f1 a} {list :f1-ran a})
+(fun {f3 a b c} {list :f3-ran a b c})
+(fun {f6 a b c d e f} {list :f6-ran a b c d e f})
+(print (f1 (tk :a 1)))
+(print (f3 (tk :a 1) (tk :b 2) (tk :c 3)))
+(print (f3 (tk :a 1) (boom :b) (tk :c 3)))
+(print (f6 (tk :a 1) (tk :b 2) (tk :c 3) (tk :d 4) (boom :e) (tk :f 6)))
+(print (f6 (boom :a) (tk :b 2) (tk :c 3) (tk :d 4) (tk :e 5) (tk :f 6)))
+(print (f3 (tk :a 1) (tk :b 2)))
+(print ((f3 (tk :a 1)) (tk :b 2) (boom :c)))
+
+; the head first, then the arguments
+(print ((tk :head f1) (tk :arg 1)))
+(print ((boom :head) (tk :arg 1)))
+(print ((tk :head 5) (tk :arg 1)))
+
+; built-ins: one, two, three, four, five arguments
+(print (len (tk :a {1 2})))
+(print (len (boom :a)))
+(print (+ (tk :a 1) (tk :b 2)))
+(print (+ (boom :a) (tk :b 2)))
+(print (+ (tk :a 1) (boom :b)))
+(print (substring (tk :a "abcdef") (tk :b 1) (boom :c)))
+(print (substring (tk :a "abcdef") (tk :b 1) (tk :c 2)))
+(print (+ (tk :a 1) (tk :b 2) (tk :c 3) (tk :d 4)))
+(print (+ (tk :a 1) (tk :b 2) (boom :c) (tk :d 4)))
+(print (list (tk :a 1) (tk :b 2) (tk :c 3) (tk :d 4) (boom :e)))
+(print [(tk :a 1) (boom :b) (tk :c 3)])
+(print (str-join (list (tk :a "x") (tk :b "y")) (tk :c "-")))
+(print ((cons (tk :a 1)) (boom :b)))
+(print (format "{} {} {}" (tk :a 1) (boom :b) (tk :c 3)))
+
+; nested: innermost first, left to right
+(print (+ (* (tk :a 2) (tk :b 3)) (- (tk :c 10) (tk :d 4))))
+(print (+ (* (tk :a 2) (boom :b)) (- (tk :c 10) (tk :d 4))))
+
+; special forms: their own orders
+(print (if (tk :test T) (tk :then 1) (tk :else 2)))
+(print (if (boom :test) (tk :then 1) (tk :else 2)))
+(print (and (tk :a 1) (tk :b NIL) (tk :c 3)) (or (tk :a NIL) (tk :b 2) (tk :c 3)))
+(print (do (tk :a 1) (boom :b) (tk :c 3)))
+(print (let {{x (tk :a 1)} {y (boom :b)} {z (tk :c 3)}} (tk :body x)))
+(print #({{:k (tk :a 1)} {:j (boom :b)} {:i (tk :c 3)}}))
+
+; set and def bind an error as a value: do goes on, till the name's value is evaluated
+(print (do =(v (boom :set)) (tk :after-set 1) (type-of v)))
+(print (do (def {dv} (boom :def)) (tk :after-def 2) (error-message dv)))
+(print (do =(w (boom :set)) (tk :next 1) w (tk :not-reached 2)))
+(print (do (set! {dv} (tk :set! 5)) dv))
+
+; a method's arguments, a hash's key: in order, the first error stops them
+(def {obj} #({{:m @({a b} {list a b})}}))
+(print (obj (tk :key :m) (tk :a 1) (tk :b 2)))
+(print (obj (tk :key :m) (boom :a) (tk :b 2)))
+(print (obj (boom :key) (tk :a 1)))
+
+(print "the last: a five-argument built-in, stopped part way, in a function")
+(fun {assemble x} {+ 0 (+ (tk :one 1) (tk :two 2) (tk :three x) (boom :four) (tk :five 5))})
+(print (assemble 3))
+(assemble 3)

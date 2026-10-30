@@ -1,0 +1,77 @@
+; 11-redefine-special: special forms are values like any other.  Called by another name (when, my-let, my-eval,
+; sq for set) they're the same forms, tail position kept.  Redefined (if, do, and as functions) every later call
+; changes, the library's ?{...} code too (sign, mod, round, floor): all the arguments evaluated, errors stopping
+; them.  Restored, everything is as it was.
+
+(def {orig-if orig-do orig-and orig-or} if do and or)
+(fun {sign n} ?{(< n 0) :neg (if (> n 0) :pos :zero)})
+(print (sign -1) (sign 1) (sign 0) (mod 7 3) (round 5/2) (floor 5/2))
+
+; aliases of special forms: the same forms (their arguments as they're written)
+(def {when} if)
+(print when (when T :yes :no) (when NIL :yes))
+(print (when NIL (print :not-evaluated) :else-branch))
+(fun {via-when n} {when (zero? n) :when-done (via-when (- n 1))})
+(print (via-when 100000))
+(def {my-let my-eval sq also} let eval set and)
+(print (my-let {{a 1} {b 2}} (+ a b)))
+(print (my-eval {+ 1 2}))
+(fun {loop-my-eval n} ?{(zero? n) :my-eval-done (my-eval {loop-my-eval (- n 1)})})
+(print (loop-my-eval 100000))
+(fun {use-sq} {do (sq {loc} 5) loc})
+(print (use-sq) (try loc &err))
+(print (also 1 NIL (print :not-reached)) (also))
+
+; a special form in a list, called from there
+(def {forms} [if do and])
+(print forms)
+(print ((fst forms) T :first-of-list :no))
+(print ((snd forms) (print :in-do) :do-last))
+
+; if redefined as a function: every if after this, the library's too
+(def {if} (fn {c a b} {list :my-if c a b}))
+(print (if T 1 2))
+(print (if NIL (print :evaluated-anyway) 2))
+(print ?(T :short :hand))
+(print (sign -1))
+(print (round 5/2))
+(print (mod 7 3))
+(print (orig-if T :orig-still-works :no))
+(print (when T :alias-unchanged :no))
+
+; restored
+(def {if} orig-if)
+(print (sign -1) (sign 1) (sign 0) (mod 7 3) (round 5/2))
+
+; do redefined: floor uses do (in a let's code)
+(def {do} (fn {} {list :my-do &_}))
+(print (do 1 2 3))
+(print (orig-do 1 2 3))
+(print (floor 5/2))
+(def {do} orig-do)
+(print (floor 5/2) (do 1 2 3))
+
+; and redefined as or; or as a function
+(def {and} or)
+(print (and NIL 2) (and 1 2) (sign 3))
+(def {and} orig-and)
+(print (and NIL 2) (and 1 2))
+(def {or} (fn {a b} {list :my-or a b}))
+(print (or 1 2))
+(print (xor T NIL))
+(def {or} orig-or)
+(print (xor T NIL) (xor T T))
+
+; set and def under other names, in a loop's body
+(def {bind} def)
+(dotimes {i 3} (bind {last-i} i))
+(print last-i)
+
+; a special form passed where a function is applied to values: an error
+(print (map if {1 2}))
+(print (foldl and T {1 2}))
+(print (try (each do {1 2}) &err))
+
+; the last: if replaced by a number, the library's sign called, ends the program
+(def {if} 0)
+(sign 5)

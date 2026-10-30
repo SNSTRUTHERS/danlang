@@ -1,0 +1,48 @@
+; a REPL session: definitions, and each kind of value as the REPL shows it, "=> " and its repr
+(fun {square x} {* x x})
+(square 12)
+square
+(def {adder} (fn {n} {fn {x} {+ x n}}))
+(adder 5)
+((adder 5) 10)
+(def {total} 0)
+(set! {total} (+ total 42))
+total
+42
+-9223372036854775809
+3.14159
+22/7
+(complex 1 -2)
+\a
+\space
+\newline
+"a string\twith a tab"
+""
+:atom
+(fst {sym})
+NIL
+T
+{1 "two" \3 :four {5}}
+(list 1 2 3)
+[]
+(read "(+ 1 2)")
++
+(eq 1)
+(fexpr {x} {x})
+#({{:a 1} {"b" "two"} :tag})
+#()
+(buffer "hi")
+stdout
+(error "an error, as a value")
+; a line is a call of its items: a name alone is its function called with nothing
+print
+len
+list
+(print "a line with two calls:") (print "the second")
+
+
+(+ 1 2) ; a comment after an expression
+args
+(type-of args)
+"tail of the session"
+exit

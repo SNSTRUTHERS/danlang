@@ -1,0 +1,14 @@
+; 13-repl-exit-in-clauses: at the REPL, a clause's value or test that's exit itself (the value: the REPL ends, status
+; 0, when a line's value is exit) or a call of (exit n) (the REPL ends with that status at once): first a value that
+; contains exit (not exit itself), exit kept in a list, compared, given to case, then a cond whose value is exit
+(fun {p a b} {+ a b})
+(list (cond {T exit}) :in-a-list)
+(case exit {exit :key-is-exit} {T :no})
+(eq exit (cond {NIL 1} {T exit}))
+(print (cond {exit :exit-is-true}))
+(p 1 2 (cond {NIL 0} {T exit}))
+(fun {leave n} {cond {(eq n 0) exit} {(eq n 1) (list exit)} {T (exit n)}})
+(leave 1)
+(map (fn {n} {type-of (leave n)}) {0 1})
+(cond {NIL 0} {(eq 1 2) 1} {T (leave 0)})
+(print "never printed")

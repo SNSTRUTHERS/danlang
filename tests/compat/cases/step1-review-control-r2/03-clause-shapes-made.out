@@ -1,0 +1,19 @@
+--- stdout
+say T
+say 1
+1
+say :b
+:b
+{list :later n (* n 10)} {:later 4 40} {:zero 0}
+:r2 Error: 'head' passed an empty list
+Error: 'head' passed an empty list :j2
+:after-subset 1
+:dropped 2
+:s :taken
+{:took 1} {:rev 2} :neither
+the last: a clause made by drop, of one item, not caught
+--- stderr
+Error: 03-clause-shapes-made.dl: 'head' passed an empty list
+  at <BUNDLE>\lib\globals.dl:101  (head (tail (fst &_)))
+  called at 03-clause-shapes-made.dl:22  (cond {NIL 0} (drop 2 {0 1 T}))
+--- exit 1

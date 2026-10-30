@@ -1,0 +1,63 @@
+--- stdout
+<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+<function>(fn {a b} {if (and (num? a) (num? b)) (floor (/ a b)) (error "Cannot perform 'div' on non-numbers")})
+<function>(fn {a b} {if (and (num? a) (num? b)) (cons (div a b) (list (mod a b))) (error "Cannot perform 'divmod' on non-numbers")})
+<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) T
+:mod 2 {1 1 0 1 1 1 0 0 0 1 1 0 0 1 3/2 1/2 0.5 1.5 0.1}
+:mod -2 {-1 -1 0 -1 -1 -1 0 0 0 -1 -1 0 0 -1 -1/2 -3/2 -1.5 -0.5 -1.9}
+:mod 3 {1 2 0 1 2 0 1 2 2 1 1 2 1 0 1/2 5/2 2.5 0.5 0.1}
+:mod -3 {-2 -1 0 -2 -1 0 -2 -1 -1 -2 -2 -1 -2 0 -5/2 -1/2 -0.5 -2.5 -2.9}
+:mod 7/2 {0 0 0 1 5/2 1 2 3/2 3/2 1/2 0 1 5/2 3/2 0 0 2.5 1 0.1}
+:mod 0.3 {0.1 0.2 0 0.1 0.2 0 0.1 0.2 0.2 0.1 0.1 0.2 0.1 0 1/5 1/10 0.1 0.2 0.1}
+:mod 65536 {7 65529 0 1 65535 65535 0 0 64512 64511 65535 0 0 65535 7/2 131065/2 2.5 65533.5 0.1}
+:mod -1025 {-1018 -7 0 -1024 -1 -65 -64 -961 -1024 0 -1018 -1017 -8 -9 -2043/2 -7/2 -1022.5 -2.5 -1024.9}
+:mod 9223372036854775808 {7 9223372036854775801 0 1 9223372036854775807 65535 65536 9223372036854710272 9223372036854774784 9223372036854774783 9223372036854775807 0 0 9223372036854775807 7/2 18446744073709551609/2 2.5 9223372036854775805.5 0.1}
+:div 2 {3 -4 0 0 -1 32767 32768 -32768 -512 -513 4611686018427387903 4611686018427387904 -4611686018427387904 -4611686018427387905 1 -2 1 -2 0}
+:div -2 {-4 3 0 -1 0 -32768 -32768 32768 512 512 -4611686018427387904 -4611686018427387904 4611686018427387904 4611686018427387904 -2 1 -2 1 -1}
+:div 3 {2 -3 0 0 -1 21845 21845 -21846 -342 -342 3074457345618258602 3074457345618258602 -3074457345618258603 -3074457345618258603 1 -2 0 -1 0}
+:div -3 {-3 2 0 -1 0 -21845 -21846 21845 341 341 -3074457345618258603 -3074457345618258603 3074457345618258602 3074457345618258603 -2 1 -1 0 -1}
+:div 7/2 {2 -2 0 0 -1 18724 18724 -18725 -293 -293 2635249153387078802 2635249153387078802 -2635249153387078803 -2635249153387078803 1 -1 0 -1 0}
+:div 0.3 {23 -24 0 3 -4 218450 218453 -218454 -3414 -3417 30744573456182586023 30744573456182586026 -30744573456182586027 -30744573456182586030 11 -12 8 -9 0}
+:div 65536 {0 -1 0 0 -1 0 1 -1 -1 -1 140737488355327 140737488355328 -140737488355328 -140737488355329 0 -1 0 -1 0}
+:div -1025 {-1 0 0 -1 0 -64 -64 63 0 1 -8998411743272953 -8998411743272953 8998411743272952 8998411743272952 -1 0 -1 0 -1}
+:div 9223372036854775808 {0 -1 0 0 -1 0 0 -1 -1 -1 0 1 -1 -2 0 -1 0 -1 0}
+:identity T
+:mod-sign {T T T T T T T T T}
+1 1 -1 -1 2 2 -2 0
+3 -4 -4 3 0 4611686018427387903 -4611686018427387904
+65535 65535 1 1023 1
+{3 1} {-4 1} {-4 -1} {3 -1} {3 1/2} {8 0.1} {140737488355328 0}
+{1 1} {-1 9223372036854775807} {-64 -64}
+1/5 0.5 0.01 0.02 3 1/12 -2
+0.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384 6 0.28171817154095476463971252864733750224275290630005
+{0 1 2 0 1 2 0 1 2 0 1 2 0} {-2 -2 -2 -1 -1 -1 0 0 0 1 1 1 2}
+Error: Division by zero. Error: Division by zero. Error: Division by zero. Error: Division by zero.
+Error: Division by zero. Error: Division by zero. Error: Division by zero. Error: Division by zero.
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+1
+Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'div' on non-numbers Error: Cannot perform 'div' on non-numbers Error: Cannot perform 'divmod' on non-numbers Error: Cannot perform 'divmod' on non-numbers
+Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'div' on non-numbers
+<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a b} {if (and (num? a) (num? b)) (floor (/ a b)) (error "Cannot perform 'div' on non-numbers")}) <function>(fn {a b} {if (and (num? a) (num? b)) (cons (div a b) (list (mod a b))) (error "Cannot perform 'divmod' on non-numbers")})
+<function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {b} {if (and (num? a) (num? b)) (floor (/ a b)) (error "Cannot perform 'div' on non-numbers")}) <function>(fn {b} {if (and (num? a) (num? b)) (cons (div a b) (list (mod a b))) (error "Cannot perform 'divmod' on non-numbers")}) <function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+1 3 {3 1} 1
+Error: The function takes 2 arguments, not 3
+Error: The function takes 2 arguments, not 3
+Error: The function takes 2 arguments, not 3
+Error: mod's a Error: mod's b Error: div's a Error: divmod's b
+Error: first
+:a-first
+:b-second
+1
+:a
+:b
+{2 1}
+{{:wrapped 1} {:wrapped 0} {:wrapped 1}}
+--- stderr
+Error: 10-div-mod-divmod.dl: Division by zero.
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at 10-div-mod-divmod.dl:57  (mod n m)
+  called at 10-div-mod-divmod.dl:60  (wrap-all {1 2 3} 0)
+--- exit 1

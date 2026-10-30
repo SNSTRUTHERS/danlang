@@ -1,0 +1,30 @@
+; 27-reader-error-site: a program that can't be read runs none of its expressions: its error says the file and the
+; line of the bracket left open.  The trace under it says where evaluation last was: the library's last expression,
+; as lib/globals.dl was loaded (so it shows what loading the library did, and in what order, to its very end).
+;
+; None of what follows runs: the reader stops at the bracket left open on the last line.
+(print "never printed: the program is read whole before any of it runs")
+(fun {f x} {mod x 2})
+(def {xs} (map f (range 10)))
+(print xs)
+(def {h} #({{:a 1} {:b 2}}))
+(hash-put h {:c 3})
+(print (hash-keys h))
+(dotimes {i 3} (print i))
+(each {x {1 2 3}} (print x))
+(print (cond {NIL 1} {T 2}))
+(print (case 2 {1 :a} {2 :b}))
+(print (pow 2 10) (even? 4) (round 5/2))
+(fun {g} {list &_})
+(print (g 1 2 3))
+(print (let {{a 1} {b 2}} (+ a b)))
+(print (try (error "x") &err))
+(print (eval {+ 1 2}))
+(print (tail {1 2 3}) (cons 0 {1}))
+(print [1 2 3])
+(print (sort {3 1 2}))
+(print (foldl + 0 (range 5)))
+(print (filter even? (range 10)))
+(print (zip {1 2} {3 4}))
+(print "and the last line opens a bracket it doesn't close")
+(print (+ 1 2)

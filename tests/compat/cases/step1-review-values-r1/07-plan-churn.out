@@ -1,0 +1,6 @@
+--- stdout
+T
+{{0 0 0 0 T 1 1/2 T T T T {{0 1}} {0 i} {0 1} {0} {1 0} 0 T T :small :zero 0 5} {1 -1 0 0 NIL 2 1 T NIL T T {{1 1}} {1 i} {1} NIL {1 1} 1 T T :small :one 1 5} {2 -1 0 1 T 4 3/2 T NIL T T {{2 1}} {2 i} {2 1} {2} {1 2} 2 T T :small :two 2 5} {3 -1 0 1 NIL 8 2 T NIL T T {{3 1}} {3 i} {3 1} {3} {1 3} 3 T T :small :zero 3 5} {4 -2 1 1 T 16 5/2 T NIL T T {{4 1}} {4 i} {4 1} {4} {1 4} 4 T T :small :one 4 5} {5 -2 1 2 NIL 32 3 T NIL T T {{5 1}} {5 i} {5 1} {5} {1 5} 5 T T :small :two 5 5} {6 -2 1 2 T 64 7/2 T NIL T T {{6 1}} {6 i} {6 1} {6} {1 6} 6 T T :big :zero 5 6} {0 -3 1 2 NIL 128 4 T NIL T T {{7 1}} {7 i} {7 1} {7} {1 7} 7 T T :big :one 5 7} {1 -3 2 3 T 256 9/2 T NIL T T {{8 1}} {8 i} {8 1} {8} {1 8} 8 T T :big :two 5 8} {2 -3 2 3 NIL 1 5 T NIL T T {{9 1}} {9 i} {9 1} {9} {1 9} 9 T T :big :zero 5 9} {3 -4 2 3 T 2 11/2 T NIL T T {{10 1}} {10 i} {10 1} {10} {1 10} 10 NIL T :big :one 5 10} {4 -4 2 4 NIL 4 6 T NIL T T {{11 1}} {11 i} {11 1} {11} {1 11} 11 NIL T :big :two 5 11}}
+--- stderr
+
+--- exit 0

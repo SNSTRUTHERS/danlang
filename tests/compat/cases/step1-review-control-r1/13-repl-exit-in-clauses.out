@@ -1,0 +1,24 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {exit :in-a-list}
+danlang>=> Error: Case not found
+danlang>=> NIL
+danlang>:exit-is-true
+=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {exit}
+danlang>=> {:exit :list}
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case exit {exit :key-is-exit} {T :no})
+  at (made, not read)  {exit}
+  called at line 1  (p 1 2 (cond {NIL 0} {T exit}))
+--- exit 0

@@ -1,0 +1,59 @@
+; 15-scope-closures-late: closures made before and after a set adds a name to the scope they were made in (they
+; see it from then on, as lexical scope says); recursion where each level's scope has other names; let shadowing
+; formals and lets; a name that's only been global for most of the program, then bound in a function late on.
+(def {x} :global)
+(fun {outer} {do
+  =(f1 (fn {} {x}))
+  =(before (f1))
+  =(x :outer-local)
+  =(f2 (fn {} {x}))
+  (list before (f1) (f2))})
+(print "outer" (outer) (outer) x)
+(fun {make} {do =(get (fn {} {list x (try w &err)})) =(add (fn {v} {set! {w} v})) (list get add)})
+(def {pair} (make))
+(def {w} :global-w)
+(print "make" ((fst pair)) ((snd pair) :changed-global-w) ((fst pair)) w)
+(fun {make2} {do =(w :own) =(get (fn {} {w})) =(put (fn {v} {set! {w} v})) (list get put)})
+(def {p2} (make2))
+(print "make2" ((fst p2)) ((snd p2) :set) ((fst p2)) w)
+
+; a closure made in a loop, before the loop's body sets a name of its own scope
+(def {got} {})
+(dotimes {i 3} (do
+  =(f (fn {} {list i (try sq &err)}))
+  (set! {got} (join got (list (f))))
+  =(sq (* i i))
+  (set! {got} (join got (list (f))))))
+(print "loop" got)
+
+; recursion: each level's scope binds other names (an even level binds e, an odd one o), and a closure per level
+(fun {rec n acc} {do
+  (if (even? n) (set {e} n) (set {o} n))
+  =(here (fn {} {list n (try e &err) (try o &err)}))
+  (if (zero? n) (cons (here) acc) (cons (here) (rec (- n 1) acc)))})
+(def {e o} :global-e :global-o)
+(print "rec" (rec 5 NIL))
+(fun {rec2 n} {if (zero? n) (list x) (do (if (odd? n) (set {x} n)) (cons x (rec2 (- n 1))))})
+(print "rec2" (rec2 6) x)
+
+; let shadowing formals, lets inside lets, a let's names seen by closures made in it
+(fun {lf x} {let {{x (* x 10)}} x})
+(fun {lf2 x y} {let {{y x} {x y}} (list x y)})
+(fun {lf3 x} {list (let {{x 1}} (let {{x (+ x 1)}} x)) x (let {{y x}} (let {{x y}} x))})
+(print "let" (lf 2) (lf2 1 2) (lf3 7) (let {{x :let-x}} x) x)
+(fun {lf4 x} {let {{g (fn {} {x})} {x :shadow}} (list (g) x)})
+(fun {lf5 x} {let {do (set {x} :set-in-let) =(g (fn {} {x})) (list (g) x)}})
+(print "let closures" (lf4 :formal) (lf5 :formal) (let {{x 1}} (let {do =(x 2)}) x))
+
+; a name global only, for a long time: then bound in a function, once
+(def {rare} :global-rare)
+(fun {read-rare} {rare})
+(fun {read-rare2} {list rare (read-rare)})
+(def {before-count} (len (map (fn {i} {read-rare}) (range 200))))
+(print "rare" before-count (read-rare) (read-rare2))
+(fun {bind-rare} {do =(rare :local-rare) (list rare (read-rare) (read-rare2) ((fn {} {rare})))})
+(print "rare" (bind-rare) (read-rare) (read-rare2) rare)
+(fun {takes-rare rare} {list rare (read-rare)})
+(print "rare" (takes-rare :formal-rare) (read-rare) ((fn {rare} {list rare (read-rare2)}) :fn-rare) rare)
+(dotimes {rare 2} (print "rare loop" rare (read-rare)))
+(print "rare" (let {{rare :let-rare}} (list rare (read-rare))) (read-rare) rare)

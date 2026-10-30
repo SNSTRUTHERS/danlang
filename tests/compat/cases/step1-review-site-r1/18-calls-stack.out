@@ -1,0 +1,101 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest 3 (fn NIL {run floor (list (list 7/2 f3) (list 7/2 ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  at line 1  (g x)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest 11 (fn NIL {run zip (list (list {1} f3) (list {1} f...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p1 floor (fst q) (snd q))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p1 floor (fst q) (snd q))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (p1 floor (fst q) (snd q))
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest 5 (fn NIL {map ct (list (list 7/2 f3) (list 7/2 f3)...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (p1 floor (fst q) (snd q))
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest 5 (fn NIL {map cv (list (list -7/2 f3) (list -7/2 f...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p1 floor (fst q) (snd q))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p1 floor (fst q) (snd q))
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest (- n 1) thunk)
+  called at line 1  (nest 4 (fn NIL {map kt (list (list 7/2 f3) (list 7/2 f3)...
+--- exit 0

@@ -1,0 +1,6 @@
+--- stdout
+{{:small 0} {:small 1} {:small 2}}
+{{1 {:small 1}} {2 {:small 2}}} 5
+--- stderr
+
+--- exit 7

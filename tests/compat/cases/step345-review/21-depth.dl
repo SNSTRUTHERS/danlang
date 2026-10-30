@@ -1,0 +1,17 @@
+; 21-depth: calls nested (not in tail position) to the most there may be, by functions of 1, 4, 8 and 9 formals
+; (bound at once, or the old way), with extras, partially applied; the error past it, caught, at each; and the depth
+; reached by each, counted
+(fun {d1 n} {if (zero? n) 0 (+ 1 (d1 (- n 1)))})
+(fun {d4 n a b c} {if (zero? n) a (+ 1 (d4 (- n 1) a b c))})
+(fun {d8 n a b c d e f g} {if (zero? n) g (+ 1 (d8 (- n 1) a b c d e f g))})
+(fun {d9 n a b c d e f g h} {if (zero? n) h (+ 1 (d9 (- n 1) a b c d e f g h))})
+(fun {dx n} {if (zero? n) (len &_) (+ 1 (unpack dx (cons (- n 1) &_)))})
+(print "ok" (d1 9990) (d4 9990 1 2 3) (d8 9990 1 2 3 4 5 6 7) (d9 9990 1 2 3 4 5 6 7 8))
+(print "too deep" (try (d1 10000) &err) (try (d4 10000 1 2 3) &err) (try (d8 10000 1 2 3 4 5 6 7) &err) (try (d9 10000 1 2 3 4 5 6 7 8) &err))
+(print "extras" (dx 3000 :a :b) (try (dx 10000 :a) &err))
+(fun {depth-of f} {do =(lo 0) =(hi 10010) (while (< (+ lo 1) hi) (do =(mid (div (+ lo hi) 2)) (if (error? (try (f mid) (error "deep"))) (set! {hi} mid) (set! {lo} mid)))) lo})
+(print "depths" (depth-of (fn {n} {d8 n 1 2 3 4 5 6 7})) (depth-of (fn {n} {d9 n 1 2 3 4 5 6 7 8})))
+(def {pd8} (d8))
+(print "partial" (pd8 100 1 2 3 4 5 6 7) (try (pd8 10000 1 2 3 4 5 6 7) &err))
+; the last: too deep, uncaught
+(d8 20000 1 2 3 4 5 6 7)

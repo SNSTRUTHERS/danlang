@@ -1,0 +1,31 @@
+--- stdout
+list 6 6 {1 2 3} {1 2 3}
+if {:my-if T :then :else} :then {T :then :else}
+set Unbound Symbol 'zz' 5 Unbound Symbol 'zz'
+fn {:my-fn {x} {x}} :identity
+def {:my-def {dd} 1} Unbound Symbol 'dd' NIL 1
+# {:my-hash {{:a 1}}} <hash>{{:a 1}}
+. {:my-unpack {1 2}} 3
+~ {:my-format "a{}c" :b} a:bc
+let 9 :let-if {4 5} 2
+each 9
+each 18
+each 3
+dotimes S-Expression starts with incorrect type. Got Number, Expected Function.
+dotimes S-Expression starts with incorrect type. Got Number, Expected Function.
+method 9 24 :method-if :no
+closure :closure-if :closure-if :yes :no :yes
+fexpr Error: S-Expression starts with incorrect type. Got Symbol, Expected Function. {:a :b}
+plan :global-helper :global-helper :global-helper
+plan :local-helper :global-helper :again :global-helper
+plan 2 2 :my-len 2
+plan 42 :let-1+ 42
+kinds :redefined
+kinds 42 S-Expression starts with incorrect type. Got Number, Expected Function.
+kinds <hash>{{:k :hash-value} {1 :one}} :hash-value :one
+kinds <buffer>{65 66} 66 A buffer is called with an index: (b i)
+kinds :t 'if' supplied too few parameters
+kinds :fn-again :local-last
+--- stderr
+
+--- exit 0

@@ -1,0 +1,15 @@
+; flags: -w
+; 14-warnings-place: with -w, a def that replaces a function with another kind of value says where it's made: the place
+; the call before it left evaluation (def's value is a library function's call), here in a loop so that call's value
+; is had natively once a run of its code has been seen, the way it goes changing along the list
+(fun {w x} {do (def {myf} (fn {} {1})) (def {myf} (floor x))})
+(map w {7/2 7/2 7/2 -7/2 -7/2 -7/2 3 7/2})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (even? x))}) {-3 -3 -3 4 4 4 -5})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (starts-with? "abc" x))}) {"c" "c" "c" "a" "a" "a" "x"})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (ends-with? x "abc"))}) {"a" "a" "a" "abc" "abc" "abc" "b"})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (pow 2 x))}) {0 0 0 3 3 3 -1 -1 -1 4})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (zip x {1}))}) {{1} {1} {1} NIL NIL NIL {2}})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (remove-fst 1 x))}) {{1 2} {1 2} {1 2} {2 1} {2 1} {2 1} NIL})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (cond {(> x 0) (floor x)} {T (ceil x)}))}) {7/2 7/2 7/2 -7/2 -7/2})
+(map (fn {x} {do (def {myf} (fn {} {1})) (def {myf} (minimum (list x 2 1)))}) {3 3 3 0})
+(print "done")

@@ -1,0 +1,60 @@
+; 07-zip-flatten-distinct: zip (pairs while both lists have items), flatten (nested Q-expressions' items in one list;
+; an S-expression is an item, not a list), distinct (each item once, the first time it comes, by eq: numbers by
+; value, a Q-expression not an S-expression): ordinary lists, edge numbers, mixed kinds, wrong kinds (strings,
+; numbers, atoms, T, hashes), partial application, too many arguments, errors, evaluation order.
+; Ends with zip's error on a string, inside a user function (the trace through lib\globals.dl).
+
+(print zip flatten distinct)
+(print (zip {1 2 3} {4 5}) (zip NIL {1}) (zip {1} NIL) (zip NIL NIL) (zip {a (b) {c}} {"x" \y :z}) (zip [1 2] [(+ 1 2) 4]))
+(print (zip {65535 -1024 9223372036854775807} {65536 -1025 9223372036854775808}) (zip {7/2 2.50} {-7/2 0.1}))
+(print (zip (range 5) (reverse (range 5))))
+(print (zip {{1 2} {3}} {NIL {4}}))
+(print (map (fn {p} {unpack + p}) (zip {1 2 3} {10 20 30})))
+(print (zip "ab" "cd"))
+(print (zip {1 2} "cd"))
+(print (zip "ab" {1 2}))
+(print (zip {1} 5))
+(print (zip 5 NIL))
+(print (zip NIL 5))
+(print (zip :a :b))
+(print (zip T T))
+(print (zip (hash-create) {1}))
+(print (zip (error "zip's a") {1}))
+(print (zip {1} (error "zip's b")))
+(print (zip {1}))
+(print ((zip {1 2}) {3 4}))
+(print (zip {1} {2} {3}))
+(print (zip (do (print :a-first) {1}) (do (print :b-second) {2})))
+
+; flatten
+(print (flatten {1 {2 {3}} 4 {}}) (flatten NIL) (flatten {{{{}}}}) (flatten {{1 2} {3 {4 {5 {6}}}}}) (flatten {(1 2) {3}}) (flatten {"ab" {\c}}))
+(print (flatten {{65536} {{-1025}} {{{9223372036854775808}}}}) (flatten {NIL () {} {NIL}}) (flatten [{1} (list 2 {3})]))
+(print (flatten {1 . 2}) (flatten {{:a} {"b" {\c {7/2}}}}))
+(print (len (flatten (map (fn {x} {list x (list x)}) (range 50)))))
+(print (flatten "abc"))
+(print (flatten 5))
+(print (flatten :a))
+(print (flatten {1 {2 3} (+ 4 5)}))
+(print (flatten (error "flatten's l")))
+(print (flatten))
+(print (flatten {1} {2}))
+
+; distinct
+(print (distinct {1 2 1 3 2}) (distinct NIL) (distinct {1 1.0 1/1}) (distinct {"a" \a :a a}) (distinct {{1} {1} 1}) (distinct {NIL {} ()}) (distinct {2.5 5/2 2.50}))
+(print (distinct {65535 65536 65535.0 131072/2 -1024 -1025 -2048/2}) (distinct {9223372036854775808 9223372036854775807 9223372036854775808.0}))
+(print (map fixed? (distinct {2.5 5/2})) (map fixed? (distinct {5/2 2.5})) (map fixed? (distinct {1 1.0})))
+(print (distinct {a A b (a) (A) {a}}))
+(print (distinct (map (fn {x} {% x 4}) (range 30))))
+(print (distinct "aab"))
+(print (distinct 5))
+(print (distinct T))
+(print (distinct))
+(print (distinct (error "distinct's l")))
+(print (distinct {1} {2}))
+(print (zip (distinct {1 1 2}) (flatten {{:x} :y})))
+(print (distinct (flatten (zip {1 2 3} {3 2 1}))))
+
+; zip on a string, inside a user function: the program ends with its trace
+(fun {pairs a b} {list :pairs (zip a b)})
+(print (pairs {1 2} {3 4}))
+(pairs {1 2} "34")

@@ -1,0 +1,50 @@
+; 20-reader-errors.dl - text that can't be read, by read (the error "'read': message") and by load (the file's name
+; and the line: "file:N: message", nothing in the file run): unclosed and wrongly closed brackets, strings, escapes,
+; character names, a name against an opening bracket, 1/0, $(, control and non-ASCII characters.  The last error is
+; a file that can't be read, loaded in a function: its trace is the load's call
+
+(def {n} 0)
+(fun {both text} {do
+  (set! {n} (+ n 1))
+  =(name (+ "r" n))
+  (write-file (+ name ".dl") text)
+  (print (repr text))
+  (print "  read:" (read text))
+  (print "  load:" (load name))})
+
+(both "(1 2")
+(both "{1 (2\n")
+(both "(1 2]")
+(both "1 2)")
+(both "}")
+(both "]")
+(both "[1 2")
+(both "\"abc")
+(both "\"\"\"abc\nmore")
+(both "\\nosuchname")
+(both "\"\\q\"")
+(both "\"\\x\"")
+(both "\"line\nbreak\"")
+(both "f(x)")
+(both "x[1]")
+(both "<(h k)")
+(both "+#(a)")
+(both "1/0")
+(both "$(x)")
+(both "a\x01b")
+(both "caf\xE9")
+(both "(print 1)\r\n(print 2)\r\n(print (3\r\n")
+(both "; just a comment")
+(both "")
+(both "   \n\t\n")
+(both "(fine 1) {fine 2} [fine 3]")
+(both "\"\"\"a here string\nover lines\"\"\" \\space")
+
+; numbers that start like a number and aren't one: symbols, not errors
+(print (read "1+ 1/x 2x -a +b 1.2.3 #notabase"))
+(print (map type-of (read "1+ 1/x 2x -a +b 1.2.3")))
+
+(print "the last: a file that can't be read, loaded in a function")
+(write-file "config.dl" "; config\n(def {width} 80)\n(def {height} 24)\n(def {title} \"open\n")
+(fun {load-config} {do (print "loading config") (+ 0 (load "config"))})
+(load-config)

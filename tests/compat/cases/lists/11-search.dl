@@ -1,0 +1,60 @@
+; 11-search.dl - any?, all?, find and count (where each stops: shown by printing), elem?, in? and has-element?,
+; index-of and last-index-of on lists: equality by value across kinds (1 and 1.0, 1/2 and 0.5; "a" and \a aren't, nor
+; :a and a), {} and NIL, nested lists, functions; their errors (messages)
+
+(def {l} {1 -2 3 -4 5})
+(print (any? neg? l) (all? neg? l) (find neg? l) (count neg? l))
+(print (any? neg? NIL) (all? neg? NIL) (find neg? NIL) (count neg? NIL) (count 5 NIL) (find 5 {}))
+(print (any? zero? l) (all? num? l) (find zero? l) (count num? l) (find pos? l) (count pos? l))
+
+; where they stop
+(fun {noisy x} {do (print "    test" x) (neg? x)})
+(print "  any?" (any? noisy l))
+(print "  all?" (all? noisy l))
+(print "  find" (find noisy l))
+(print "  count" (count noisy l))
+(print "  all? of negatives" (all? noisy {-1 -2}))
+(print "  any? of positives" (any? noisy {1 2}))
+
+; find gives the item as it is (a NIL item found is NIL, as none found is); any? and all? give T or NIL
+(print (find qexpr? {1 {2} {3}}) (find (fn {x} {eq x NIL}) {1 NIL}) (find string? {1 :a}) (find sexpr? {a (b c) d}))
+(print (any? (fn {x} {x}) {NIL 5}) (all? (fn {x} {x}) {1 2}) (all? (fn {x} {x}) {1 NIL}) (count (fn {x} {x}) {NIL 1 {} 2}))
+(print (any? (fn {x} {:yes}) {1}) (find (fn {x} {:yes}) {:first :second}) (count (fn {x} {{1}}) {1 2 3}))
+
+; errors stop them
+(print (any? (fn {x} {+ x 0}) {:a 1}))
+(print (all? 1+ {1 :b}))
+(print (find odd? {:x}))
+(print (count (fn {x} {do (print "    at" x) (+ x 0)}) {1 :q 2}))
+(print (count 5 {1}))
+(print (any? neg? 5))
+(print (all? neg? "abc"))
+(print (find neg? :a))
+(print (count neg? {1} {2}))
+(print (find) (any?) (all? neg?) ((count neg?) {-1 -2 3}))
+
+; elem? and in?: an item equal to x
+(print (elem? 3 l) (elem? 9 l) (in? 3 l) (in? 9 l) (elem? 1 NIL) (in? NIL {}) (has-element? {1 2} 2) (has-element? {} 2))
+(print (elem? 1.0 {1}) (elem? 1/2 {0.5}) (elem? 2/4 {1/2}) (elem? (complex 1 0) {1}) (elem? 100000000000000000000 {100000000000000000000}))
+(print (elem? \a {"a"}) (elem? "a" {\a}) (elem? :a {a}) (elem? (fst {a}) {:a}) (elem? (fst {a}) {A}) (elem? "A" {"a"}))
+(print (elem? {} {NIL}) (elem? NIL {{}}) (elem? {1 {2}} {0 {1 {2}}}) (elem? {1 2} {{1 2 3}}) (elem? {1.0} {{1}}))
+(print (elem? + [- + *]) (elem? (+ 1) [1]) (elem? (fn {x} {x}) [(fn {x} {x})]) (elem? (fn {x} {x}) [(fn {y} {y})]))
+(print (elem? (take 1) [(take 1)]) (elem? (take 1) [(take 2)]) (elem? T {T}) (elem? T {(fst {t})}))
+(print (elem? 1 5))
+(print (in? 1 "abc"))
+(print (elem? 1 {1} {2}))
+(print (elem? 1) ((elem? 1) {0 1}) (map (in? 2) {{1 2} {3}}))
+
+; index-of and last-index-of: where an equal item is, or -1
+(def {m} {a 1 "s" {1} 1.0 a NIL \c 1/2 "c" 0.5})
+(print (index-of m (fst {a})) (last-index-of m (fst {a})) (index-of m 1) (last-index-of m 1) (index-of m NIL) (last-index-of m NIL))
+(print (index-of m {1}) (index-of m "s") (index-of m \c) (index-of m "c") (index-of m 0.5) (last-index-of m 1/2))
+(print (index-of m :a) (index-of m 99) (last-index-of m 99) (index-of m {}) (index-of m (fst {(a)})))
+(print (index-of {} 1) (index-of NIL NIL) (last-index-of {} 1) (index-of {NIL} NIL) (index-of {{}} NIL))
+(print (index-of [+ -] -) (index-of [(fn {x} {x})] (fn {x} {x})) (index-of (range 100) 77) (last-index-of (join (range 5) (range 5)) 3))
+(print (index-of m) ((index-of m) "s") (map (fn {x} {index-of m x}) {a 1 NIL zz}))
+(print (index-of 5 1))
+(print (last-index-of :a 1))
+(print (index-of "abc" {1}))
+(print (index-of "abcb" "b") (last-index-of "abcb" "b") (index-of "abc" \c) (index-of "abc" "z"))
+(print m)

@@ -1,0 +1,42 @@
+; 13-depth-nesting: calls that look like tail calls but aren't nest one call deeper each time: a call inside and or
+; or, an argument, do's or let's expression that isn't the last, a let binding's value, a while body, try's
+; expression, cond's and case's clause values (each clause's value is run as code whose first item is the call, not
+; in tail position), the library's repeat.  Each loop runs 20 levels at the bottom of one descent of d nested calls
+; (probe-all: d+1 calls, then map's call and the loop's first: d+3); 9977 fits, 9978 is too deep, for each of them.
+
+(fun {and-loop n} {and T ?((zero? n) :and-done (and-loop (- n 1)))})
+(fun {or-loop n} {or NIL ?((zero? n) :or-done (or-loop (- n 1)))})
+(fun {arg-loop n} ?{(zero? n) :arg-done (fst (list (arg-loop (- n 1))))})
+(fun {do-mid n} {do (if (zero? n) :dm-done (do-mid (- n 1))) :after})
+(fun {let-mid n} {let {{m n}} (if (zero? m) :lm-done (let-mid (- m 1))) :after})
+(fun {let-bind n} {let {{r (if (zero? n) :lb-done (let-bind (- n 1)))}} r})
+(fun {while-loop n} {do =(r NIL) (while (not r) =(r ?((zero? n) :w-done (while-loop (- n 1))))) r})
+(fun {cond-loop n} {cond {(zero? n) :cond-done} {T (cond-loop (- n 1))}})
+(fun {case-loop n} {case (zero? n) {T :case-done} {NIL (case-loop (- n 1))}})
+(fun {try-loop n} {try ?((zero? n) :try-done (try-loop (- n 1))) :caught-inside})
+(fun {if-loop n} ?{(zero? n) :if-done (if-loop (- n 1))})
+; each's body: = binds in the iteration's own scope (and set takes an error as a value), so this loop is NIL at any
+; depth; with set! the value, an error too, reaches the function's own r
+(fun {each-set n} {do =(r NIL) (each {x {1}} =(r ?((zero? n) :each-done (each-set (- n 1))))) r})
+(fun {each-bang n} {do =(r NIL) (each {x {1}} (set! {r} ?((zero? n) :each-done (each-bang (- n 1))))) r})
+
+(def {loops} [
+  [:and (fn {} {and-loop 20})] [:or (fn {} {or-loop 20})] [:arg (fn {} {arg-loop 20})]
+  [:do-mid (fn {} {do-mid 20})] [:let-mid (fn {} {let-mid 20})] [:let-bind (fn {} {let-bind 20})]
+  [:while (fn {} {while-loop 20})] [:cond (fn {} {cond-loop 20})] [:case (fn {} {case-loop 20})]
+  [:try (fn {} {try-loop 20})] [:each-set (fn {} {each-set 20})] [:each-bang (fn {} {each-bang 20})]
+  [:repeat (fn {} {len (repeat 19 {+ 1 1})})] [:if-tail (fn {} {if-loop 20})] [:none (fn {} {:nothing})]])
+
+; each loop's value at the bottom, or :too-deep
+(fun {probe-all d} ?{(zero? d) (map (fn {p} {list (fst p) (try ((snd p)) :too-deep)}) loops) (fst [(probe-all (- d 1))])})
+(each print (probe-all 9977))
+(each print (probe-all 9978))
+
+; a plain recursion from 9000 calls deep (9001 calls, then the one in try): 998 more levels fit, 999 do not
+(fun {deep n} ?{(zero? n) 0 (+ 1 (deep (- n 1)))})
+(fun {room d n} ?{(zero? d) (try (deep n) :too-deep) (fst [(room (- d 1) n)])})
+(print (room 9000 998) (room 9000 999))
+
+; the last: a loop through and, too deep, ends the program (its trace: and-loop's calls)
+(fun {at-depth d thunk} ?{(zero? d) (thunk) (fst [(at-depth (- d 1) thunk)])})
+(at-depth 9980 (fn {} {and-loop 20}))

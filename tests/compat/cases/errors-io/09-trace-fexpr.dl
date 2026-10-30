@@ -1,0 +1,53 @@
+; 09-trace-fexpr.dl - fexprs and errors: an fexpr's arguments come as they're written (an error in one is only
+; made if the fexpr evals it, and then it's a value it can look at); the extras are &1 ... and &_; fewer arguments
+; than formals is a partial application.  An fexpr's call is one of the calls in a trace (when it isn't in tail
+; position).  The last error is made in an argument, written in a function, that an fexpr evals
+
+(def {quote} (fexpr {x} {x}))
+(def {safe} (fexpr {x} {do =(v (eval x)) (if (error? v) (list :caught (error-message v) (error-code v)) v)}))
+(def {twice} (fexpr {x} {list (eval x) (eval x)}))
+(def {unless} (fexpr {c body} {if (eval c) NIL (eval body)}))
+(def {show-args} (fexpr {a} {list a &_ (map type-of &_)}))
+
+(print (quote (error "never made")) (type-of (quote (error "never made"))))
+(print (safe (+ 1 2)) (safe (error "made" :mine)) (safe (/ 1 0)) (safe undefined-here))
+(print (twice (do (write "side effect; ") 5)))
+(print (unless T (error "not evaluated")) (unless NIL (+ 1 1)))
+(print (show-args 1 (+ 1 1) {q} undefined-name))
+(print (show-args))
+(print ((show-args 1) 2))
+(print safe (repr twice) (type-of quote))
+
+; the caller's scope: an argument evaluated where it was written
+(def {v} :global-v)
+(fun {in-function} {do =(v :local-v) (list (quote v) (safe v) (safe (list v)))})
+(print (in-function))
+
+; an fexpr's own errors, and an error value it's given back (through a function, the error stops it)
+(def {strict} (fexpr {x} {+ 1 (eval x)}))
+(print (strict 2) (strict "a") (strict (error "inner")))
+(print (safe (strict (error "inner"))))
+(fun {plain x} {list :plain-ran x})
+(print (plain (strict (error "through a function"))))
+(print (safe (plain (error "an argument of plain"))))
+
+; fexprs given too many: an error, unless the body names &_ or &1
+(def {one} (fexpr {x} {x}))
+(print (one 1 2))
+(print ((fexpr {} {&1}) 1 2) ((fexpr {} {&_}) 1 2 3))
+
+; an fexpr inside a map, filter, each: it's given the values (they're as written: data)
+(print (map quote {(+ 1 2) a 3}))
+(print (map safe {(+ 1 2) (len 5) 3}))
+
+; a nested fexpr chain: each one evaluates the one inside
+(def {outer-fx} (fexpr {x} {list :outer (eval x)}))
+(def {inner-fx} (fexpr {x} {list :inner (eval x)}))
+(print (outer-fx (inner-fx (+ 1 2))))
+(print (outer-fx (inner-fx (+ 1 :two))))
+
+(print "the last: an argument written in a function, evaluated by an fexpr it calls")
+(def {checked2} (fexpr {label x} {do (print "checking" label) (* 1 (eval x))}))
+(fun {compute a b} {+ 1 (checked2 :ratio (/ a b))})
+(print (compute 6 3))
+(+ 1 (compute 1 0))

@@ -1,0 +1,44 @@
+--- stdout
+NIL
+<hash>{{:hosted NIL} {:joined NIL}}
+<hash>{{:name "<unnamed>"}}
+<unnamed> NIL :a-default
+<unnamed> host-1
+NIL :blue :blue NIL
+<hash>{{:name "srv"}}
+NIL <hash>{{:name "host-1"}}
+NIL
+1 2 3
+Error: A hash's entry is {key value tag...}, not :__public
+Error: A hash's entry is {key value tag...}, not :__private
+Error: A hash's entry is {key value tag...}, not :__public
+<hash>NIL
+debugging 1 2
+
+NIL NIL
+7 disconnected
+NIL
+7 disconnected
+NIL
+NIL NIL
+<hash>{{:hosted NIL} {:joined NIL}}
+NIL
+NIL
+shutting down local game server...
+<hash>{{:name "host-1"}} NIL
+<hash>{{:name "host-1"} {:next-game-id 4}}
+<function>(fn {name pub} {do (cngh.ensure-server) (hash-put (cngh.__games :hosted) (list (cngh.next-game-id) (cngh.create-game name pub)))})
+NIL
+{T} {do (print err) NIL}
+printed when the branch is run
+NIL
+T
+<function>(fn {a b err} {if (eq a b) {T} {do (print err) NIL}})
+<hash>{{:a 1} {:b {{:a "string"} {:b 2} :v2}} :v1 :x :__readonly}
+1 string 2 T T T
+NIL NIL NIL 3
+{:a :b :c} {{:a "string"} {:b 2} :v2}
+T T Error: hash-put error: cannot modify read-only hash NIL
+--- stderr
+
+--- exit 0

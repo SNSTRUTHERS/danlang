@@ -1,0 +1,11 @@
+--- stdout
+:ok
+caught Unbound Symbol 'missing-at-end'
+--- stderr
+Error: 19-trace-formals.dl: Unbound Symbol 'missing-at-end'
+  at 19-trace-formals.dl:7  (list a b c d e f g h)
+  called at 19-trace-formals.dl:9  (pinner x 6 7 8)
+  called at 19-trace-formals.dl:12  (via-map i)
+  called at 19-trace-formals.dl:13  (via-dotimes)
+  called at 19-trace-formals.dl:15  (top)
+--- exit 1

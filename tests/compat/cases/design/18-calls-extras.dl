@@ -1,0 +1,44 @@
+; 18-calls-extras: the arguments past a function's formals: &1 ... &12 (two digits too) and &_ (a list of them, NIL
+; for none), for a body that names them (any of &_ &1 &2 ... &0 lets extras in); &N is a name like any other, so a
+; closure made in a call sees that call's &N when its own call has none (but &_ is always the nearest call's own),
+; and defined? looks for &N in this call's scopes only; partial applications given extras.
+(def {v12} (fn {} {list &1 &2 &3 &4 &5 &6 &7 &8 &9 &10 &11 &12 (len &_)}))
+(print "&1-12" (v12 1 2 3 4 5 6 7 8 9 10 11 12) (try (v12 1 2 3) &err) (v12 :a :b :c :d :e :f :g :h :i :j :k :l :m))
+(def {rest} (fn {a b} {list a b &_ (defined? &1) (defined? &3) (defined? &_)}))
+(print "rest" (rest 1 2) (rest 1 2 3) (rest 1 2 3 4 5) (rest 1))
+(print "names" ((fn {} {&01}) 5) ((fn {} {try &01 &err}) 5) ((fn {} {&0}) 1) ((fn {} {try &0 &err}) 1) ((fn {} {&1}) 1 2 3))
+(print "none" (try ((fn {} {:no-extras}) 1) &err) (try ((fn {x} {x}) 1 2) &err) (try ((fn {a b c} {a}) 1 2 3 4 5) &err))
+(print "&_ only" ((fn {} {&_}) 1 2 3) ((fn {} {&_})) ((fn {x} {&_}) 1) ((fn {x} {list x &_}) 1 2) ((fn {} {len &_}) 1 2 3 4))
+(def {last-extra} (fn {} {eval (list (to-sym (+ "&" (len &_))))}))
+(print "computed" (last-extra :a) (last-extra :a :b :c) (try (last-extra) &err))
+
+; a closure made in a call with extras, called with fewer of its own
+(fun {outer} {fn {} {list &1 &2 (defined? &1) (defined? &2) &_ (defined? &_)}})
+(def {inner} (outer :a :b :c))
+(print "inherit" (inner) (inner 1) (inner 1 2) (inner 1 2 3))
+(fun {outer2} {fn {x} {list x &1 &_}})
+(def {inner2} (outer2 :o1 :o2))
+(print "inherit" (inner2 :x) (inner2 :x :y) (let {{&1 :let-1}} &1) ((fn {} {let {{&1 :let-1}} (list &1 &_)}) :call-1))
+(fun {deep-outer} {do =(mid (fn {} {fn {} {list &1 &2 &3}})) (mid :m1)})
+(def {deep-inner} (deep-outer :o1 :o2 :o3))
+(print "inherit" (deep-inner) (deep-inner :i1))
+
+; &_ and &N through let, loops, try handlers and eval inside a call
+(def {through} (fn {} {list (let {{x 1}} &_) (let {do &1}) (try (error "e") &2) (eval {&3}) (eval (read "&_"))}))
+(print "through" (through :a :b :c) (through :a) (through))
+(def {loopy} (fn {} {do =(acc {}) (each {x &_} (set! {acc} (cons (list x &1 (len &_)) acc))) acc}))
+(print "loop" (loopy 1 2 3) (loopy))
+
+; partial applications given extras, then more; built-ins given extras
+(def {pe} (fn {a b} {list a b &_}))
+(def {p1} (pe 1))
+(print "partial" p1 (p1 2) (p1 2 3 4) (pe 1 2 3) ((pe) 1 2 3) (p1 2 (error "x")) (try ((fn {a b} {a}) 1 2 3) &err))
+(def {pq} (fn {a b c} {list a b c &1}))
+(print "partial" ((pq 1) 2 3 4) (((pq 1) 2) 3 4) ((pq 1 2) 3) (try (((pq 1) 2) 3 4 5) &err))
+(print "builtins" (try (len {1} 2) &err) (try ((+ 1) 2 3) &err) (try ((substring "hello") 1 2 3) &err) (try (fst {1} {2}) &err))
+(print "builtins" (try (if T 1 2 3) &err) (try (cons 1 {2} 3) &err) (try (nth 1 {1 2} 3) &err) (try (not 1 2) &err))
+
+; extras given to a method, to hash-call, through map
+(def {obj} #({{:m (fn {x} {list x &_ (hash-keys &0)})} {:n (fn {} {&1})}}))
+(print "method" (obj :m 1) (obj :m 1 2 3) (hash-call obj :m 1 2) (obj :n 5 6) (try (hash-call obj :n) &err))
+(print "map" (map (fn {} {list &1 (len &_)}) {:a :b}) (map (fn {x} {list x &_}) {1 2}))

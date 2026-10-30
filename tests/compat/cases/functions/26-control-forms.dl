@@ -1,0 +1,61 @@
+; 26-control-forms: do, if, and, or as functions' bodies use them: their values (the value that decided and/or,
+; T for (and), NIL for (or), NIL for (do) and a missing else), what they evaluate and in what order (print side
+; effects), a Q-expression branch as data (not run), only NIL false (0, "", T, functions are true), the ?(...) and
+; ?{...} shorthand, their errors, and do/if/and/or given to functions that apply them (not allowed: special forms).
+
+(fun {say tag v} {do (write tag "") v})
+(print (do) (do 1) (do 1 2 3) (do (say :a 1) (say :b 2) (say :c 3)))
+(print (if T 1 2) (if NIL 1 2) (if NIL 1) (if 0 :yes :no) (if "" :yes :no) (if {} :yes :no) (if {0} :yes :no))
+(print (if + :fn-true :no) (if (fn {} {}) :fn-true :no) (if (error? 1) :yes :no))
+(print (if (say :test T) (say :then 1) (say :else 2)))
+(print (if (say :test NIL) (say :then 1) (say :else 2)))
+(print (if T {a b} {c d}) (if NIL {a b} {c d}) (if T {print :not-run} 0))
+(print (if (say :t NIL) (say :then 1)))
+
+; and, or: short-circuited, the value that decided them
+(print (and) (or) (and T T) (and T NIL) (and 1 2) (and NIL 2) (or NIL 5) (or NIL NIL) (or 1 2) (or NIL {} 0))
+(print (and (say :a1 1) (say :a2 NIL) (say :a3 3)))
+(print (or (say :o1 NIL) (say :o2 2) (say :o3 3)))
+(print (and (say :x 1) (say :y 2) (say :z 3)))
+(print (or (say :x NIL) (say :y NIL) (say :z NIL)))
+(print (and {} (print :never)) (or {1} (print :never)))
+
+; errors stop them (after what came before)
+(print (and (say :before T) (error "in and") (say :after T)))
+(print (or (say :before NIL) (error "in or") (say :after T)))
+(print (do (say :before 1) (error "in do") (say :after 2)))
+(print (if (error "in if test") 1 2))
+(print (and NIL (error "not reached")) (or T (error "not reached")) (if T 1 (error "not reached")))
+
+; shorthand
+(print ?(T :yes :no) ?(NIL :yes :no) ?(NIL :yes))
+(fun {sign n} ?{(< n 0) :neg ?((> n 0) :pos :zero)})
+(print (sign -5) (sign 0) (sign 5) sign)
+
+; nested, in a function's body
+(fun {grade n} {if (>= n 90) :a (if (>= n 80) :b (if (and (>= n 70) (< n 80)) :c (or (and (== n 0) :zero) :f)))})
+(print (map grade {95 85 75 0 50}))
+(fun {classify x} {do (say :classify x) (or (and (num? x) (if (zero? x) :zero :number)) (and (string? x) :string) :other)})
+(print (map classify {0 7 "s" :a}))
+
+; malformed: too few, too many
+(print (try (if T) &err) (try (if) &err))
+(print (if T 1 2 3))
+(print (try (if T 1 2 3) &err))
+
+; special forms can't be applied to values
+(print (map if {1 2}))
+(print (foldl and T {1 2}))
+(print (map do {1}))
+(print (filter or {1}))
+
+; in a loop's body and as a function's whole body
+(fun {count-truthy l} {do =(k 0) (each {x l} (if x (set! {k} (+ k 1)))) k})
+(print (count-truthy {1 NIL 0 {} "" T}))
+(fun {both a b} {and a b})
+(fun {either a b} {or a b})
+(print (both 1 2) (both NIL 2) (either NIL 2) (either NIL NIL) (both (say :arg1 1) (say :arg2 NIL)))
+
+; the last: an if with too many arguments, in a function, ends the program
+(fun {bad-if} {if T 1 2 3})
+(bad-if)

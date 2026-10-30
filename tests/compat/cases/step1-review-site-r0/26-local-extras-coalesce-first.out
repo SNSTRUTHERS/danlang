@@ -1,0 +1,7 @@
+--- stdout
+
+--- stderr
+Error: 26-local-extras-coalesce-first.dl: Unbound Symbol 'w'
+  at 26-local-extras-coalesce-first.dl:5  (&1 (id 100) 1)
+  called at 26-local-extras-coalesce-first.dl:9  (g NIL)
+--- exit 1

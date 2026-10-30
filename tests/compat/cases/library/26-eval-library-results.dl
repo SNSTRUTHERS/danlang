@@ -1,0 +1,69 @@
+; 26-eval-library-results: eval of what library functions return, where the scope a list remembers decides what
+; its symbols mean.  [..] and list remember the scope they're called in (zip's pairs: that zip call's own a and b;
+; split's outer list: split's n and l); tail, head and join keep the scope of the list they're made from; cons, take
+; and drop remember none, so eval runs them where eval is (flatten, distinct, remove-all, repeat results; split's
+; parts).  Literal Q-expressions remember where they were written; eval of an empty list is NIL.
+; Ends with eval of a zip pair whose head is zip's own a, a list: its trace's place is code made, not read.
+
+(def {a b c d} 1 2 3 4)
+(print (zip {a b} {c d}))
+(print (eval (fst (zip {list a} {b c}))))
+(print (eval (snd (zip {list list} {a b}))))
+(print (eval (fst (zip {list l} {b c}))))
+(print (eval (fst (zip {a b} {c d}))))
+(print (eval {a c}))
+(print (eval (fst (zip {+ -} {a b}))))
+(print (eval (snd (zip {+ -} {a b}))))
+(print (eval (fst (zip {list} {(len a)}))))
+(fun {h} {do =(a 100) =(c 300) (eval (fst (zip {list a} {c d})))})
+(print (h))
+(fun {h2} {do =(a 100) =(c 300) (eval (list (fst {list}) (fst {a}) (fst {c})))})
+(print (h2))
+
+; split: the outer list is list's (split's scope); its parts are take's and drop's (no scope)
+(print (split 1 {n l}))
+(print (eval (fst (split 1 {n l}))))
+(print (eval (snd (split 1 {list l}))))
+(print (eval (split 1 {n l})))
+(print (eval (cons (fst {list}) (split 1 {n l}))))
+(fun {s1} {do =(n :local-n) (eval (fst (split 1 {n})))})
+(print (s1))
+
+; tail, head and join keep a scope; cons, take and drop make lists with none
+(fun {k1} {do =(z 5) (cons (fst {z}) NIL)})
+(fun {k2} {do =(z 5) {z}})
+(fun {k3} {do =(z 5) (list (fst {z}))})
+(fun {k4} {do =(z 5) (join {z} {})})
+(fun {k5} {do =(z 5) (tail {0 z})})
+(fun {k6} {do =(z 5) (take 1 {z})})
+(fun {k7} {do =(z 5) (head {z 0})})
+(fun {k8} {do =(z 5) (join (cons (fst {z}) NIL) {})})
+(each (fn {f} {print (f) (try (eval (f)) &err)}) [k1 k2 k3 k4 k5 k6 k7 k8])
+(def {z} :global-z)
+(each (fn {f} {print (eval (f))}) [k1 k6 k8])
+
+; flatten, distinct, remove-all, remove-fst, repeat: their results are cons's
+(fun {local-evals} {do =(l :local-l) =(f :local-f) (list (eval (flatten {{list l}})) (eval (distinct {list l l})) (eval (remove-all 0 {list 0 l f})))})
+(print (local-evals))
+(print (eval (remove-fst 0 {list 0 l f})))
+(print (eval (remove-fst 0 {0 list a b})))
+(print (eval (remove-fst 9 {list a b})))
+(print (eval (repeat 2 {fst {a b}})))
+(print (eval (repeat 2 (fst {{list b}}))))
+(print (eval (sort-desc {1 2 3})))
+(print (eval (sort-desc {a list})))
+(print (eval (reverse {c d list})))
+(print (eval (best-of 2 {list 7 9})))
+(print (eval (skip 1 {0 list a})))
+
+; empty lists, cond and case results, ghost and unpack
+(print (eval (zip NIL NIL)) (eval (flatten NIL)) (eval (remove-all 1 {1})) (eval (split 0 NIL)))
+(print (eval (cond {T {list a b}})))
+(print (eval (cond {T (list (fst {list}) (fst {a}))})))
+(fun {g1} {do =(a :local-a) (eval (case 1 {1 {list a}}))})
+(print (g1))
+(print (ghost eval (fst {(+ a b)})))
+(print (unpack eval {{list c d}}))
+
+; a zip pair run as code: its head is zip's own a, a list, not a function
+(eval (fst (zip {a b} {c d})))

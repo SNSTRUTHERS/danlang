@@ -1,0 +1,23 @@
+; 02-state-threading-tests: tests that change what later tests and values see: set binds in the clause's scope
+; (where it was written: the function's call, a let's), set! changes the nearest binding, def a global; a log of
+; each test run, in order; the tests after the true one never run; the same across a hand-over (a clause cons made
+; in the middle, evaluated again by unpack, its names then looked up in unpack's call); case's key too
+(def {log} {})
+(fun {note x} {do (def {log} (cons x log)) x})
+(fun {f n} {cond {(do (set k (* n 2)) (note (list :t1 k)) NIL) :never} {(do (set! {k} (+ k 1)) (note (list :t2 k)) (> k 5)) (list :big k)} {T (list :small k (note :value))}})
+(print (f 1) (f 3) (reverse log))
+(def {log} {})
+(def {g-count} 0)
+(fun {bump} {do (def {g-count} (+ g-count 1)) g-count})
+(print (cond {(eq (bump) 3) :third} {(eq (bump) 3) :third-b} {(eq (bump) 3) (list :third-c g-count)} {(eq (bump) 3) :never}))
+(print g-count)
+(fun {h n} {let {{acc 0}} (cond {(do (set! {acc} (+ acc n)) (note (list :a acc)) NIL) 0} (cons (do (note :made) NIL) {1}) {(do (set! {acc} (* acc 10)) (note (list :b acc)) (> acc 20)) (list :h acc)} {T (list :h-small acc)})})
+(print (h 1) (h 5) (reverse log))
+(def {log} {})
+(fun {kk n} {case (note (list :x n)) {(note (list :k1 n)) :same} {(do (set w n) (note (list :k2 w)) n) :never} {(list :x n) (list :third w)}})
+(print (kk 4) (reverse log))
+(def {log} {})
+(fun {deep n} {cond {(note (list :t n)) (if (zero? n) (list :bottom (len log)) (deep (- n 1)))} {T :never}})
+(print (deep 5) (len log))
+(print "the last: a test's set! of a name bound nowhere, not caught")
+(cond {(set! {nowhere-bound} 1) 1} {T 2})

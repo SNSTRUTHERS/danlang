@@ -1,0 +1,38 @@
+--- stdout
+fine.dl runs
+42
+badexit.dl runs
+Error: badexit.dl: 'exit' expects a Number
+badexit.dl runs
+badexit.dl: 'exit' expects a Number
+exitlist.dl runs
+exitlist.dl runs
+{exit exit} :exit
+(print "inner.dl: start")
+(fun {countdown n} {
+  do
+    (while (> n 0)
+      (write n " ")
+      (if (eq n 3) (do (print "exit from inner.dl") (exit 5)))
+      =(n (- n 1)))
+    (print "countdown done")})
+(print "inner.dl: counting")
+(countdown 6)
+(print "inner.dl: not reached")
+
+(print "middle.dl: start")
+(fun {load-inner} {do (print "middle.dl: loading inner") (load "inner") (print "middle.dl: not reached")})
+(load-inner)
+(print "middle.dl: not reached either")
+
+main: a write with no newline; 
+the last: middle.dl loads inner.dl, which exits 5 from a loop
+main: loading middle
+middle.dl: start
+middle.dl: loading inner
+inner.dl: start
+inner.dl: counting
+6 5 4 3 exit from inner.dl
+--- stderr
+main: stderr before the exit
+--- exit 5

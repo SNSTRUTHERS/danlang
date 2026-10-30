@@ -1,0 +1,35 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>"this line is data for read-line, not code (or a call)" 53
+=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>90 Z
+=> NIL
+danlang>=> NIL
+danlang>name? => "answer to ask"
+danlang>first? second? => {"one" "two"}
+danlang>=> {{1 "m1"} {2 ""} {3 "m3 with spaces   "}}
+danlang>=> {49 50 51 52 53}
+danlang>=> 3
+danlang>=> NIL
+danlang>=> 4
+danlang>=> NIL
+danlang><buffer>{87 88 89 90} WXYZ
+=> NIL
+danlang>=> {120 121 10}
+danlang>=> 4
+danlang>0 line for 0
+1 line for 1
+=> NIL
+danlang>=> "captured\n"
+danlang>=> "tried"
+danlang>=> "\"all the rest\\n(+ 1 2) is not run: it is data now\\n\\\"and so is this\\\"\\n\""
+danlang>=> exit
+--- stderr
+
+--- exit 0

@@ -1,0 +1,13 @@
+--- stdout
+{3 2 1} {2 1} Error: 'nth': the list has no such item
+{{1 2 3} {b a} {3}} {a} {b}
+{{x 1} {y 2}} Unbound Symbol 'x' {"Unbound Symbol 'x'" "Unbound Symbol 'y'"}
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function. Error: Unbound Symbol 'b'
+10 S-Expression starts with incorrect type. Got Number, Expected Function. 3 20
+99 10 10 10 Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+2 11 12 13
+6 11 Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+Error: Unbound Symbol 'y' Error: Unbound Symbol 'y' 4
+--- stderr
+
+--- exit 0

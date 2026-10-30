@@ -1,0 +1,58 @@
+; 14-string-helpers: starts-with?, ends-with?, contains? (by index-of, len and substring): empty strings, a
+; character as the part (index-of takes one; len doesn't, so ends-with? fails), case, bytes past ASCII (UTF-8 text is
+; its bytes), NUL and escapes, lists (index-of finds an equal item; substring wants a string), other kinds (the
+; built-ins' errors), partial application, too many arguments, errors as arguments.
+; Ends with ends-with?'s substring error on a list, from a user function (the trace through lib\globals.dl).
+
+(print starts-with?)
+(print ends-with?)
+(print contains?)
+(print (starts-with? "hello" "he") (starts-with? "hello" "") (starts-with? "" "") (starts-with? "" "a") (starts-with? "hello" "hello!") (starts-with? "hello" "hello"))
+(print (starts-with? "hello" \h) (starts-with? "hello" \e) (starts-with? "Hello" "he") (starts-with? "hello" "lo") (starts-with? "aaa" "aa"))
+(print (ends-with? "hello" "lo") (ends-with? "hello" "") (ends-with? "" "") (ends-with? "lo" "hello") (ends-with? "hello" "hello") (ends-with? "hello" "LO") (ends-with? "aaa" "aa"))
+(print (contains? "hello" "ll") (contains? "hello" "") (contains? "" "") (contains? "hello" \e) (contains? "hello" "z") (contains? "aaa" "aa") (contains? "" "a"))
+(print (ends-with? "hello" \o))
+
+; bytes past ASCII, NUL, escapes, long strings
+(print (ends-with? "héllo" "llo") (ends-with? "héllo" "éllo") (contains? "héllo" "é") (starts-with? "héllo" "h\xc3") (len "é"))
+(print (starts-with? "\x00ab" "\x00") (contains? "a\tb" "\t") (ends-with? "line\n" "\n") (contains? "say \"hi\"" "\"hi\"") (starts-with? "\e[2J" "\e"))
+(print (contains? (str-repeat "ab" 1000) "ba") (ends-with? (str-repeat "xy" 500) "yxy") (starts-with? (str-repeat "z" 65536) "zzz"))
+(print (contains? (+ "n=" 65536) "655") (ends-with? (to-str 9223372036854775808) "808") (starts-with? (to-str -1025) "-10"))
+
+; lists: index-of finds an equal item
+(print (starts-with? {1 2 3} 1) (starts-with? {1 2 3} 2) (starts-with? {1 2 3} {1}) (contains? {1 2 3} 2) (contains? {1 2 3} 5) (contains? {{1} 2} {1}))
+(print (starts-with? {"ab" "c"} "ab") (contains? {:a :b} :b) (contains? {1 2} 2.0) (starts-with? NIL 1) (contains? NIL 1))
+(print (ends-with? {1 2 3} {3}))
+(print (ends-with? {1 2 3} {2 3}))
+(print (ends-with? {1 2} {1 2 3}))
+
+; other kinds
+(print (starts-with? "abc" 1))
+(print (starts-with? 1 "a"))
+(print (ends-with? 123 "3"))
+(print (ends-with? "abc" 3))
+(print (contains? :abc "b"))
+(print (contains? "abc" :b))
+(print (starts-with? "abc" NIL))
+(print (ends-with? "abc" NIL))
+(print (ends-with? "abc" {}))
+(print (contains? T "T"))
+(print (starts-with? (hash-create) "a"))
+(print (contains? "abc" (to-sym "b")))
+
+; partial application, too many, errors
+(print (starts-with? "a"))
+(print ((starts-with? "abc") "ab") ((ends-with? "abc") "bc") ((contains? "abc") "d"))
+(print (starts-with?))
+(print (starts-with? "a" "b" "c"))
+(print (ends-with? "a" "a" "a"))
+(print (starts-with? (error "s's s") "a"))
+(print (ends-with? "a" (error "e's sub")))
+(print (contains? (do (print :s-first) "abc") (do (print :sub-second) "c")))
+(print (filter (fn {w} {starts-with? w "b"}) {"apple" "banana" "blue" "cherry" "" "B"}))
+(print (map (fn {w} {list (starts-with? w "a") (ends-with? w "a") (contains? w "a")}) {"a" "abc" "cba" "bab" "xyz"}))
+
+; ends-with? of a list, from a user function: the program ends with its trace
+(fun {has-suffix? s suffix} {list :suffix (ends-with? s suffix)})
+(print (has-suffix? "file.dl" ".dl") (has-suffix? "file.dl" ".hl"))
+(has-suffix? {"file" "dl"} {"dl"})

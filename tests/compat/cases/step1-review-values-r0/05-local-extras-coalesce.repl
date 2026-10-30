@@ -1,0 +1,17 @@
+; 05-local-extras-coalesce: ??'s code binds &1, &2 ... to its arguments past the first (a name bound in a call is a
+; local one from then on: calls headed by it take their general way), whatever the first is.  (h ??) and (h 1 2)
+; call through a local name (no plan learned, and h already bound), so (?? 1 2) is the first call of ?? with more
+; than one argument.  The probe: (&1 v (g)) is Op2's (&1 is +) while &1 is no local's name, and the error made right
+; after (zz is unbound) says where (g)'s code was ({+ 70000 70001}); once &1 is a local's name somewhere, (&1 v (g))
+(def {&1} +)
+(fun {g} {+ 70000 70001})
+(fun {probe} {list (&1 v (g)) zz})
+(fun {call2 h} {h 1 2})
+(fun {test h} {do (map ?? {1 1 1}) (h ??)})
+(test call2)
+(def {v} 100003)
+(probe)
+(def {v} 100003)
+(probe)
+(def {v} 100003)
+(probe)

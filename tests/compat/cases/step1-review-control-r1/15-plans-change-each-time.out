@@ -1,0 +1,11 @@
+--- stdout
+{{:e 0 0} {:m 0} {:e 2 0} {3 1} {:e 1 1} {{5 :z}} {:e 0 1} {:m 3} {:e 2 2} {{9 :z}} {:e 1 2} {11 1}}
+{{:m 0} {:m 3}}
+{1 0 NIL 8 1 {5} 64 2 {8 8} 512 3 {11 11}}
+{NIL {:one T} 2 NIL T T T T T T {:one NIL} {:one T} {:one NIL} {:one NIL} {:one NIL} {:one NIL} {:one NIL} {:one NIL} {:one NIL} {:one NIL} 11 23/2 12 25/2 13}
+the last: an error made right after, the plans changed just before
+--- stderr
+Error: 15-plans-change-each-time.dl: The function takes 2 arguments, not 3
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at 15-plans-change-each-time.dl:22  (p 1 2 (step i))
+--- exit 1

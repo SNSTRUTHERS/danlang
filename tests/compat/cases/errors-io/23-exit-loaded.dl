@@ -1,0 +1,40 @@
+; 23-exit-loaded.dl - (exit n) in a loaded file ends the whole program, not just the load: from the file's top level,
+; from a function it calls, two loads down, from a load in a function.  Before it, loaded files that finish, and an
+; exit's error (not a number) in a loaded file, which is load's error like any other.  The last: a file two loads
+; down exits with status 5, from a loop in a function it defined
+
+(write-file "fine.dl" "(print \"fine.dl runs\")\n(fun {fine-fn x} {* x 2})\n(fine-fn 21)\n")
+(print (load "fine"))
+(write-file "badexit.dl" "(print \"badexit.dl runs\")\n(exit \"not a number\")\n(print \"badexit.dl: not reached\")\n")
+(print (load "badexit"))
+(print (error-message (load "badexit")))
+(write-file "exitlist.dl" "(print \"exitlist.dl runs\")\n(list exit exit)\n")
+(print (load "exitlist") (type-of (fst (load "exitlist"))))
+
+; the files for the last: inner.dl exits from a loop in a function, at its top level
+(write-file "inner.dl" (str-join {
+  "(print \"inner.dl: start\")"
+  "(fun {countdown n} {"
+  "  do"
+  "    (while (> n 0)"
+  "      (write n \" \")"
+  "      (if (eq n 3) (do (print \"exit from inner.dl\") (exit 5)))"
+  "      =(n (- n 1)))"
+  "    (print \"countdown done\")})"
+  "(print \"inner.dl: counting\")"
+  "(countdown 6)"
+  "(print \"inner.dl: not reached\")"
+  ""} "\n"))
+(write-file "middle.dl" "(print \"middle.dl: start\")\n(fun {load-inner} {do (print \"middle.dl: loading inner\") (load \"inner\") (print \"middle.dl: not reached\")})\n(load-inner)\n(print \"middle.dl: not reached either\")\n")
+(print (read-file "inner.dl"))
+(print (read-file "middle.dl"))
+
+; what's printed before the exit stays, stdout's and stderr's
+(print-to stderr "main: stderr before the exit")
+(write "main: a write with no newline; ")
+(print)
+
+(print "the last: middle.dl loads inner.dl, which exits 5 from a loop")
+(fun {main} {do (print "main: loading middle") (+ 0 (load "middle")) (print "main: not reached")})
+(main)
+(print "main: not reached at the top level")

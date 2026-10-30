@@ -1,0 +1,11 @@
+; 24-deep-flatten: flatten of a list nested 3000 deep (its code nests a call for each level), once, and again with a
+; plan changed before each call (op given + and - in turn), so its native can't use its value and leaves it to the
+; code each time: the value, and the place an error made right after says it was made
+(fun {nest n} {do (set l {1}) (dotimes {i n} (set! {l} (list l))) l})
+(def {deep} (nest 3000))
+(print (flatten deep))
+(def {op} +)
+(fun {bump i} {do (def {op} (if (== (bit-and i 1) 0) + -)) (op 1 2)})
+(dotimes {i 3} (do (bump i) (print (len (flatten deep)))))
+(fun {probe bind} {do (if bind (set y 0) NIL) (list (flatten deep) y)})
+(map probe (list T T T NIL))

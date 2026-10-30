@@ -1,0 +1,48 @@
+--- stdout
+{2 1} 3 4 T 1
+<function>(fn {l} {do (write "[my-len] ") 99})
+[my-len] 99
+[my-len] 99
+[my-len] 99
+[my-len] 4/33
+[my-len] [my-len] [my-len] [my-len] NIL
+[my-len] [my-len] {99 99}
+[my-len] 99
+The function takes 1 argument, not 2
+4
+2
+NIL T
+Error: an error stops it
+6 2 a-b
+2 3 4 2
+5
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function.
+S-Expression starts with incorrect type. Got Number, Expected Function.
+4
+{:plus 1 2}
+The function takes 2 arguments, not 3
+6 6
+{{:plus 10 1} {:plus 10 2}}
+7
+6
+:second
+7
+:third
+:local-len 1
+{:wrapped :hello}
+:restored
+--- stderr
+10-redefine-builtin.dl:14: warning: fun replaces the built-in len with a function
+10-redefine-builtin.dl:37: warning: def replaces the built-in len with a number
+10-redefine-builtin.dl:42: warning: def replaces a number, len, with a function
+10-redefine-builtin.dl:47: warning: fun replaces the built-in + with a function
+10-redefine-builtin.dl:54: warning: def replaces the built-in + with a function
+10-redefine-builtin.dl:61: warning: def replaces a function, my-f, with a number
+10-redefine-builtin.dl:63: warning: fun replaces a number, my-f, with a function
+10-redefine-builtin.dl:71: warning: def replaces the built-in print with a function
+10-redefine-builtin.dl:79: warning: def replaces the built-in len with a atom
+Error: 10-redefine-builtin.dl: S-Expression starts with incorrect type. Got Atom, Expected Function.
+  at 10-redefine-builtin.dl:8  {len l}
+  called at 10-redefine-builtin.dl:80  (uses-len {1})
+--- exit 1

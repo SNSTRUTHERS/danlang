@@ -1,0 +1,16 @@
+--- stdout
+turns h1 h2 Unbound Symbol '&0' h1 Unbound Symbol '&0' h2
+loop {"Unbound Symbol '&0'" "h1" "h2" "Unbound Symbol '&0'" "h2" "h1" "Unbound Symbol '&0'" "h1" "h2"}
+via Unbound Symbol '&0' Unbound Symbol '&0' h1 h2 {"h1" "h2" "h1"}
+closure maker h3 maker h3 maker
+closure {:t 1 "maker"} {:t 2 "h4"} {:t 3 "maker"} {:t 4 "h4"} {{:t 5 "maker"} {:t 6 "maker"}}
+locals {{1 2} "c1"} {{2 3} "c2"} Unbound Symbol '&0' {{4 2} "c1"} {{5 3} "c2"}
+both {"Unbound Symbol '&0'" "h1" "hb" "hb"} {"Unbound Symbol '&0'" "h2" "hb" "hb"} Unbound Symbol '&0'
+partial {"ha" 1 10} {"hc" 2 20} {"ha" 1 30} {"ha" 1 2} Unbound Symbol '&0' {{"ha" 1 7} {"ha" 1 8}}
+global &0 global &0 h1 global &0 maker h3 {"ha" 1 1}
+global &0 {NIL "global &0"} h1 {NIL "global &0"} global &0
+global &0 NIL S-Expression starts with incorrect type. Got Q-Expression, Expected Function. h2 S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+recursion {"r1" "r2" "r1" "r2"} {"r2" "r1" "r2" "r1" "r2"} {"r1"}
+--- stderr
+
+--- exit 0

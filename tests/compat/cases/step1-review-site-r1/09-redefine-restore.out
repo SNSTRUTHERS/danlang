@@ -1,0 +1,77 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (d (list (list mod 7 2 f3) (list mod 7 2 f3) (list floor-...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (d (list (list mod 7 2 f3) (list mod 7 2 f3) (list floor-...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (d (list (list mod 7 2 f3) (list mod 7 2 f3) (list floor-...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list div -7 2 f3) (list div -7 2 f3) (list floo...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (d (list (list round -5/2 f3) (list round -5/2 f3) (list ...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (d (list (list mod 7 2 f3) (list mod 7 2 f3) (list minus-...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (d (list (list mod 7 2 f3) (list mod 7 2 f3) (list minus-...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (d (list (list round -5/2 f3) (list round -5/2 f3) (list ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor 7/2 f3) (list cm...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list floor -7/2 f3) (list floor -7/2 f3) (list ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor 7/2 f3) (list tr...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 3 f3) (list pow 2 3 f3) (list trunc-...
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (d (list (list starts-with? "abc" "c" f3) (list starts-wi...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? 3 f3) (list even? 3 f3) (list mod-us...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f3) (list even? -3 f3) (list mod-...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 4 f3) (list pow 2 4 f3) (list even-u...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 4 f3) (list pow 2 4 f3) (list pow 2 ...
+--- exit 0

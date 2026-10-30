@@ -1,0 +1,29 @@
+--- stdout
+14 114 7 7
+Error: boom at the bottom, 15 deep
+Error: boom at the bottom, 15 deep
+boom at the bottom, 15 deep
+{15 :caught 16}
+Error: All parameters to operator '*' must be numbers.
+Error: All parameters to operator '*' must be numbers.
+Error: g2 caught: boom at the bottom, 15 deep
+20
+Error: down at zero
+down at zero
+the last: the error fifteen deep, its trace twelve calls long
+--- stderr
+Error: 03-trace-depth15.dl: boom at the bottom, 15 deep
+  at 03-trace-depth15.dl:19  (error (+ "boom at the bottom, " 15 " deep"))
+  called at 03-trace-depth15.dl:18  (f15 x)
+  called at 03-trace-depth15.dl:17  (f14 x)
+  called at 03-trace-depth15.dl:16  (f13 x)
+  called at 03-trace-depth15.dl:15  (f12 x)
+  called at 03-trace-depth15.dl:14  (f11 x)
+  called at 03-trace-depth15.dl:13  (f10 x)
+  called at 03-trace-depth15.dl:12  (f9 x)
+  called at 03-trace-depth15.dl:11  (f8 x)
+  called at 03-trace-depth15.dl:10  (f7 x)
+  called at 03-trace-depth15.dl:9  (f6 x)
+  called at 03-trace-depth15.dl:8  (f5 x)
+  called at 03-trace-depth15.dl:7  (f4 x)
+--- exit 1

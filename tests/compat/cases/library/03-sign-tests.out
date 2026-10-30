@@ -1,0 +1,36 @@
+--- stdout
+<function>(fn {n} {>= n 0}) <function>(fn {n} {<= n 0}) <function>(fn {n} {> n 0}) <function>(fn {n} {< n 0}) <function>(fn {n} {not (zero? n)}) <function>(fn {n} {not (one? n)})
+{0 1 -1 65535 65536 -65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 7/2 -7/2 1/65536 -1/1025 2.5 -2.5 0.1 -0.1 0 0 1}
+{1+2i -1+2i 1i -1i 1 "s" "" "-1" \a \0 {1} {-1} NIL NIL T :a :-1 <function>(+) <function>(fn {x} {x}) neg <hash>NIL <buffer>{0}}
+:>=0 {T T NIL T T NIL NIL NIL T T NIL NIL T NIL T NIL T NIL T NIL T T T}
+:<=0 {T NIL T NIL NIL T T T NIL NIL T T NIL T NIL T NIL T NIL T T T NIL}
+:>0 {NIL T NIL T T NIL NIL NIL T T NIL NIL T NIL T NIL T NIL T NIL NIL NIL T}
+:<0 {NIL NIL T NIL NIL T T T NIL NIL T T NIL T NIL T NIL T NIL T NIL NIL NIL}
+:!=0 {NIL T T T T T T T T T T T T T T T T T T T NIL NIL T}
+:!=1 {T NIL T T T T T T T T T T T T T T T T T T T T NIL}
+:>=0 {T NIL T NIL T T T T T T T T T T T T T T T T T T}
+:<=0 {NIL T NIL T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL}
+:>0 {T NIL T NIL T T T T T T T T T T T T T T T T T T}
+:<0 {NIL T NIL T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL}
+:!=0 {T T T T T T T T T T T T T T T T T T T T T T}
+:!=1 {T T T T NIL T T T T T T T T T T T T T T T T T}
+T NIL T NIL T T
+T T T T NIL NIL NIL NIL
+T T T NIL
+T NIL T NIL T NIL T T
+NIL T T T T
+NIL NIL NIL
+<function>(fn {n} {>= n 0})
+<function>(fn {n} {not (one? n)})
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+Error: into >0
+Error: into !=1
+{T NIL T}
+{T NIL NIL}
+{T NIL T} {NIL T T} {NIL NIL NIL} {T NIL T}
+--- stderr
+Error: 03-sign-tests.dl: '+' adds numbers, or joins values to a string
+  at 03-sign-tests.dl:51  (+ 1 "x")
+--- exit 1

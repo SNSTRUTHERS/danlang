@@ -1,0 +1,90 @@
+; 02-partial-lambdas: a function given fewer arguments than its formals is partially applied: what each partial
+; prints as, calling partials (in one go, in steps, with none), too many arguments for a partial (the error counts
+; only the partial's own formals), partials keeping their values after the global function is redefined, partials
+; of functions that take extras, partials in map, and eq on partials
+
+(fun {add3 a b c} {+ a b c})
+(def {p1} (add3 1))
+(print p1)
+(def {p2} (p1 2))
+(print p2)
+(print (p2 3))
+(print (p1 2 3))
+(print ((add3 1 2) 3))
+(print (((add3 1) 2) 3))
+(print (add3 1 2 3))
+
+; given none: a partial with all its formals still to come (it prints as the function itself)
+(print (add3))
+(print ((add3) 1 2 3))
+(print ((((add3)) 1) 2 3))
+
+; too many for the partial: the count is the partial's own formals
+(print (p2 3 4))
+(print (p1 2 3 4))
+(print ((add3) 1 2 3 4))
+(print (add3 1 2 3 4))
+
+; partials with strings and lists bound (the bound values aren't shown when printed)
+(def {ps} (add3 "x"))
+(print ps (repr ps))
+(print (ps "y" "z"))
+(fun {pick l i} {nth i l})
+(def {from-list} (pick {:a :b :c}))
+(print from-list (from-list 0) (from-list 2))
+
+; each partial keeps its own bound values
+(def {add-1-2} (add3 1 2))
+(def {add-10-20} (add3 10 20))
+(print (add-1-2 100) (add-10-20 100) (add-1-2 0))
+(print (eq add-1-2 add-10-20) (eq add-1-2 p2) (eq p1 p2))
+
+; the global redefined: partials made before keep the old function
+(fun {add3 a b c} {list :new a b c})
+(print (p2 3) (add-1-2 3))
+(print (add3 1 2 3))
+(print ((add3 1) 2 3))
+(fun {add3} {:no-formals-now})
+(print (add3))
+(print (add3 1))
+(print (p1 2 3))
+
+; a function with extras (its body names &_ and &1): partial first, extras once the formals are filled
+(fun {ex a b} {list a b &1 &_})
+(print (ex 1))
+(print ((ex 1) 2))
+(print (try ((ex 1) 2 3 4) &err))
+(print (ex 1 2 3 4))
+
+; partials of partials of a function of many formals
+(fun {f5 a b c d e} {list e d c b a})
+(def {q1} (f5 1))
+(def {q2} (q1 2))
+(def {q3} (q2 3))
+(def {q4} (q3 4))
+(print q1 q2 q3 q4)
+(print (q4 5) (q3 4 5) (q2 3 4 5) (q1 2 3 4 5))
+(print (q4 :x) (q4 :y))
+
+; partials passed to map, filter and foldl
+(fun {between lo hi x} {and (>= x lo) (<= x hi)})
+(print (filter (between 2 4) {1 2 3 4 5}))
+(print (map (add-1-2) {10 20}))
+(print (map add-10-20 {1 2 3}))
+(print (foldl (fn {acc x} {+ acc (fst x)}) 0 (map (f5 1 2 3 4) {5 6})))
+(print (map (fn {a b} {list a b}) {1 2}))
+
+; a partial of an fexpr is an fexpr: what follows comes as it's written
+(def {fx} (fexpr {a b} {list a b}))
+(print (fx (+ 1 2)))
+(print ((fx (+ 1 2)) (* 3 4)))
+
+; a partial's bound values are its own: changing the global they came from changes nothing
+(def {gv} 5)
+(fun {mul a b} {* a b})
+(def {times-gv} (mul gv))
+(def {gv} 500)
+(print (times-gv 2) gv)
+
+; the last: too many for a partial of a partial ends the program
+(q3 4 5 6)

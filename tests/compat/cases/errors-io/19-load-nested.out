@@ -1,0 +1,51 @@
+--- stdout
+level1: start
+level2: start
+level3: start
+level3: end
+level2: got :level3-value
+level1: got :level2-value
+:level1-value
+3 :set-at-top :level3-value T
+abc3
+level3: start
+level3: end
+{:local 3}
+sees.dl: NIL T
+NIL
+once.dl runs
+NIL NIL 1 {"once"}
+once.dl runs
+NIL 2
+broken.dl runs
+Error: broken.dl: broken library
+broken.dl runs
+Error: broken.dl: broken library {"once"}
+Error: no-such-library-here: not found
+bad1: start
+bad2: start
+bad3: start
+bad3: calling
+Error: bad1.dl: bad2.dl: bad3.dl: 'len' requires parameter of type string, list, hash or buffer
+bad3: start
+bad3: calling
+bad3.dl: 'len' requires parameter of type string, list, hash or buffer
+bad1: start
+bad2: start
+bad3: start
+bad3: calling
+bad1.dl: bad2.dl: bad3.dl: 'len' requires parameter of type string, list, hash or buffer
+Error: codes.dl: coded2.dl: deep code :deep
+the last: the error three files down, by a load in a function
+start: loading
+bad1: start
+bad2: start
+bad3: start
+bad3: calling
+--- stderr
+Error: 19-load-nested.dl: bad1.dl: bad2.dl: bad3.dl: 'len' requires parameter of type string, list, hash or buffer
+  at bad3.dl:2  (len 7)
+  called at bad3.dl:4  (bad3-fn)
+  called at bad1.dl:3  (go2)
+  called at 19-load-nested.dl:43  (start)
+--- exit 1

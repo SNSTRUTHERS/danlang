@@ -1,0 +1,26 @@
+--- stdout
+locked T 1 Error: hash-put error: cannot add new entries to a locked hash Error: hash-remove error: cannot remove an entry from a locked hash 2
+locked {:a :b :c} {10 NIL 3} 3 <hash>{{:a 10} {:b NIL} {:c 3} :__locked}
+locked NIL T NIL NIL Error: hash-put error: cannot add new entries to a locked hash NIL
+locked {:a :b :c} {10 20 3} 3 <hash>{{:a 10} {:b 20} {:c 3} :__locked}
+clone <hash>{{:a 10} {:b 20} {:c 30} :__locked} T Error: hash-put error: cannot add new entries to a locked hash NIL T
+read-only T Error: hash-put error: cannot modify read-only hash Error: hash-put error: cannot modify read-only hash Error: hash-remove error: cannot modify read-only hash Error: hash-put error: cannot modify read-only hash <hash>{{:a 1} {:b 2} :__read-only}
+entries NIL T NIL T T
+get 1 Error: hash-get error: cannot access private hash entry Error: hash-get error: cannot access private hash entry 3 4 5 6 T
+put 1 Error: hash-put error: cannot access private hash entry Error: Cannot set non-nillable field :nn to NIL. 3 Error: hash-put error: cannot modify read-only hash entry
+put 5 T 6 NIL 10
+entries {:pub :sec :nn :ro :lk} {1 2 30 4 NIL} 5 <hash>{{:pub 1 :t1 :t2} {:sec 2 :__private} {:nn 30 :__not_nil} {:ro 4 :__read-only} {:lk NIL :__locked}}
+remove Error: hash-remove error: cannot access private hash entry Error: hash-remove error: cannot remove an entry from a locked hash NIL 30 {:pub :sec :ro}
+tags T NIL T NIL NIL <hash>{{:pub 1 :t1 :t2 :t3} {:sec 2 :__private} {:ro 4 :__read-only} :later}
+tags T NIL T Key :none not found when looking up tag for hash entry {{:pub 1 :t1 :t2 :t3} {:sec 2 :__private} {:ro 4 :__read-only} :later}
+private by put Error: hash-get error: cannot access private hash entry T Error: hash-put error: cannot access private hash entry {:pub :sec :sec2 :ro}
+reserved Error: Cannot get/set value for reserved hash key __locked Error: Cannot get/set value for reserved hash key __read-only NIL NIL
+reserved Error: Cannot get/set value for reserved hash key __locked 1 {:__private :__not_nil} NIL NIL <hash>{{:__private 1} {:__not_nil 2}}
+empty atom {:__private :__not_nil :} NIL T 3 NIL <hash>{{:__private 1} {:__not_nil 2} {: :again}}
+method {NIL NIL 2 {:t :s :look :set :add} 5 <hash>{{:t 1} {:s 2 :__private} {:look <function>(fn NIL {list (hash-tag? &0 :mytag) (hash-locked? &0) (&0 :s) (hash-keys &0) (len &0) &0})} {:set <function>(fn {v} {hash-put &0 {:t v}})} {:add <function>(fn NIL {hash-put &0 {:new 1}})}}} T hash-get error: cannot access private hash entry
+method 1 5 Error: hash-put error: cannot add new entries to a locked hash {NIL NIL 2 {:t :s :look :set :add} 5 <hash>{{:t 5} {:s 2 :__private} {:look <function>(fn NIL {list (hash-tag? &0 :mytag) (hash-locked? &0) (&0 :s) (hash-keys &0) (len &0) &0})} {:set <function>(fn {v} {hash-put &0 {:t v}})} {:add <function>(fn NIL {hash-put &0 {:new 1}})}}} <hash>{{:t 5} {:s 2 :__private} {:look <function>(fn NIL {list (hash-tag? &0 :mytag) (hash-locked? &0) (&0 :s) (hash-keys &0) (len &0) &0})} {:set <function>(fn {v} {hash-put &0 {:t v}})} {:add <function>(fn NIL {hash-put &0 {:new 1}})} :mytag :__locked}
+chain Error: :down isn't a method: its value isn't a function {:found :put} {:put :put} Object reference not set to an instance of an object. :put isn't a method: its value isn't a function
+chain <hash>{{:n :put} {:down <function>(fn {k} {if (zero? k) (list (&0 :n)) (cons (&0 :n) (&0 :down (- k 1)))})} {:put <function>(fn {k} {if (zero? k) (list (hash-put &0 {:n :put}) (&0 :n)) (&0 :put (- k 1))})}} Error: :down isn't a method: its value isn't a function
+--- stderr
+
+--- exit 0

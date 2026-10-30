@@ -1,0 +1,15 @@
+--- stdout
+q {(+ 1 2) (* 2 3) 3 6} {(+ 1 1) (- 5 1) 2 4} The function takes 2 arguments, not 3
+qd {(* 2 3) 6} {(- 9 1) 8}
+qx {(+ 1 2) NIL NIL} {(+ 1 2) {(* 3 3) (- 1 2)} {9 -1}} Error: Unbound Symbol 'y'
+q1 {(+ 1 2) NIL} {(+ 3 4) {(+ 3 4)}}
+qe {:sexpr :sexpr "evaluated later"} {:number :symbol "Unbound Symbol 'undefined-name'"}
+scope {v (+ v 1) 10 11} {v v 5 5}
+qn (+ 1 2) (+ 1 2) sym {1 2} "s"
+q8 {1 2 3 4 5 6 7 8} {1 2 3 4 5 6 7 8}
+q9 {1 9 NIL} {1 9 {10}}
+--- stderr
+Error: 06-fexpr.dl: The function takes 2 arguments, not 3
+  at 06-fexpr.dl:23  (q 1 2 3)
+  called at 06-fexpr.dl:23  (q 1 2 3)
+--- exit 1

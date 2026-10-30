@@ -1,0 +1,21 @@
+--- stdout
+&1-12 {1 2 3 4 5 6 7 8 9 10 11 12 12} Unbound Symbol '&4' {:a :b :c :d :e :f :g :h :i :j :k :l 13}
+rest {1 2 NIL NIL NIL NIL} {1 2 {3} T NIL T} {1 2 {3 4 5} T T T} <function>(fn {b} {list a b &_ (defined? &1) (defined? &3) (defined? &_)})
+names Error: Unbound Symbol '&01' Unbound Symbol '&01' Error: Unbound Symbol '&0' Unbound Symbol '&0' 1
+none The function takes 0 arguments, not 1 The function takes 1 argument, not 2 The function takes 3 arguments, not 5
+&_ only {1 2 3} NIL NIL {1 {2}} 4
+computed :a :c Unbound Symbol '&0'
+inherit {:a :b NIL NIL NIL NIL} {1 :b T NIL {1} T} {1 2 T T {1 2} T} {1 2 T T {1 2 3} T}
+inherit {:x :o1 NIL} {:x :y {:y}} :let-1 {:let-1 {:call-1}}
+inherit {:m1 :o2 :o3} {:i1 :o2 :o3}
+through {{:a :b :c} :a :b :c {:a :b :c}} Error: Unbound Symbol '&2' Error: Unbound Symbol '&1'
+loop {{3 1 3} {2 1 3} {1 1 3}} NIL
+partial <function>(fn {b} {list a b &_}) {1 2 NIL} {1 2 {3 4}} {1 2 {3}} {1 2 {3}} Error: x The function takes 2 arguments, not 3
+partial {1 2 3 4} {1 2 3 4} Error: Unbound Symbol '&1' {1 2 3 4}
+builtins 'len' takes 1 argument, not 2 S-Expression starts with incorrect type. Got Number, Expected Function. 'substring' takes at most 3 arguments, not 4 'fst' takes 1 argument, not 2
+builtins 'if' takes at most 3 arguments, not 4 'cons' takes 2 arguments, not 3 'nth' takes 2 arguments, not 3 'not' takes 1 argument, not 2
+method {1 NIL {:m :n}} {1 {2 3} {:m :n}} {1 {2} {:m :n}} 5 Unbound Symbol '&1'
+map {{:a 1} {:b 1}} {{1 NIL} {2 NIL}}
+--- stderr
+
+--- exit 0

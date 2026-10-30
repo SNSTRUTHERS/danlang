@@ -1,0 +1,14 @@
+; 01-base-natives: the library's natives (mod, div, floor, even? ...) and the list fast ways while numbers are shown in
+; another base, and after it's set back; the values, printed and repr'd, then decimal again
+(fun {show} {print (mod 17 5) (div 17 5) (floor 7/2) (ceil 7/2) (round 7/2) (even? 10) (odd? 7) (zip {1 2} {3 4})})
+(show) (show)
+(base "x")
+(show) (show)
+(print (repr (mod 255 16)) (repr (cons 255 {1 2})) (repr (tail {255 16 10})))
+(print (map (fn {x} {mod x 3}) (range 20)))
+(base "#x")
+(show)
+(print (to-str (div 1000 7)) (format "{} {}" (mod 100 7) (floor 100/7)))
+(base "d")
+(show) (show)
+(print (cond {(eq (mod 9 3) 0) :zero} {T :other}) (case (mod 10 4) {2 :two} {3 :three}))

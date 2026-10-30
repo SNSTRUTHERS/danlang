@@ -1,0 +1,18 @@
+--- stdout
+Error: Selection not found
+{{T 1} {NIL 2}}
+:three Case not found
+Error: Selection not found Error: Selection not found
+Selection not found Case not found
+Error: 'head' expects a QExpr Error: Case not found Error: 'cons' expects a list second
+{:e1}
+3 3 T
+:method :five 2 c
+{1 7} {1/2 "x"} {{2 1} {1 3}}
+{{T :a} {T 1} {1 :d}} Error: Case not found
+the last: an error made right after sort with cond, not caught
+--- stderr
+Error: 04-cond-as-a-function-value.dl: The function takes 2 arguments, not 3
+  at (made, not read)  {1}
+  called at 04-cond-as-a-function-value.dl:28  (p 1 2 (sort cls2 cond))
+--- exit 1

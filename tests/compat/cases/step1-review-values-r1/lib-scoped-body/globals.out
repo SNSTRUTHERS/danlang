@@ -1,0 +1,7 @@
+--- stdout
+{10 10 10 10 10 10}
+{-13 -13 -13 -13 -27 -27} {10 10 10 10}
+<function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}}) 10
+--- stderr
+
+--- exit 0

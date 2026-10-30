@@ -1,0 +1,57 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>:int :big :huge
+=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>:fixed-equal :rat-is-1 :complex
+=> NIL
+danlang>:string :char :atom
+=> NIL
+danlang>:list :list2 :empty :t
+=> NIL
+danlang>:scoped-equal :empty-string
+=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>:point-zero
+=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>:two
+=> NIL
+danlang>:three-fixed
+=> NIL
+danlang>=> NIL
+danlang>
+:same-bytes Error: Case not found :same-lambda
+=> NIL
+danlang>=> NIL
+danlang>:same-hash :equal-empty-hash
+=> NIL
+danlang>=> exit
+--- stderr
+  at line 1  (+ w (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe)
+  at line 1  (+ w (g))
+  called at line 1  (probe)
+  at line 1  (+ w (g))
+  called at line 1  (probe)
+--- exit 0

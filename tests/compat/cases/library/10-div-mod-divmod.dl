@@ -1,0 +1,60 @@
+; 10-div-mod-divmod: div, mod and its alias %, and divmod (the quotient rounded down, toward minus infinity, so
+; (+ (* b (div a b)) (mod a b)) is a): a grid of dividends (the small-integer range's edges, near and past 2^63,
+; rationals, fixed decimals) against divisors of both signs and kinds; the identity checked for each; division by
+; zero; complex numbers (floor's trunc error); non-numbers (the library's own errors); partial application, too many,
+; errors as arguments, and the order arguments are evaluated in.
+; Ends with mod's division by zero, two user functions deep (the trace through lib\globals.dl).
+
+(print mod)
+(print div)
+(print divmod)
+(print % (eq % mod))
+(def {as} {7 -7 0 1 -1 65535 65536 -65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 7/2 -7/2 2.5 -2.50 0.1})
+(def {bs} {2 -2 3 -3 7/2 0.3 65536 -1025 9223372036854775808})
+(each (fn {b} {print :mod b (map (fn {a} {mod a b}) as)}) bs)
+(each (fn {b} {print :div b (map (fn {a} {div a b}) as)}) bs)
+(print :identity (all? (fn {b} {all? (fn {a} {eq a (+ (* b (div a b)) (mod a b))}) as}) bs))
+(print :mod-sign (map (fn {b} {all? (fn {a} {or (=0 (mod a b)) (eq (pos? (mod a b)) (pos? b))}) as}) bs))
+
+; written directly
+(print (mod 7 2) (mod -7 2) (mod 7 -2) (mod -7 -2) (% 10 4) (% -10 4) (% 10 -4) (% 0 5))
+(print (div 7 2) (div -7 2) (div 7 -2) (div -7 -2) (div 0 5) (div 9223372036854775807 2) (div -9223372036854775808 2))
+(print (mod 9223372036854775807 65536) (mod -9223372036854775809 65536) (mod 65536 65535) (mod -1025 1024) (mod -1024 1025))
+(print (divmod 7 2) (divmod -7 2) (divmod 7 -2) (divmod -7 -2) (divmod 7/2 1) (divmod 2.5 0.3) (divmod 9223372036854775808 65536))
+(print (divmod 9223372036854775809 9223372036854775808) (divmod -1 9223372036854775808) (divmod 65536 -1025))
+(print (mod 7/2 0.3) (mod 2.5 1) (mod 0.1 0.03) (mod -0.1 0.03) (div 0.1 0.03) (mod 1/3 1/4) (div -1/3 1/4))
+(print (mod math.pi 1) (div math.pi 1/2) (mod (- math.e) 1))
+(print (map (fn {x} {mod x 3}) (range -6 7)) (map (fn {x} {div x 3}) (range -6 7)))
+
+; division by zero
+(print (mod 1 0) (div 1 0) (divmod 1 0) (% 5 0))
+(print (mod 0.5 0.0) (div 5 0/1) (mod 0 0) (divmod 9223372036854775808 0))
+
+; complex numbers: floor's trunc of a complex quotient
+(print (mod (complex 3 4) 2))
+(print (div (complex 3 4) 2))
+(print (divmod (complex 3 4) 2))
+(print (mod 5 (complex 0 1)))
+(print (mod (complex 4 0) 3))
+
+; non-numbers: the library's errors
+(print (mod "a" 2) (mod 2 "a") (div "a" 2) (div 2 NIL) (divmod "a" 2) (divmod 2 :b))
+(print (mod \a 2) (mod NIL 2) (mod T 2) (mod :a 2) (mod {1} 2) (mod + 2) (% (hash-create) 1) (div 1 {2}))
+
+; partial application, too many, errors as arguments, order
+(print (mod) (div) (divmod))
+(print (mod 7) (div 7) (divmod 7) (% 7))
+(print ((mod 7) 2) ((div 7) 2) ((divmod 7) 2) ((% -7) 2))
+(print (mod 1 2 3))
+(print (div 1 2 3))
+(print (divmod 1 2 3))
+(print (mod (error "mod's a") 2) (mod 2 (error "mod's b")) (div (error "div's a") 1) (divmod 1 (error "divmod's b")))
+(print (mod (error "first") (error "second")))
+(print (mod (do (print :a-first) 7) (do (print :b-second) 2)))
+(print (divmod (do (print :a) 9) (do (print :b) 4)))
+
+; mod by zero, two functions deep: the program ends with its trace
+(fun {wrap n m} {list :wrapped (mod n m)})
+(fun {wrap-all l m} {map (fn {n} {wrap n m}) l})
+(print (wrap-all {1 2 3} 2))
+(wrap-all {1 2 3} 0)

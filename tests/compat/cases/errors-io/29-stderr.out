@@ -1,0 +1,38 @@
+--- stdout
+stdout 1
+stdout 2, stdout 3 and more 3
+NIL NIL
+stdout between the file's lines
+"log line 1\nlog line 2\n:three {3}\n"
+Error: Cannot close the console's streams Error: Cannot close the console's streams Error: Cannot close the console's streams
+Error: Cannot read from this stream Error: Cannot read from this stream Error: Cannot read from this stream Error: Cannot read from this stream
+Error: Cannot write this stream Error: Cannot write this stream
+Error: Cannot seek on a non-seekable stream Error: Cannot get the position of a non-seekable stream
+Error: 'print-to' expects a stream first Error: 'write-to' expects a stream first Error: the stream is an error
+NIL
+:stream :stream :stream NIL NIL
+{"29-stderr.dl"} :list {:string}
+"stdout, captured\n"
+Error: Division by zero.
+the last: an error, its message and trace on stderr after the rest
+--- stderr
+stderr 1
+stderr 2, stderr 33
+print-to's value
+write-to's value
+1 1.5 1/2 1+1i c s :a b NIL T <function>(+) <function>(fn {x} {x}) <hash>{{:k 1}} <buffer>{0} <stream> Error: e exit
+{1 "s" \c} "quoted\n"
+w1w2
+
+after the empty ones
+stderr between the file's lines
+Error: an error printed to stderr
+{"29-stderr.dl"}
+stderr, not captured
+Error: Division by zero.
+stderr: just before the error
+in fail
+Error: 29-stderr.dl: fail's error
+  at 29-stderr.dl:52  (error "fail's error")
+  called at 29-stderr.dl:53  (fail)
+--- exit 1

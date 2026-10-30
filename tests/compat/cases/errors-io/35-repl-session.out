@@ -1,0 +1,58 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 144
+danlang>=> <function>(fn {x} {* x x})
+danlang>=> NIL
+danlang>=> <function>(fn {x} {+ x n})
+danlang>=> 15
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 42
+danlang>=> 42
+danlang>=> -9223372036854775809
+danlang>=> 3.14159
+danlang>=> 22/7
+danlang>=> 1-2i
+danlang>=> \a
+danlang>=> \space
+danlang>=> \lf
+danlang>=> "a string\twith a tab"
+danlang>=> ""
+danlang>=> :atom
+danlang>=> sym
+danlang>=> NIL
+danlang>=> T
+danlang>=> {1 "two" \3 :four {5}}
+danlang>=> {1 2 3}
+danlang>=> NIL
+danlang>=> {(+ 1 2)}
+danlang>=> 0
+danlang>=> <function>(eq 1)
+danlang>=> <function>(fn {x} {x})
+danlang>=> <hash>{{:a 1} {"b" "two"} :tag}
+danlang>=> <hash>NIL
+danlang>=> <buffer>{104 105}
+danlang>=> <stream>
+danlang>=> Error: an error, as a value
+danlang>=> NIL
+danlang>
+=> NIL
+danlang>=> <function>(len)
+danlang>=> NIL
+danlang>a line with two calls:
+=> Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 3
+danlang>=> NIL
+danlang>=> :list
+danlang>=> "tail of the session"
+danlang>=> exit
+--- stderr
+  at line 1  (error "an error, as a value")
+  at line 1  (print "a line with two calls:")
+--- exit 0

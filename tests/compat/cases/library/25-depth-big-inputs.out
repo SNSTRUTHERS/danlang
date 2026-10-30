@@ -1,0 +1,34 @@
+--- stdout
+:repeat-10005 Error: Too deep: more than 10000 calls nested
+:repeat-negative Error: Too deep: more than 10000 calls nested
+:repeat-fraction Error: Too deep: more than 10000 calls nested
+1 1 T
+:flatten-nested-10005 Error: Too deep: more than 10000 calls nested
+:flatten-nested-9998 {:core}
+:flatten-nested-9999 Error: Too deep: more than 10000 calls nested
+:d5000-flatten-4990 {:core}
+:d5000-flatten-5010 Error: Too deep: more than 10000 calls nested
+:d5000-repeat-5010 Error: Too deep: more than 10000 calls nested
+:d9500-zip-490 490
+:d9500-zip-510 Error: Too deep: more than 10000 calls nested
+:d9500-remove-fst-510 Error: Too deep: more than 10000 calls nested
+:d9500-remove-all-510 Error: Too deep: more than 10000 calls nested
+:d9500-distinct-510 Error: Too deep: more than 10000 calls nested
+:d9500-all-between-510 Error: Too deep: more than 10000 calls nested
+:d9500-flatten-490 490
+--- stderr
+Error: 25-depth-big-inputs.dl: Too deep: more than 10000 calls nested
+  at <BUNDLE>\lib\globals.dl:195  (1- n)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+  called at <BUNDLE>\lib\globals.dl:195  (repeat (1- n) d)
+--- exit 1

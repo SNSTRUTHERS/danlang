@@ -1,0 +1,51 @@
+; 15-tail-if-do: tail calls through if and do run in constant space: a million iterations each (deeper than 10,000
+; would be an error, so finishing is the proof), counting as they go and printing at checkpoints (the order of the
+; side effects pinned).  Then and else branches, ?{...} bodies, nested ifs, if inside do inside if, a do whose
+; earlier expressions set locals and call functions (those calls nest, and return, each time).
+
+(fun {count-if n acc} ?{(zero? n) acc (count-if (- n 1) (+ acc 1))})
+(print (count-if 1000000 0))
+
+(fun {count-do n acc} ?{(zero? n) acc (do (if (zero? (bit-and n 262143)) (print :checkpoint n)) (count-do (- n 1) (+ acc 2)))})
+(print (count-do 1000000 0))
+
+; the tail call in the then branch, or the else
+(fun {then-loop n} {if (> n 0) (then-loop (- n 1)) :then-done})
+(fun {else-loop n} {if (<= n 0) :else-done (else-loop (- n 1))})
+(print (then-loop 100000) (else-loop 100000))
+
+; ifs nested in ifs, all in tail position
+(fun {nested n acc} {if (> n 0) (if (zero? (bit-and n 1)) (nested (- n 1) (+ acc 1)) (if (zero? (bit-and n 2)) (nested (- n 1) acc) (nested (- n 1) (- acc 1)))) acc})
+(print (nested 100000 0))
+
+; do inside if inside do: the last of each in tail position
+(fun {mixed n} {do :ignored (if (zero? n) :mixed-done (do (+ n 1) (if T (mixed (- n 1)) :never)))})
+(print (mixed 100000))
+
+; a do's earlier expressions: locals set, functions called (each returns before the tail call)
+(fun {helper x} {* x 2})
+(fun {with-locals n total} ?{(zero? n) total (do =(d (helper n)) =(total (+ total d)) (with-locals (- n 1) total))})
+(print (with-locals 100000 0))
+
+; a loop that builds a list as it goes (its accumulator passed along)
+(fun {collect n acc} ?{(zero? n) acc (collect (- n 1) (cons n acc))})
+(def {collected} (collect 2000 {}))
+(print (len collected) (take 5 collected) (last collected))
+
+; mutual recursion through if, a hundred thousand steps
+(fun {ev n} ?{(zero? n) :even (od (- n 1))})
+(fun {od n} ?{(zero? n) :odd (ev (- n 1))})
+(print (ev 100000) (ev 100001) (od 100000))
+
+; the value of the last iteration's branch, whatever its kind
+(fun {ret-kind n v} ?{(zero? n) v (ret-kind (- n 1) v)})
+(print (ret-kind 1000 {a list}) (ret-kind 1000 "str") (ret-kind 1000 ret-kind) (ret-kind 1000 (eq 1)))
+(print (try (ret-kind 1000 (error "an argument error: the call isn't made")) &err))
+
+; a loop whose last iteration errors: the error is the value (the trace has only the first call)
+(fun {err-at-end n} ?{(zero? n) (error "at the end") (err-at-end (- n 1))})
+(print (err-at-end 100000))
+
+; the last: an error at the bottom of a long tail loop ends the program; the trace shows the first call only
+(fun {start-loop} {list (err-at-end 100000)})
+(start-loop)

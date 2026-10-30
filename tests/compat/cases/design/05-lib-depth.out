@@ -1,0 +1,35 @@
+--- stdout
+probe Too deep: more than 10000 calls nested 10000
+free 0 {:deep :deep :deep :deep :deep :deep 8 :deep :deep :deep :deep :deep :deep :deep :deep :deep :deep :deep :deep 1 {2 3} :deep :deep :deep :deep :deep}
+free 1 {:deep -4 :deep :deep 3 :deep 8 25 2 :b :deep :deep :deep :deep :deep T :deep 3 3 1 {2 3} {1 4} {3 2 1} :deep 0.25 T}
+free 2 {1 -4 :deep :deep 3 3 8 25 2 :b :deep :deep :deep :deep :deep T :deep 3 3 1 {2 3} {1 4} {3 2 1} :deep 0.25 T}
+free 3 {1 -4 T T 3 3 8 25 2 :b {:x :x} {{1 3} {2 4}} {1 2} :deep {2 3} T T 3 3 1 {2 3} {1 4} {3 2 1} {3 1} 0.25 T}
+free 4 {1 -4 T T 3 3 8 25 2 :b {:x :x} {{1 3} {2 4}} {1 2} {1 2} {2 3} T T 3 3 1 {2 3} {1 4} {3 2 1} {3 1} 0.25 T}
+free 6 {1 -4 T T 3 3 8 25 2 :b {:x :x} {{1 3} {2 4}} {1 2} {1 2} {2 3} T T 3 3 1 {2 3} {1 4} {3 2 1} {3 1} 0.25 T}
+free 50 {1 -4 T T 3 3 8 25 2 :b {:x :x} {{1 3} {2 4}} {1 2} {1 2} {2 3} T T 3 3 1 {2 3} {1 4} {3 2 1} {3 1} 0.25 T}
+n {0 NIL NIL NIL NIL NIL NIL NIL T 1}
+n {1 {:x} {{0 0}} {0} {0} NIL {0} {0} T 2}
+n {2 {:x :x} {{0 0} {1 1}} {0 1} {0 1} NIL {0 1} {0 1} T 4}
+n {3 {:x :x :x} {{0 0} {1 1} {2 2}} {0 1 2} {0 1 2} NIL {0 1 2} {0 1 2} T 8}
+n {4 {:x :x :x :x} {{0 0} {1 1} {2 2} {3 3}} {0 1 2 3} {0 1 2 3} NIL {0 1 2 3} {0 1 2 3} T 16}
+n {5 :deep :deep :deep :deep NIL :deep :deep :deep 32}
+n {6 :deep :deep :deep :deep NIL :deep :deep :deep 64}
+n {7 :deep :deep :deep :deep NIL :deep :deep :deep 128}
+n {8 :deep :deep :deep :deep NIL :deep :deep :deep 256}
+tail 1 Error: Too deep: more than 10000 calls nested :c
+--- stderr
+Error: 05-lib-depth.dl: Too deep: more than 10000 calls nested
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at <BUNDLE>\lib\globals.dl:148  (floor (/ a b))
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+  called at 05-lib-depth.dl:11  (down (- n 1) th)
+--- exit 1

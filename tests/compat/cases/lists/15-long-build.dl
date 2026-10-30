@@ -1,0 +1,65 @@
+; 15-long-build.dl - long lists built: by tail-recursive functions with an accumulator (cons, then reverse), by cons
+; and join in loops (dotimes, each, while), by recursion that isn't in tail position (10,000 calls nested at most,
+; exactly: deeper is the error, as a value, and the list isn't made), from strings (str-chars, str-split) and back;
+; and range's 1,000,000 items, exactly as many as it makes
+
+(fun {count-up n acc} ?{(zero? n) acc (count-up (- n 1) (cons n acc))})
+(def {u} (count-up 1500 NIL))
+(print (len u) (take 5 u) (last u) (eq u (range 1 1501)))
+
+; reverse with an accumulator, tail recursive
+(fun {rev l acc} ?{l (rev (tail l) (cons (fst l) acc)) acc})
+(def {ru} (rev u NIL))
+(print (len ru) (take 5 ru) (last ru) (eq ru (reverse u)) (eq (rev ru NIL) u))
+
+; cons, join and [..] in loops
+(def {acc} NIL)
+(dotimes {i 2000} (set! {acc} (cons i acc)))
+(print (len acc) (take 3 acc) (last acc))
+(def {acc2} NIL)
+(dotimes {i 2000} (set! {acc2} (join acc2 [i])))
+(print (len acc2) (take 3 acc2) (last acc2) (eq acc2 (reverse acc)))
+(def {w} NIL)
+(def {k} 0)
+(while {< k 1500} (set! {w} (cons (* k k) w)) (set! {k} (+ k 1)))
+(print (len w) (fst w) (last w) (nth 1000 w))
+(def {e} NIL)
+(each {x (range 1000)} (set! {e} (join e [x (- x)])))
+(print (len e) (take 6 e) (last e) (sum e))
+(def {pairs} NIL)
+(each {x (range 30)} (each {y (range x 30)} (if (eq (+ x y) 29) (set! {pairs} (cons [x y] pairs)))))
+(print (len pairs) pairs)
+
+; recursion not in tail position: as deep as 10,000 calls
+(fun {build n} ?{(zero? n) NIL (cons n (build (- n 1)))})
+(def {b3} (build 1500))
+(print (len b3) (take 3 b3) (last b3) (eq b3 (reverse u)))
+(print (build 20000))
+(print (len (build 12000)))
+(fun {my-len l} ?{l (+ 1 (my-len (tail l))) 0})
+(print (my-len b3) (my-len {}) (my-len {a {b c}}))
+(fun {sum-from l i} ?{(< i (len l)) (+ (nth i l) (sum-from l (+ i 1))) 0})
+(def {r9} (range 9000))
+(print (sum-from r9 0) (sum-from r9 8990) (sum r9))
+(def {r105} (range 10500))
+(print (sum-from r105 0))
+(print (sum-from r105 600))
+; exactly: 10,000 calls nested (from 501: 10,000 calls) is as deep as they go; a call in tail position adds none,
+; a call that isn't adds one
+(print (sum-from r105 501))
+(print (sum-from r105 500))
+(fun {in-tail l i} {sum-from l i})
+(fun {not-in-tail l i} {+ 0 (sum-from l i)})
+(print (in-tail r105 501) (not-in-tail r105 502) (map (fn {i} {sum-from r105 i}) {502 501}))
+(print (not-in-tail r105 501))
+
+; from strings, and back
+(def {nums} (str-join (range 20000) " "))
+(print (len nums) (substring nums 0 20) (len (str-split nums " ")) (last (str-split nums " ")))
+(print (eq (map val (str-split nums " ")) (range 20000)))
+(def {chars} (str-chars (str-repeat "abc" 20000)))
+(print (len chars) (take 4 chars) (count (fn {c} {eq c \b}) chars) (len (str-join chars)))
+
+; range: 1,000,000 items, its most
+(def {million} (range 1000000))
+(print (len million) (fst million) (last million) (nth 500000 million) (len (tail million)))

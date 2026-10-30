@@ -1,0 +1,41 @@
+; lib-names: a library of its own (danlang loads the globals.dl in the folder it runs in before lib/'s; run as the
+; program too, it's the program once args is there) whose functions are lib/globals.dl's but for the names they call:
+; =0 is one?, square adds, index-of ignores case, >=0 is >0
+(if (defined? args)
+  (do
+    (print "even?" (map even? {4 4 4 4 3 3 3}) "odd?" (map odd? {4 4 4 4 3 3 3}))
+    (print "cube" (map cube {3 3 3 3}))
+    (print "starts-with?" (map (fn {s} {starts-with? s "ab"}) {"ABC" "ABC" "ABC" "ABC"}))
+    (print "contains?" (map (fn {s} {contains? s "B"}) {"abc" "abc" "abc" "abc"}) (map (fn {s} {contains? s "a"}) {"abc" "abc" "abc"})))
+  (do
+    :(trunc truncate)
+    :({=0 =1} one? zero?)
+    (def {index-of0} index-of)
+    (fun {index-of s sub} {index-of0 (str-lower s) (str-lower sub)})
+    (fun {>=0 n} {> n 0})
+    (fun {square n} {+ n n})
+    (fun {cube n}   {* n (square n)})
+    (fun {floor a} {
+      let {
+        do
+          =(tr (trunc a))
+          (<=> (cmp a tr) {< (1- tr)} {tr})
+      }
+    })
+    (fun {mod a b} ?{
+      (and (num? a) (num? b))
+      (- a (* b (floor (/ a b))))
+      (error "Cannot perform 'mod' on non-numbers")
+    })
+    (fun {odd? n} ?{
+      (num? n)
+      (=1 (mod n 2))
+      (error "Cannot perform 'odd?' on non-number")
+    })
+    (fun {even? n} ?{
+      (num? n)
+      (=0 (mod n 2))
+      (error "Cannot perform 'even?' on non-number")
+    })
+    (fun {starts-with? s sub} {=0 (index-of s sub)})
+    (fun {contains?    s sub} {>=0 (index-of s sub)})))

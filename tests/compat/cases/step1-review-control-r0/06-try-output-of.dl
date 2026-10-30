@@ -1,0 +1,19 @@
+; 06-try-output-of: try around cond and case and inside their clauses (an error in a test, in a value, none found;
+; the handler a value, a function, &err and &code), output-of capturing what tests and values print, in order (the
+; tests after the true one never run), and errors inside output-of
+(print (try (cond {(error "t1") 1}) &err) (cond {(try (error "t2") T) :caught}) (try (cond {NIL 1} {T (error "v1")}) (+ "h:" &err)))
+(print (try (case 3 {1 :a}) (list &err &code)) (try (cond {NIL 1}) (fn {m} {list :handler m})) (try (cond) &err))
+(print (try (cond {(error "coded" :mine) 1}) (list &err &code)) (try (case 1 {(error "k" :kc) 1}) &code))
+(print (repr (output-of (cond {(print "t1") 1} {(do (print "t2") T) (print "v2")} {(print "t3") 3}))))
+(print (repr (output-of (case (do (write "x") 2) {(do (write "k1") 1) :a} {(do (write "k2") 2) (write "v2")} {(write "k3") 3}))))
+(print (repr (output-of (cond {(print "a") 1} {(print "b") 2}))) (try (cond {(print "a") 1} {(print "b") 2}) &err))
+(print (repr (output-of (print (try (cond {(do (print "in") (error "e")) 1}) &err)))))
+(print (output-of (cond {T (output-of (print "inner"))})) (cond {(output-of (write "")) :empty} {T :not-empty}))
+(fun {f x} {try (cond {(> x 0) (print "pos")} {(< x 0) (error "neg")} {T (error "zero")}) (+ "f:" &err)})
+(print (map f {1 -1 0}))
+(fun {g x} {output-of (case x {1 (write "one")} {2 (do (write "two") (error "two!"))} {3 (write "three")})})
+(print (try (g 1) &err) (try (g 2) &err) (try (g 3) &err) (try (g 4) &err))
+(print (try (cond {T (try (cond {NIL 1}) (cond {T &err}))}) :outer))
+(print (cond {(try (case 1 {2 3}) NIL) :a} {(try (case 1 {1 (error "x")}) T) :b}))
+(print "the last: an error from a value, through try's handler")
+(try (cond {NIL 1} {T (error "first")}) (cond {NIL 1} {T (error (+ "second, after " &err))}))

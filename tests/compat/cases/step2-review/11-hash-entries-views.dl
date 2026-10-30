@@ -1,0 +1,42 @@
+; 11-hash-entries-views.dl - hashes given entries that are views or conses of other lists (hash-put's entry is its own
+; copy, its value evaluated; hash-create's and to#'s entries; hash-clone's overrides), lists that share storage kept
+; as values in a hash and got back, consed onto, joined onto; from# made into lists, and their views; each hash and
+; each list printed again after
+
+(def {raw} (list 0 :a 1 :tag))
+(def {e1} (tail raw))
+(def {e2} (cons :b (drop 2 raw)))
+(def {e3} (cons :c (cons 3 NIL)))
+(def {h} (hash-create))
+(print (hash-put h e1) (hash-put h e2) (hash-put h e3) h raw e1 e2 e3)
+(print (hash-put h (cons :d (tail e3))) (hash-put h (join (init e1) [42])) h e1 e3)
+(print (hash-put h [:e (list 1 2)] [:f (tail (range 4))]) h)
+
+; lists as values: the same list's views and conses in many entries
+(def {base} (range 6))
+(def {vals} [(tail base) (cons :x base) (cons :y base) (drop 3 base) (take 2 base) base])
+(def {h2} (to# (map (fn {i} {[(nth i {:p :q :r :s :t :u}) (nth i vals)]}) (range 6))))
+(print h2 (hash-keys h2))
+(print (map (fn {k} {cons :got (h2 k)}) (hash-keys h2)))
+(print (map (fn {k} {join (h2 k) [:end]}) (hash-keys h2)))
+(print h2 base vals)
+
+; hash-clone with overrides that are views
+(def {ov} (cons {:q 99} (cons {:z 7} NIL)))
+(def {h3} (hash-clone h2 ov (tail {ignored {:w 1}})))
+(print h3 h2 ov)
+(def {h4} (hash-clone h2 (drop 1 ov)))
+(print h4 (hash-keys h4) (hash-values h4))
+
+; from#: a list of entries, then views of it consed onto and made a hash again
+(def {fh} (from# h))
+(print fh (len fh))
+(def {fh2} (to# (cons {:new 1} (tail fh))))
+(def {fh3} (to# (cons {:new2 2} (tail fh))))
+(print fh2 fh3 fh)
+(print (hash-get fh2 :new) (hash-get fh3 :new) (hash-get fh3 :new2) (fh2 :c))
+
+; a hash's values changed (put again), the lists that had them unchanged
+(def {lst} (h2 :q))
+(hash-put h2 {:q (cons :changed lst)})
+(print lst (h2 :q) (hash-get h2 :p) vals)

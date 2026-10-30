@@ -1,0 +1,10 @@
+--- stdout
+300
+{0 0 0 0 0 T NIL 1 0 0 NIL NIL NIL T 1/2 0 NIL T NIL 0 {0 0} {0 1} {1 2} {1 2 0} T 0 5 :even :zero}
+{21 -21 38 4 -22 NIL T 128 22801 3442951 T T NIL T 76 1 T NIL T 4 {151 151} {1} {0 2 0} {0 2 0} T 5 151 :odd :one}
+{42 -42 75 5 -43 NIL T 4 89401 26730899 T T NIL T 150 1 NIL NIL NIL 5 {299 299} {2 1} {0 1 0} {0 1 0} T 5 299 :odd :two}
+6279
+--- stderr
+Error: 13-plan-churn.dl: The function takes 2 arguments, not 3
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+--- exit 1

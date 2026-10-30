@@ -1,0 +1,34 @@
+; 05-methods: a hash's functions called as methods: one whose body names &0 (a copy with &0 bound: its Env), one
+; whose body doesn't (the function itself), with formals named &0 or &1, with extras, partially applied (a method's
+; partial application, then the rest), through hash-call, and a method made from a partial application
+(def {o} #({
+  {:self (fn {} {&0})}
+  {:keys (fn {x} {list x (len (hash-keys &0))})}
+  {:plain (fn {x y} {list x y})}
+  {:plain-ex (fn {x} {list x &_})}
+  {:f0 (fn {&0 y} {list &0 y})}
+  {:f1 (fn {&1 y} {list &1 y &_ (len (hash-keys &0))})}
+  {:dup (fn {x x} {list x (len (hash-keys &0))})}
+  {:part ((fn {a b c} {list a b c (len (hash-keys &0))}) :pa)}
+  {:part0 ((fn {a b} {list a b (hash-keys &0)}))}
+  {:ex (fn {x} {list x &_ &1 (len (hash-keys &0))})}
+  {:secret 42 :__private}
+  {:peek (fn {} {&0 :secret})}}))
+(print "self" (len (hash-keys (o :self))) (o :keys 1) (o :plain 1 2) (o :plain-ex 1 2 3))
+(print "f0" (o :f0 7 8) ((o :f0 7) 8) (o :f1 1 2) (o :f1 1 2 3) ((o :f1 1) 2 3))
+(print "dup" (o :dup 1 2) ((o :dup 1) 2) (try (o :dup 1 2 3) &err))
+(print "part" (o :part :pb :pc) ((o :part :pb) :pc) ((o :part0 1) 2) (o :part0 1 2))
+(print "ex" (o :ex 1) (o :ex 1 2 3) (try (o :plain 1 2 3) &err) (o :peek))
+(print "hash-call" (hash-call o :keys 5) (hash-call o :f1 :a :b :c) ((hash-call o :plain 1) 2))
+(print "repr" (repr (o :keys)) (repr (o :plain)) (repr (o :f0 1)) (repr (o :part)))
+; methods called many times (the same code each time), then the hash changed under them
+(def {total} 0)
+(dotimes {i 300} (set! {total} (+ total (snd (o :keys i)) (fst (o :f0 i 0)) (fst (o :plain i 1)))))
+(print "many" total)
+(hash-put o {:extra 1})
+(print "changed" (o :keys 1) ((o :keys) 2))
+; a method that is a fexpr, and one that is a built-in
+(def {o2} #({{:fx (fexpr {a} {list a (eval a) (len (hash-keys &0))})} {:bi +} {:bip (+ 1)}}))
+(print "o2" (o2 :fx (+ 1 2)) (o2 :bi 1 2 3) (o2 :bip 10))
+; the last: a method given too many
+(o :keys 1 2)

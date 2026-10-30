@@ -1,0 +1,60 @@
+; 06-loop-errors.dl - errors in loop bodies: the first stops the loop (the rest of that body too), and is the loop's
+; value; what ran before it stays done; a body expression that's a name whose value is an error stops it too; set and
+; print take an error as a value (no stop); try around a loop, and inside its body (the loop goes on); the error that
+; ends the program, from loops nested in functions: its message and trace
+
+(def {log} {})
+(fun {note x} {def {log} (join log (list x))})
+
+(print (each {x {1 2 3 4}} (note x) (if (eq x 3) (error (+ "each stopped at " x))) (note (* x 10))))
+(print log)
+(def {log} {})
+(print (dotimes {i 10} (note i) (+ i (if (eq i 2) :not-a-number 0)) (note :after)))
+(print log)
+(def {log} {})
+(print (each (fn {x} {if (eq x :b) (error "fn form stopped at :b") (note x)}) {:a :b :c}))
+(print log)
+(print (dotimes 5 (fn {i} {if (eq i 1) (/ 1 0) i})))
+
+; a body expression that is a name bound to an error stops the loop; set binds the error, print shows it
+(print (each {x {1 2 3}} =(v (if (eq x 2) (error "bound as a value") x)) (print "  v is" v) v (print "  after v" v)))
+(print (dotimes {i 3} (print "print shows" (if (eq i 1) (error "shown, not stopping") i))))
+
+; an error in a Q-expression body
+(print (each {x {1 2}} {print "q body" x} {error "q stopped"} {print "not reached"}))
+
+; try around a loop: the handler's value; inside the body: the loop goes on
+(print (try (dotimes {i 5} (if (eq i 3) (error "caught outside") (write i))) (+ " handler got: " &err)))
+(print (each {x {1 0 2 0 4}} (write (try (/ 12 x) :div0) " ")))
+(print)
+(def {found} NIL)
+(print (try (each {x {3 5 8 9 10}} (if (eq (mod x 2) 0) (do (def {found} x) (error "break")))) &err) found)
+
+; an error in a nested loop stops the outer one too
+(print (each {x {:a :b}} (dotimes {i 3} (write x i " ") (if (and (eq x :b) (eq i 1)) (error "inner stopped outer")))))
+
+; while: an error from the test or the body after a few runs
+(def {k} 0)
+(print (while (< k 10) (set! {k} (+ k 1)) (if (eq k 4) (error (format "while stopped, k={}" k)))) k)
+
+; errors made by built-ins inside loops: their messages
+(print (each {s {"ab" 5}} (str-upper s)))
+(print (dotimes {i 3} (char-at "ab" i)))
+(print (each {x {1 2}} (undefined-function x)))
+(print (each {x {1 2}} (x)))
+(print (each {x {1 2}} (x 1)))
+
+; error-message and the error's kind, of a loop's value
+(def {err} (dotimes {i 2} (error "kept")))
+(print (error? err) (type-of err) (error-message err) (repr err))
+
+; the error that ends the program: from loops in functions, the calls it was in
+(fun {check-item x} {if (eq x 2) (error (+ "bad item " x)) (* x 10)})
+(fun {walk l} {
+  each {x l}
+    (print "item" x)
+    (dotimes {j 2} (print "  j" j) (check-item (+ x j)))
+})
+(fun {outer} {do (walk {0 1 2}) (print "not reached")})
+(outer)
+(print "never printed")

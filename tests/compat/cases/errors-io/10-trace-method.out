@@ -1,0 +1,33 @@
+--- stdout
+ann 100 110 80 80
+Error: hash-get error: cannot access private hash entry
+Error: not an amount: "ten"
+:amount :funds
+Error: overdrawn 80
+Error: :owner isn't a method: its value isn't a function
+NIL Error: :nothing isn't a method: its value isn't a function
+3 <function>(fn {b} {+ a b}) 3 Error: The function takes 2 arguments, not 3
+85 Error: Second parameter to 'hash-call' must be a key to a member function <function>(fn {n} {if (num? n) (do (hash-put &0 (list :balance (+ (&0 :balance) n))) (&0 :balance)) (error (+ "not an amount: " (repr n)) :amount)})
+Error: Second parameter to 'hash-call' must be a key to a member function
+Error: the key is an error
+Error: the argument is an error
+{"overdrawn" :funds}
+{11 12 13}
+85
+5 {1 2} 3 Error: :n isn't a method: its value isn't a function
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+2:7 1:7 7
+3:7 2:7 1:7 NIL
+5:7 4:7 3:7 2:NIL Error: :down isn't a method: its value isn't a function
+7
+the last: an error in a method, called through &0 by another method
+total: 2
+26
+total: 2
+--- stderr
+Error: 10-trace-method.dl: All parameters to operator '*' must be numbers.
+  at 10-trace-method.dl:48  {* (fst s) (snd s)}
+  called at 10-trace-method.dl:49  (&0 :area s)
+  called at 10-trace-method.dl:50  (&0 :total l)
+  called at 10-trace-method.dl:53  (shapes :report {{2 3} {4 :five}})
+--- exit 1

@@ -1,0 +1,24 @@
+--- stdout
+{:a :b :c} {:c} NIL 0 T T :list
+NIL 'tail' passed an empty list 'init' passed an empty list 'end' passed an empty list 'head' passed an empty list
+:c Error: 'nth': the list has no such item Error: 'nth': the list has no such item :c Error: 'item-at': the list has no item 1 Error: 'item-at': the list has no item 3 Error: 'nth': the list has no such item Error: 'nth': the list has no such item Error: 'nth': the list has no such item
+NIL Error: 'subset': the list has no item 4 Error: 'subset': a count can't be negative NIL NIL {:c} Error: 'subset': the list has no item -1
+Error: 'take': a count can't be negative Error: 'drop': a count can't be negative Error: 'take': a count must be a whole number, not 2.5 Error: 'drop': a count must be a whole number, not 1/2 {:a :b} {:c} {:c} NIL
+{:a :b :c} NIL NIL NIL
+Error: 'cons' expects a list second Error: 'cons' expects a list second Error: Invalid parameter passed to 'join'.  Expected QExpr. Error: Invalid parameter passed to 'join'.  Expected QExpr. Error: 'reverse' expects a QExpr or a String Error: 'sort' expects a QExpr Error: 'len' requires parameter of type string, list, hash or buffer Error: 'take' expects a list Error: 'drop' expects a list
+Error: inner Error: first Error: e Error: in map
+Error: in filter Error: in foldl Error: less
+{{:a :c}} Error: 'fst' expects a list Error: 'fst' expects a list NIL NIL {{:b :a} {:c :b}}
+{:a :c} {:b :c} {:a :b :c} Error: 'fst' expects a list {:a :b} Error: 'fst' expects a list
+{:a :b :c} Error: 'fst' expects a list {:a :b :c :c 5} Error: 'fst' expects a list T Error: 'elem?' expects a list
+:c :c <function>(min) {3 2} {1} 3
+{:a :b :c} {:c} NIL
+Error: kept Error: kept2 Error: kept Error: kept2 {:a :b :c}
+NIL
+outer
+--- stderr
+Error: 08-errors-on-views.dl: 'tail' passed an empty list
+  at 08-errors-on-views.dl:32  (tail x)
+  called at 08-errors-on-views.dl:34  (walk (drop 1 l) 3)
+  called at 08-errors-on-views.dl:35  (outer)
+--- exit 1

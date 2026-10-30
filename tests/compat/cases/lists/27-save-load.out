@@ -1,0 +1,40 @@
+--- stdout
+{1 "two" \3 :four five {six (seven) {8}} NIL "q\"uote\n" \space 1/2 1.25 -7 NIL {NIL} NIL}
+{1 "two" \3 :four five {six (seven) {8}} {} "q\"uote\n" \space 1/2 1.25 -7 {} {{}} ()}
+NIL
+"{1 \"two\" \\3 :four five {six (seven) {8}} {} \"q\\\"uote\\n\" \\space 1/2 1.25 -7 {} {{}} ()}\n"
+{1 "two" \3 :four five {six (seven) {8}} NIL "q\"uote\n" \space 1/2 1.25 -7 NIL {NIL} NIL} T {:number :string :char :atom :symbol :list :list :string :char :number :number :number :list :list :sexpr}
+{T T T T T T T T T T T T T T T}
+Error: File exists but neither ':append' nor ':overwrite' were specified
+NIL
+{"{1 \"two\" \\3 :four five {six (seven) {8}} {} \"q\\\"uote\\n\" \\space 1/2 1.25 -7 {} {{}} ()}" "{more}"}
+{more}
+NIL
+{"{replaced}"} {replaced}
+NIL {"{1 2}"}
+{1 2} :list
+{1+2i 1i 3}
+
+{1+2i 1i 3} {:number :number :number} T
+{<function>(fn {x} {* x 2}) <function>(+) 1 <function>(take 1)}
+
+Error: fns.dl:1: '<function>' touches '(': put a space between them
+"{}\n" NIL "{{} {{}} (())}\n" {NIL {NIL} (NIL)}
+"#({{:l {1 2}} {:s \"x\"}})\n" <hash>{{:l {1 2}} {:s "x"}} {1 2}
+{#({{:a {1}}}) #({{:b 2}})}
+
+{(hash-create {{:a {1}}}) (hash-create {{:b 2}})}
+{(+ 1 2) {(* 2 3)}}
+ {(+ 1 2) {(* 2 3)}} Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+(+ 40 2)
+ 42
+NIL {made by load}
+Error: no-such-dir/x.dl: not found
+Error: Second parameter to 'save' must be a string
+Error: Parameters 3+ for function 'save' must be atoms
+Error: not saved
+NIL Error: x.dl: not found
+{"27-save-load.dl" "code.dl" "complex.dl" "data.dl" "def.dl" "empty.dl" "fns.dl" "hash.dl" "hashes.dl" "nested.dl" "sexpr.dl"}
+--- stderr
+
+--- exit 0

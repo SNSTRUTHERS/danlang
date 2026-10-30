@@ -1,0 +1,42 @@
+; 02-lib-not-plain: the library's number functions given numbers that are whole but not plain integers (2.0, a sum of
+; fixed decimals, (* 1.5 2)), rationals (4/2 reads as an integer, 7/2 doesn't), complex numbers and mixtures: each
+; value with its kind, so a fast path that takes "an integer" too widely (or too narrowly) shows.
+(fun {kind x} {?((int? x) :int ?((fixed? x) :fixed ?((rational? x) :rat ?((complex? x) :complex (type-of x)))))})
+(fun {sk x} {list (repr x) (kind x)})
+
+; the values themselves: what they are
+(def {i1 i2 c11 c12} (complex 0 1) (complex 0 2) (complex 1 1) (complex 1 2))
+(def {vals} [2.0 (+ 1.5 0.5) (* 1.5 2) 4/2 (/ 4 2) 7/2 -7/2 2.5 -2.5 0.0 -0.0 (- 3.0 3) c12 (complex 4 0) 10.00 3])
+(print (map sk vals))
+
+; mod, div, divmod with each as the dividend, and as the divisor
+(each {x vals} (print (repr x) "mod 2" (sk (mod x 2)) "div 2" (sk (div x 2)) "divmod 2" (divmod x 2)))
+(each {x [2.0 4/2 2.5 -2.5 3/2 1.0]} (print "7 by" (repr x) (sk (mod 7 x)) (sk (div 7 x)) (sk (% -7 x))))
+(print (mod 7 0.0) (div 7 0.0) (mod 7.0 0) (mod c12 2) (div 2 i1))
+
+; even? and odd?: of whole numbers that aren't plain, and of numbers that aren't whole
+(each {x [2.0 3.0 4/2 (* 2.5 2) 0.0 1.5 3/2 -3/2 -2.0 c11 i2 (complex 4 0)]}
+  (print (repr x) (even? x) (odd? x) (=0 (mod x 2)) (sk (mod x 2))))
+
+; floor, ceil, round, trunc of each
+(each {x [2.0 2.5 -2.5 2.4999 -2.5001 7/2 -7/2 10.00 0.5 -0.5 1/3 -1/3 (* 1.5 2)]}
+  (print (repr x) (sk (floor x)) (sk (ceil x)) (sk (round x)) (sk (trunc x))))
+(print (floor c12) (ceil i2) (round i1))
+
+; pow: whole powers that aren't plain, bases of each kind
+(each {p [[2 3.0] [2 6/2] [2.0 3] [1.5 2] [0.5 3] [1/2 3] [-1/2 3] [2 -2.0] [2.5 -2] [c11 2] [i1 4] [i1 3]
+          [2 0.0] [0.0 0] [10.0 2] [4/2 4]]}
+  (print "pow" (repr (fst p)) (repr (snd p)) (sk (pow (fst p) (snd p)))))
+(print (pow 2 2.5) (pow 2 i1) (pow 2 :a) (pow :a 2))
+
+; square, cube, recip, 1+, 1-, abs of each kind
+(each {x [2.0 1.5 7/2 -7/2 c11 i2 (* 1.5 2)]}
+  (print (repr x) (sk (square x)) (sk (cube x)) (sk (recip x)) (sk (1+ x)) (sk (1- x)) (sk (abs x))))
+
+; comparisons against zero (the library's >0 ... and the built-ins), of each kind
+(each {x [0.0 -0.0 0/5 1.5 -1/2 i2 (complex 1 0)]}
+  (print (repr x) (>0 x) (<0 x) (>=0 x) (<=0 x) (!=0 x) (=0 x) (zero? x) (pos? x) (neg? x) (positive? x) (negative? x)))
+
+; sums and products of the kinds (the library's sum and product, built in) and avg
+(print (sk (sum [1 2.0 3])) (sk (sum [1 1/2 1/2])) (sk (product [2 2.5])) (sk (avg [1 2 3 4])) (sk (avg [2.0 4]))
+  (sk (avg [1/2 3/2])) (sk (sum [i1 (complex 0 -1)])) (sk (fdiv 7 2)) (sk (fdiv 1 3 4)) (sk (fdiv 1.5 0.5)) (sk (frecip 8)))

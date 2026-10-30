@@ -1,0 +1,302 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f2)))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f2)))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f3) (list f...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f3) (list f...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f3) (list f...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f3) (list f...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f3) (list f...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f3) (list f...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list floor 7/2 f3) (list floor -7/2 f3) (list f...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (d (list (list ceil 7/2 f2)))
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (d (list (list ceil 7/2 f3) (list ceil -7/2 f2)))
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (d (list (list ceil 7/2 f3) (list ceil -7/2 f3) (list cei...
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (d (list (list ceil 7/2 f3) (list ceil -7/2 f3) (list cei...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (d (list (list ceil 7/2 f3) (list ceil -7/2 f3) (list cei...
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (d (list (list ceil 7/2 f3) (list ceil -7/2 f3) (list cei...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (d (list (list ceil 7/2 f3) (list ceil -7/2 f3) (list cei...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list round 5/2 f2)))
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (d (list (list round 5/2 f3) (list round -5/2 f2)))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list round 5/2 f3) (list round -5/2 f3) (list r...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list round 5/2 f3) (list round -5/2 f3) (list r...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (d (list (list round 5/2 f3) (list round -5/2 f3) (list r...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list round 5/2 f3) (list round -5/2 f3) (list r...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (d (list (list round 5/2 f3) (list round -5/2 f3) (list r...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list div 7 2 f2)))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list div 7 2 f3) (list div -7 2 f2)))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list div 7 2 f3) (list div -7 2 f3) (list div 8...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list div 7 2 f3) (list div -7 2 f3) (list div 8...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list div 7 2 f3) (list div -7 2 f3) (list div 8...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (d (list (list div 7 2 f3) (list div -7 2 f3) (list div 8...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d (list (list div 7 2 f3) (list div -7 2 f3) (list div 8...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f2)))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f3) (list even? 4 f2)))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f3) (list even? 4 f3) (list even?...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f3) (list even? 4 f3) (list even?...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f3) (list even? 4 f3) (list even?...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f3) (list even? 4 f3) (list even?...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (d (list (list even? -3 f3) (list even? 4 f3) (list even?...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 0 f2)))
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 0 f3) (list pow 2 1 f2)))
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 0 f3) (list pow 2 1 f3) (list pow 2 ...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 0 f3) (list pow 2 1 f3) (list pow 2 ...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 0 f3) (list pow 2 1 f3) (list pow 2 ...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 0 f3) (list pow 2 1 f3) (list pow 2 ...
+  at line 1  (g x y)
+  called at line 1  (d (list (list pow 2 0 f3) (list pow 2 1 f3) (list pow 2 ...
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (d (list (list starts-with? "abc" "a" f2)))
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (d (list (list starts-with? "abc" "a" f3) (list starts-wi...
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (d (list (list starts-with? "abc" "a" f3) (list starts-wi...
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (d (list (list starts-with? "abc" "a" f3) (list starts-wi...
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (d (list (list starts-with? "abc" "a" f3) (list starts-wi...
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (d (list (list starts-with? "abc" "a" f3) (list starts-wi...
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (d (list (list ends-with? "abc" "bc" f2)))
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (d (list (list ends-with? "abc" "bc" f3) (list ends-with?...
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (d (list (list ends-with? "abc" "bc" f3) (list ends-with?...
+  at <BUNDLE>\lib\globals.dl:191  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (d (list (list ends-with? "abc" "bc" f3) (list ends-with?...
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (d (list (list ends-with? "abc" "bc" f3) (list ends-with?...
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (d (list (list between? 1 10 5 f2)))
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (d (list (list between? 1 10 5 f3) (list between? 10 1 5 ...
+  at <BUNDLE>\lib\globals.dl:246  (>= &3 &1)
+  called at line 1  (d (list (list between? 1 10 5 f3) (list between? 10 1 5 ...
+  at <BUNDLE>\lib\globals.dl:246  (>= &3 &1)
+  called at line 1  (d (list (list between? 1 10 5 f3) (list between? 10 1 5 ...
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (d (list (list between? 1 10 5 f3) (list between? 10 1 5 ...
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (d (list (list between? 1 10 5 f3) (list between? 10 1 5 ...
+  at <BUNDLE>\lib\globals.dl:246  (<= &3 &2)
+  called at line 1  (d (list (list between? 1 10 5 f3) (list between? 10 1 5 ...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (d (list (list ?? 1 f2)))
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (d (list (list ?? 1 f3) (list ?? NIL f2)))
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (d (list (list ?? 1 f3) (list ?? NIL f3) (list ?? NIL 2 f...
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (d (list (list ?? 1 f3) (list ?? NIL f3) (list ?? NIL 2 f...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (d (list (list ?? 1 f3) (list ?? NIL f3) (list ?? NIL 2 f...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (d (list (list ?? 1 f3) (list ?? NIL f3) (list ?? NIL 2 f...
+  at <BUNDLE>\lib\globals.dl:215  (eq f hd)
+  called at line 1  (d (list (list remove-fst 1 {1 2} f2)))
+  at <BUNDLE>\lib\globals.dl:217  (cons hd (remove-fst f tl))
+  called at line 1  (d (list (list remove-fst 1 {1 2} f3) (list remove-fst 2 ...
+  at <BUNDLE>\lib\globals.dl:209  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (d (list (list remove-fst 1 {1 2} f3) (list remove-fst 2 ...
+  at <BUNDLE>\lib\globals.dl:215  (eq f hd)
+  called at line 1  (d (list (list remove-fst 1 {1 2} f3) (list remove-fst 2 ...
+  at <BUNDLE>\lib\globals.dl:217  (cons hd (remove-fst f tl))
+  called at line 1  (d (list (list remove-fst 1 {1 2} f3) (list remove-fst 2 ...
+  at <BUNDLE>\lib\globals.dl:215  (eq f hd)
+  called at line 1  (d (list (list remove-fst 1 {1 2} f3) (list remove-fst 2 ...
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-all f tl))
+  called at line 1  (d (list (list remove-all 1 {1 2} f2)))
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (d (list (list remove-all 1 {1 2} f3) (list remove-all 1 ...
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (d (list (list remove-all 1 {1 2} f3) (list remove-all 1 ...
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-all f tl))
+  called at line 1  (d (list (list remove-all 1 {1 2} f3) (list remove-all 1 ...
+  at <BUNDLE>\lib\globals.dl:225  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (d (list (list remove-all 1 {1 2} f3) (list remove-all 1 ...
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (d (list (list flatten {{1} 2} f2)))
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (d (list (list flatten {{1} 2} f3) (list flatten {1 {2}} ...
+  at <BUNDLE>\lib\globals.dl:82  {if l (if (qexpr? (fst l)) (join (flatten (fst l)) (flatt...
+  called at line 1  (d (list (list flatten {{1} 2} f3) (list flatten {1 {2}} ...
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (d (list (list flatten {{1} 2} f3) (list flatten {1 {2}} ...
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (d (list (list flatten {{1} 2} f3) (list flatten {1 {2}} ...
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (d (list (list flatten {{1} 2} f3) (list flatten {1 {2}} ...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (d (list (list zip {1 2} {3 4} f2)))
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  called at line 1  (d (list (list zip {1 2} {3 4} f3) (list zip NIL {3} f2)))
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  called at line 1  (d (list (list zip {1 2} {3 4} f3) (list zip NIL {3} f3) ...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (d (list (list zip {1 2} {3 4} f3) (list zip NIL {3} f3) ...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (d (list (list zip {1 2} {3 4} f3) (list zip NIL {3} f3) ...
+  at <BUNDLE>\lib\globals.dl:25  (not (and a b))
+  called at line 1  (d (list (list xor T NIL f2)))
+  at <BUNDLE>\lib\globals.dl:25  (or a b)
+  called at line 1  (d (list (list xor T NIL f3) (list xor NIL NIL f2)))
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (d (list (list xor T NIL f3) (list xor NIL NIL f3) (list ...
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (d (list (list xor T NIL f3) (list xor NIL NIL f3) (list ...
+  at <BUNDLE>\lib\globals.dl:25  (or a b)
+  called at line 1  (d (list (list xor T NIL f3) (list xor NIL NIL f3) (list ...
+--- exit 0

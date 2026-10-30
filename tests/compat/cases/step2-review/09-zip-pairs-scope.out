@@ -1,0 +1,65 @@
+--- stdout
+run 0
+{print print print print print}
+{b a b a}
+{print print print}
+{b a}
+{print}
+run 1
+{print print print print print}
+{b a b a}
+{print print print}
+{b a}
+{print}
+run 2
+{print print print print print}
+{b a b a}
+{print print print}
+{b a}
+{print}
+views 0
+{<function>(print) <function>(print) <function>(print) <function>(print)}
+{b b a}
+{b a}
+{<function>(print)}
+{b b a}
+{b a}
+{<function>(print)}
+views 1
+{<function>(print) <function>(print) <function>(print) <function>(print)}
+{b b a}
+{b a}
+{<function>(print)}
+{b b a}
+{b a}
+{<function>(print)}
+views 2
+{<function>(print) <function>(print) <function>(print) <function>(print)}
+{b b a}
+{b a}
+{<function>(print)}
+{b b a}
+{b a}
+{<function>(print)}
+{<function>(print) <function>(print) <function>(print)} {<function>(print) <function>(print) <function>(print) <function>(print)} {<function>(print) <function>(print) <function>(print) <function>(print)} {a b b a}
+{{<function>(print) a} {<function>(print) b} {<function>(print) b} {<function>(print) a}} {{<function>(print) a} {<function>(print) b} {<function>(print) b} {<function>(print) a}} T 4
+{<function>(print)}
+{b a}
+{b b a}
+{<function>(print) <function>(print) <function>(print) <function>(print)}
+Error: Unbound Symbol 'a'
+Error: Unbound Symbol 'b'
+Error: Unbound Symbol 'b'
+Error: Unbound Symbol 'a'
+{<function>(print) <function>(print) <function>(print) <function>(print)}
+{b b a}
+Error: Unbound Symbol 'a' {NIL NIL}
+0 201 {50 -1} {250 199} 30150 19899
+1 201 {50 -1} {250 199} 30150 19899
+2 201 {50 -1} {250 199} 30150 19899
+3 201 {50 -1} {250 199} 30150 19899
+300 44850 250 201
+201 {{50 -1} {-1 50}} {{250 199} {199 250}}
+--- stderr
+
+--- exit 0

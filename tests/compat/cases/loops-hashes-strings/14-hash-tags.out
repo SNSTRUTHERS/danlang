@@ -1,0 +1,61 @@
+--- stdout
+1 1 3 <hash>{{:a 10} {:b 2}}
+make-private: T T NIL NIL
+Error: hash-get error: cannot access private hash entry
+Error: hash-get error: cannot access private hash entry
+Error: hash-put error: cannot access private hash entry
+Error: hash-remove error: cannot access private hash entry
+T 2 {:a :b} {10 2} <hash>{{:a 10 :__private} {:b 2}}
+make-not-nil: T T
+Error: Cannot set non-nillable field :b to NIL.
+2 20 <hash>{{:a 10 :__private}}
+lock: T T NIL
+Error: hash-put error: cannot add new entries to a locked hash
+2 21 <hash>{{:a 10 :__private} {:b NIL} {:d 4} :__locked} {:a :b :d} 3 T NIL
+Error: hash-remove error: cannot remove an entry from a locked hash
+NIL
+make-const: T T
+Error: hash-put error: cannot modify read-only hash
+Error: hash-put error: cannot modify read-only hash
+Error: hash-remove error: cannot modify read-only hash
+Error: hash-remove error: cannot modify read-only hash
+T <hash>{{:a 10 :__private} {:b NIL} {:d 4} :__locked :__read-only :still-taggable}
+T T NIL NIL
+Error: hash-put error: cannot modify read-only hash entry
+Error: hash-put error: cannot modify read-only hash entry
+Error: hash-remove error: cannot remove an entry from a locked hash
+2 5 <hash>{{:ro 1 :__read-only} {:lk NIL :__locked} {:free 3}} {:ro :lk :free}
+NIL <hash>{{:ro 1 :__read-only} {:free 3}}
+3 <hash>{{:ro 1 :__read-only}}
+1 Error: hash-get error: cannot access private hash entry
+T Error: hash-put error: cannot modify read-only hash entry
+NIL Error: hash-put error: cannot add new entries to a locked hash T
+{T NIL} Error: hash-get error: cannot access private hash entry
+{T T} Error: hash-put error: cannot modify read-only hash entry Error: hash-put error: cannot modify read-only hash entry
+Error: hash-get error: cannot access private hash entry
+T NIL NIL T
+{T T T} <hash>{{:k 1 :etag :e2} :first :second :x :y} {{:k 1 :etag :e2} :first :second :x :y}
+T NIL T T NIL
+NIL NIL NIL NIL NIL NIL
+Error: Key :none not found when looking up tag for hash entry
+Error: Invalid tag value
+Error: Invalid tag value
+Error: Invalid tag value
+Error: First parameter to 'hash-tag?' must be a hash
+Error: Failed to add tag: invalid parameters 5
+Error: hash-add-tag failed: entry not found
+Error: A tag must be an atom, not 5
+Error: Failed to add tag: invalid parameters {:k :a :b}
+Error: Failed to add tag: invalid parameters "str"
+Error: First parameter to 'hash-add-tag' must be a hash
+Error: Key :none not found when looking up tag for hash entry
+Error: First parameter to 'hash-private?' must be a hash
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: hash-add-tag failed: entry not found
+Error: hash-add-tag failed: entry not found
+Error: First parameter to 'hash-add-tag' must be a hash
+Error: A tag must be an atom, not "tag"
+Error: A tag must be an atom, not 5 NIL
+--- stderr
+
+--- exit 0

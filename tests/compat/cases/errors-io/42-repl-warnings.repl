@@ -1,0 +1,33 @@
+; flags: -w
+(print "a REPL with warnings: each says the line of its input (\"line N\": the REPL's code has no file)")
+(def {len} (fn {x} {:my-len}))
+(len {1 2})
+(fun {fst l} {:my-fst})
+(fst {1})
+(def {my-value} 1)
+(fun {my-value} {2})
+(def {my-value}
+  (fn {} {3}))
+(def {my-value}
+  :back-to-a-value)
+(do
+  (print "the def on this input's second line")
+  (def {my-value} (fn {} {4})))
+(fun {my-fn} {1})
+(fun {my-fn} {2})
+(def {a b c} 1 (fn {} {2}) 3)
+(set {head} 1)
+head
+(fun {define-inside} {def {tail} :tail-replaced})
+(define-inside)
+tail
+(write-file "w.dl" "; w.dl\n\n(def {init} 5)\n")
+(load "w")
+init
+(mod 7 2)
+(def {floor} (fn {x} {:my-floor}))
+(mod 7 2)
+(div 7 2)
+(fun {print x} {write "my print: " x "\n"})
+(print "through the new print")
+exit

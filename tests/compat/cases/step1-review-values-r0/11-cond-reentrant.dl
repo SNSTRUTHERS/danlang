@@ -1,0 +1,13 @@
+; 11-cond-reentrant: cond and case whose clause tests call the same function again, so the same clause code is run
+; inside itself, in another call's scope, before its first run is done; the values each level sees are its own
+(def {log} {})
+(fun {note x} {def {log} (join log (list x))})
+(fun {f n} {cond {(do (note (list :test n)) (if (> n 0) (f (- n 1))) (== n 2)) (do (note (list :two n)) :two)} {T (do (note (list :else n)) n)}})
+(print (map (fn {i} {f 3}) {1 2 3}) log)
+(def {log} {})
+(fun {g n} {case (if (> n 0) (g (- n 1)) 0) {0 (do (note (list :zero n)) 1)} {1 (do (note (list :one n)) 2)} {2 :two} {:two (do (note (list :from-two n)) n)} {n :n}})
+(print (map (fn {i} {g 3}) {1 2 3}) log)
+(fun {h n} {cond {(> n 0) (h (- n 1))} {(== n 0) (cond {(f 1) :inner})}})
+(print (map (fn {i} {h 4}) {1 2 3}))
+(fun {k n acc} {case n {0 acc} {n (k (- n 1) (cons (cond {(even? n) :e} {T :o}) acc))}})
+(print (map (fn {i} {k 6 NIL}) {1 2 3}))

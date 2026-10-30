@@ -1,0 +1,30 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 1
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> exit
+--- stderr
+  at line 1  (&1 v (g))
+  called at line 1  (probe)
+  at line 1  (&1 v (g))
+  called at line 1  (probe)
+  at line 1  (&1 v (g))
+  called at line 1  (probe)
+--- exit 0

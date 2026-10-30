@@ -1,0 +1,68 @@
+; 21-partials-redefined: partial applications of library functions, and the functions kept in a list, a hash (as
+; methods) and a closure, made before a global their code uses is redefined, called while it is and after it's put
+; back: each call runs the library's code with the globals as they are at that moment (floor, eq, cons, index-of,
+; and, *); calls of the functions by name beside them, every value printed.
+(def {m7} (mod 7))
+(def {d7} (div 7))
+(def {dm7} (divmod 7))
+(def {p2} (pow 2))
+(def {z12} (zip {1 2}))
+(def {k2} case)
+(def {rf1} (remove-fst 1))
+(def {ra1} (remove-all 1))
+(def {sw} (starts-with? "abc"))
+(def {ct} (contains? "abc"))
+(def {x1} (xor 1))
+(def {kept} (list mod floor round even? distinct square))
+(def {h} #({{:m mod} {:r round} {:e even?}}))
+(fun {mk} {fn {x} {list (mod x 3) (odd? x)}})
+(def {c} (mk))
+(def {all-codes} {{m7 2} {d7 2} {dm7 2} {p2 10} {p2 7} {z12 {:a :b}} {k2 2 {1 :one} {2 :two}} {rf1 {2 1 1}} {ra1 {1 2 1}}
+  {sw "ab"} {ct "z"} {x1 NIL} {(fst kept) 7 2} {(snd kept) 5/2} {(thd kept) 5/2} {(nth 3 kept) 4} {(nth 4 kept) {1 1 2}}
+  {(nth 5 kept) 3} {h :m 7 2} {h :r -5/2} {h :e 3} {c 7}})
+(def {name-codes} {{mod 7 2} {div 7 2} {divmod 7 2} {pow 2 10} {zip {1 2} {:a :b}} {case 2 {1 :one} {2 :two}}
+  {remove-fst 1 {2 1 1}} {remove-all 1 {1 2 1}} {starts-with? "abc" "ab"} {xor 1 NIL} {round 5/2} {even? 4} {cube 3}})
+(fun {run-all codes} {map (fn {cd} {try (eval cd) (list :error &err)}) codes})
+(fun {all} {run-all all-codes})
+(fun {by-name} {run-all name-codes})
+(print "before" (all))
+(print "by name" (by-name))
+
+(def {saved} floor)
+(fun {floor a} {list :new-floor a})
+(print "floor new" (all))
+(print "by name" (by-name))
+(def {floor} saved)
+(print "floor back" (all))
+
+(def {saved} eq)
+(def {eq} (fn {a b} {T}))
+(print "eq new" (all))
+(print "by name" (by-name))
+(def {eq} saved)
+(print "eq back" (all))
+
+(def {saved} cons)
+(def {cons} (fn {x l} {join l (list :consed x)}))
+(print "cons new" (all))
+(print "by name" (by-name))
+(def {cons} saved)
+(print "cons back" (all))
+
+(def {saved} index-of)
+(def {index-of} (fn {s sub} {0}))
+(print "index-of new" (sw "zz") (ct "zz") (starts-with? "abc" "zz") (contains? "abc" "zz") (ends-with? "abc" "bc"))
+(def {index-of} saved)
+(print "index-of back" (sw "zz") (ct "zz") (starts-with? "abc" "zz") (contains? "abc" "zz"))
+
+(def {saved} and)
+(def {and} (fn {a b} {:and-called}))
+(print "and new" (x1 NIL) (xor 1 NIL) (z12 {:a}) (m7 2) (try (d7 2) &err))
+(def {and} saved)
+(def {saved} *)
+(def {*} (fn {a b} {list :times a b}))
+(print "* new" (m7 2) (p2 3) ((nth 5 kept) 3) (square 4) (cube 2))
+(def {*} saved)
+(print "all back" (all))
+(print "by name" (by-name))
+(dotimes {i 3} (print "loop" i (m7 (+ i 2)) (p2 i) (k2 2 {i :no} {2 :yes})))

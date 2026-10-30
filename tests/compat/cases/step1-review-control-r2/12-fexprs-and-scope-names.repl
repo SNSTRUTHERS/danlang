@@ -1,0 +1,25 @@
+; 12-fexprs-and-scope-names: tests and values that call fexprs (each argument as written, remembering where the
+; clause's code runs) and look names up there: &_, &1, the function's own names, case's x, unpack's f and l (none
+; are cond's or case's own: a clause runs where it was written); after a hand-over a clause with no scope runs in
+; unpack's call, where f and l are bound; defined? there too (has asks of its own x: always T); each value or
+; error, and its trace
+(fun {p a b} {+ a b})
+(def {where} (fexpr {x} {list :saw (eval x)}))
+(def {has} (fexpr {x} {defined? x}))
+(fun {f} {cond {(has &1) (list (where &1) (where &_))} {T (list :none (where &_))}})
+(f)
+(f 7 8)
+(fun {g x} {case x {1 (where x)} {2 (list (defined? f) (defined? l) (has x))} {x (where (list x &_))}})
+(map g {1 2 3})
+(cond {NIL 0} (cons (has f) {:no-scope}))
+(cond {NIL 0} (cons (defined? l) (list (to-sym "l"))))
+(cond {NIL 0} (cons T (list (fst {(where l)}))))
+(cond {NIL 0} (cons T (list (fst {(where f)}))))
+(case 2 {1 0} (cons 2 (list (fst {(list (defined? x) (defined? f))}))))
+(cond {(has unpack) (where (len &_))} {T 0})
+(fun {h n} {cond {(where n) (cond {NIL 0} (cons (where n) {:inner-no-scope}))} {T 0}})
+(h 4)
+(each {i (range 4)} (g i))
+(p 1 2 (g 1))
+(p 1 2 (g 3))
+(p 1 2 (f 7 8))

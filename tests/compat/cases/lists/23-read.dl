@@ -1,0 +1,49 @@
+; 23-read.dl - read turns text into a list of the expressions in it, unevaluated: their kinds (numbers in every
+; notation, strings, here strings, characters, atoms, symbols, S- and Q-expressions, [..] read as (list ..), the
+; prefixes read as their functions' names), comments and spaces skipped; reader errors as values (their messages);
+; eval of what read gives; read and save and repr together
+
+(def {r} (read "1 2 (+ 1 2) {a b} \"s\" \\c :k sym T NIL"))
+(print r (len r) (map type-of r) (repr r))
+(print (read "") (read "   ") (read "; only a comment") (type-of (read "")) (read "42") (type-of (read "42")) (fst (read "42")))
+(print (read "1 ; a comment\n 2") (read "a\tb\nc\rd") (len (read "((()))")) (read "((()))") (read "{{}}"))
+(print (read "#xff #b101 -7 +5 3.25 720/84 1_000 #16rFF -#x10 1/2 0.50") (map num? (read "1 1.5 1/2 1+ 1/x")))
+(print (map type-of (read "1+ 1/x -x .5 1.2.3")) (read "1+ 1/x -x .5 1.2.3"))
+(print (repr (read "\"a\\nb\" \"tab\\there\" \"q\\\"\" \"\\x41\"")) (repr (read "\"\"\"here \"str\" \"\"\"")))
+(print (read "\\a \\space \\lparen \\( \\] \\Newline \\tab") (map char-code (read "\\a \\space \\( \\]")))
+(print (read ":a :B :long-name") (read "Sym SYM sym") (read "t T nil Nil exit"))
+(print (repr (read "?(a b c) =(x 1) :(y 2) #({:k 1}) @({x} {x}) .(f l) ~(\"{}\" 1) [1 2] {3 [4]}")))
+(print (read "?{c a b}") (map type-of (read "?{c a b} ?(c a b)")))
+(print (read "'x a.b a:b x? $ok"))
+
+; nesting kept as written (an S-expression isn't a list to fst, snd or last)
+(def {n} (read "(a (b (c {d [e]})))"))
+(print n (fst n) (type-of (fst n)) (fst (fst n)) (snd (fst n)) (last (last (last (fst n)))))
+
+; eval of what read gives
+(print (eval (read "+ 1 2")) (eval (fst (read "(* 6 7)"))) (eval (read "list 1 (+ 1 1)")) (map (fn {x} {eval x}) (read "1 (+ 1 1) {3} \"s\"")))
+(def {prog} (read "(def {read-made} 7) (+ read-made 1)"))
+(print prog (eval (fst prog)) (eval (snd prog)) read-made)
+(print (eval (read "")) (eval (read "5")) (eval (read "{1 2}")))
+
+; reader errors are values
+(print (read "(1"))
+(print (read "{1"))
+(print (read "1)"))
+(print (read "1}"))
+(print (read "(1 2]"))
+(print (read "f(x)"))
+(print (read "\"unterminated"))
+(print (read "\\nosuchchar"))
+(print (read "\"bad \\q escape\""))
+(print (read "1/0"))
+(print (read 5))
+(print (read {1 2}))
+(print (read "a" "b"))
+
+; read of repr and of save's text gives the value back
+(def {vals} [1 "two" \3 :four (fst {five}) {six (seven)} NIL 1/2 1.25 -7 "q\"\n"])
+(print (eq (fst (read (repr vals))) vals) (repr vals))
+(print (eq (fst (read (output-of (save vals)))) vals) (output-of (save vals)))
+(print (map (fn {v} {eq (fst (read (repr v))) v}) vals))
+(print (read (repr "a b")) (read (repr \space)) (read (repr {})) (read (repr {{}})))

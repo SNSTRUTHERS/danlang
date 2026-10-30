@@ -1,0 +1,65 @@
+; 13-hash-keys.dl - what a key is: an atom, a string or an integer, each its own kind (5, "5" and :5 are three
+; keys); a whole number of another kind is that integer (5.0, 10/2); integers of any size (a long's edges and past
+; them, negative ones); atoms' names in lower case, strings' case kept; keys come back as what they were (their
+; type); the reserved keys; what can't be a key, and the messages
+
+(def {h} #({{5 :int} {"5" :string} {:5 :atom}}))
+(print h (len h))
+(print (h 5) (h "5") (h :5) (h 5.0) (h 10/2) (h 5.000) (h (complex 5 0)))
+(print (map type-of (hash-keys h)))
+(hash-put h {5.0 :int-again} {10/2 :and-again})
+(print h)
+
+; integers of any size, each its own key; a long's edges
+(def {n} #())
+(each {k {0 -0 1 -1 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809
+         123456789012345678901234567890 -123456789012345678901234567890 18446744073709551616}}
+  (hash-put n [k (repr k)]))
+(print n)
+(print (len n) (n 9223372036854775808) (n -9223372036854775809) (n 18446744073709551616) (n 123456789012345678901234567890))
+(print (map (fn {k} {list (type-of k) (int? k)}) (hash-keys n)))
+(print (n (+ 9223372036854775807 1)) (n (* 2 9223372036854775808)) (n (- 0 9223372036854775808)))
+(print (hash-key? n 9223372036854775808) (hash-key? n 9223372036854775806) (hash-remove n 9223372036854775808) (hash-key? n 9223372036854775808))
+
+; atoms are lower case (so :ABC is :abc); strings keep their case; the empty string is a key
+(def {c} #({{:ABC 1} {"ABC" 2} {"abc" 3} {"" 4} {" " 5}}))
+(print c)
+(print (c :abc) (c :Abc) (c "ABC") (c "abc") (c "Abc") (c "") (c " "))
+
+; strings with any bytes are keys: escapes, UTF-8
+(def {s} #({{"a\nb" 1} {"é" 2} {"\x00" 3} {"tab\t" 4}}))
+(print s)
+(print (s "a\nb") (s "é") (s (+ "" (code-char 0))) (s (+ "tab" (code-char 9))) (s (from-bytes {195 169})) (len s))
+
+; keys from to-atom, computed strings and arithmetic
+(def {m} (hash-create))
+(hash-put m [(to-atom "made") 1] [(+ "con" "cat") 2] [(* 6 7) 3] [(to-atom 42) 4])
+(print m)
+(print (m :made) (m "concat") (m 42) (m :42) (map type-of (hash-keys m)))
+
+; the reserved keys: :__locked and :__read-only can't be keys; :__private and :__not_nil can
+(print (hash-put m {:__locked 1}))
+(print (hash-put m {:__read-only 1}))
+(print (m :__locked) (hash-remove m :__read-only))
+(print (hash-key? m :__locked))
+(print (hash-put m {:__private :usable}) (hash-put m {:__not_nil :usable-too}) (m :__private) (m :__not_nil))
+(print (hash-keys m))
+
+; what isn't a key
+(print (h 1.5))
+(print (h 1/2))
+(print (h \c))
+(print (h {1}))
+(print (h NIL))
+(print (h T))
+(print (h (complex 1 1)))
+(print (h (to-sym "sym")))
+(print (h print))
+(print (h #()))
+(print (hash-put h [1.5 1]))
+(print (hash-put h [\c 1]))
+(print (hash-put h [T 1]))
+(print (hash-put h [(to-sym "s") 1]))
+(print (hash-key? h \c))
+(print (hash-remove h 2.5))
+(print (hash-get h (complex 5 1)))

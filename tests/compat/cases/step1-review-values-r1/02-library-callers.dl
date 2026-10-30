@@ -1,0 +1,20 @@
+; 02-library-callers: the library's own functions that call the natived ones (remove-min and remove-max call
+; remove-fst; all-between? and the not-between? family call between?; sort-desc, best-of and worst-of sort; split;
+; flip, comp, ghost, pack, apply, curry and uncurry pass them on; repeat runs code), each four times over (from the
+; third the natived calls can be native ways' values); every value with its kind, MISMATCH if the four differ
+(fun {kind x} {?((int? x) "i" ?((fixed? x) "f" ?((rational? x) "r" ?((complex? x) "c" (repr (type-of x))))))})
+(fun {four g} {let {{r (map (fn {i} {try (let {{v (g)}} (+ (repr v) (kind v))) (+ "E:" &err)}) {1 2 3 4})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(print (four (fn {} {remove-min {3 1 2 1}})) (four (fn {} {remove-max {3 1 3 2}})) (four (fn {} {remove-min {2.0 2 1/2 0.5}}))
+  (four (fn {} {remove-max {"a" "b" "a"}})) (four (fn {} {remove-min {{1 2} {1} {1 2}}})) (four (fn {} {remove-min {}})))
+(print (four (fn {} {all-between? 1 9 {1 5 9}})) (four (fn {} {all-between? 9 1 {1 5 10}})) (four (fn {} {*><? 0 1 {1/2 0.5 1.0}}))
+  (four (fn {} {not-between? 1 9 0})) (four (fn {} {!><? 9 1 5})) (four (fn {} {all-not-between? 1 2 {0 3 4}}))
+  (four (fn {} {not-all-between? 1 2 {1 2 3}})) (four (fn {} {!*><? 1 2 {}})) (four (fn {} {*!><? "a" "c" {"b" "d"}})))
+(print (four (fn {} {sort-desc {3 1/2 2.5 -1}})) (four (fn {} {best-of 2 {3 1 2}})) (four (fn {} {worst-of 2 {3 1 2}}))
+  (four (fn {} {top 1 {"b" "a"}})) (four (fn {} {split 2 {1 2 3}})) (four (fn {} {split 5 (zip {1 2} {3 4})})))
+(print (four (fn {} {flip mod 3 10})) (four (fn {} {flip div 2 -7})) (four (fn {} {comp floor abs -7/2})) (four (fn {} {comp even? floor 9/2}))
+  (four (fn {} {ghost floor 7/2})) (four (fn {} {ghost zip {1 2} {3 4}})) (four (fn {} {pack avg 1 2 3 4}))
+  (four (fn {} {apply between? {1 9 5}})) (four (fn {} {curry ?? {NIL NIL 3}})) (four (fn {} {uncurry flatten {1} {{2}}})))
+(def {k} 0)
+(print (four (fn {} {repeat 3 {mod (do (set! {k} (+ k 1)) k) 3}})) k (four (fn {} {times 2 {divmod k 4}})) (four (fn {} {repeat 2 {zip {k} {k}}})))
+(print (four (fn {} {map (fn {p} {eval (tail (join (head p) {a}))}) (fst (repeat 1 {zip {a b} {c d}}))})))
+(print (four (fn {} {use "nonesuch"})) (four (fn {} {fdiv 7 2})) (four (fn {} {fdiv 1 3 4})) (four (fn {} {frecip 3})) (four (fn {} {recip (pow 2 3)})))

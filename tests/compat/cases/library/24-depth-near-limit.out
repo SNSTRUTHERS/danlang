@@ -1,0 +1,48 @@
+--- stdout
+:plain :ok :ok Error: Too deep: more than 10000 calls nested
+:zip-8 8
+:zip-9 Error: Too deep: more than 10000 calls nested
+:zip-uneven 8 8
+:flatten-8 8
+:flatten-9 Error: Too deep: more than 10000 calls nested
+{{{1}}} T
+:flatten-nested-8 {1}
+:flatten-nested-9 Error: Too deep: more than 10000 calls nested
+:flatten-literal-8 {1}
+:remove-all-8 8
+:remove-all-9 Error: Too deep: more than 10000 calls nested
+:remove-all-matches 0
+:remove-fst-8 8
+:remove-fst-9 Error: Too deep: more than 10000 calls nested
+:remove-fst-early 499
+:repeat-8 8
+:repeat-9 Error: Too deep: more than 10000 calls nested
+:distinct-8 8
+:distinct-9 Error: Too deep: more than 10000 calls nested
+:distinct-same {:same}
+:all-between-9 T
+:all-between-10 Error: Too deep: more than 10000 calls nested
+:all-between-swapped-9 T
+:all-between-stops-early NIL
+:all-not-between-8 T
+:all-not-between-9 Error: Too deep: more than 10000 calls nested
+:not-all-between-8 NIL
+:not-all-between-9 Error: Too deep: more than 10000 calls nested
+:zip-9-in-tail-position 9
+:repeat-9-in-tail-position 9
+--- stderr
+Error: 24-depth-near-limit.dl: Too deep: more than 10000 calls nested
+  at <BUNDLE>\lib\globals.dl:75  (tail b)
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at <BUNDLE>\lib\globals.dl:75  (zip (tail a) (tail b))
+  called at 24-depth-near-limit.dl:45  (zip (range 9) (range 9))
+  called at 24-depth-near-limit.dl:8  (deep (1- n) thunk)
+  called at 24-depth-near-limit.dl:8  (deep (1- n) thunk)
+--- exit 1

@@ -1,0 +1,106 @@
+--- stdout
+undefined-name => Error: Unbound Symbol 'undefined-name'
+(undefined-fn 1 2) => Error: Unbound Symbol 'undefined-fn'
+(1 2) => Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+("str" 1) => Error: S-Expression starts with incorrect type. Got String, Expected Function.
+(:atom 1) => Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+({1 2} 3) => Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+(T 1) => Error: S-Expression starts with incorrect type. Got T, Expected Function.
+(\c 1) => Error: S-Expression starts with incorrect type. Got Character, Expected Function.
+(1) => 1
+NIL => NIL
+(+ 1 "a") => Error: '+' adds numbers, or joins values to a string
+(+ 1 :a) => Error: '+' adds numbers, or joins values to a string
+(- 1 "a") => Error: All parameters to operator '-' must be numbers.
+(- "a") => Error: All parameters to operator '-' must be numbers.
+(* 2 :x) => Error: All parameters to operator '*' must be numbers.
+(* {1} 2) => Error: All parameters to operator '*' must be numbers.
+(/ 1 0) => Error: Division by zero.
+(/ 0) => Error: Division by zero.
+(/ 1.5 0) => Error: Division by zero.
+(/ 1/2 0) => Error: Division by zero.
+(/ 7 2 0) => Error: Division by zero.
+(+ 1 {2}) => Error: '+' adds numbers, or joins values to a string
+(- 1 \a) => Error: All parameters to operator '-' must be numbers.
+(truncate "x") => Error: 'truncate' expects a real number
+(to-fixed 1 -1) => Error: 'to-fixed': -1 places is outside 0 to 10000
+(complex 1 (complex 1 1)) => Error: Imaginary part of complex must be an int, a rational, or a fixed
+(val "12x") => Error: 'val': "12x" isn't a number
+(val "") => Error: 'val': "" isn't a number
+(fib -1) => Error: 'fib' parameter 'n' cannot be negative
+(head NIL) => Error: 'head' passed an empty list
+(tail NIL) => Error: 'tail' passed an empty list
+(init NIL) => Error: 'init' passed an empty list
+(end NIL) => Error: 'end' passed an empty list
+(fst NIL) => Error: 'nth': the list has no such item
+(nth 5 {1 2}) => Error: 'nth': the list has no such item
+(nth -1 {1}) => Error: 'nth': the list has no such item
+(item-at {1 2} 2) => Error: 'item-at': the list has no item 2
+(subset {1 2} 3) => Error: 'subset': the list has no item 3
+(subset {1 2} 0 -1) => Error: 'subset': a count can't be negative
+(join {1} 2) => Error: Invalid parameter passed to 'join'.  Expected QExpr.
+(join) => <function>(join)
+(len 5) => Error: 'len' requires parameter of type string, list, hash or buffer
+(reverse 5) => Error: 'reverse' expects a QExpr or a String
+(cons 1 2) => Error: 'cons' expects a list second
+(range 1 2 0) => Error: 'range' step cannot be 0
+(range :a) => Error: 'range' expects Numbers
+(sort {3 1 2} 5) => Error: Second 'sort' parameter must be a function
+(take -1 {1 2}) => Error: 'take': a count can't be negative
+(substring "abc" 5) => Error: 'substring': index 5 is outside the string
+(substring "abc" 1 -1) => Error: 'substring': a count can't be negative
+(char-at "abc" 3) => Error: 'char-at': index 3 is outside the string
+(str-split 5) => Error: First 'str-split' parameter must be a string
+(format "{} {}" 1) => Error: 'format' has too few arguments for its {}s
+(format "{}" 1 2) => Error: 'format' has more arguments than {}s
+(format "{" 1) => Error: 'format' has more arguments than {}s
+(code-char 256) => Error: 'code-char': 256 isn't a character's code (0-255)
+(char-code "ab") => Error: 'char-code' expects one character
+(str-repeat "a" -1) => Error: 'str-repeat' count cannot be negative
+(str-replace "abc" "" "x") => Error: 'str-replace' cannot replace an empty String
+(str-upper 5) => Error: 'str-upper' expects a String
+(to-str 1 "#q?") => Error: Invalid base specifier #q?
+(to-str (complex 1 1) "x") => "1+1i"
+(to-sym 5) => Error: Only atoms and strings can be converted into symbols
+(to-atom {1}) => Error: Only symbols, strings and numbers can be converted to atoms
+(hash-get 5 :a) => Error: First parameter to 'hash-get' must be a hash
+(hash-put (hash-create) 5) => Error: A hash's entry is {key value tag...}, not 5
+((hash-create {{:a 1}}) :a 2) => Error: :a isn't a method: its value isn't a function
+((hash-create {{:a 1}}) :b 2) => Error: :b isn't a method: its value isn't a function
+(hash-create {NIL}) => Error: A hash's entry is {key value tag...}, not NIL
+(hash-create 5) => Error: A hash's entries are a list
+(buffer -1) => Error: 'buffer': -1 bytes is outside 0 to 2147483591
+(buffer-get (buffer 2) 5) => Error: 'buffer-get': index 5 is outside the buffer
+((buffer 2) 0 1) => Error: A buffer is called with an index: (b i)
+((buffer 2) 9) => Error: 'buffer-get': index 9 is outside the buffer
+(buffer-put (buffer 2) 0 256) => Error: 'buffer-put': 256 isn't a byte (0-255)
+(buffer-put (buffer 2) 0 "x") => Error: 'buffer-put': "x" isn't a byte (0-255)
+(def 1 2) => Error: 'def' cannot define non-symbols
+(set "x" 2) => Error: 'set' cannot define non-symbols
+(def {a b} 1) => Error: 'def' passed too many arguments or symbols.  Expected 2, got 1
+(set! {nosuch} 1) => Error: Unbound Symbol 'nosuch'
+(fn 1 2) => Error: 'fn' expects a list of symbols first
+(fn {x} 2) => Error: 'fn' expects a QExpr body
+(fun 5 NIL) => Error: 'fun' expects {name formals...} first
+(if) => Error: 'if' supplied too few parameters
+(if T) => Error: 'if' supplied too few parameters
+(<=> :a {:x}) => Error: First parameter to '<=>' must evaluate to a Number
+(<=> 1) => Error: Too few parameters passed to '<=>' operator
+(while) => Error: 'while' supplied too few parameters
+(each 5 {1}) => Error: First 'each' parameter must be a function or {name list}
+(each print 5) => Error: 'each' expects a list or a String
+(dotimes {i :a} 1) => Error: 'dotimes': a count must be a whole number, not :a
+(dotimes {i 2.5} 1) => Error: 'dotimes': a count must be a whole number, not 2.5
+(error) => <function>(error)
+(error "x" "not an atom") => Error: An error's code must be an atom
+(eval) => Error: Incorrect number of parameters passed to 'eval'
+(exit "x") => Error: 'exit' expects a Number
+(try) => Error: 'try' expects an expression and maybe a handler
+(and (error "in and")) => Error: in and
+(or NIL (error "in or")) => Error: in or
+the last: an error at the top level, in a call's argument; the call's code, long, is cut at 60
+3
+--- stderr
+Error: 01-errors-common.dl: 'str-repeat': a number must be a whole number, not :two
+  at 01-errors-common.dl:119  (str-repeat "a string long enough that this call is past ...
+--- exit 1

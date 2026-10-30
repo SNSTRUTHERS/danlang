@@ -1,0 +1,30 @@
+--- stdout
+6 6 Error: S-Expression starts with incorrect type. Got Number, Expected Function. 3 1 Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+-4 6 3 0 6
+6 Error: S-Expression starts with incorrect type. Got Number, Expected Function. -4 3 3 Error: S-Expression starts with incorrect type. Got Number, Expected Function. 6
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function. Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function. Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function. {3} {3}
+one
+two
+three
+:end
+one
+two
+three
+NIL
+three
+:end
+one
+:end
+{{a b} 3 {c}} Error: Unbound Symbol 'a' {{a b} 3 {c}} {3 {c}}
+keep {:local} :local :local :local {<function>(list)}
+join {:global} {:local} {:local} Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+reverse :local {:global :global}
+lose :global :global :global {:global}
+lose2 :global :global :global
+list {:global} :global :in-fn
+where :runs-here :local :runs-here :global :runs-here :global :runs-here :runs-here
+kept {:global :global :local2 :global :local2} {:runs-here :runs-here :local2 :runs-here :local2}
+read {:global} {:f1} {:f2} {:global} {:again} :global {:global}
+--- stderr
+
+--- exit 0

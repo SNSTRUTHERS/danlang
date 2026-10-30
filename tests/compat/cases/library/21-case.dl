@@ -1,0 +1,74 @@
+; 21-case: (case x {key value}...): the first clause whose key (run as code where the clause was written, as cond's
+; test is) is eq to x, its value run; numbers by value whatever their kinds, a string not a character, a Q-expression
+; not an S-expression.  x is evaluated once at the call; passing the rest on as (unpack case (cons x (tail &_)))
+; evaluates it again for every later clause, so a symbol or S-expression x is evaluated then.  The order keys and
+; values run in (side effects), clauses of other shapes, run-time clauses, errors, no clause (case's own error).
+; Ends with "Case not found" from inside two user functions (the trace through lib\globals.dl).
+
+(print case)
+(print (case 2 {1 :a} {2 :b}) (case :x {:x 1}) (case "s" {"s" :str}) (case \a {"a" :str} {\a :chr}) (case 1 {1.0 :fixed}) (case 1/2 {0.5 :half}))
+(print (case {1 2} {{1 2} :list}) (case {1 2} {(list 1 2) :made}) (case NIL {NIL :nil}) (case NIL {{} :empty}) (case T {T :t}) (case () {NIL :sexpr-nil}))
+(print (case 65536 {65535 :a} {65536 :b}) (case -1025 {-1024 :a} {-1025 :b}) (case 9223372036854775808 {9223372036854775807 :max} {9223372036854775808 :past}))
+(print (case 9223372036854775808.0 {9223372036854775808 :as-fixed}) (case 7/2 {3.5 :as-rational}) (case (* 2 0.5) {1 :one}) (case (+ 65535 1) {65536 :sum}))
+(print (case 5 {(+ 2 3) (* 5 5)}) (case :b {:a 1} {:b (list :b :found)}) (case (complex 1 2) {(complex 1 2) :complex}))
+(print (case (print :x-evaluated) {(do (print :k1) 1) :one} {(do (print :k2) NIL) (do (print :v2) :nil-key)} {(print :k3) :three}))
+(print (case 2 {(do (print :key1) 1) (print :value1)} {(do (print :key2) 2) (do (print :value2) :two)} {(do (print :key3) 3) :three}))
+
+; no clause matches: case's own error, as a value
+(print (case 3 {1 :a} {2 :b}))
+(print (case 3))
+(print ((case 2) {2 :two}))
+(print (case))
+(print (case 1 {2 (error "never run")} {3 :c}))
+(print (error-message (case :z {:a 1})))
+
+; clauses of other shapes
+(print (case 5 {5}))
+(print (case 5 {5 1 2}))
+(print (case 5 {}))
+(print (case 5 7))
+(print (case 5 {4 1} 7))
+(print (case 5 {5 1} 7))
+(print (case 5 NIL))
+
+; functions as keys and values: called with no arguments
+(print (case + {+ :plus}))
+(print (case 0 {+ :plus-gives-0}))
+(print (case :a {:b 1} {:a +}))
+(print (case (fn {x} {x}) {(fn {x} {x}) :same-function}))
+(print (case NIL {list :list-gives-nil}))
+(def {hh} #({{:k 1}}))
+(print (case hh {hh :same-hash}) (case 1 {(hh :k) :the-hashs-value}) (case (hash-create) {(hash-create) :equal-empty-hashes}))
+(print (cond {hh :a-hash-is-true}) (cond [hh :made]))
+
+; x evaluated again for the later clauses
+(print (case (fst {(+ 1 2)}) {3 :three-first} {3 :three-second}))
+(print (case (fst {(+ 1 2)}) {3 :three-first}))
+(print (case (fst {math.e}) {math.e :first} {math.e :second}))
+(print (case (fst {x-unbound}) {1 :one} {2 :two}))
+(print (case (fst {x}) {NIL 0} {x :x-not-seen-in-unpacks-scope}))
+(def {sym-x} :global-value)
+(print (case (fst {sym-x}) {:global-value :not-yet-a-symbol} {:global-value :evaluated-again-for-clause-two}))
+(print (case {1 2} {3 0} {{1 2} :found-second}))
+
+; errors
+(print (case (error "x") {1 1}))
+(print (case 1 {(error "key") 1}))
+(print (case 1 {1 (error "val")}))
+(print (case 1 {2 (error "val")} {1 :ok}))
+(print (case 1 {1 :ok} {(error "key not reached") 2}))
+(print (case 1 {1 :ok} (error "an argument")))
+
+; run-time clauses
+(fun {f x} {case x {1 :one} {2 :two} [3 :three] (cons 4 {:four}) [x :itself]})
+(print (map f {1 2 3 4 5}))
+(fun {g x} {case x (cons (fst {x}) {:cons-clause-runs-in-cases-scope})})
+(print (g 7))
+(fun {h x} {case x {0 :zero} (cons (fst {x}) {:later-in-unpacks-scope})})
+(print (h 7))
+
+; "Case not found", two functions deep: the program ends with its trace
+(fun {day-name n} {case n {0 :sun} {1 :mon} {2 :tue} {3 :wed} {4 :thu} {5 :fri} {6 :sat}})
+(fun {week-of l} {list :days (map day-name l)})
+(print (week-of {0 3 6}))
+(week-of {1 2 7})

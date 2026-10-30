@@ -1,0 +1,70 @@
+--- stdout
+<function>(fn {f l} {eval (cons f l)}) <function>(fn {f} {f &_}) <function>(fn {f l} {eval (cons f l)}) <function>(fn {f l} {eval (cons f l)}) <function>(fn {f} {f &_})
+6 0 4294967296 9223372036854775808 9
+3 24 6 4
+5 {:a "b" \c} x+y
+7 {1 {2 3}}
+6
+{3 {4 5} {6}}
+{<function>(list) {f l}}
+Error: Unbound Symbol 'a'
+{1 2}
+{{1 2} {10 2} {1 2}}
+{NIL :changed}
+Error: '+' adds numbers, or joins values to a string
+a1b
+:yes
+:else-branch
+NIL
+1
+2
+3
+NIL
+:printed
+7
+25
+<function>(fn {f l} {eval (cons f l)})
+<function>(fn {l} {eval (cons f l)})
+9
+<function>(fn {y} {- x y})
+6
+Error: The function takes 2 arguments, not 3
+Error: The function takes 2 arguments, not 3
+5
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+Error: 'cons' expects a list second
+Error: 'cons' expects a list second
+Error: 'cons' expects a list second
+Error: 'cons' expects a list second
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+Error: unpack's f
+Error: unpack's l
+Error: an item
+Error: Unbound Symbol 'x-unbound'
+{{1 2 3}} 3 {3 2 1} {4294967296 1050625 49/4 0.01}
+{NIL}
+0
+<function>(fn {f} {f &_})
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: '+' adds numbers, or joins values to a string
+6 9223372036854775808
+<function>(fn {b} {list b a})
+<function>(fn {b} {list b a})
+<function>(fn {l} {eval (cons f l)})
+3
+Error: pack's f
+Error: pack's arg
+:f
+:x1
+:x2
+{{1 2}}
+{{1 2}}
+{{1 2}}
+{:spread 3}
+--- stderr
+Error: 05-unpack-pack.dl: Division by zero.
+  at 05-unpack-pack.dl:76  (/ 1 0)
+  called at 05-unpack-pack.dl:74  (unpack f l)
+  called at 05-unpack-pack.dl:76  (spread + {1 (/ 1 0)})
+--- exit 1

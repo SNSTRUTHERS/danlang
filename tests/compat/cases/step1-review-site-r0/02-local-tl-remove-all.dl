@@ -1,0 +1,9 @@
+; 02-local-tl-remove-all: as 01, with tl, which remove-all's code binds for a list that isn't empty: its value for
+; {1 1} (every item taken out) goes the same way as for NIL, whose code binds none
+(def {tl} -)
+(fun {id v} {do v})
+(fun {g} {list (tl (id 100) 1) &1})
+(g 0)
+(g 0)
+(map (fn {l} {remove-all 1 l}) (list NIL NIL NIL {1 1}))
+(g)

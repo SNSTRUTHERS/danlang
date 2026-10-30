@@ -1,0 +1,87 @@
+; 05-extras-nested: extras and nested functions.  A body "names" an extra if &_ or &N appears anywhere in it - in a
+; nested fn, in quoted data, &0 or &9 - and then extras are allowed.  A closure's own call has its own &_ (NIL with
+; none), but &1, &2 ... not bound in its call are looked up outward, so they find the enclosing call's; defined?
+; stops at the closure's own call.  A formal named &1 is overwritten by the first extra.
+
+; the outer function takes extras because a nested function's body names &_
+(fun {maker} {fn {x} {list x &_}})
+(print (maker))
+(print (maker 1 2))
+(print ((maker 1 2) :a))
+(print ((maker) :a :b :c))
+
+; a closure's &_ is its own call's (NIL with none), but &1 not bound there is the enclosing call's
+(fun {outer} {fn {} {list &_ &1 &2}})
+(def {c1} (outer :o1 :o2))
+(print c1)
+(print (c1))
+(print (c1 :i1))
+(print (c1 :i1 :i2))
+(print (try ((outer) ) &err))
+(print (try ((outer :o1)) &err))
+
+; defined? stops at the closure's own call, though evaluating &1 finds the enclosing one's
+(fun {outer2} {fn {} {list (defined? &1) (try &1 :unbound) (defined? &_) &_}})
+(print ((outer2)))
+(print ((outer2 :o)))
+(print ((outer2 :o) :i))
+
+; a body of one S-expression calls its value: this body calls the inner fn at once, with no arguments
+(fun {calls-inner} {(fn {} {&1})})
+(print (calls-inner :seen-through))
+(print (try (calls-inner) &err))
+
+; let and loops inside the closure: still the closure's call
+(fun {outer3} {fn {} {let {{n 1}} (list n &1 &_)}})
+(print ((outer3 :o) ) ((outer3 :o) :i))
+
+; what counts as naming an extra
+(fun {in-data a} {len {&_ is only data here}})
+(print (in-data 1 2 3))
+(fun {in-string a} {"&_ in a string doesn't count"})
+(print (in-string 1 2))
+(fun {names-none a} {list a})
+(print (names-none 1 2))
+(fun {names-amp0b a} {list a :&0-is-an-atom})
+(print (names-amp0b 1 2))
+(fun {names-amp0c a} {list a (defined? &0)})
+(print (names-amp0c 1 2 3))
+(fun {names-amp9 a} {list a (defined? &9)})
+(print (names-amp9 1 2))
+(fun {names-amp12 a} {list a (try &12 :none)})
+(print (names-amp12 1 2 3 4 5 6 7 8 9 10 11 12 13))
+(print (names-amp12 1 2))
+(fun {names-ampx a} {list a (try &x :none)})
+(print (names-ampx 1 2))
+(fun {in-nested-data a} {fn {} {{deep {&2}}}})
+(print (in-nested-data 1 2 3))
+
+; formals named like extras
+(print ((fn {&1} {&1}) :formal))
+(print ((fn {&1} {list &1 &_}) :formal :extra))
+(print ((fn {&_} {&_}) :formal))
+(print ((fn {&_} {&_}) :formal :extra))
+(print ((fn {a &2} {list a &2 &1}) 1 2 3 4))
+
+; partial application and extras: extras come only once the formals are all given
+(fun {two-plus a b} {list a b &_})
+(def {tp} (two-plus 1))
+(print tp (tp 2) (tp 2 3) (tp 2 3 4))
+
+; map, filter and each give exactly one argument; foldl two
+(print (map (fn {x} {list x &_}) {1 2}))
+(print (foldl (fn {acc x} {+ acc x (len &_)}) 0 {1 2 3}))
+(each (fn {x} {print x (defined? &1)}) {:e1 :e2})
+
+; a method's &0 is not an extra: (h :m) gives none
+(def {h} (hash-create {{:m (fn {} {list (hash-keys &0) &_})}}))
+(print (h :m))
+(print (h :m :x :y))
+
+; eval of code built at run time: &_ is the call's own (NIL), so a name made by to-sym finds it
+(fun {sneaky a} {eval (list (to-sym "&_"))})
+(print (sneaky 1))
+
+; the last: a closure that names no extras, called with one, ends the program
+(fun {plain-maker} {fn {x} {* x 2}})
+((plain-maker) 1 2)

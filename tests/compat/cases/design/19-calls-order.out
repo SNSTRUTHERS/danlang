@@ -1,0 +1,56 @@
+--- stdout
+1 2 | + 3
+1 | + err Error: e
+1 | - err Error: e
+1 | < err Error: lt
+| eq err Error: first
+1 {:a :b} | nth :b
+5 {:a :b} | nth err Error: 'nth': the list has no such item
+| fst err Error: f
+abc | len 3
+1 2 3 4 | + 4 10
+1 2 | + 4 err Error: third
+1 2 | list Error: e
+hello 1 | substring Error: count
+<hash>NIL {:k (say :v)} | hash-put Error: e
+7 | mod Error: e
+7 2 | mod order 1
+| even? Error: e
+{NIL 1} | cond Error: clause
+NIL T 2 | cond lazy 2
+1 2 3 | fn {1 2 3}
+1 | fn err Error: e
+1 2 | partial Error: e
+1 | partial2 Error: early
+1 2 3 4 | too many Error: The function takes 3 arguments, not 4
+1 2 3 | too many err Error: fourth
+1 | fewer err Error: e
+1 2 | method {1 2}
+1 | method err Error: e
+| method key err Error: key
+1 | hash-call Error: e
+| value args Error: :v isn't a method: its value isn't a function
+1 2 3 | eval {1 2 3}
+1 | eval err Error: e
+1 | read code Error: e
+1 Error: a 1 Error: b
+| print NIL
+| type-of :error
+:after | error? {T :after}
+| repr "Error: r"
+2 1 | fexpr {2 1}
+| fexpr err Error: b first
+| fexpr quote {(say 1) (error "never")}
+1 NIL | and NIL
+1 | and err Error: e
+NIL 2 | or 2
+T :then | if :then
+| if err Error: test
+1 | do Error: e
+1 | let Error: e
+1 e | try "e"
+5 | args to a value 5
+5 | args to a value err Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+--- stderr
+
+--- exit 0

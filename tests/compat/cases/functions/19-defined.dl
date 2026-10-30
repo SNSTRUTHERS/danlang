@@ -1,0 +1,63 @@
+; 19-defined: (defined? x) says whether a name, as it's written, is bound where it's asked: globals, built-ins,
+; formals, sets and lets (only where they're seen), T (always), a list of names (all of them; {} and so NIL are
+; vacuously T), anything else NIL.  &1, &_ ... only in this call's scopes (lets and loops inside it count, the
+; enclosing function's call doesn't, though evaluating &1 there finds it).  &err and &code inside try's handler.
+
+(print (defined? never-bound) (defined? print) (defined? if) (defined? defined?) (defined? T) (defined? NIL))
+(print (defined? 5) (defined? "x") (defined? :x) (defined? \c) (defined? (+ 1 2)) (defined?))
+(def {x} NIL)
+(print (defined? x) (defined? {x print}) (defined? {x never-bound}) (defined? {}) (defined? {T x}))
+(print (try (defined? x y) &err))
+
+; formals, locals, lets
+(fun {f a} {list (defined? a) (defined? b) (defined? x) (defined? f)})
+(print (f 1))
+(fun {g} {do (print :before (defined? loc)) =(loc 1) (print :after (defined? loc)) (defined? loc)})
+(print (g) (defined? loc))
+(print (let {{z 1}} (defined? z)) (defined? z))
+(print (let {{z}} (list (defined? z) z)))
+(fun {sees-caller} {defined? callers-local})
+(fun {caller} {do =(callers-local 1) (sees-caller)})
+(print (caller))
+
+; extras: this call's
+(fun {ext a} {list (defined? &1) (defined? &2) (defined? &_) (defined? &0)})
+(print (ext 1) (ext 1 2) (ext 1 2 3))
+(fun {ext-let} {let {{inner 1}} (list (defined? inner) (defined? &1) (defined? &_))})
+(print (ext-let) (ext-let 9))
+(fun {ext-loop} {do =(r {}) (each {i {1}} (set! {r} (list (defined? &1) (defined? i)))) r})
+(print (ext-loop) (ext-loop :x))
+(fun {two-of} {defined? {&1 &2}})
+(print (two-of) (two-of 1) (two-of 1 2))
+
+; a closure: its own call's extras, not the enclosing call's (but evaluating &1 finds the enclosing one's)
+(fun {outer} {fn {} {list (defined? &1) (try &1 :unbound) (defined? &_) &_}})
+(print ((outer)) ((outer :o)) ((outer :o) :i))
+
+; at the top level: no call, no extras
+(print (defined? &1) (defined? &_) (defined? {&1}))
+
+; try's handler: &err and &code; outside it, neither
+(print (try (error "e") (list (defined? &err) (defined? &code))))
+(print (defined? &err) (defined? &code))
+(print (try (error "e" :c) (fn {m} {list m (defined? &err) (defined? &code)})))
+
+; names bound to errors, functions, NIL are defined
+(def {e1} (error "kept"))
+(print (defined? e1) (defined? {e1 x}))
+(fun {opt-arg a} ?{(defined? &1) (list :given &1) (list :default a)})
+(print (opt-arg 1) (opt-arg 1 2) (opt-arg 1 NIL))
+
+; case doesn't matter for names
+(def {Mixed-Case} 1)
+(print (defined? mixed-case) (defined? MIXED-CASE))
+
+; a name defined only later: NIL then T, from the same function
+(fun {is-it} {defined? defined-later})
+(print (is-it))
+(def {defined-later} 0)
+(print (is-it))
+
+; the last: defined? then the name's use, where it's not bound, ends the program
+(fun {use-it} {if (defined? not-there) not-there (+ not-there 1)})
+(use-it)

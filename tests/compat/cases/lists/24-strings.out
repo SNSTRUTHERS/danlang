@@ -1,0 +1,36 @@
+--- stdout
+{"a" "b" "" "c"} {"" "lead" "and" "trail" ""} {"a" "b" "c" "d" "e"}
+{"a" "b" "" "c"} {""} {"abc"} {"" ""}
+{"a" "b" "c"} {"one" "two" "three"} {"" "" "" ""}
+{"" ""} {"a" "b" "c"} 5
+{\a \b \space \c} NIL {\x} {\tab \lf \quote \backslash} 5
+{65 66} NIL Hi  "x\ny"
+{"the" "quick" "brown" "fox"} thequickbrownfox the quick brown fox the, quick, brown, fox fox brown quick the
+a-b-c 1+2+3 a|b|:c|{d "e"}|1/2 ""
+T T
+{\h \e \l \l \o \space \w \o \r \l \d} 11 {\d \l \r \o \w \space \o \l \l \e \h} {\space \d \e \h \l \l \l \o \o \r \w}  dehllloorw
+3 4 7 T NIL -1
+{104 101 108 108 111 32 119 111 114 108 100} {\H \E \L \L \O \space \W \O \R \L \D} {:char :char} {\h \e \l \l \o \w \o \r \l \d}
+hello_world helloworld
+{3 5 5 3} {"THE" "QUICK" "BROWN" "FOX"} {"brown" "fox" "quick" "the"} {"the" "quick" "fox" "brown"} {\t \q \b \f}
+{{\a \b} NIL {\c}} {"eht" "kciuq" "nworb" "xof"}
+16 quick T
+{{"name" "age"} {"ann" "31"} {"bob" "4"}} {"name" "ann" "bob"} {31 4} 35
+{"name;age" "ann;31" "bob;4"} name;age
+ann;31
+bob;4
+Error: First 'str-split' parameter must be a string
+Error: Second 'str-split' parameter must be a list of strings or a single string
+Error: Second 'str-split' parameter must be a list of strings or a single string
+Error: Second 'str-split' parameter must be a list of strings or a single string
+Error: First 'str-split' parameter must be a string
+Error: 'str-chars' expects a String
+Error: 'str-chars' expects a String
+Error: 'str-join' expects a QExpr
+Error: 'str-join' expects a String
+Error: 300 isn't a byte
+Error: a byte must be an integer
+Error: 'bytes' expects a String or a buffer
+--- stderr
+
+--- exit 0

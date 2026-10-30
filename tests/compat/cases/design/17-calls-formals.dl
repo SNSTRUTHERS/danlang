@@ -1,0 +1,53 @@
+; 17-calls-formals: functions of 0 to 10 formals, each called with as many arguments, with fewer (partially applied:
+; printed, then given the rest, in one call or in several), and with more (an error saying how many); formals that
+; repeat a name (each binding replaces the one before, partial application keeping the order); formals named &1, &2,
+; &_ or &0 (bound as formals; extra arguments bound after them, over them).
+(def {fs} [(fn {} {:zero}) (fn {a} {list a}) (fn {a b} {list a b}) (fn {a b c} {list a b c})
+  (fn {a b c d} {list a b c d}) (fn {a b c d e} {list a b c d e}) (fn {a b c d e f} {list a b c d e f})
+  (fn {a b c d e f g} {list a b c d e f g}) (fn {a b c d e f g h} {list a b c d e f g h})
+  (fn {a b c d e f g h i} {list a b c d e f g h i}) (fn {a b c d e f g h i j} {list a b c d e f g h i j})])
+(each {k (range 11)} (do
+  =(f (nth k fs))
+  (print k "exact" (unpack f (range k)) "more" (try (unpack f (range (+ k 1))) &err) (try (unpack f (range (+ k 3))) &err))
+  (if (> k 0) (do
+    =(p (unpack f (range 1 k)))
+    (print k "partial" p (p :last) (try (p :last :more) &err) (unpack (f) (range k)) (eq p (unpack f (range 1 k))))))))
+
+; given in steps
+(def {f3} (nth 3 fs))
+(print "steps" ((((f3) 1) 2) 3) (((f3 1) 2) 3) ((f3 1 2) 3) ((f3 1) 2 3) (((f3) 1 2) 3) (f3) ((f3)) (((f3)) 1 2 3))
+(print "steps" (try ((f3 1) 2 3 4) &err) (try (((f3 1) 2) 3 4) &err) (try ((f3) 1 2 3 4) &err) ((f3 1) (error "e")))
+(def {f10} (nth 10 fs))
+(def {g} (f10 :a :b :c))
+(def {g2} (g :d :e :f :g))
+(print "f10" g g2 (g2 :h :i :j) (try (g2 :h :i :j :k) &err) ((g :d) :e :f :g :h :i :j))
+(def {f0} (fst fs))
+(print "f0" f0 (f0) (try (f0 1) &err) (try (f0 1 2) &err) ((fn {} {&_}) 1 2) ((fn {} {&1}) :only))
+
+; a name that repeats in the formals
+(print "dup" ((fn {x x} {x}) 1 2) ((fn {x x} {list x}) 1) (((fn {x x} {list x}) 1) 2) ((fn {x y x} {list x y}) 1 2 3))
+(def {pd} ((fn {x y x} {list x y}) 1))
+(print "dup" pd (pd 2) ((pd 2) 3) (pd 2 3) (try (pd 2 3 4) &err) ((fn {a a a} {a}) 1 2 3) (((fn {a a a} {a}) 1 2) 3))
+(fun {dup-fun a b a} {list a b})
+(print "dup" (dup-fun 1 2 3) (dup-fun 1) ((dup-fun 1) 2 3) (((dup-fun 1) 2) 3) dup-fun)
+
+; formals named as the extras are
+(print "&1" ((fn {&1} {list &1 &_}) 5) ((fn {&1} {list &1 &_}) 5 6) ((fn {&1 &2} {list &1 &2}) 5 6))
+(print "&_" ((fn {&_} {&_}) 5) ((fn {&_} {&_}) 5 6) ((fn {&_} {&_}) 5 6 7) ((fn {&_ x} {list &_ x}) 1 2))
+(print "&2" ((fn {&2 x} {list &2 x &1}) 1 2 3) ((fn {&2 x} {list &2 x &1}) 1 2 3 4) ((fn {&2 x} {list &2 x}) 1 2))
+(print "&1 partial" ((fn {&1 b} {list &1 b}) 1) (((fn {&1 b} {list &1 b}) 1) 2) (((fn {&1 b} {list &1 b &_}) 1) 2 3))
+(def {o} #({{:m (fn {&0} {&0})} {:k (fn {x} {list x (hash-keys &0)})} {:n (fn {&0 y} {list &0 y})}}))
+(print "&0" (o :m 5) (o :m) ((o :m) 6) (o :k 1) (o :n 7 8) ((o :n 9) 10) (try (o :k 1 2) &err))
+
+; arguments of every kind, bound and given back as they are
+(def {kinds} [1 1.5 1/2 "s" \c :a (fst {sym}) {1 2} (fst {(+ 1 2)}) T NIL + (fn {x} {x}) #({{:k 1}}) (buffer 2) (eq 1) exit])
+(print "kinds" (map (fn {v} {repr ((fn {x} {x}) v)}) kinds) ((fn {x} {:not-run}) (error "e")) ((fn {x y} {:not-run}) 1 (error "e2")))
+(print "kinds" (map (fn {v} {repr (((fn {x y} {list x y}) v) v)}) kinds) (((fn {x y} {:not-run}) 1) (error "e3")))
+
+; the arguments are evaluated where the call is, before the call's scope has any of them: names of the formals there
+; are the caller's; a closure made in an argument is the caller's; a call of the same function in an argument its own
+(fun {swap-args a b} {list a b})
+(print "caller's" (let {{a 1} {b 2}} (swap-args b a)) ((fn {a b} {swap-args b a}) :x :y) (swap-args (swap-args 1 2) (swap-args 3 (swap-args 4 5))))
+(def {x} :global-x)
+(fun {g x th} {list x (th)})
+(print "caller's" (g :formal-x (fn {} {x})) ((fn {x} {g :inner (fn {} {x})}) :outer) (g (g 1 (fn {} {x})) (fn {} {(g 2 (fn {} {x}))})))

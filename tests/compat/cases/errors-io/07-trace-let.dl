@@ -1,0 +1,49 @@
+; 07-trace-let.dl - errors in let: a binding's value that's an error stops the let (the bindings after it aren't
+; made, the body isn't run); a body expression's error stops the body.  let's last expression is in tail position.
+; The last error is made in a let's binding, in a let's body, in a function called from another
+
+(print (let {{a 1} {b (+ a 1)}} (list a b)))
+(print (let {{a 1} {b (error "b's value")} {c (print "c not made")}} (print "body not run") c))
+(print (let {{a (/ 1 0)}} a))
+(print (let {{a 1}} (print "first") (error "second") (print "third not run")))
+(print (let {{a 1}} {+ a 1}))
+(print (let {{a 1}} {error "a q-expression body, run as code"}))
+(print (let {{a 1} {a (+ a 10)}} a))
+(print (let {{a}} a))
+(print (let {{a 1 2}} a))
+(print (let {a} a))
+(print (let {{1 2}} 3))
+(print (let {} 5))
+(print (let {{a 1}}))
+(print (let 5))
+(print (let {+ 1 2}))
+(print (let {do =(q 5) (* q 2)}))
+(print (let {do =(q 5) (+ q :x)}))
+
+; the names a let binds are its own; an error in a binding names the expression's error
+(def {a} :global)
+(print (let {{a (len 5)}} a) a)
+(print (let {{a 2}} (let {{b (* a undefined-in-let)}} b)))
+(print (try (let {{z (error "caught in let" :code)}} z) (list &err &code)))
+
+; let in a function: the binding's value made by a call
+(fun {parse s} {if (eq s "") (error "empty string") (val s)})
+(fun {sum-of a b} {let {{x (parse a)} {y (parse b)}} (+ x y)})
+(print (sum-of "1" "2") (sum-of "" "2") (sum-of "1" "x"))
+
+; a let's tail position: the call in it takes the function's place
+(fun {deep n} {let {{m (- n 1)}} (if (zero? m) (error "deep at the bottom") (deep m))})
+(print (deep 5))
+
+(print "the last: a let's binding, in a let's body, in a function called from another")
+(fun {inner-let k} {
+  let {{a 10}}
+    (print "inner-let body, a is" a)
+    (let {{b (* a 2)}
+          {c (+ b (fst k) (len b))}}
+      (print "not printed")
+      c)
+})
+(fun {outer-let label} {* 2 (inner-let {1 2})})
+(print (outer-let "first"))
+(+ 1 (outer-let "a label long enough that this call's code is cut short in the trace"))

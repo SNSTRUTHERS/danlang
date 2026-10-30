@@ -87,7 +87,7 @@ public class LHash : TaggedValue<Dictionary<HKey, LHash.LHashEntry>> {
 
         // the overrides, each its own (the first error among them kept: OverrideError)
         if (overrides != null)
-            foreach (var o in overrides.Cells ?? new List<LVal>()) {
+            foreach (var o in overrides.Cells ?? new LList()) {
                 OverrideError = Override(o);
                 if (OverrideError != null) break;
             }
@@ -132,7 +132,7 @@ public class LHash : TaggedValue<Dictionary<HKey, LHash.LHashEntry>> {
 
     private Dictionary<HKey, LHash.LHashEntry>.ValueCollection? _Values => _privateCallProxy != null ? _privateCallProxy.Value?.Values : Value?.Values;
     public LVal Values { get {
-        var v = LVal.Qexpr();
+        var v = LVal.Qexpr(new LList(Count));
         if (_Values != null)
             foreach (var e in _Values) {
                 v.Add(e.Value ?? LVal.NIL());
@@ -142,7 +142,7 @@ public class LHash : TaggedValue<Dictionary<HKey, LHash.LHashEntry>> {
 
     private Dictionary<HKey, LHash.LHashEntry>.KeyCollection? _Keys => _privateCallProxy != null ? _privateCallProxy.Value?.Keys : Value?.Keys;
     public LVal Keys { get {
-        var v = LVal.Qexpr();
+        var v = LVal.Qexpr(new LList(Count));
         if (_Keys != null)
             foreach (var k in _Keys) {
                 v.Add(KeyToLVal(k));

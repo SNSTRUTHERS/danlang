@@ -1,0 +1,73 @@
+; 20-errors-as-args: a function's arguments are evaluated left to right and the first error stops them: the
+; function isn't run (print side effects show what ran), the rest aren't evaluated, and the call is that error.  So
+; for built-ins (but those that take errors as values: print, repr, type-of, error?, the tests), partials, the call's
+; head, do, let, and, or, if, loops, map/filter/foldl.  fexprs get errors as values.  Too many arguments is found
+; after they're all evaluated.  An error inside a function called by map: its trace has no frame for map's call.
+
+(fun {noisy tag v} {do (write tag "") v})
+(fun {f3 a b c} {do (write "[f3 ran]") (list a b c)})
+(print (f3 (noisy 1 :a) (noisy 2 :b) (noisy 3 :c)))
+(print (f3 (noisy 1 :a) (noisy 2 (error "second")) (noisy 3 :c)))
+(print (f3 (noisy 1 :a) (error "direct") (noisy 3 :c)))
+(print (f3 (error "first") (noisy 2 :b) (noisy 3 :c)))
+(print (f3 (noisy 1 :a) (noisy 2 :b) (noisy 3 :c) (noisy 4 :d)))
+
+; the head is evaluated first; an error there stops the call
+(print ((noisy :head f3) (noisy 1 :a) (noisy 2 :b) (noisy 3 :c)))
+(print ((noisy :head (error "head error")) (noisy 1 :a)))
+(print ((error "bare head") (noisy 1 :a)))
+
+; built-ins: ordinary ones stop; those that take errors take them
+(print (list (noisy 1 :a) (error "in list") (noisy 3 :c)))
+(print (+ (noisy 1 1) (error "in plus") (noisy 3 3)))
+(print (eq (error "e1") (error "e2")))
+(print (len (error "in len")))
+(print (print (error "print takes it")))
+(print (type-of (error "t")) (error? (error "t")) (repr (error "r")) (nil? (error "n")) (num? (error "n")))
+(print (error-message (error "m")) (error-code (error "m" :code1)) (error-code (error "m")))
+
+; partials: given an error, the call is that error
+(def {pf} (f3 1 2))
+(print (pf (error "into partial")))
+(print ((eq 1) (error "into built-in partial")))
+(print (f3 (noisy 1 :a)))
+(print ((f3 (noisy 1 :a)) (error "into fresh partial") (noisy 3 :c)))
+
+; the special forms stop at one
+(print (do (noisy 1 :a) (error "in do") (noisy 3 :c)))
+(print (and (noisy 1 T) (error "in and") (noisy 3 :c)))
+(print (or (noisy 1 NIL) (error "in or") (noisy 3 :c)))
+(print (if (error "in if test") (noisy 1 :a) (noisy 2 :b)))
+(print (if T (error "in a branch") (noisy 2 :b)))
+(print (let {{a (noisy 1 :a)} {b (error "in let b")} {c (noisy 3 :c)}} a))
+(print (each {x {1 2 3}} (noisy x x) (if (eq x 2) (error "each at 2"))))
+(print (dotimes {i 5} (noisy i i) (if (eq i 1) (error "dotimes at 1"))))
+(print (while T (noisy :w :w) (error "in while")))
+
+; map, filter, foldl: the first error stops them
+(print (map (fn {x} {noisy x (if (eq x 2) (error "map at 2") x)}) {1 2 3}))
+(print (filter (fn {x} {noisy x (if (eq x 3) (error "filter at 3") T)}) {1 2 3 4}))
+(print (foldl (fn {acc x} {if (eq x 3) (error "fold at 3") (+ acc x)}) 0 {1 2 3 4}))
+(print (map (fn {x} {x}) (error "the list itself")))
+
+; fexprs get errors as values; so do def, set, set! (they bind them)
+(def {fe} (fexpr {a} {list :fexpr-ran (type-of a) (error? (eval a))}))
+(print (fe (error "to fexpr")))
+(print ((fn {x} {:never}) (error "fn not run")))
+(def {kept} (error "kept by def"))
+(print (error? kept) (try kept &err))
+
+; a function given an error, in a tail call: still not run
+(fun {chain n} ?{(zero? n) (f3 1 (error "at the bottom") 3) (chain (- n 1))})
+(print (chain 5))
+
+; errors from built-ins inside a function's arguments
+(print (f3 (noisy 1 :a) (/ 1 0) (noisy 3 :c)))
+(print (f3 (noisy 1 :a) (head {}) (noisy 3 :c)))
+(print (f3 (noisy 1 :a) undefined-name (noisy 3 :c)))
+
+; the last: an error in a function called by map ends the program (no frame for map's call of mid)
+(fun {bad x} {+ x :oops})
+(fun {mid x} {list (bad x)})
+(fun {top l} {map mid l})
+(top {1 2})

@@ -1,0 +1,45 @@
+; 04-lib-shadow-local: a library function's body sees the globals (lexical scope): a local binding of the same name
+; where it's called (a formal, let, set, a loop's variable, an fexpr's formal, a method's, a try handler's scope)
+; changes nothing.  But a function written with the library's very body inside a scope that binds those names sees
+; them: it's eq to the library's (functions are equal by formals and body) and still behaves as its own scope says.
+(def {probes} {{mod 7 2} {mod -7 2} {div -7 2} {even? 6} {odd? -3} {pow 2 5} {round 5/2} {square 9} {mod 7 :a}})
+(fun {run-probes} {map (fn {q} {try (eval q) &err}) probes})
+(def {base-line} (run-probes))
+(print "global" base-line)
+
+; formals named as the dependencies
+(fun {formals floor trunc num? cmp 1- error} {run-probes})
+(print "formals" (formals 0 0 (fn {x} {NIL}) (fn {a b} {0}) 0 0))
+(fun {direct floor trunc num? and} {list (mod 7 2) (mod -7 2) (div -7 2) (even? 6) (try (mod 7 :a) &err)})
+(print "direct" (direct (fn {x} {99}) (fn {x} {0}) (fn {x} {NIL}) or))
+
+; let, set, set! of a local, a loop's variable, inside functions and at the top level
+(print "let" (let {{floor (fn {x} {99})} {num? (fn {x} {NIL})} {* +}} (run-probes)))
+(print "let direct" (let {{floor 1} {trunc 2} {-? T}} (list (mod 7 2) (pow 2 -1) (round 7/2))))
+(fun {with-set} {do =(floor 5) =(trunc 5) =(mod 5) (set! {floor} 6) (list floor (run-probes))})
+(print "set" (with-set))
+(dotimes {floor 2} (print "dotimes floor" floor (mod 7 2) (div -7 2)))
+(each {num? {1 2}} (print "each num?" num? (mod 7 2) (even? num?)))
+(each {trunc "ab"} (print "each trunc" trunc (div -7 2)))
+
+; an fexpr's formals, a method's formals, a try handler's &err
+(def {fx} (fexpr {floor num?} {list floor num? (mod 7 2) (even? 4) (eval num?)}))
+(print "fexpr" (fx (whatever) 99))
+(def {obj} #({{:floor 1} {:m (fn {floor trunc} {list floor trunc (mod -7 2) (div 7 -2) (hash-keys &0)})}}))
+(print "method" (obj :m 10 20) ((obj :m 30) 40))
+(print "try" (try (error "boom") (list &err (mod -7 2) (floor -1/2))))
+
+; the library's body, written where the names are local: those are what it sees
+(def {weird-mod} (let {{floor (fn {x} {100})}}
+  (fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})))
+(print "weird-mod" (weird-mod 7 2) (mod 7 2) (eq weird-mod mod) (eq (weird-mod 7) (mod 7)) (eq (weird-mod 7) (mod 8)))
+(fun {make-even num?} {fn {n} {if (num? n) (=0 (mod n 2)) (error "Cannot perform 'even?' on non-number")}})
+(def {my-even?} (make-even (fn {x} {NIL})))
+(print "my-even?" (my-even? 4) (even? 4) (eq my-even? even?) (repr my-even?))
+(def {same-floor} (let {{trunc (fn {x} {0})} {cmp (fn {a b} {-1})}}
+  (fn {a} {let {do =(tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}})))
+(print "same-floor" (same-floor 7/2) (floor 7/2) (same-floor 5) (eq same-floor floor))
+; and a copy made at the top level is the library's own again
+(def {copy-mod} (fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}))
+(print "copy-mod" (copy-mod 7 2) (copy-mod -7 2) (copy-mod 7 :a) (eq copy-mod mod))
+(print "global again" (eq base-line (run-probes)) (run-probes))

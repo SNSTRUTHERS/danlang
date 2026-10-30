@@ -1,0 +1,16 @@
+; 11-zip-pairs: zip's pairs remember their own call's scope (a and b the lists left at it): code run there sees them
+; (and &_, NIL, and defined?), a function made there keeps them, a zip of zips' pairs are pairs of pairs, each with
+; its own call's scope; pairs joined to other lists give theirs to the join, or not (the first's is the join's);
+; each made three times (from the third it can be a native way's value)
+(fun {three g} {map (fn {i} {g}) {1 2 3}})
+(def {a b} :global-a :global-b)
+(fun {at p code} {eval (tail (join (head p) code))})
+(fun {ab p} {list (at p {(list a b)}) (at p {&_}) (at p {(defined? a)}) (at p {(defined? &1)}) ((at p {(fn {} {list b a})}))})
+(print (map (fn {ps} {map ab ps}) (three (fn {} {zip {1 2 3} {4 5}}))))
+(print (map (fn {ps} {map (fn {p} {list (at p {a}) (at (fst p) {b}) (at (fst p) {a})}) ps}) (three (fn {} {zip (zip {1 2} {3 4}) (list 5 6)}))))
+(print (map (fn {ps} {map (fn {p} {list (eval (end (join p {a}))) (eval (end (join {0} p {a}))) (eval (end (join (list 0) p {b})))}) ps}) (three (fn {} {zip {1 2} {3 4}}))))
+(fun {in-let} {let {{a :let-a} {b :let-b}} (three (fn {} {zip (list a b) {a b}}))})
+(print (map (fn {ps} {map (fn {p} {list p (at p {a}) (eval (end p)) (eval (head p))}) ps}) (in-let)))
+(print (map (fn {ps} {map (fn {p} {try (eval p) &err}) ps}) (three (fn {} {zip (list + - len) (list 1 2 {3 4})}))))
+(print (map (fn {ps} {map (fn {p} {try (eval p) &err}) ps}) (three (fn {} {zip {len fst} {a b}}))))
+(print (map (fn {ps} {map (fn {p} {list (at p {do (set {a} :set-in-pair) a}) (at p {a})}) ps}) (three (fn {} {zip {1 2} {3 4}}))) a)

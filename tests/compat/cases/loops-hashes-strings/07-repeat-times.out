@@ -1,0 +1,39 @@
+--- stdout
+<function>(fn {n d} {if (=0 n) NIL (cons (eval d) (repeat (1- n) d))})
+<function>(fn {n d} {if (=0 n) NIL (cons (eval d) (repeat (1- n) d))})
+T
+{3 3 3}
+NIL
+{:once}
+{:t :t :t :t}
+{:two-point-oh :two-point-oh}
+{:four-halves :four-halves}
+run1 run2 run3 {1 4 9}
+side effect
+side effect
+{NIL NIL}
+5
+{"go!" "go!" "go!"}
+{1 4 9 16 25}
+{{:in :in :in} {:in :in :in}}
+0 NIL
+1 {1}
+2 {2 2}
+{5 5}
+{"s" "s"}
+{<function>(print) <function>(print)}
+{<function>(fn NIL {:fn}) <function>(fn NIL {:fn})}
+{42 42}
+{NIL NIL}
+count evaluated
+{:x :x}
+Error: third run failed 3
+Error: All parameters to operator '-' must be numbers.
+Error: All parameters to operator '-' must be numbers.
+Error: Too deep: more than 10000 calls nested
+<function>(fn {d} {if (=0 n) NIL (cons (eval d) (repeat (1- n) d))})
+{:p :p :p}
+<function>(fn {n d} {if (=0 n) NIL (cons (eval d) (repeat (1- n) d))})
+--- stderr
+
+--- exit 0

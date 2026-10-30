@@ -1,0 +1,8 @@
+--- stdout
+The function takes 2 arguments, not 3
+{T NIL T T NIL T T}
+--- stderr
+Error: globals.dl: The function takes 2 arguments, not 3
+  at globals.dl:9  (- y (g))
+  called at globals.dl:12  (probe (+ 100000 1) (+ 100000 2))
+--- exit 1

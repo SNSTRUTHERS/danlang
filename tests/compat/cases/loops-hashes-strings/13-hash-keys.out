@@ -1,0 +1,42 @@
+--- stdout
+<hash>{{5 :int} {"5" :string} {:5 :atom}} 3
+:int :string :atom :int :int :int :int
+{:number :string :atom}
+<hash>{{5 :and-again} {"5" :string} {:5 :atom}}
+<hash>{{0 "0"} {1 "1"} {-1 "-1"} {9223372036854775807 "9223372036854775807"} {9223372036854775808 "9223372036854775808"} {-9223372036854775808 "-9223372036854775808"} {-9223372036854775809 "-9223372036854775809"} {123456789012345678901234567890 "123456789012345678901234567890"} {-123456789012345678901234567890 "-123456789012345678901234567890"} {18446744073709551616 "18446744073709551616"}}
+10 9223372036854775808 -9223372036854775809 18446744073709551616 123456789012345678901234567890
+{{:number T} {:number T} {:number T} {:number T} {:number T} {:number T} {:number T} {:number T} {:number T} {:number T}}
+9223372036854775808 18446744073709551616 -9223372036854775808
+T NIL 9223372036854775808 NIL
+<hash>{{:abc 1} {"ABC" 2} {"abc" 3} {"" 4} {" " 5}}
+1 1 2 3 NIL 4 5
+<hash>{{"a\nb" 1} {"é" 2} {"\0" 3} {"tab\t" 4}}
+1 2 3 4 2 4
+<hash>{{:made 1} {"concat" 2} {42 3} {:42 4}}
+1 2 3 4 {:atom :string :number :atom}
+Error: Cannot get/set value for reserved hash key __locked
+Error: Cannot get/set value for reserved hash key __read-only
+Error: Cannot get/set value for reserved hash key __locked Error: Cannot get/set value for reserved hash key __read-only
+NIL
+NIL NIL :usable :usable-too
+{:made "concat" 42 :42 :__private :__not_nil}
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: A hash key must be an atom, a string or an integer, not 1/2
+Error: Unsupported key type Character
+Error: Unsupported key type Q-Expression
+Error: Unsupported key type Q-Expression
+Error: Unsupported key type T
+Error: A hash key must be an atom, a string or an integer, not 1+1i
+Error: Unsupported key type Symbol
+Error: Unsupported key type Function
+Error: Unsupported key type Hash
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: Unsupported key type Character
+Error: Unsupported key type T
+Error: Unsupported key type Symbol
+Error: Unsupported key type Character
+Error: A hash key must be an atom, a string or an integer, not 2.5
+Error: A hash key must be an atom, a string or an integer, not 5+1i
+--- stderr
+
+--- exit 0

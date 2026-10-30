@@ -1,0 +1,56 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>{:handled "Value was either too large or too small for an Int32."}
+=> NIL
+danlang>key
+Value was either too large or too small for an Int32.
+=> NIL
+danlang>Error: Value was either too large or too small for an Int32.
+=> NIL
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> NIL
+danlang>=> 1
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> {1 1 1}
+danlang>=> Error: 'exit' expects a Number
+danlang>=> Error: 'exit' expects a Number
+danlang>=> Error: Value was either too large or too small for an Int32.
+danlang>:still-here 1
+=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (exit 99999999999999999999)
+  called at line 1  (cond {(exit 99999999999999999999) 1} {T 2})
+  at line 1  (exit 99999999999999999999)
+  called at line 1  (cond {NIL 1} {(exit 99999999999999999999) 2})
+  at line 1  (exit 99999999999999999999)
+  called at line 1  (case 1 {(exit 99999999999999999999) 2})
+  at line 1  (exit 99999999999999999999)
+  called at line 1  (cond {(exit 99999999999999999999) 1})
+  at line 1  (exit 99999999999999999999)
+  at line 1  (exit 99999999999999999999)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (f 2))
+  at line 1  (exit "x")
+  called at line 1  (cond {(exit "x") 1})
+  at line 1  (exit "x")
+  called at line 1  (cond {T (exit "x")})
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (cond {NIL 1} {T (mod 9 4)}))
+--- exit 0

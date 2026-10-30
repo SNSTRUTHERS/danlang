@@ -1,0 +1,59 @@
+; flags: -w
+; 34-warn-fun.dl - danlang -w with fun: a warning on stderr when fun replaces a built-in, or a global that isn't a
+; function; none when it replaces a function (a library one, or the program's own).  The new definition is what
+; every caller gets from then on, the library's functions and code that ran before too; a fun in a function, or in a
+; loaded file, warns with its own place.  The last: print itself replaced, so the rest prints through it
+
+; a function replaced by a function: no warning, and callers that ran before see the new one
+(fun {greet} {:hello})
+(fun {use-greet} {list (greet) (greet)})
+(print (use-greet))
+(fun {greet} {:goodbye})
+(print (use-greet))
+
+; library functions replaced: no warning (a function by a function); the library's callers see them
+(print (even? 4) (odd? 4) (pow 2 3))
+(fun {even? n} {:my-even})
+(print (even? 4) (odd? 4) (pow 2 4))
+(print (square 3) (cube 3))
+(fun {square n} {list :my-square n})
+(print (square 3) (cube 3))
+
+; built-ins replaced: a warning, and the library's callers use the new ones
+(print (sum {1 2 3}) (avg {1 2 3}))
+(fun {sum l} {:my-sum})
+(print (sum {1 2 3}) (avg {1 2 3}))
+(fun {elem? x l} {:my-elem})
+(print (elem? 1 {1}) (has-element? {1} 1) (use "anything"))
+(fun {take n l} {list :my-take n})
+(print (take 1 {1 2}) (split 1 {1 2 3}) (best-of 2 {3 1 2}))
+
+; a global value replaced by a function: a warning
+(def {setting} 10)
+(fun {setting} {:now-a-function})
+(print (setting))
+(set {local-at-top} 1)
+(fun {local-at-top} {:replaced})
+(print (local-at-top))
+
+; fun inside a function, in a loaded file: their places
+(fun {define-later} {fun {neg? x} {:my-neg}})
+(define-later)
+(print (neg? -1) (negative? -1))
+(write-file "funs.dl" "; funs.dl\n\n(fun {pos? x} {:my-pos})\n(fun {loaded-fn} {:loaded})\n")
+(load "funs")
+(print (pos? 1) (positive? 1) (loaded-fn))
+
+; fun of what can't be a definition: errors, no warning
+(print (fun {} {x}) (fun {1 x} {x}) (fun {f x} 5) (fun 5 {}))
+
+; a built-in replaced in a loop's middle: the next call is the new one's
+(dotimes {i 3} (if (eq i 1) (fun {abs x} {:my-abs})) (write (abs -2) " "))
+(print)
+
+(print "the last: print replaced: the rest prints through it")
+(fun {print} {write "my-print:" &_ "\n"})
+(print 1 2 3)
+(print "a" {b})
+(each {x {1 2}} (print x))
+(print-to stdout "print-to isn't print")

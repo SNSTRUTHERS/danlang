@@ -101,7 +101,7 @@ public partial class Builtins
     private static LVal Made(LEnv e, LVal a, string fn) {
         LVal formals = a.Pop(0);
         LVal body = a.Pop(0);
-        if (!formals.IsQExpr || (formals.Cells ?? new List<LVal>()).Any(c => !c.IsSym)) return LVal.Err($"'{fn}' expects a list of symbols first");
+        if (!formals.IsQExpr || (formals.Cells ?? new LList()).Any(c => !c.IsSym)) return LVal.Err($"'{fn}' expects a list of symbols first");
         if (!body.IsQExpr) return LVal.Err($"'{fn}' expects a QExpr body");
         return LVal.Lambda(formals, body, e);
     }
@@ -153,8 +153,7 @@ public partial class Builtins
     // (A list made from another keeps the scope it was written in: Scope, which eval runs it in.  The other isn't
     // changed: values are shared)
     private static LVal Sublist(LVal v, int from, int count) {
-        var ret = LVal.Qexpr();
-        ret.Cells!.AddRange(v.Cells!.GetRange(from, count));
+        var ret = LVal.Qexpr(v.Cells!.Slice(from, count));
         ret.Scope = v.Scope;
         return ret;
     }
@@ -1084,7 +1083,7 @@ public partial class Builtins
     // f called with values as they are, not evaluated again; anything but a function is the evaluator's error
     public static LVal Apply(LEnv e, LVal f, params LVal[] args) {
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LVal.LEName(f.ValType)}, Expected {LVal.LEName(LVal.LE.FUN)}.");
-        if (f.BuiltinVal == null) return LVal.Apply(f, args.ToList());
+        if (f.BuiltinVal == null) return LVal.Apply(f, args);
         return LVal.ApplyBuiltin(e, f, args.ToList());
     }
 
@@ -1165,15 +1164,15 @@ public partial class Builtins
     }
 
     // The loops' binding form, {name x} ({i 10}, {x list}): the name, and x evaluated; or an error
-    private static LVal LoopSpec(LEnv e, LVal spec, string fn, out string name) {
-        name = "";
+    private static LVal LoopSpec(LEnv e, LVal spec, string fn, out Name name) {
+        name = null!;
         if (spec.Count != 2 || !spec[0].IsSym) return LVal.Err($"'{fn}' expects {{name value}} or a function first");
-        name = spec[0].SymVal;
+        name = spec[0].SymName;
         return spec[1].Eval(e);
     }
 
     // The loops' body, run with name item, in a scope of its own; an error, if one comes
-    private static LVal LoopBody(LEnv e, LVal a, string name, LVal item) {
+    private static LVal LoopBody(LEnv e, LVal a, Name name, LVal item) {
         var intr = LVal.CheckInterrupt();
         if (intr != null) return intr;
         var scope = new LEnv(e);
@@ -1193,7 +1192,7 @@ public partial class Builtins
             var l = LoopSpec(e, a.Pop(0), "each", out var name);
             if (l.IsErr) return l;
             if (!l.IsQExpr && !l.IsStr) return LVal.Err("'each' expects a list or a String");
-            foreach (var item in l.IsStr ? l.StrVal.Select(Chr).ToList() : l.Cells!) {
+            foreach (var item in l.IsStr ? new LList(l.StrVal.Select(Chr)) : l.Cells!) {
                 var r = LoopBody(e, a, name, item);
                 if (r.IsErr) return r;
             }
@@ -1206,7 +1205,7 @@ public partial class Builtins
         var lst = a.Pop(0, e);
         if (lst.IsErr) return lst;
         if (!lst.IsQExpr && !lst.IsStr) return LVal.Err("'each' expects a list or a String");
-        foreach (var item in lst.IsStr ? lst.StrVal.Select(Chr).ToList() : lst.Cells!) {
+        foreach (var item in lst.IsStr ? new LList(lst.StrVal.Select(Chr)) : lst.Cells!) {
             var r = Apply(e, f, item);
             if (r.IsErr) return r;
         }
@@ -1217,7 +1216,7 @@ public partial class Builtins
     // them; NIL (or the first error)
     private static LVal Dotimes(LEnv e, LVal a) {
         if (a.Count < 2) return LVal.Err("'dotimes' supplied too few parameters");
-        string? name = null;
+        Name? name = null;
         LVal n;
         LVal? f = null;
         if (a[0].IsQExpr) {
@@ -1234,10 +1233,17 @@ public partial class Builtins
         }
         n = Whole(n, "dotimes", "a count", out var count);
         if (n.IsErr) return n;
-        for (BigInteger i = 0; i < count; i++) {
-            var r = f != null ? Apply(e, f, LVal.Number(i)) : LoopBody(e, a, name!, LVal.Number(i));
-            if (r.IsErr) return r;
-        }
+        // (a count that fits a long counted in one: the same numbers)
+        if (count >= long.MinValue && count <= long.MaxValue)
+            for (long i = 0; i < (long)count; i++) {
+                var r = f != null ? Apply(e, f, LVal.Number(i)) : LoopBody(e, a, name!, LVal.Number(i));
+                if (r.IsErr) return r;
+            }
+        else
+            for (BigInteger i = 0; i < count; i++) {
+                var r = f != null ? Apply(e, f, LVal.Number(i)) : LoopBody(e, a, name!, LVal.Number(i));
+                if (r.IsErr) return r;
+            }
         return LVal.NIL();
     }
 

@@ -1,0 +1,21 @@
+; 01-numbers-kinds: the library's number functions (floor ceil round even? odd? square cube >=0 <=0 >0 <0 !=0 !=1
+; positive? negative? avg mod div divmod pow) over every kind of value: integers small, cached and past a long,
+; fixed decimals, rationals, complex numbers, strings, characters, atoms, T, NIL, lists, functions.  Each value with
+; its kind; an error as its message.
+(fun {kind x} {?((int? x) :int ?((fixed? x) :fixed ?((rational? x) :rat ?((complex? x) :complex (type-of x)))))})
+(fun {sk x} {+ (repr x) (kind x)})
+(def {big small} 9223372036854775807 -9223372036854775808)
+(def {vals} [0 1 -1 2 -2 3 -3 7 -7 10 -10 1023 -1024 -1025 65535 65536 -65536 100000 -100000
+  big small (+ big 1) (- small 1) (* big 4) (- (* big 4)) (/ big 2) (/ small 2)
+  0.0 1.0 -1.0 2.5 -2.5 0.5 -0.5 3.75 -3.75 10.00 1/2 -1/2 7/2 -7/2 1/3 -1/3 22/7 -22/7
+  (complex 1 2) (complex -1 -2) (complex 0 2) (complex 0.5 1) "a" \c :x T NIL {1 2} (fn {x} {x})])
+(fun {show f x} {try (sk (f x)) (+ "E:" &err)})
+(fun {show2 f x y} {try (sk (f x y)) (+ "E:" &err)})
+(each {f [floor ceil round even? odd? square cube >=0 <=0 >0 <0 !=0 !=1 positive? negative? +? -?]}
+  (print (map (show f) vals)))
+(def {divs} [1 -1 2 -2 3 7 -7 10 0 big small (+ big 1) 1/2 -3/2 2.5 0.0 (complex 0 1)])
+(each {f [mod % div divmod]} (each {d divs} (print (map (fn {x} {show2 f x d}) vals))))
+(def {pows} [0 1 -1 2 -2 3 7 -7 10 1/2 -3/2 2.5 2.0 -2.0 0.0 (complex 0 1) 31 32 63 64 -63 "x"])
+(each {d pows} (print (map (fn {x} {show2 pow x d}) vals)))
+(print (map (fn {x} {show2 pow 2 x}) [0 1 2 3 10 31 32 62 63 64 100 -1 -2 -10 2.0 -3.0 1/2 2.5]))
+(print (map (show avg) [{1 2 3} {} NIL {1 2.5} {1/2 1/3} {big big} {small -1} {1 "a"} {(complex 0 1) 1} 5 "s" {1 {2}}]))

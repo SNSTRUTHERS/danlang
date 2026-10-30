@@ -1,0 +1,18 @@
+--- stdout
+6i | 6i 6i 6i 2i 1f 0i 1i 12i {1 2} 36i 216i 36i 1/6r 1i 216i 7/2r 6i 6i 5i 6i
+-6i | -6i -6i -6i 2i 1.5f 0i -2i -12i {-2 2} 36i -216i 36i -1/6r 1i -216i -5/2r -6i -6i -6i 5i
+4611686018427387904i | 4611686018427387904i 4611686018427387904i 4611686018427387904i 0i 1.5f 1i 1152921504606846976i 9223372036854775808i {1152921504606846976 0} 21267647932558653966460912964485513216i 98079714615416886934934209737619787751599303819750539264i 21267647932558653966460912964485513216i 1/4611686018427387904r 1i 98079714615416886934934209737619787751599303819750539264i 4611686018427387905/2r 4611686018427387904i 4611686018427387904i 5i 4611686018427387904i
+18446744073709551616i | 18446744073709551616i 18446744073709551616i 18446744073709551616i 0i 1f 1i 4611686018427387904i 36893488147419103232i {4611686018427387904 0} 340282366920938463463374607431768211456i 6277101735386680763835789423207666416102355444464034512896i 340282366920938463463374607431768211456i 1/18446744073709551616r 1i 6277101735386680763835789423207666416102355444464034512896i 18446744073709551617/2r 18446744073709551616i 18446744073709551616i 5i 18446744073709551616i
+9/2r | 4i 5i 5i 1/2r 2i 0i 1i 9i {1 1/2} 81/4r 729/8r 81/4r 2/9r 1i 729/8r 11/4r 9/2r 9/2r 9/2r 5i
+-9/2r | -5i -4i -5i 7/2r 1/2r 0i -2i -9i {-2 7/2} 81/4r -729/8r 81/4r -2/9r 1i -729/8r -7/4r -9/2r -9/2r -9/2r 5i
+4.5f | 4i 5i 5i 0.5f 2f 0i 1i 9i {1 0.5} 20.25f 91.125f 20.25f 2/9r 1i 91.125f 11/4r 9/2r 4.5f 4.5f 5i
+-4.5f | -5i -4i -5i 3.5f 0.5f 0i -2i -9i {-2 3.5} 20.25f -91.125f 20.25f -2/9r 1i -91.125f -7/4r -9/2r -4.5f -4.5f 5i
+6f | 6i 6i 6i 2f 1f 0f 1i 12i {1 2} 36f 216f 36f 1/6r 1i 216f 7/2r 6i 6f 5i 6f
+-6f | -6i -6i -6i 2f 1.5f 0f -2i -12i {-2 2} 36f -216f 36f -1/6r 1i -216f -5/2r -6i -6f -6f 5i
+0f | 0i 0i 0i 0f 0f 0f 0i 0i {0 0} 0f 0f 0f E:Division by zero. 1i 0f 1/2r 0i 0f 0f 5i
+3+4ic | E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number -7+24ic -117+44ic -7+24ic 3/25-4/25ic 1i -117+44ic 2+2ic 3+4ic 3+4ic 3+4ic 5i
+1/2-1ic | E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number -3/4-1ic -11/8+1/4ic -3/4-1ic 2/5+4/5ic 1i -11/8+1/4ic 3/4-1/2ic 1/2-1ic 1/2-1ic 1/2-1ic 5i
+2.5+0.5ic | E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number E:'truncate' expects a real number 6+2.5ic 13.75+9.25ic 6+2.5ic 5/13-1/13ic 1i 13.75+9.25ic 7/4+1/4ic 5/2+1/2ic 2.5+0.5ic 2.5+0.5ic 5i
+--- stderr
+
+--- exit 0

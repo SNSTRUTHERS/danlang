@@ -1,0 +1,63 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> :here
+danlang>=> :inner-item
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> :matched
+danlang>=> :deep
+danlang>=> NIL
+danlang>=> {{:inner 1} {:inner 2} :three {:other 4}}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {"Unbound Symbol 'x'" "Unbound Symbol 'x'" "Unbound Symbol 'x'" "Unbound Symbol 'x'"}
+danlang>=> Error: Unbound Symbol 'x'
+danlang>=> Error: Unbound Symbol 'x'
+danlang>=> NIL
+danlang>=> {:zero 0 2 1 0 2}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: Unbound Symbol 'nowhere'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} 5)
+  called at line 1  (case (cond {NIL 0} (cons T {3})) {(case 3 {1 0} (cons 3 ...
+  at (made, not read)  {{:inner 1}}
+  called at line 1  (p 1 2 (f 1))
+  at (made, not read)  {{:inner 2}}
+  called at line 1  (p 1 2 (f 2))
+  at (made, not read)  {:three}
+  called at line 1  (p 1 2 (f 3))
+  at (made, not read)  {{:other 4}}
+  called at line 1  (p 1 2 (f 4))
+  at (made, not read)  {:three}
+  called at line 1  (p 1 2 (f x))
+  at line 1  (list :inner x)
+  called at line 1  (cond {NIL 0} (cons T {(list :inner x)}))
+  called at line 1  (fx 1)
+  at line 1  (case x {3 :three} {x (list :other x)})
+  called at line 1  (fx 3)
+  at (made, not read)  {1}
+  called at line 1  (p 1 2 (g x))
+  at (made, not read)  {0}
+  called at line 1  (p 1 2 (g x))
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 2} 5)
+  called at line 1  (case 1 {1 (cond {NIL 2} 5)})
+  at (made, not read)  {<function>(fn NIL {if &_ (if (eval (head (fst &_))) (eva...
+  called at line 1  (cond {NIL 0} (to-sym "nowhere"))
+--- exit 0

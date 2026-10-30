@@ -1,0 +1,32 @@
+--- stdout
+say NIL
+say 1
+say T
+say 2
+say T
+say 3
+2
+2 2 2
+Error: 'head' passed an empty list 3 :b
+:no :was-v
+:was-v 2
+say :called
+say :value-called
+:fn-test :value-called
+2 2 {a b}
+{:default 2 :default 4}
+2 2 :b
+3
+{{(> 2 1) :read-clause}} Error: 'head' passed an empty list Error: Selection not found
+2 :x
+1 2 :none
+:lists-equal :q :sum
+say NIL
+say :v
+say T
+say NIL
+say T
+:w :w
+--- stderr
+
+--- exit 0

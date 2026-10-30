@@ -1,0 +1,38 @@
+; 13-spaceship: <=> used directly (the library's floor and ceil use it): each test (= <> > < >= => <= =<) against 0,
+; the last case a value alone, the first case that's true taken, the value evaluated where <=> is (only the last item
+; of a longer case, the rest never evaluated), n evaluated once; numbers of every kind (a complex one by its real
+; part); every error's message; its value isn't in tail position (each level nests, 10000 at most).
+(fun {say x} {do (write x " ") x})
+(fun {sign n} {<=> n {> :pos} {< :neg} {:zero}})
+(print "sign" (map sign (list 1 -1 0 1/2 -1/2 0.0 -0.001 9223372036854775808 -9223372036854775809 (complex 0 1) (complex -1 5))))
+(print "tests" (<=> 5 {= :z}) (<=> 0 {<> :nz} {= :z}) (<=> 3 {>= :ge}) (<=> 0 {=> :ge2}) (<=> -2 {<= :le}) (<=> 0 {=< :le2}))
+(print "tests" (<=> 0 {> 1} {< 2} {>= 3}) (<=> 0 {<> 1} {= 2}) (<=> -1 {>= 1} {=> 2} {<= 3}) (<=> 1 {<= 1} {=< 2} {<> 3}))
+(print "first true" (<=> 2 {< :a} {= :b} {<> :c} {:d}) (<=> 0 {= (say :eq)} {= (say :eq2)}) (<=> -5 {< :a} {< :b}))
+(print "none" (<=> 1 {< 1}) (<=> 0 {> 1} {< 2}) (<=> -1 {= 1}))
+(print "order" (<=> (say 1) {< (say :a)} {> (say :b)} {(say :c)}))
+(print "longer case" (<=> 1 {> (say 1) (say 2) (say 3)}) (<=> 1 {> {a} {b}}) (<=> 0 {= 1 2 3 4}))
+(print "values" (<=> 1 {> {q}}) (<=> 1 {(+ 1 2)}) (<=> 1 {> [1 2]}) (<=> 1 {> :atom}) (<=> 1 {> "str"}) (<=> 1 {> NIL}))
+(print "cmp" (<=> (cmp 1 2) {< :less} {:not-less}) (<=> (cmp "b" "a") {> :after}) (<=> (cmp {1 2} {1 2}) {= :same}))
+
+; where its value is evaluated: the scope <=> is in (a function's, a let's, a loop's)
+(def {x} :gx)
+(fun {f n} {<=> n {> x} {< (list :neg n)} {(do (set {x} :local) (list n x))}})
+(print "scope" (f 1) (f -1) (f 0) x (let {{x :let-x}} (<=> 1 {> x})) (dotimes {x 2} (print "  loop" (<=> x {> x} {:zero}))))
+(fun {g n} {<=> n {> (set {made} :here)} {:none}})
+(print "set in a value" (g 1) (try made &err))
+
+; errors: n, the cases, a value
+(fun {err c} {try (eval c) (repr &err)})
+(each {c {{<=> :a {> 1}} {<=> "s" {> 1}} {<=> NIL {> 1}} {<=> 1} {<=> 1 5} {<=> 1 {}} {<=> 1 {?? 1}} {<=> 1 {1} {> 2}}
+  {<=> 1 {= 1} {:a :b}} {<=> 1 {GT 1}} {<=> 1 {< 1} {}} {<=> (error "e") {> 1}} {<=> 1 {> (error "v")}} {<=> 1 {> zz}}
+  {<=> 1 {> 1} 2} {<=> 1 {> 1} {:a}}}} (print "try" c (err c)))
+(print "as a value" (try (map <=> {1}) &err) (try (<=> 1) &err) (repr <=>) (type-of <=>))
+
+; not a tail position: each level nests
+(fun {loop n acc} {<=> n {> (loop (- n 1) (+ acc 1))} {acc}})
+(print "depth" (loop 100 0) (loop 9998 0) (loop 9999 0) (try (loop 10000 0) &err))
+(fun {loop2 n} {if (zero? n) :bottom (<=> n {> (loop2 (- n 1))})})
+(print "depth" (loop2 9999) (try (loop2 10000) &err))
+(fun {loop3 n} {<=> n {> (do (loop3 (- n 1)))} {:done}})
+(print "depth" (loop3 9999) (try (loop3 10000) &err))
+(print "floor" (floor 5/2) (floor -5/2) (ceil 5/2) (ceil -5/2) (floor 9223372036854775807/2) (ceil -9223372036854775809/2))

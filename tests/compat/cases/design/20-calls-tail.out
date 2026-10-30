@@ -1,0 +1,17 @@
+--- stdout
+abc :done-a {:done-b {:x :y}} {:done-c :x} {:done-b {:x :y}} :done-a
+partial at the end <function>(fn {a b} {list a b}) {1 2} {1 2}
+forms 12000 :done-let :done-eval :done-unpack :done-ghost
+method 11000 11000
+cond :done-cond
+pick {:s1 0} {:s1 0} {:s1 0} {:s1 0} <function>(fn {a b c} {if (zero? n) (list :s4 a b c) (pick (- n 1) 1 2)}) <function>(fn {a} {if (zero? n) (list :s2 a) (pick (- n 1))}) The function takes 1 argument, not 2 The function takes 1 argument, not 4
+nest 9000 Too deep: more than 10000 calls nested 9000 Too deep: more than 10000 calls nested T Too deep: more than 10000 calls nested
+nest 1 Too deep: more than 10000 calls nested Too deep: more than 10000 calls nested
+caught deep in a tail loop
+--- stderr
+Error: 20-calls-tail.dl: deep in a tail loop
+  at 20-calls-tail.dl:42  (error "deep in a tail loop")
+  called at 20-calls-tail.dl:41  (loop-to-error n)
+  called at 20-calls-tail.dl:44  (wrapper 12000)
+  called at 20-calls-tail.dl:45  (outer-call)
+--- exit 1

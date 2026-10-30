@@ -1,0 +1,14 @@
+--- stdout
+1024 1.41421356237 5 4 2i
+4 3 NIL T
+57/2 {0 1 4}
+1 0
+3 1
+1 12
+The function takes 2 arguments, not 3
+The function takes 2 arguments, not 3
+--- stderr
+Error: 02-math-in-library.dl: The function takes 2 arguments, not 3
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at 02-math-in-library.dl:10  (f 1 2 (mod (pow 3 3) 5))
+--- exit 1

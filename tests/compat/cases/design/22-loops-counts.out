@@ -1,0 +1,49 @@
+--- stdout
+huge stopped at 5 stopped at 3 stopped at 2
+huge stopped at 0 stopped at 4
+huge fn fn stopped at 3
+huge set! four {3 2 1 0}
+count 0 {NIL NIL}
+count 1 {NIL {{0 :int}}}
+count 3 {NIL {{0 :int} {1 :int} {2 :int}}}
+count -1 {NIL NIL}
+count -5 {NIL NIL}
+count -9223372036854775808 {NIL NIL}
+count 2 {NIL {{0 :int} {1 :int}}}
+count 2 {NIL {{0 :int} {1 :int}}}
+count 3 {NIL {{0 :int} {1 :int} {2 :int}}}
+count 3 {NIL {{0 :int} {1 :int} {2 :int}}}
+count 2 {NIL {{0 :int} {1 :int}}}
+count 0 {NIL NIL}
+count 0 {NIL NIL}
+count 3 {NIL {{0 :int} {1 :int} {2 :int}}}
+bad count 2.5 {"'dotimes': a count must be a whole number, not 2.5" NIL}
+bad count 1/2 {"'dotimes': a count must be a whole number, not 1/2" NIL}
+bad count -1/2 {"'dotimes': a count must be a whole number, not -1/2" NIL}
+bad count 1+1i {"'dotimes': a count must be a whole number, not 1+1i" NIL}
+bad count :a {"'dotimes': a count must be a whole number, not :a" NIL}
+bad count "3" {"'dotimes': a count must be a whole number, not \"3\"" NIL}
+bad count {3} {"'dotimes': a count must be a whole number, not {3}" NIL}
+bad count \3 {"'dotimes': a count must be a whole number, not \\3" NIL}
+error count Error: no count Error: no count
+0:int 1:int 2:int 0 1 fn form NIL NIL NIL
+fn form 'dotimes': a count must be a whole number, not 2.5 Second 'dotimes' parameter must be a function The function takes 0 arguments, not 1
+0 1 fn form NIL NIL NIL
+bad specs 'dotimes' expects {name value} or a function first 'dotimes' expects {name value} or a function first 'dotimes' expects {name value} or a function first 'dotimes' supplied too few parameters
+:symbol :sexpr :list each NIL NIL NIL
+1 each 12692500 each stopped at 2
+each 'each' expects a list or a String 'each' expects a list or a String First 'each' parameter must be a function or {name list} 'each' expects a list or a String
+each body 1
+second body 1
+each body 2
+second body 2
+q-body 1 q-body 2 
+range {9223372036854775805 9223372036854775806 9223372036854775807 9223372036854775808} {-9223372036854775807 -9223372036854775808 -9223372036854775809 -9223372036854775810}
+range {:int :int :int :int} {0 1/4 1/2 3/4} {0 0.25 0.5 0.75} {1 2 3}
+range {:fixed :fixed :fixed} {:int :int} {3 2 1} NIL NIL 'range' step cannot be 0
+range 1000000 'range' is too long 1000 'range' takes at most 3 arguments, not 4
+0 1 2 once {3 10} {{3 2 1} {9}} 3
+--- stderr
+Error: 22-loops-counts.dl: the last error, at 7
+  at 22-loops-counts.dl:45  (error (+ "the last error, at " i))
+--- exit 1

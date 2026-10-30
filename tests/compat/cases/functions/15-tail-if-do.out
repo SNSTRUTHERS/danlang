@@ -1,0 +1,21 @@
+--- stdout
+1000000
+:checkpoint 786432
+:checkpoint 524288
+:checkpoint 262144
+2000000
+:then-done :else-done
+25000
+:mixed-done
+10000100000
+2000 {1 2 3 4 5} 2000
+:even :odd :odd
+{a list} str <function>(fn {n v} {if (zero? n) v (ret-kind (- n 1) v)}) <function>(eq 1)
+an argument error: the call isn't made
+Error: at the end
+--- stderr
+Error: 15-tail-if-do.dl: at the end
+  at 15-tail-if-do.dl:46  (error "at the end")
+  called at 15-tail-if-do.dl:50  (err-at-end 100000)
+  called at 15-tail-if-do.dl:51  (start-loop)
+--- exit 1

@@ -1,0 +1,15 @@
+; 02-local-tl-distinct: distinct's code calls remove-all with the list's tail, which binds hd and tl when the tail
+; isn't NIL (a list of two items or more), and a name bound in a call is a local one from then on: calls headed by
+; it take their general way.  The probe: (tl v (g)) is Op2's (tl is +) while tl is no local's name, and an error made
+; right after says where (g)'s code was ({+ 70000 70001}); once tl is a local's name somewhere, (tl v (g))
+(def {tl} +)
+(fun {g} {+ 70000 70001})
+(fun {p a b} {+ a b})
+(fun {probe} {p v v (tl v (g))})
+(map distinct {{1} {2} {3} {4 5} {6 7 6}})
+(def {v} 100003)
+(probe)
+(def {v} 100003)
+(probe)
+(def {v} 100003)
+(probe)

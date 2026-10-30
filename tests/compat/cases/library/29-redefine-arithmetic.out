@@ -1,0 +1,42 @@
+--- stdout
+1 -3 0 4 3 16 8 1/4 3/2 8 T
+minus 7 6
+1
+minus 1/2 -5/2
+<function>(fn {b} {do (print "minus" a b) (orig-minus a b)})
+3
+0
+4 3 9223372036854775809
+1/4
+13 -2 -15 3
+1 -3
+{:times 3 3} {:times 2 {:times 2 2}} Error: All parameters to operator '-' must be numbers. 6
+4
+4 1/4 7 0 4 1/2
+Error: All parameters to operator '-' must be numbers.
+:my-trunc
+Error: All parameters to operator '-' must be numbers.
+8
+1.41421356237
+Error: All parameters to operator '-' must be numbers.
+4 5 -5 -4 5 -5
+8 5.65685424949
+2 3 8
+NIL NIL T T NIL NIL
+T NIL T {1 2 3} {3 2 1}
+T T NIL
+NIL
+--- stderr
+29-redefine-arithmetic.dl:13: warning: def replaces the built-in - with a function
+29-redefine-arithmetic.dl:22: warning: def replaces the built-in - with a function
+29-redefine-arithmetic.dl:26: warning: def replaces the built-in * with a function
+29-redefine-arithmetic.dl:30: warning: def replaces the built-in / with a function
+29-redefine-arithmetic.dl:35: warning: fun replaces the built-in trunc with a function
+29-redefine-arithmetic.dl:49: warning: def replaces the built-in <= with a function
+29-redefine-arithmetic.dl:56: warning: fun replaces the built-in trunc with a function
+Error: 29-redefine-arithmetic.dl: no trunc of 1
+  at 29-redefine-arithmetic.dl:56  {error (+ "no trunc of " x)}
+  called at <BUNDLE>\lib\globals.dl:121  (trunc a)
+  called at <BUNDLE>\lib\globals.dl:136  (floor (+ a 1/2))
+  called at 29-redefine-arithmetic.dl:59  (rounded {1/2 3/2})
+--- exit 1

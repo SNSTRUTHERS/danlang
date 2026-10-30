@@ -1,0 +1,24 @@
+--- stdout
+7 0 1 {1 0} 49 NIL T {{7 7}} {1} {1 7} T {7 1} 7
+-7 0 1 {1 0} 49 NIL T {{-7 -7}} {1} {1 -7} T {-7 1} -7
+0 Error: Division by zero. Error: Division by zero. Error: Division by zero. 0 NIL T {{0 0}} {1} {1 0} T {0 1} 0
+9223372036854775808 0 1 {1 0} 85070591730234615865843651857942052864 NIL T {{9223372036854775808 9223372036854775808}} {1} {1 9223372036854775808} T {9223372036854775808 1} 9223372036854775808
+7/2 0 1 {1 0} 49/4 NIL T {{7/2 7/2}} {1} {1 7/2} T {7/2 1} 7/2
+-2.5 0 1 {1 0} 6.25 NIL T {{-2.5 -2.5}} {1} {1 -2.5} T {-2.5 1} -2.5
+1+1i 0 1 {1 0} 2i NIL T {{1+1i 1+1i}} {1} {1 1+1i} T {1+1i 1} 1+1i
+"ab" Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'div' on non-numbers Error: Cannot perform 'divmod' on non-numbers Error: 'pow' expects numbers NIL T {{"ab" "ab"}} {1} {1 "ab"} T {"ab" 1} "ab"
+{1 2} Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'div' on non-numbers Error: Cannot perform 'divmod' on non-numbers Error: 'pow' expects numbers NIL T {{{1 2} {1 2}}} {1} {1 {1 2}} T {{1 2} 1} {1 2}
+NIL Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'div' on non-numbers Error: Cannot perform 'divmod' on non-numbers Error: 'pow' expects numbers NIL T {{NIL NIL}} {1} {1 NIL} T {NIL 1} NIL
+{1 2 1} {{1 1} {2 2} {1 1}} {1 2 1 1 2 1} {1} {1 {1 2 1}} {{1 2 1}} NIL NIL T
+{{1} {1}} {{{1} {1}} {{1} {1}}} {1 1 1 1} {1} {1 {{1} {1}}} {{{1} {1}}} NIL NIL T
+{{1 2} {1 2}} {{{1 2} {1 2}} {{1 2} {1 2}}} {1 2 1 2 1 2 1 2} {1} {1 {{1 2} {1 2}}} {{{1 2} {1 2}}} NIL NIL T
+NIL NIL NIL {1} {1 NIL} {NIL} NIL NIL T
+{{<buffer>{97 98}} {<buffer>{98}} T {<buffer>{97 98}} NIL <buffer>{97 98} <buffer>{97 98} {{<buffer>{97 98} <buffer>{97 98}}}}
+{{<buffer>{120 98} <buffer>{97 98}} {<buffer>{97 98} <buffer>{98}} NIL {<buffer>{120 98}} T <buffer>{97 98} <buffer>{120 98} {{<buffer>{120 98} <buffer>{97 98}}}}
+{{<buffer>{120 98}} {<buffer>{98}} T {<buffer>{120 98}} NIL <buffer>{120 98} <buffer>{120 98} {{<buffer>{120 98} <buffer>{120 98}}}}
+{{<hash>{{:k 1}}} {1} T {<hash>{{:k 1}}} <hash>{{:k 1}} {<hash>{{:k 1}} h2} {{<hash>{{:k 1}} <hash>{{:k 1}}}} T}
+{{<hash>{{:k 2}} <hash>{{:k 1}}} {1 <hash>{{:k 1}}} NIL {<hash>{{:k 2}}} <hash>{{:k 2}} {<hash>{{:k 2}} h2} {{<hash>{{:k 2}} <hash>{{:k 1}}}} T}
+{{<hash>{{:k 2}}} {1} T {<hash>{{:k 2}}} <hash>{{:k 2}} {<hash>{{:k 2}} h2} {{<hash>{{:k 2}} <hash>{{:k 2}}}} T}
+--- stderr
+
+--- exit 0

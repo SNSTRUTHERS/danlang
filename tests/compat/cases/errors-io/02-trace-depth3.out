@@ -1,0 +1,37 @@
+--- stdout
+41
+{{:level1 5} {:level2 5} {:level3 5} {:level2-after 20} {:level1-after 41}}
+Error: level3 got zero
+{{:level1 0} {:level2 0} {:level3 0}}
+Error: level3 got zero
+Error: level3 got zero
+{{:level2 0} {:level3 0} {:level3 0}}
+Error: level3 got zero
+Error: level3 got zero
+Error: level3 got zero
+Error: level3 got zero
+Error: level3 got zero
+Error: level3 got zero
+Error: level3 got zero
+level3 got zero
+handled: level3 got zero
+T :error level3 got zero
+Error: level3 got zero
+{201 101 :bad 51}
+7
+Error: 'len' requires parameter of type string, list, hash or buffer
+the last: an error three calls deep
+run starts
+set binds the error as a value: do goes on
+Error: level3 got zero
+{{:level1 0} {:level2 0} {:level3 0}}
+run starts
+set binds the error as a value: do goes on
+--- stderr
+Error: 02-trace-depth3.dl: level3 got zero
+  at 02-trace-depth3.dl:10  (error "level3 got zero")
+  called at 02-trace-depth3.dl:14  (level3 x)
+  called at 02-trace-depth3.dl:20  (level2 x)
+  called at 02-trace-depth3.dl:63  (level1 0)
+  called at 02-trace-depth3.dl:70  (run)
+--- exit 1

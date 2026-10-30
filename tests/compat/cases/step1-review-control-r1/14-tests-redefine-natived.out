@@ -1,0 +1,83 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: All parameters to operator '*' must be numbers.
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: All parameters to operator '*' must be numbers.
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {{NIL T} {T NIL} {NIL NIL} {NIL NIL}}
+danlang>=> NIL
+danlang>=> {{NIL T} {T NIL} {T NIL}}
+danlang>=> NIL
+danlang>=> {{3 4 4} {6 7 7} {3 4 4} {6 7 7} {3 4 4}}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Too deep: more than 10000 calls nested
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{1 2 1} {2 3 0} {2 3 2} {2 3 0}}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{{1 4} {1 5} {2 6}} {{0 4} :my-zip} {{2 4} {1 5} {2 6}} {{0 4} :my-zip} {{3 4} {1 5} {2 6}}}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{8 NIL} {16 T} {512 :my-even}}
+danlang>=> NIL
+danlang>=> {{8 NIL} {16 T}}
+danlang>=> Error: All parameters to operator '*' must be numbers.
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (* b (floor (/ a b)))
+  called at line 1  (mod 7 x)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (t1 2))
+  at <BUNDLE>\lib\globals.dl:148  (* b (floor (/ a b)))
+  called at line 1  (mod 7 x)
+  called at line 1  (t1 3)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (t1 2))
+  at <BUNDLE>\lib\globals.dl:91  (tail l)
+  called at <BUNDLE>\lib\globals.dl:91  (remove-all (fst l) (tail l))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  called at <BUNDLE>\lib\globals.dl:91  (distinct (remove-all (fst l) (tail l)))
+  at <BUNDLE>\lib\globals.dl:148  (* b (floor (/ a b)))
+  called at line 1  (mod 7 x)
+  called at line 1  (t1 x)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (t1 2))
+  at line 1  (list (floor (/ 7 2)) (ceil (/ 7 2)) (round 7/2))
+  called at line 1  (p 1 2 (t3 1))
+  at line 1  (list (floor (/ 7 2)) (ceil (/ 7 2)) (round 7/2))
+  called at line 1  (p 1 2 (t3 0))
+  at line 1  (list (floor (/ 7 2)) (ceil (/ 7 2)) (round 7/2))
+  called at line 1  (p 1 2 (t3 1))
+--- exit 0

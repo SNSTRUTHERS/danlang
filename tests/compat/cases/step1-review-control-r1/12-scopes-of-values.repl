@@ -1,0 +1,25 @@
+; 12-scopes-of-values: what a clause's value gives back remembers the clause's scope: a function made there (its
+; closure), a Q-expression written there (eval runs it there later, after that scope's names have changed), a list
+; list made; values a library function gives (zip's pairs remember their own call); set and set! in tests and values
+; changing the clause's scope; eval of each, and the place errors made right after say they were
+(fun {p a b} {+ a b})
+(fun {mk x} {cond {(> x 10) (fn {y} {list :big x y})} {(> x 0) {list :code x (mod x 3)}} {T [list :made x (floor (/ x 2))]}})
+(def {f1} (mk 20))
+(def {q1} (mk 5))
+(def {l1} (mk -3))
+(list (f1 1) (eval q1) (eval l1) (eval (mk 7)))
+(fun {mk2 x} {case (mod x 3) {0 (let {{z (* x 2)}} {list :let z x})} {1 (zip (list list) (list x))} {2 (do (set w (+ x 1)) {list :set w})}})
+(map (fn {x} {eval (mk2 x)}) (range 6))
+(map (fn {x} {map eval (mk2 x)}) {1 4})
+(fun {bump x} {do (set k 0) (cond {(do (set! {k} (+ k 1)) (> x k)) (list :bumped k)} {T (do (set! {k} 100) (list :reset k))}) (list :after k)})
+(map bump {0 1 5})
+(fun {chain x} {cond {(set acc (list x)) NIL} {(do (set acc (cons :t2 acc)) NIL) 0} {T (list :acc acc)}})
+(chain 9)
+(p 1 2 (eval (mk 5)))
+(p 1 2 (eval (mk -5)))
+(p 1 2 (eval (fst (mk2 1))))
+(p 1 2 (eval (mk2 3)))
+(each {x {5 5 5 5}} (eval (mk x)))
+(each {x {5 5 5 6}} (if (eq x 6) (p 1 2 (eval (mk x))) (eval (mk x))))
+(each {x {4 4 4 7}} (if (eq x 7) (p 1 2 (eval (fst (mk2 x)))) (eval (fst (mk2 x)))))
+(each {x {-4 -4 -4 -6}} (if (eq x -6) (p 1 2 (eval (mk x))) (eval (mk x))))

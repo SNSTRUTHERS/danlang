@@ -1,0 +1,23 @@
+--- stdout
+start
+exit :exit
+{exit 1}
+after a list holding exit
+after a q-expression holding exit
+after a hash holding exit
+exit
+after def of exit exit
+after set of exit exit
+after a do whose last value isn't exit
+after a map giving a list of exits
+after an each (its value NIL)
+:was-exit :was-exit :was-not
+nested goes on after exit's value
+:nested-done
+exit 
+holds.dl runs
+{exit}
+the last: a function's value, exit, at the top level: the program ends, status 0
+--- stderr
+stderr: before the exit value
+--- exit 0

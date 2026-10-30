@@ -1,0 +1,62 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> :list-made
+danlang>=> :b
+danlang>=> :scope-less
+danlang>=> :read
+danlang>=> :five
+danlang>=> NIL
+danlang>=> 2
+danlang>=> 2
+danlang>=> :let-bound
+danlang>=> :one
+danlang>=> NIL
+danlang>=> {NIL NIL}
+danlang>=> :from-hash
+danlang>=> :hash-case
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {T :copy}
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> :copy-handed
+danlang>=> :evaled-case
+danlang>=> NIL
+danlang>=> :unpacked
+danlang>=> :unpacked-no-scope
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond-copy {NIL 0} 5)
+  at (made, not read)  {2}
+  called at line 1  (p 1 2 (eval (list cond (list (> k 1) (mod k 3)))))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (eval (fst (read "(cond {(> k 1) (floor (/ k 2))} ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (my-case k {1 :a} {5 (floor (/ k 2))}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (tbl :c {NIL 1} {T (mod 9 4)}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (cond-copy {NIL 0} {T (mod 9 4)}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (via-unpack (list {NIL 1} {T (div 9 4)})))
+  at (made, not read)  {0}
+  called at line 1  (p 1 2 (eval (list cond (list (> i 1) (mod i 3)))))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (cond-copy {(> i 1) (mod i 3)}))
+--- exit 0

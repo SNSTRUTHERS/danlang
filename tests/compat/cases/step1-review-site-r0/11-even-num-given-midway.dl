@@ -1,0 +1,5 @@
+; 11-even-num-given-midway: as 10, but print gives 1 a Num (no plan changes) before the last call: now =0 isn't done
+; in the call, and it says where it is
+(fun {probe g args v bind} {do (print v) (if bind (set y 0) NIL) (list (unpack g args) y)})
+(fun {run g l} {map (fn {p} {probe g (fst p) (snd p) (thd p)}) l})
+(run even? (list [{-3} "x" T] [{-3} "x" T] [{-3} "x" T] [{-3} "x" T] [{-3} 1 NIL]))

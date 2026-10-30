@@ -1,0 +1,13 @@
+--- stdout
+each 1; each 2; dotimes 0; dotimes 1; while 1; while 2; 
+:a00 :a01 :a02 :a10 :a11 :a12 :b00 :b01 :b02 :b10 :b11 Error: an error, not an exit
+after the error
+{2 4 6}
+{2 3}
+123NIL
+012NIL
+6
+the last: exit 4.9 from a dotimes, in a while, in an each, in a function, inside output-of
+--- stderr
+stderr: before the exit
+--- exit 4

@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 // (exit code): thrown to the top (Program), past every built-in
@@ -34,7 +35,7 @@ public partial class LVal {
         set => _num = value;
     }
     public string Text = string.Empty;  // a string's or a character's text, a symbol's or an atom's name, an error's message
-    public List<LVal>? Cells = null;
+    public LList? Cells = null;
     private object? _x = null;      // a function's FunInfo, a hash's LHash, a stream's LStream, an error's code, exit's code, a tail call's TailInfo
 
     public string StrVal { get => Text; set => Text = value; }
@@ -74,7 +75,37 @@ public partial class LVal {
         public Func<LVal, LVal, LVal?>? Fast2;      //   built-in itself does it): Compiler.cs
         public Func<LVal, LVal, LVal, LVal?>? Fast3;
         public Func<LVal[], LVal?>? FastN;          // (any number of them)
-        public FunInfo Clone() => (FunInfo)MemberwiseClone();
+        public Native? Native;                      // a library function's native way (Natives.cs): not a copy's
+        public FunInfo Clone() {
+            var c = (FunInfo)MemberwiseClone();
+            c.Native = null;
+            return c;
+        }
+    }
+
+    // A function's formals' names, worked out once for their code (kept with it, as a body's Uses are, so closures
+    // made by the same code share them); none: two are one name, or there are more than a small scope holds
+    internal Name[]? FormalNames() {
+        if (_x is not CodeInfo info) {
+            Freeze();
+            _x = info = new CodeInfo();
+        }
+        if (info.NamesKnown) return info.Names;
+        info.NamesKnown = true;
+        if (Count > LEnv.Small) return null;
+        var names = new Name[Count];
+        for (int i = 0; i < names.Length; i++) {
+            names[i] = Cells![i].SymName;
+            for (int j = 0; j < i; j++) if (ReferenceEquals(names[j], names[i])) return null;
+        }
+        return info.Names = names;
+    }
+
+    // &1, &2 ...: each made once
+    private static Name[] _extras = new Name[8];
+    private static Name Extra(int n) {
+        if (n >= _extras.Length) Array.Resize(ref _extras, 2 * n);
+        return _extras[n] ??= Name.Of("&" + n);
     }
     private FunInfo? Fn => _x as FunInfo;
     private FunInfo F => _x as FunInfo ?? (FunInfo)(_x = new FunInfo());
@@ -119,16 +150,41 @@ public partial class LVal {
     // A value is shared once it's code (the reader's), a variable's, a hash's or a partial application's: then it's
     // frozen, and its list can't be changed in place (a built-in makes a new value, never changes one it's given)
     public bool Frozen = false;
+    internal bool Used;     // (an integer a native's way will give a Num, when its value's used: Natives.cs)
+
+    // (Freezing goes so many values deep at most: one deeper waits, its parts frozen when the outermost's are, so a list
+    // nested however deep is frozen without the host's stack running out)
+    private const int FreezeDepth = 10000;
+    private static int _freezing;
+    private static Stack<LVal>? _waiting;
 
     public LVal Freeze() {
         if (Frozen) return this;
         Frozen = true;
         if (_x == null && Cells == null) return this;
-        if (Cells != null) foreach (var c in Cells) c.Freeze();
+        if (_freezing >= FreezeDepth) {
+            (_waiting ??= new()).Push(this);
+            return this;
+        }
+        _freezing++;
+        FreezeParts();
+        if (--_freezing == 0 && _waiting != null)
+            while (_waiting.Count > 0) {
+                _freezing++;
+                _waiting.Pop().FreezeParts();
+                _freezing--;
+            }
+        return this;
+    }
+
+    private void FreezeParts() {
+        if (Cells != null) {
+            var a = Cells.Unfrozen(out int i, out int end);
+            for (; i < end; i++) a[i].Freeze();
+        }
         if (Bound != null) foreach (var b in Bound) b.Freeze();
         Formals?.Freeze();
         Body?.Freeze();
-        return this;
     }
 
     private void Mutable() {
@@ -201,7 +257,7 @@ public partial class LVal {
 
             case LE.SEXPR:
             case LE.QEXPR:
-                x.Cells = Cells?.Select(c => c.Copy()).ToList();
+                x.Cells = Cells == null ? null : new LList(Cells.Select(c => c.Copy()));
                 break;
         }
         x.Scope = Scope;
@@ -210,7 +266,7 @@ public partial class LVal {
 
     // T and NIL: one each, shared (frozen)
     private static readonly LVal _t = new LVal { ValType = LE.T, Frozen = true };
-    private static readonly LVal _nil = new LVal { ValType = LE.QEXPR, Cells = new List<LVal>(), Frozen = true };
+    private static readonly LVal _nil = new LVal { ValType = LE.QEXPR, Cells = new LList(), Frozen = true };
     public static LVal T() => _t;
     public static LVal NIL() => _nil;
     public static LVal Bool(bool b) => b ? _t : _nil;
@@ -458,16 +514,20 @@ public partial class LVal {
     public static LVal Sexpr() {
         LVal v = new LVal();
         v.ValType = LE.SEXPR;
-        v.Cells = new List<LVal>();
+        v.Cells = new LList();
         return v;
     }
+    public static LVal Sexpr(int capacity) => new LVal { ValType = LE.SEXPR, Cells = new LList(capacity) };      // (room for so many)
 
     public static LVal Qexpr() {
         LVal v = new LVal();
         v.ValType = LE.QEXPR;
-        v.Cells = new List<LVal>();
+        v.Cells = new LList();
         return v;
     }
+
+    // A list of these items (shared, as they are)
+    public static LVal Qexpr(LList cells) => new LVal { ValType = LE.QEXPR, Cells = cells };
 
     public static LVal Comment(string s) {
         LVal v = new LVal();
@@ -535,14 +595,14 @@ public partial class LVal {
     // Helper methods
     public LVal Add(LVal x) {
         Mutable();
-        Cells = Cells ?? new List<LVal>();
+        Cells = Cells ?? new LList();
         Cells.Add(x);
         return this;
     }
 
     public LVal Join(LVal y) {
         Mutable();
-        Cells = Cells ?? new List<LVal>();
+        Cells = Cells ?? new LList();
         if (y.Cells != null) Cells?.AddRange(y.Cells);
         return this;
     }
@@ -791,6 +851,7 @@ public partial class LVal {
         Interrupted = false;
         var f = NoteFn;
         if (f == null) return Builtins.SysErr("intr");
+        PlanEpoch++;            // (what's running doesn't go as it went: its function runs in the middle of it)
         var args = new List<LVal> { Atom("interrupt") };
         var r = f.BuiltinVal != null ? ApplyBuiltin(NoteEnv!, f, args) : Apply(f, args);
         if (r.IsErr) return r;
@@ -862,7 +923,7 @@ public partial class LVal {
     // application).  Values are shared: a built-in makes new ones, never changes those it's given.  OUT: the call's
     // value, if that's it (null: the call goes on, with a the values)
     private static LVal? ValueArgs(LVal f, List<LVal> vals, out LVal a) {
-        a = Sexpr();
+        a = Sexpr((f.Bound?.Count ?? 0) + vals.Count);
         if (f.Bound != null) a.Cells!.AddRange(f.Bound);
         foreach (var v in vals) {
             if (v.IsErr && !f.TakesErrors) return v;
@@ -896,62 +957,127 @@ public partial class LVal {
     // was made in: lexical scope), after those a partial application bound (its Env), the formals first, then &1, &2
     // ... and &_ for the rest; if it has all it needs, its body runs there; if not, it's a new function with those
     // bound (partial application).  The function isn't changed.  A call in the body's tail position comes back as a
-    // TAIL value and runs here, in its place
+    // TAIL value and runs here, in its place.  A library function with a native way (Natives.cs) has its value from
+    // that, when it's one the native is sure of; when its code runs instead, the Site it leaves is kept for the way it
+    // went, if no plan changed on the way and its value isn't an error
     public static LVal Apply(LVal f, List<LVal> vals, bool argsChecked = false) {
         if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
         ++_depth;
         try {
-            while (true) {
-                var intr = CheckInterrupt();
-                if (intr != null) return intr;
-                var fi = f.Fn!;
-                if (!argsChecked && !fi.IsFexpr) {
-                    for (int i = 0; i < vals.Count; i++) if (vals[i].IsErr) return vals[i];
-                }
-                argsChecked = false;
-
-                var formals = fi.Formals!.Cells!;
-                var scope = new LEnv(fi.Closure) { IsCall = true };
-                if (fi.Env != null && fi.Env.Count > 0) scope.CopyFrom(fi.Env);
-
-                // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
-                LVal? extras = null;
-                int k = 0;
-                for (int i = 0; i < vals.Count; i++) {
-                    var val = vals[i];
-                    if (k < formals.Count) scope.Put(formals[k++].SymName, val);
-                    else {
-                        (extras ??= Qexpr()).Add(val);
-                        scope.Put($"&{extras.Count}", val);
-                    }
-                }
-                if (extras != null) scope.Put(Name.Rest, extras);     // (none: NIL, the call scope's own)
-
-                if (k < formals.Count) {
-                    var p = f.CloneFun();
-                    p.Formals = Qexpr();
-                    for (int i = k; i < formals.Count; i++) p.Formals.Add(formals[i]);
-                    p.Formals.Freeze();
-                    p.Env = new LEnv();
-                    foreach (var kv in scope.Entries) p.Env.SetLocal(kv.Key, kv.Value);
-                    return p;
-                }
-                var body = fi.Body!;
-                if (extras != null && !body.Mentions(Uses.Extras)) {
-                    var takes = vals.Count - extras.Count;
-                    return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
-                }
-
-                if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
-                var r = body.CallOf().Tail(scope);
-                if (r.ValType != LE.TAIL) return r;
-                f = r.TailFn!;
-                vals = r.TailArgs!;
-            }
+            return Calls(f, vals, argsChecked);
         }
         finally {
             --_depth;
         }
+    }
+
+    // A call of a function with no native way, no values bound already, and formals all different, as many as the
+    // values (none an error: CallNode's): as Apply does it, the values bound in the call's new scope as they are
+    internal static LVal ApplyNew(FunInfo fi, Name[] names, LVal[] vals, bool argsChecked = true) {
+        if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
+        ++_depth;
+        try {
+            var intr = CheckInterrupt();
+            if (intr != null) return intr;
+            if (!argsChecked) foreach (var v in vals) if (v.IsErr) return v;
+            var scope = new LEnv(fi.Closure) { IsCall = true };
+            scope.BindNew(names, vals);
+            var body = fi.Body!;
+            if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
+            var r = body.CallOf().Tail(scope);
+            return r.ValType != LE.TAIL ? r : Calls(r.TailFn!, r.TailArgs!, false);
+        }
+        finally {
+            --_depth;
+        }
+    }
+
+    // A function (not a built-in) applied to values, as Apply does it (by ApplyNew, for one it can do)
+    internal static LVal Apply(LVal f, LVal[] vals) {
+        var fi = f.Fn!;
+        if (!fi.IsFexpr && fi.Native == null && (fi.Env == null || fi.Env.Count == 0)
+            && fi.Formals!.FormalNames() is Name[] names && names.Length == vals.Length)
+            return ApplyNew(fi, names, vals, false);
+        return Apply(f, vals.ToList());
+    }
+
+    // Apply's calls, one after another while each comes back as a TAIL value (the depth already counted)
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]     // (compiled when it's first called, its loop optimized)
+    private static LVal Calls(LVal f, List<LVal> vals, bool argsChecked) {
+        Native? ran = null;     // (the native whose code ran instead, the way it went, and PlanEpoch at its start: the
+                                //   first's, so one called in its tail position needn't work its way out)
+        int way = 0;
+        long epoch = 0;
+        LVal r;
+        while (true) {
+            var intr = CheckInterrupt();
+            if (intr != null) return intr;
+            var fi = f.Fn!;
+            if (!argsChecked && !fi.IsFexpr) {
+                for (int i = 0; i < vals.Count; i++) if (vals[i].IsErr) return vals[i];
+            }
+            argsChecked = false;
+
+            var nat = fi.Native;
+            if (nat != null) {
+                var v = nat.Run(f, vals, MaxDepth - _depth, ran == null, out var w);
+                if (v != null) {
+                    if (v.ValType != LE.TAIL) {
+                        r = v;
+                        break;
+                    }
+                    f = v.TailFn!;
+                    vals = v.TailArgs!;
+                    continue;
+                }
+                if (w >= 0 && ran == null) (ran, way, epoch) = (nat, w, PlanEpoch);
+            }
+
+            var formals = fi.Formals!.Cells!;
+            var scope = new LEnv(fi.Closure) { IsCall = true };
+            int k = 0;
+            if (fi.Env != null && fi.Env.Count > 0) scope.CopyFrom(fi.Env);
+            else if (fi.Formals!.FormalNames() is Name[] names) {
+                // (the formals, all different, in a new scope: bound at once)
+                k = Math.Min(vals.Count, names.Length);
+                scope.BindNew(names, vals, k);
+            }
+
+            // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
+            LVal? extras = null;
+            for (int i = k; i < vals.Count; i++) {
+                var val = vals[i];
+                if (k < formals.Count) scope.Put(formals[k++].SymName, val);
+                else {
+                    (extras ??= Qexpr()).Add(val);
+                    scope.Put(Extra(extras.Count), val);
+                }
+            }
+            if (extras != null) scope.Put(Name.Rest, extras);     // (none: NIL, the call scope's own)
+
+            if (k < formals.Count) {
+                var p = f.CloneFun();
+                p.Formals = Qexpr();
+                for (int i = k; i < formals.Count; i++) p.Formals.Add(formals[i]);
+                p.Formals.Freeze();
+                p.Env = new LEnv();
+                foreach (var kv in scope.Entries) p.Env.SetLocal(kv.Key, kv.Value);
+                return p;
+            }
+            var body = fi.Body!;
+            if (extras != null && !body.Mentions(Uses.Extras)) {
+                var takes = vals.Count - extras.Count;
+                return LVal.Err($"The function takes {takes} argument{(takes == 1 ? "" : "s")}, not {vals.Count}");
+            }
+
+            if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
+            r = body.CallOf().Tail(scope);
+            if (r.ValType != LE.TAIL) break;
+            f = r.TailFn!;
+            vals = r.TailArgs!;
+        }
+        if (ran != null && PlanEpoch == epoch && !r.IsErr) ran.Settled(way, epoch, Site);
+        return r;
     }
 
     // (exit code): the program ends with that status

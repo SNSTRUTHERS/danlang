@@ -1,0 +1,38 @@
+; 10-dotimes-counts: dotimes's counts near a long's ends and past them (a count that fits a long counted in one, one
+; that doesn't in a big integer: the same numbers either way), of each kind that's whole (2.0, 4/2 made, a rational
+; made whole, 3.000, a complex number with no imaginary part), negative ones (nothing runs), and not whole (errors);
+; i's values and kinds, the body's set! of i, the function form, nested loops, and the loop's name in another case
+(fun {kind x} {?((int? x) :int ?((fixed? x) :fixed ?((rational? x) :rat (type-of x))))})
+(fun {first-k n k} {do =(got {}) =(r (try (dotimes {i n} (do (set! {got} (cons i got)) (if (eq (len got) k) (error "enough")))) &err)) (list r (reverse got) (map kind got))})
+(def {lmax} 9223372036854775807)
+(def {lmin} -9223372036854775808)
+(each {n [lmax (- lmax 1) (+ lmax 1) (+ lmax 2) (* lmax 2) (* lmax lmax) (+ lmax 0.0) (+ lmax 1/1) (/ (* 2 lmax) 2) (- lmin) (+ (- lmin) 1)]}
+  (print "big" n (kind n) (first-k n 3)))
+(each {n [lmin (+ lmin 1) (- lmin 1) (* lmin 2) -1 0 1 2 3]} (print "small" n (first-k n 5)))
+(each {n [2.0 3.000 (/ 8 4) (/ 10 5) (to-rational 3) (* 3/2 2) (- 5 2.0) (complex 3 0) (+ 1/3 5/3) 1.0 0.0 -0.0 -2.0]}
+  (print "whole" (repr n) (first-k n 10)))
+(each {n [2.5 1/2 -1/2 (complex 2 1) 0.1 (+ lmax 1/2) (- lmin 1/2) :a "3" {3} \3 NIL]}
+  (print "not" (repr n) (try (dotimes {i n} (print "never")) &err) (try (dotimes n (fn {i} {print "never"})) &err)))
+(print "fn form" (dotimes 3 (fn {i} {write i (kind i) " "})) (dotimes (/ 6 2) (fn {i} {write i " "})) (dotimes -5 print))
+(print "fn form big" (try (dotimes (+ lmax 1) (fn {i} {if (eq i 2) (error "fn big stop")})) &err)
+  (try (dotimes lmax (fn {i} {if (eq i 2) (error "fn lmax stop")})) &err))
+(print "fn partial" (dotimes 2 ((fn {a b} {write a b " "}) :p)) (try (dotimes 2 (fn {a b} {list a b})) &err))
+(print "fn extras" (dotimes 3 (fn {} {write &1 &_ " "})) (try (dotimes 2 (fn {} {:none})) &err))
+; i set in the body: the loop counts on
+(def {seen} {})
+(dotimes {i 4} (do (set! {seen} (cons i seen)) (set {i} 100) (set! {seen} (cons i seen))))
+(print "set i" seen)
+; nested, the same name, and the name in upper case
+(dotimes {i 2} (dotimes {i 3} (write i)) (write "|" i "|"))
+(print)
+(dotimes {I 3} (write i))
+(dotimes {J 2} (write J j))
+(print)
+; the name &1, &_, a global's name, a formal's
+(dotimes {&1 2} (write &1 " "))
+(dotimes {&_ 2} (write &_ " "))
+(dotimes {floor 2} (write floor " " (mod 7 3) " "))
+(print ((fn {i} {do (dotimes {i 3} (write i)) i}) :formal))
+(print "values" (dotimes {i 0} 1) (dotimes {i 3} 1) (try (dotimes {i 3} (if (eq i 1) (error "one"))) &err))
+; the last: an error from a loop that counts past a long
+(dotimes {i (* lmax 4)} (if (eq i 3) (error (+ "past a long, at " i))))

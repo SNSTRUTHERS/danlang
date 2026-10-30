@@ -1,0 +1,33 @@
+; 14-system-pure: the system built-ins whose values don't depend on the clock or the machine's state: env, setenv,
+; unsetenv and $name on variables this case makes (a list's items, a number, an atom's name, an empty value, one never
+; set), platform, hydra?, tick-rate, seconds-of (dates either side of 2000, a leap day, impossible dates), on-note
+; (set and unset, not a function), the console's input at its end (stdin is empty here: read-line, read-byte, read-all,
+; read-bytes, read-buffer), args; each error's message and code, partial application and too many arguments.
+(fun {err c} {try (eval c) (list &err &code)})
+(print "set" (setenv "DLGAP_A" "one") (env "DLGAP_A") $DLGAP_A (type-of $DLGAP_A) (repr (env "DLGAP_A")))
+(print "kinds" (setenv "DLGAP_L" {a "b c" 3}) (repr (env "DLGAP_L")) (setenv "DLGAP_N" 42) (repr (env "DLGAP_N"))
+  (setenv :DLGAP_AT "x") (env "DLGAP_AT") (env :DLGAP_AT) (setenv "DLGAP_S" (to-sym "sym")) (repr $DLGAP_S))
+(print "changed" (setenv "DLGAP_A" "two") $DLGAP_A (setenv "DLGAP_A" 1/2) $DLGAP_A (setenv "DLGAP_A" "one") $DLGAP_A)
+(print "unset" (unsetenv "DLGAP_L") (env "DLGAP_L") $DLGAP_L (unsetenv "DLGAP_NEVER") (env "DLGAP_NEVER") $DLGAP_NEVER)
+(fun {read-var} {list $DLGAP_A (env "DLGAP_A") (defined? $DLGAP_A)})
+(print "in a function" (read-var) (unsetenv "DLGAP_A") (read-var) (setenv "DLGAP_A" "back") (read-var))
+(print "dollar" (repr {$DLGAP_A}) (repr (read "$DLGAP_A")) (eval (fst (read "$DLGAP_A"))) (map (fn {s} {env s}) {"DLGAP_A" "DLGAP_NEVER"}))
+(print "errors" (err {setenv 5 "x"}) (err {setenv "" "x"}) (err {setenv "A=B" "x"}) (err {env 5}) (err {unsetenv 5}))
+(print "errors" (err {setenv "DLGAP_F" (fn {} {1})}) (err {setenv "DLGAP_H" (hash-create)}) (err {env {DLGAP_A}}))
+(print "partial" (setenv "DLGAP_P") ((setenv "DLGAP_P") "p") $DLGAP_P (err {env "a" "b"}) (err {unsetenv}) (err {setenv 1 2 3}))
+
+(print "machine" (platform) (hydra?) (tick-rate) (type-of (platform)) (err {platform 1}) (err {tick-rate 1}) (err {hydra? 1}))
+(print "seconds-of" (seconds-of 2000 1 1) (seconds-of 2000 1 2) (seconds-of 2000 1 1 0 0 1) (seconds-of 1999 12 31 23 59 59))
+(print "seconds-of" (seconds-of 2024 2 29 12 30 15) (seconds-of 1970 1 1) (seconds-of 2000 3 1) (seconds-of 2100 3 1) (seconds-of 2000 1 1.0))
+(print "seconds-of" (- (seconds-of 2001 1 1) (seconds-of 2000 1 1)) (- (seconds-of 2000 3 1) (seconds-of 2000 2 28)) (seconds-of 2000 1 1 12))
+(print "seconds-of" (err {seconds-of 2023 2 29}) (err {seconds-of 2000 13 1}) (err {seconds-of 2000 1 1 24 0 0}) (err {seconds-of "2000" 1 1}))
+(print "seconds-of" (seconds-of 2000 1) (err {seconds-of 2000 1 1 0 0 0 0}) (err {seconds-of 2000 1 1.5}) (err {seconds-of 0 1 1}))
+
+(print "on-note" (on-note NIL) (on-note (fn {n} {T})) (on-note (fn {n} {NIL})) (on-note NIL) (err {on-note 5}) (err {on-note "f"}))
+(print "on-note" (err {on-note}) (err {on-note NIL NIL}) (on-note print) (on-note NIL))
+
+(print "stdin" (repr (read-line)) (repr (read-byte)) (repr (read-all)) (repr (read-bytes stdin 4)) (repr (read-line stdin)))
+(def {b} (buffer 3))
+(print "stdin" (read-buffer stdin b) b (repr (read-all stdin)) (read-byte stdin) (read-bytes stdin 0) (read-line))
+(print "stdin" (err {read-line stdout}) (err {read-byte stderr}) (err {read-line 5}) (err {read-bytes stdin -1}))
+(print "args" args (type-of args) (len args) (fst args))

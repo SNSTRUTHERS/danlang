@@ -1,0 +1,26 @@
+; 04-host-exceptions: an exception the host throws while a clause runs (exit given a number too big for a status):
+; in a test (eval's call makes it an error, with the place it was made), in a value (in tail position: no call makes
+; it one, so it ends the expression, as the REPL shows it), for cond, case and minimum; in try, output-of and a
+; function's body; then the REPL goes on, and errors made right after say where the last call was
+(fun {p a b} {+ a b})
+(cond {(exit 99999999999999999999) 1} {T 2})
+(cond {NIL 1} {(exit 99999999999999999999) 2})
+(cond {T (exit 99999999999999999999)})
+(case 1 {(exit 99999999999999999999) 2})
+(case 1 {2 0} {1 (exit 99999999999999999999)})
+(p 1 2 (cond {(exit 99999999999999999999) 1}))
+(p 1 2 (try (cond {T (exit 99999999999999999999)}) :caught))
+(print (try (cond {(exit 99999999999999999999) 1}) (list :handled &err)))
+(print (try (case 3 {(do (print "key") (exit -99999999999999999999)) 1}) &err))
+(print (output-of (print "before") (cond {(exit 99999999999999999999) 1})))
+(output-of (print "lost") (cond {T (exit 99999999999999999999)}))
+(fun {f x} {cond {(eq x 1) (exit 99999999999999999999)} {(eq x 2) (mod 7 2)} {T (exit 99999999999999999999)}})
+(f 2)
+(f 1)
+(p 1 2 (f 2))
+(map (fn {x} {try (f x) :no}) {2 2 2})
+(cond {(exit "x") 1})
+(cond {T (exit "x")})
+(minimum (list 1 (exit 99999999999999999999)))
+(print :still-here (cond {NIL 1} {T (mod 9 4)}))
+(p 1 2 (cond {NIL 1} {T (mod 9 4)}))

@@ -1,0 +1,8 @@
+--- stdout
+:sexpr :sexpr :list
+NIL NIL NIL NIL NIL NIL NIL NIL <function>(min) Error: 'len' requires parameter of type string, list, hash or buffer 5 NIL NIL T {NIL NIL} {NIL} {1} T Error: Case not found :no T Error: 'index-of' expects a String and a String Error: 'index-of' expects a String and a String
+(1 2 1) Error: 'fst' expects a list Error: 'fst' expects a list Error: 'fst' expects a list Error: 'fst' expects a list Error: 'fst' expects a list Error: 'fst' expects a list Error: 'elem?' expects a list Error: 'cons' expects a list second Error: 'sum' expects a list (1 2 1) Error: S-Expression starts with incorrect type. Got Number, Expected Function. T NIL {(1 2 1) (1 2 1)} {(1 2 1) NIL} {1 NIL} T Error: S-Expression starts with incorrect type. Got Number, Expected Function. :yes T Error: 'index-of' expects a String and a String Error: 'index-of' expects a String and a String
+{1 2 1} {{1 1} {2 2}} {{1 1} {2 2}} {1 2 1} {1 2} {2} {2 1} T 1 4/3 {1 2 1} {1 2 1} T NIL {1 2 1 1 2 1} {{1 2 1} NIL} {1 NIL} NIL Error: Case not found :yes T T T
+--- stderr
+
+--- exit 0

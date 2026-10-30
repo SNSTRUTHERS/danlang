@@ -1,0 +1,62 @@
+; 22-substring-split-join.dl - substring (an index from 0 up to the length; a count past the end takes what there
+; is; whole numbers of other kinds), str-split (one separator, a list of them: the first that matches at a place
+; wins; empty pieces kept; the default: space, tab, LF, CR), str-join (items as print shows them), str-chars,
+; index-of and last-index-of on strings and on lists (items equal by eq); the errors
+
+(def {s} "hello world")
+(print (repr (substring s 0)) (repr (substring s 6)) (repr (substring s 0 5)) (repr (substring s 4 3)))
+(print (repr (substring s 11)) (repr (substring s 11 5)) (repr (substring s 3 0)) (repr (substring s 6 100)))
+(print (repr (substring s 2.0 3.0)) (repr (substring s 4/2)) (repr (substring s 1 99999999999999999999999)))
+(print (repr (substring "" 0)) (repr (substring "é" 0 1)) (repr (substring "é" 1)) (len (substring "日本" 1 4)))
+(print (substring s 12))
+(print (substring s -1))
+(print (substring s 1 -1))
+(print (substring s 1/2))
+(print (substring s 1 2.5))
+(print (substring s "1"))
+(print (substring s 99999999999999999999999))
+(print (substring 5 1))
+(print (substring \c 0))
+(print (substring s))
+
+; str-split
+(print (repr (str-split "a,b,c" ",")) (repr (str-split "a,b,,c," ",")) (repr (str-split ",a" ",")))
+(print (repr (str-split "" ",")) (repr (str-split "abc" ",")) (repr (str-split "abc" "")))
+(print (repr (str-split "  a  b\tc\nd\re ")))
+(print (repr (str-split "")) (repr (str-split "a\r\nb")))
+(print (repr (str-split "abcabcab" "bc")) (repr (str-split "aaa" "aa")) (repr (str-split "aaaa" "aa")))
+(print (repr (str-split "a-b_c-_d" {"-" "_"})) (repr (str-split "a--b" {"--" "-"})) (repr (str-split "a--b" {"-" "--"})))
+(print (repr (str-split "x1y22z" {"1" "22"})) (repr (str-split "é,日" ",")) (repr (str-split "aéb" "é")))
+(print (str-split "a-b" {}))
+(print (str-split "a-b" {"-" 1}))
+(print (str-split "a-b" \-))
+(print (str-split "a-b" :-))
+(print (str-split 5 ","))
+(print (str-split {"a"} ","))
+
+; str-join
+(print (repr (str-join {"a" "b" "c"} ", ")) (repr (str-join {"a" "b"})) (repr (str-join {} ",")) (repr (str-join {"x"} ",")))
+(print (repr (str-join {"a" \b :c 1 1/2 {1 "x"} T NIL "q\"r"} "|")))
+(print (repr (str-join {"a" "b"} \-)) (repr (str-join (str-split "a b c" " ") "+")) (repr (str-join {(+ 1 2) y} " ")))
+(print (str-join "ab" ","))
+(print (str-join {"a"} 5))
+(print (str-join 5))
+
+; str-chars
+(print (repr (str-chars "ab c")) (repr (str-chars "")) (repr (str-chars \z)) (repr (str-chars "a\tb\n")))
+(print (map char-code (str-chars "é日")))
+(print (str-chars 5))
+
+; index-of and last-index-of on strings: a string or a character; -1 when it isn't there
+(print (index-of "hello" "l") (last-index-of "hello" "l") (index-of "hello" "lo") (index-of "hello" "z") (index-of "hello" \e))
+(print (index-of "hello" "") (last-index-of "hello" "") (index-of "" "") (index-of "" "a") (index-of "Hello" "h"))
+(print (index-of "aaa" "aa") (last-index-of "aaa" "aa") (index-of "héé" "é") (last-index-of "héé" "é") (index-of "héé" (code-char 169)))
+; on lists: where an equal item is (items as written)
+(print (index-of {1 2 3 2} 2) (last-index-of {1 2 3 2} 2) (index-of {1 2} 5) (index-of {} 1) (index-of NIL 1))
+(print (index-of {1 2.0 "2"} 2) (index-of {"a" \a :a} \a) (index-of {"a" \a :a} :a) (index-of {{1 2} {3}} {3}) (index-of {(+ 1 2) 3} 3))
+(print (index-of {x y z} (to-sym "z")) (index-of (list #({{:k 1}})) #({{:k 1}})))
+(print (index-of "abc" 5))
+(print (index-of 5 "a"))
+(print (index-of "abc" :b))
+(print (index-of "abc" {"a"}))
+(print (last-index-of :abc "a"))

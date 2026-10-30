@@ -1,0 +1,49 @@
+; 25-hash-keys: what a key is (an atom, a string, an integer: 5, 5.0 and 10/2 are one key; "5", :5 and 5 three; past
+; a long too) and what isn't (each its error); lookups by hash-get, by calling the hash, by hash-call; a value that's
+; a function called as a method (fewer arguments than its formals: partially applied, &0 kept), or given back by
+; hash-get as it is; many keys put and got; equality of hashes (by entries, not order or tags).
+(def {h} (hash-create))
+(hash-put h [5 :int5] ["5" :str5] [:5 :atom5] [9223372036854775807 :max] [9223372036854775808 :past-max]
+  [-9223372036854775808 :min] [-9223372036854775809 :past-min] [0 :zero] ["" :empty-string] [:a :atom-a] ["a" :str-a])
+(print "keys" (hash-keys h) (len h))
+(print "lookups" (h 5) (h 5.0) (h 10/2) (h (+ 2.5 2.5)) (h "5") (h :5) (h 9223372036854775807) (h 9223372036854775808))
+(print "lookups" (h (- 9223372036854775808 1)) (h (* -1 9223372036854775808)) (h -9223372036854775809) (h -0.0) (h 0/7))
+(print "lookups" (hash-get h 5.0) (hash-get h "a") (hash-get h :a) (hash-get h :nope) (hash-key? h 5.0) (hash-key? h "nope"))
+(hash-put h [5.0 :fixed-five] [(complex 0 0) :complex-zero])
+(print "in place" (h 5) (h 0) (hash-keys h) (len h))
+(print "not keys" (try (h 1.5) &err) (try (h 1/2) &err) (try (h (complex 1 1)) &err) (try (h {1}) &err) (try (h T) &err))
+(print "not keys" (try (h NIL) &err) (try (h \a) &err) (try (h (fst {sym})) &err) (try (h +) &err) (try (h (buffer 1)) &err))
+(print "not keys" (try (hash-put h [1.5 1]) &err) (try (hash-put h [{1} 1]) &err) (try (hash-put h [\c 1]) &err) (try (hash-key? h 2.5) &err))
+(print "not keys" (try (hash-get h {}) &err) (try (hash-remove h 1.5) &err) (hash-get NIL :a) (try (hash-get 5 :a) &err) (try (h (error "k")) &err))
+
+; values that are functions: methods
+(def {o} #({{:f (fn {} {:called})} {:g (fn {x} {list x (len &0)})} {:v 5} {:h (fn {a b} {list a b})}}))
+(print "methods" (o :f) (hash-get o :f) (o :g 1) (o :g) ((o :g) 2) (o :h 1 2) ((o :h 1) 2) (((o :h) 1) 2))
+(print "methods" (try (o :v 1) &err) (try (o :f 1) &err) (try (o :h 1 2 3) &err) (hash-call o :g 3) (try (hash-call o :v) &err))
+(print "methods" (try (hash-call o :nope) &err) (try (hash-call 5 :g) &err) (o) (try (o :none 1) &err) (o :none))
+(def {og} (o :g))
+(hash-put o {:extra 1})
+(print "methods" (og 9) ((hash-get o :g) 9) (try ((hash-get o :g) 9 9) &err))
+(def {builtin-valued} #({{:len len} {:plus +} {:eq1 (eq 1)}}))
+(print "built-ins" (builtin-valued :len "abc") (builtin-valued :plus 1 2) (builtin-valued :plus) (builtin-valued :eq1 1) (builtin-valued :len))
+
+; many keys, put, got, some taken out, summed
+(def {big} (hash-create))
+(dotimes {i 3000} (hash-put big [i (* i 2)] [(+ "s" i) i]))
+(print "many" (len big) (big 2999) (big "s2999") (big 1500) (big 3000))
+(dotimes {i 1000} (hash-remove big (* i 3)))
+(print "many" (len big) (big 3) (big 4) (big "s3") (take 10 (hash-keys big)))
+(dotimes {i 500} (hash-put big [(+ 10000 i) i]))
+(print "many" (len big) (take 10 (hash-keys big)) (sum (filter num? (hash-values big))))
+(def {total} 0)
+(each {k (hash-keys big)} (if (num? k) (set! {total} (+ total (big k)))))
+(print "many" total)
+
+; equality: entries, not order or tags
+(def {e1} #({{:a 1} {:b 2}}))
+(def {e2} #({{:b 2} {:a 1}}))
+(def {e3} (hash-clone e1))
+(hash-lock e3)
+(hash-add-tag e3 {:a :t})
+(print "eq" (eq e1 e2) (eq e1 e3) (eq e1 #({{:a 1}})) (eq e1 #({{:a 1} {:b 3}})) (eq #() #()) (eq #({{1 1}}) #({{1.0 1}})))
+(print "eq" (eq e1 (to# (from# e2))) (cmp e1 e2) (sort [e1 e2]) (eq #({{:a {1 2}}}) #({{:a {1 2}}})) (eq #({{:k e1}}) #({{:k e2}})))

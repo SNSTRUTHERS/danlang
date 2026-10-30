@@ -1,0 +1,30 @@
+; 10-many-clauses: cond and case given hundreds of clauses (made with list, map and apply; and read as code), the one
+; that's true near the end, after a clause unpack evaluates again (cons's, no scope) half way, after one that isn't a
+; clause; each test runs once, in order; the extras &1 ... &400 are a call's names (a call named by one takes its
+; general way: the probe (&400 v (g)) is Op2's while &400 is no local's name); the values, and the places errors made
+; right after say they were
+(fun {p a b} {+ a b})
+(def {&400} +)
+(fun {g} {+ 70000 70001})
+(def {v} 100003)
+(fun {probe} {p v v (&400 v (g))})
+(probe)
+(probe)
+(def {n} 0)
+(fun {cl i} {list (do (def {n} (+ n 1)) (eq i 399)) (list :at i (floor (/ i 2)))})
+(list (apply cond (map cl (range 400))) n)
+(def {n} 0)
+(fun {cl2 i} {if (eq i 200) (cons (eq i 399) {:handed}) (cl i)})
+(list (apply cond (map cl2 (range 400))) n)
+(def {log} {})
+(fun {tst i} {do (def {log} (cons i log)) (eq i 299)})
+(def {code} (read (+ "(cond " (str-join (map (fn {i} {+ "{(tst " i ") (list :read " i " (mod " i " 7))}"}) (range 300)) " ") ")")))
+(list (type-of (fst code)) (eval (fst code)) (len log) (fst log) (last log))
+(apply case (cons 399 (map (fn {i} {list i (list :case i (even? i))}) (range 400))))
+(apply case (cons 399 (map (fn {i} {if (eq i 100) (cons i {:no-scope}) (list i (list :case i))}) (range 400))))
+(apply cond (map (fn {i} {if (eq i 300) 5 (list NIL i)}) (range 400)))
+(apply case (cons 1000 (map (fn {i} {list i i}) (range 400))))
+(each {k (range 3)} (apply cond (map cl (range 400))))
+(each {k (range 3)} (if (eq k 2) (p 1 2 (apply cond (map cl (range 400)))) (apply cond (map cl (range 400)))))
+(p 1 2 (eval (fst code)))
+(probe)

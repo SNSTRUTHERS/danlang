@@ -1,0 +1,11 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> 3
+danlang>=> <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+danlang>=> "<CWD>"
+danlang>=> exit
+--- stderr
+
+--- exit 0

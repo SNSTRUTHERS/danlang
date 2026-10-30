@@ -1,0 +1,41 @@
+; 12-lists-eval-views: lists run as code after they've been run (their compiled code is kept with them): a part of
+; one (tail, init, take, drop, subset, head, end, a cons onto it) is other code, its own; and which operations keep
+; the scope a Q-expression remembers (eval runs it there) and which make a list that remembers none (eval runs it
+; where it's called): head, tail, init, end, reverse, join keep it; drop, take, subset, cons, sort, map, filter don't.
+(def {code} (read "+ 1 2 3"))
+(print (eval code) (eval code) (eval (tail code)) (eval (init code)) (eval (take 2 code)) (eval (drop 1 code)))
+(print (eval (cons - (tail code))) (eval (cons * (drop 1 code))) (eval (subset code 0 3)) (eval (head code)) (eval code))
+(def {q} {+ 1 2 3})
+(print (eval q) (eval (tail q)) (eval (cons - (tail q))) (eval (init q)) (eval (end q)) (eval (reverse q)) (eval q))
+(def {calls} {(list 1) (list 2) (list 3)})
+(print (eval calls) (eval (tail calls)) (eval (init calls)) (eval (end calls)) (eval (drop 2 calls)))
+(def {prog} {do (print "one") (print "two") (print "three") :end})
+(print (eval prog))
+(print (eval (init prog)))
+(print (eval (cons do (drop 3 prog))))
+(print (eval (join (take 2 prog) (drop 4 prog))))
+(def {nested} {list {a b} (+ 1 2) {c}})
+(print (eval nested) (eval (fst (tail nested))) (eval (cons list (tail nested))) (eval (cons list (drop 2 nested))))
+
+; the scope remembered: {list y} written in a function that binds y, run elsewhere
+(def {y} :global)
+(fun {mk} {do =(y :local) {list y}})
+(fun {mk2} {do =(y :local2) {y}})
+(print "keep" (eval (mk)) (eval (tail (mk))) (eval (head (tail (mk)))) (eval (end (mk))) (eval (init (cons list (mk)))))
+(print "join" (eval (join {list} (tail (mk)))) (eval (join (mk) {})) (eval (join {} (mk))) (eval (join (mk2) (mk))))
+(print "reverse" (eval (reverse (tail (mk)))) (eval (reverse (cons y (reverse (mk))))))
+(print "lose" (eval (drop 1 (mk))) (eval (take 1 (tail (mk)))) (eval (subset (mk) 1)) (eval (cons list (tail (mk)))))
+(print "lose2" (eval (sort (tail (mk)))) (eval (map (fn {x} {x}) (mk2))) (eval (filter (fn {x} {T}) (mk2))))
+(print "list" (eval [list y]) (eval (tail [list (fst {y})])) ((fn {} {do =(y :in-fn) (eval (tail [list (fst {y})]))})))
+(fun {runs-here code} {do =(y :runs-here) (eval code)})
+(print "where" (runs-here (drop 0 (mk2))) (runs-here (tail (mk))) (runs-here (read "y")) (runs-here {y})
+  (runs-here (take 1 (mk2))) (runs-here (cons y NIL)) (runs-here (cons (fst {y}) NIL)) (runs-here (tail (cons 0 (mk2)))))
+(def {kept} (mk2))
+(def {views} [(tail (cons 0 kept)) (drop 0 kept) (init (join kept {0})) (subset kept 0) (head kept)])
+(print "kept" (map (fn {v} {eval v}) views) (map (fn {v} {runs-here v}) views))
+
+; read's lists remember none: run where eval is called, after being run elsewhere
+(def {rc} (read "list y"))
+(fun {f1 y} {eval rc})
+(fun {f2 x y} {eval rc})
+(print "read" (eval rc) (f1 :f1) (f2 :x :f2) (eval rc) (f1 :again) (eval (tail rc)) (f1 (eval (tail rc))))

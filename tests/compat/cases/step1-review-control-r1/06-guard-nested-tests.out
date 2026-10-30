@@ -1,0 +1,60 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: 'nth': the list has no such item
+danlang>=> NIL
+danlang>=> Error: 'nth': the list has no such item
+danlang>=> :b
+danlang>=> NIL
+danlang>=> :b
+danlang>=> NIL
+danlang>=> :two
+danlang>=> NIL
+danlang>=> :two
+danlang>=> NIL
+danlang>=> :two-again
+danlang>=> NIL
+danlang>=> :c
+danlang>=> NIL
+danlang>=> :b
+danlang>=> NIL
+danlang>=> :b
+danlang>=> NIL
+danlang>=> :b
+danlang>=> NIL
+danlang>=> :b
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: 'nth': the list has no such item
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: 'nth': the list has no such item
+danlang>=> NIL
+danlang>=> 2
+danlang>=> :b
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:100  (fst &_)
+  called at line 1  (cond {(do (def {fst} snd) NIL) 1} {T NIL})
+  called at line 1  (cond {(cond {(do (def {fst} snd) NIL) 1} {T NIL}) :a} {T...
+  at <BUNDLE>\lib\globals.dl:100  (fst &_)
+  called at line 1  (cond {(do (def {fst} snd) NIL) 1} {(do (def {fst} fst0) ...
+  called at line 1  (cond {(cond {(do (def {fst} snd) NIL) 1} {(do (def {fst}...
+  at <BUNDLE>\lib\globals.dl:100  (fst &_)
+  called at line 1  (cond {(do (if (eq x 2) (def {fst} snd) NIL) NIL) 0} {T N...
+  at line 1  (list :one (mod 7 2))
+  called at line 1  (p 1 2 (f 1))
+  at line 1  (list :other (floor 7/2))
+  called at line 1  (p 1 2 (f 3))
+  at <BUNDLE>\lib\globals.dl:100  (fst &_)
+  called at line 1  (cond {(do (if (eq x 2) (def {fst} snd) NIL) NIL) 0} {T N...
+  called at line 1  (f 2)
+--- exit 0

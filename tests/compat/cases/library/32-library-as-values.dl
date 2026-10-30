@@ -1,0 +1,49 @@
+; 32-library-as-values: library functions passed as values: to map, filter, foldl, foldr, sort (as its less), any?,
+; all?, find, count and each; partially applied first (a library function given fewer arguments, a built-in alias
+; given fewer); composed with comp and flip; kept in lists and hashes (a hash's function is a method: (h :k x),
+; hash-call); compared with eq (functions by formals and body).  Errors from inside them stop the built-in that
+; called them.  Ends with sort's less (a library function) failing on a string, from a user function.
+
+(print (map square {1 2 3}) (map recip {1 2 4}) (map round {1/2 3/2 -1/2}) (map floor {2.5 -2.5}) (map odd? (range 5)))
+(print (filter even? (range 10)) (filter >0 {-1 0 1}) (filter (has-element? {1 3}) {1 2 3 4}) (filter !=0 {0 1 0 2}))
+(print (foldl xor NIL {T T T}) (foldl mod 1000 {7 5}) (foldl pow 2 {3 2}) (foldr flip 1 {}) (foldl max 0 {3 9 2}) (foldl (flip cons) NIL {1 2 3}))
+(print (foldr (fn {x acc} {cons (square x) acc}) NIL {1 2 3}) (foldl div 1000 {3 7}) (foldl % 65537 {256 7}))
+(print (sort {3 1 2} >) (sort {3 1 2} (flip <)) (sort {"b" "a" "c"} (comp not (fn {x} {x}))) (sort {-3 1 -2 4} (fn {a b} {< (abs a) (abs b)})))
+(print (any? negative? {1 -1}) (all? positive? {1 2}) (find odd? {2 4 5 6}) (count even? (range 11)) (find (between? 3 5) {1 2 4 6}))
+(print (each (fn {f} {print (f 7/2)}) [floor ceil round trunc square recip]))
+(print (map (fn {f} {f 9223372036854775807}) [square cube odd? even? 1+ recip]))
+
+; partial applications passed on
+(print (map (mod 17) {2 3 5}) (map (div 100) {7 9}) (map (pow 2) {0 8 16}) (map (fdiv 1) {3 7}) (map (starts-with? "hello") {"he" "lo"}))
+(print (map (split 1) {{1 2} {3}}) (map (zip {1 2}) {{:a :b} {:c}}) (map (remove-all 1) {{1 2 1} {3}}) (map (best-of 1) {{4 6} {9 2}}))
+(print (map (flip div 10) {100 205}) (map (comp square 1+) {1 2 3}) (map (comp (mod 7) square) {3 4 5}))
+(print (map (><? 1) {5 0}))
+(print (map (between? 1 5) {3 9}))
+(print (map first {{1 2} {3 4}}) (map second {{1 2} {3 4}}) (map =0 {0 1}) (map <> {1 2}))
+(print (map ?? {NIL 1}) (map distinct {{1 1} {2 2}}) (map flatten {{{1}} {{2 {3}}}}))
+
+; kept in lists and hashes; methods
+(def {ops} [square cube recip floor])
+(print ops)
+(print (map (fn {f} {f 3}) ops) (map (fn {f} {f -7/2}) ops))
+(def {h} #({{:sq square} {:md mod} {:rn round} {:zp zip}}))
+(print h)
+(print (h :sq 5) (h :md 17 5) (h :rn 7/2) (h :zp {1 2} {3 4}) (hash-call h :sq 65536))
+(print ((h :md 17) 5) (h :md 17))
+(print (h :sq "x"))
+(print (h :md 1 2 3))
+
+; eq of functions: by formals and body
+(print (eq square square) (eq square cube) (eq square (fn {n} {* n n})) (eq % mod) (eq inverse recip) (eq (mod 7) (mod 7)) (eq (mod 7) (mod 8)))
+(print (eq first (nth 0)) (eq <> !=) (eq =0 zero?) (eq begin do) (eq times repeat) (eq skip drop))
+
+; an error from inside them stops the built-in
+(print (map recip {1 0 2}))
+(print (filter odd? {1 "two" 3}))
+(print (foldl mod 7 {2 0 3}))
+(print (count even? {2 :four}))
+
+; sort's less, a library function, fails: the program ends with its trace
+(fun {sorted-by-parity l} {sort l (fn {a b} {and (even? a) (odd? b)})})
+(print (sorted-by-parity {1 2 3 4 5 6}))
+(sorted-by-parity {1 2 "three" 4})

@@ -1,0 +1,57 @@
+; 28-escapes-repr.dl - strings as written and as shown: the escapes (\n \t \r \0 \a \b \f \v \e \\ \" and \xHH, one
+; or two hex digits), here strings (opened and closed by the same odd number of quotes: their text as it is, escapes
+; not read, a line's end in one is LF); repr (escaped so it reads back: the named escapes, \xHH for other control
+; characters and DEL, bytes past ASCII as they are) against print and write (the text as it is); read of a repr
+
+(def {esc} "\n\t\r\0\a\b\f\v\e\\\"")
+(print (len esc) (bytes esc) (repr esc))
+(print (bytes "\x41\x4a\x7\x0\xff\xFf") (repr "\x41\x4a\x7") (repr "\x7f") (repr "\x1") (repr "\x1g"))
+(print (repr "tab\there") (repr "quote\"inside") (repr "back\\slash") (repr "\\n is not a newline"))
+
+; repr of every control character, and DEL
+(def {ctl} (from-bytes (join (range 32) {127})))
+(print (repr ctl))
+(print (repr (+ "a" (code-char 1) "b" (code-char 31) "c" (code-char 127) "d" (code-char 128) "e")))
+
+; print and write show the text as it is; print puts spaces between and LF after; write neither
+(print "a\tb" "c")
+(write "w1" "w2" 3 \c :d {1 "e"} "\n")
+(print "q\"uote" {"q\"uote" \q "\\"})
+(print)
+(write)
+(print (repr (output-of (print "x\ty") (write "z\n"))))
+(print (repr (output-of (print "") (print) (write ""))))
+
+; here strings: three or five quotes; escapes not read; a line's end is LF
+(print (repr """a "quoted" \n not escaped"""))
+(print (repr """""five "" and """ inside"""""))
+(print (repr """
+first line
+  second "line"
+"""))
+(print (len """\x41""") (repr """\x41""") (repr """""") (repr """ """))
+(print (repr """a""") (eq """a""" "a"))
+
+; repr reads back as the same string
+(each {s {"plain" "\n\t\r" "\x01\x1f\x7f" "\"\\" "é日" "" "a\0b"}}
+  (def {r} (repr s))
+  (def {back} (fst (read r)))
+  (print r (eq back s) (len s)))
+
+; strings inside lists and hashes show in repr form, also when printed
+(print {"a\nb" "c"} (list "d\te") #({{"k\n" "v\t"}}))
+(print (repr {"a\nb"}) (repr (repr "x")) (repr (repr (repr "\n"))))
+
+; characters: repr and print, and in a string
+(print \a \space \tab (repr \tab) (repr \a) (repr \") (repr \\))
+(print (repr (+ "" \tab \lf \null)) (repr (str-chars "\t\n")))
+
+; to-str is print's form; repr's of a number is the same
+(print (repr (to-str "a\nb")) (repr (repr "a\nb")) (repr (to-str 1/2)) (repr (repr 1/2)) (repr (repr \c)))
+
+; the reader's errors for bad escapes, as values (read of text)
+(print (read "\"\\q\""))
+(print (read "\"\\x\""))
+(print (read "\"unclosed"))
+(print (read "\"\"\"unclosed here"))
+(print (read "\"ok\""))

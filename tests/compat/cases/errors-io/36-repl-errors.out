@@ -1,0 +1,58 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 6
+danlang>=> Error: Division by zero.
+danlang>=> Error: Unbound Symbol 'undefined-name'
+danlang>=> Error: Unbound Symbol 'undefined-function'
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: 'len' takes 1 argument, not 2
+danlang>partial output, then => Error: an error
+danlang>=> "Division by zero."
+danlang>=> :again
+danlang>=> Error: Unknown character name \nosuchcharacter
+danlang>=> Error: Unknown escape sequence \q
+danlang>=> Error: Newlines are not allowed in regular strings
+danlang>=> Error: Division by zero: 1/0
+danlang>=> Error: 'f' touches '(': put a space between them
+danlang>=> Error: Closed a SExpr without opening: 
+danlang>=> Error: Closed a QExpr without opening: 
+danlang>=> Error: Closed a list without opening: )
+danlang>	) <	)} <	)} <=> NIL
+danlang>multi got 5
+=> Error: 'len' requires parameter of type string, list, hash or buffer
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: 'len' requires parameter of type string, list, hash or buffer
+danlang>=> NIL
+danlang>broken.dl runs
+=> Error: broken.dl: 'len' requires parameter of type string, list, hash or buffer
+danlang>=> Error: Division by zero.
+danlang>5
+10
+Error: Division by zero.
+=> NIL
+danlang>=> 12
+danlang>
+--- stderr
+  at line 1  {/ 10 x}
+  called at line 1  (inner x)
+  called at line 1  (middle x)
+  called at line 1  (outer 0)
+  at line 1  (undefined-name)
+  at line 1  (undefined-function 1 2)
+  at line 1  (+ 1 "two")
+  at line 1  (len 1 2)
+  at line 1  (error "an error" :code)
+  at line 4  (len x)
+  called at line 1  (multi 5)
+  at lib.dl:3  (len x)
+  called at line 1  (lib-fn 3)
+  at lib.dl:3  (len x)
+  called at broken.dl:2  (lib-fn 4)
+  at line 1  {/ 10 x}
+--- exit 3

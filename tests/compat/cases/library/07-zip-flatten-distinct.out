@@ -1,0 +1,55 @@
+--- stdout
+<function>(fn {a b} {if (and a b) (cons (list (fst a) (fst b)) (zip (tail a) (tail b))) NIL}) <function>(fn {l} {if l (if (qexpr? (fst l)) (join (flatten (fst l)) (flatten (tail l))) (cons (fst l) (flatten (tail l)))) NIL}) <function>(fn {l} {if l (cons (fst l) (distinct (remove-all (fst l) (tail l)))) NIL})
+{{1 4} {2 5}} NIL NIL NIL {{a "x"} {(b) \y} {{c} :z}} {{1 3} {2 4}}
+{{65535 65536} {-1024 -1025} {9223372036854775807 9223372036854775808}} {{7/2 -7/2} {2.5 0.1}}
+{{0 4} {1 3} {2 2} {3 1} {4 0}}
+{{{1 2} NIL} {{3} {4}}}
+{11 22 33}
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+NIL
+NIL
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: zip's a
+Error: zip's b
+<function>(fn {b} {if (and a b) (cons (list (fst a) (fst b)) (zip (tail a) (tail b))) NIL})
+{{1 3} {2 4}}
+Error: The function takes 2 arguments, not 3
+:a-first
+:b-second
+{{1 2}}
+{1 2 3 4} NIL NIL {1 2 3 4 5 6} {(1 2) 3} {"ab" \c}
+{65536 -1025 9223372036854775808} {NIL} {1 2 3}
+{1 . 2} {:a "b" \c 7/2}
+100
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+{1 2 3 (+ 4 5)}
+Error: flatten's l
+<function>(fn {l} {if l (if (qexpr? (fst l)) (join (flatten (fst l)) (flatten (tail l))) (cons (fst l) (flatten (tail l)))) NIL})
+Error: The function takes 1 argument, not 2
+{1 2 3} NIL {1} {"a" \a :a a} {{1} 1} {NIL NIL} {2.5}
+{65535 65536 -1024 -1025} {9223372036854775808 9223372036854775807}
+{T} {NIL} {NIL}
+{a b (a) {a}}
+{0 1 2 3}
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+<function>(fn {l} {if l (cons (fst l) (distinct (remove-all (fst l) (tail l)))) NIL})
+Error: distinct's l
+Error: The function takes 1 argument, not 2
+{{1 :x} {2 :y}}
+{1 3 2}
+{:pairs {{1 3} {2 4}}}
+--- stderr
+Error: 07-zip-flatten-distinct.dl: 'fst' expects a list
+  at <BUNDLE>\lib\globals.dl:75  (fst b)
+  called at 07-zip-flatten-distinct.dl:58  (zip a b)
+  called at 07-zip-flatten-distinct.dl:60  (pairs {1 2} "34")
+--- exit 1

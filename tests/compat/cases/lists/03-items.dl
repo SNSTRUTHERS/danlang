@@ -1,0 +1,67 @@
+; 03-items.dl - fst, snd, thd, nth, last, item-at and the library's first ... tenth: an item as it's written (not
+; evaluated); out of range, and indexes of the wrong kind, as errors (their messages); whole numbers of other kinds as
+; indexes (1.0, 4/2); the same calls made directly, through map and partial application, and through unpack (eval)
+
+(def {l} {a (b c) "d" \e :f {g} 7 1/2 NIL T})
+(print (fst l) (snd l) (thd l) (last l) (len l))
+(print (repr (fst l)) (repr (snd l)) (repr (thd l)) (repr (nth 3 l)) (repr (nth 5 l)))
+(print (map type-of [(fst l) (snd l) (thd l) (nth 3 l) (nth 4 l) (nth 5 l) (nth 6 l) (nth 7 l) (nth 8 l) (nth 9 l)]))
+(print (nth 0 l) (nth 5 l) (nth 9 l) (item-at l 0) (item-at l 5) (item-at l 9))
+(print (first l) (second l) (third l) (fourth l) (fifth l) (sixth l) (seventh l) (eighth l) (ninth l) (tenth l))
+(print (fst {(print "not evaluated")}) (eval (fst {(print "evaluated now")})))
+(print (fst (fst {{{deep}}})) (fst (fst (fst {{{deep}}}))) (last (last {1 {2 {3 4}}})) (nth 1 (nth 1 {0 {1 {2}}})))
+
+; out of range
+(print (fst {}))
+(print (fst NIL))
+(print (snd {1}))
+(print (thd {1 2}))
+(print (nth 10 l))
+(print (nth -1 l))
+(print (last NIL))
+(print (item-at l 10))
+(print (item-at l -1))
+(print (item-at {} 0))
+(print (tenth {1 2 3}))
+(print (nth 100000000000000000000 l))
+(print (item-at l 100000000000000000000))
+
+; not a list, or an index of the wrong kind
+(print (fst 5))
+(print (snd "ab"))
+(print (thd :x))
+(print (last :x))
+(print (nth 0 "abc"))
+(print (item-at "abc" 0))
+(print (nth 1.5 l))
+(print (nth :a l))
+(print (nth "1" l))
+(print (nth NIL l))
+(print (item-at l 1/2))
+(print (item-at l {1}))
+(print (nth (complex 1 1) l))
+(print (nth l 1))
+(print (fst {1} {2}))
+(print (nth 1 {a b} {c}))
+(print (item-at {a} 0 1))
+
+; whole numbers of other kinds
+(print (nth 1.0 l) (nth 4/2 l) (item-at l 2.0) (item-at l 6/3) (nth 1.00 {x y}) (nth (complex 1 0) {x y}))
+
+; the same calls made other ways: map, partial application, unpack (eval of a list made)
+(print (map (nth 1) {{1 2} {3 4} {5 6 7}}) (map fst {{1} {2 3}}) (map last {{1} {2 3}}) (map (item-at l) {0 6 9}))
+(print (map snd {{1 2} {3 4}}) (map thd {{1 2 3} {4 5 6}}) (map (nth 0) {{x} {y}}) (map third {{1 2 3}}))
+(print (map (nth 2) {{1 2 3} {1 2}}))
+(print (map fst {{1} {} {2}}))
+(print (unpack nth [1 l]) (unpack item-at [l 1]) (unpack fst [l]) (apply last [l]) (eval [nth 2 l]) (eval [snd l]))
+(print (unpack nth [1.5 l]))
+(print (nth 1) (item-at l) fst (fst) ((nth 2) l) ((item-at l) 2) ((nth 1.0) {p q}))
+(def {second-of} (nth 1))
+(print (second-of {1 2}) (second-of {3 4}) (second-of {5}))
+
+; an item that's a function is the function
+(print (fst [+ -]) ((fst [+ -]) 1 2) ((snd [+ -]) 1 2) ((last [len]) {1 2 3}))
+(print (fst {+}) (type-of (fst {+})) (eval (fst {+})) ((eval (fst {+})) 3 4))
+
+; the list isn't changed by taking its items
+(print l)

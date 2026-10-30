@@ -1,0 +1,8 @@
+--- stdout
+{3 3 3} {{:test 3} {:test 2} {:test 1} {:test 0} {:else 0} {:else 1} {:two 2} {:else 3} {:test 3} {:test 2} {:test 1} {:test 0} {:else 0} {:else 1} {:two 2} {:else 3} {:test 3} {:test 2} {:test 1} {:test 0} {:else 0} {:else 1} {:two 2} {:else 3}}
+{3 3 3} {{:zero 0} {:one 1} {:from-two 3} {:zero 0} {:one 1} {:from-two 3} {:zero 0} {:one 1} {:from-two 3}}
+{:inner :inner :inner}
+{{:o :e :o :e :o :e} {:o :e :o :e :o :e} {:o :e :o :e :o :e}}
+--- stderr
+
+--- exit 0

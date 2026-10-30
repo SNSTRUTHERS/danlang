@@ -1,0 +1,72 @@
+; 15-arity.dl - how many arguments: a function given more than its formals is an error ("The function takes 2
+; arguments, not 3"), unless its body names &_ or &1 ...; given fewer, it's partially applied (a function waiting for
+; the rest, printed with the formals left).  A built-in given more than it takes is an error ("'len' takes 1
+; argument, not 2", "takes at most"), fewer than it needs a partial application; a special form isn't partially
+; applied.  The last error: a built-in given too many, in a function, two calls down
+
+(fun {two a b} {list a b})
+(print (two 1 2) (two 1) ((two 1) 2) (((two) 1) 2))
+(print (two 1 2 3))
+(print ((two 1) 2 3))
+(print ((fn {} {:none})) ((fn {} {:none}) 1))
+(print ((fn {x} {x}) 1 2 3 4))
+(fun {rest a} {list a &_})
+(print (rest 1) (rest 1 2 3) (rest))
+(fun {firstx} {list &1 &3})
+(print (firstx :a :b :c :d))
+(print (firstx :a :b))
+
+; an inner function's &1 is the outer call's (its own call has none), but &_ is its own (NIL)
+(fun {outer} {(fn {} {list &1 &_})})
+(print ((outer 5 6)))
+(fun {outer2 a} {(fn {b} {list a b &1 &_})})
+(print ((outer2 1 2 3) 4))
+; a partial application's extras: past all the formals
+(print (((fn {a b} {list a b &_}) 1) 2 3 4))
+
+; the partial application's own arity
+(def {p} (two 1))
+(print p (p 2) (p 2 3))
+(fun {three a b c} {+ a b c})
+(print (three 1) ((three 1) 2) (((three 1) 2) 3) ((three 1 2) 3) ((three 1) 2 3))
+(print ((three 1 2) 3 4))
+
+; built-ins: exact, and at most
+(print (len {1} {2}))
+(print (head {1} {2}))
+(print (substring "abcdef" 1 2 3))
+(print (str-pad-left "a" 3 \x 9))
+(print (eq 1 1 1))
+(print (cons 1) ((cons 1) {2}) ((cons 1) {2} {3}))
+(print (eq 1) ((eq 1) 1) ((eq 1) 2))
+(print (substring "abcdef") ((substring "abcdef") 2) ((substring "abcdef") 2 2))
+(print (+) (*) (-) (list) (join))
+(print (map) ((map len) {"ab" "c"}) (((map) len) {"x"}))
+(print (if T) (let) (do) (eval 1 2))
+(print (def) (set))
+
+; through apply/unpack: the list's items are the arguments
+(print (unpack two {1 2}) (unpack two {1}) (unpack two {1 2 3}))
+(print (unpack len {{1 2} {3}}))
+
+; methods: the hash's function's arity
+(def {obj} #({{:m @({a b} {+ a b})} {:z @({} {:zero})}}))
+(print (obj :m 1 2) (obj :m 1) ((obj :m 1) 2) (obj :m 1 2 3) (obj :z) (obj :z 1))
+
+; fexprs: their formals, as written
+(def {fx2} (fexpr {a b} {list a b}))
+(print (fx2 x y) (fx2 x) ((fx2 x) y) (fx2 x y z))
+
+; a function's arguments are evaluated first (an error among them is the call's value, the count not looked at); a
+; built-in's count is looked at first (its arguments not evaluated)
+(print (two 1 (error "an argument") 3))
+(print (two (write "evaluated; ") 2 3))
+(print (len (error "an argument") 2))
+(print (len (write "not evaluated; ") 2))
+(print (cons (write "evaluated; ") (error "an argument")))
+
+(print "the last: a built-in given too many arguments, two calls down")
+(fun {measure s} {+ 1 (len s "extra")})
+(fun {measure-all l} {map measure l})
+(fun {report} {do (print "measuring") (+ 0 (len (measure-all {"a" "bb"})))})
+(report)

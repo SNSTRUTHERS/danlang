@@ -1,0 +1,47 @@
+; 14-depth-tail-forms: a call in tail position takes its caller's place, so it costs no depth: through if (and ?{}),
+; do's last, let's last (both forms), eval of a Q-expression, an fexpr's eval of its argument, unpack and .(),
+; a method of a hash (called by its global name), an alias of if, a
+; Q-expression of a function run by eval, mutual recursion.  Each loop runs 2000 levels at the bottom of one descent
+; as deep as it goes (probe-all 9997: 9998 calls, map's call, the loop's first: 10000): any cost at all is too deep.
+
+(fun {if-loop n} ?{(zero? n) :if-done (if-loop (- n 1))})
+(fun {nested-if n} {if (> n 1) (if (zero? (bit-and n 1)) (nested-if (- n 1)) (nested-if (- n 1))) :nested-done})
+(fun {do-tail n} {do :before (if (zero? n) :do-done (do-tail (- n 1)))})
+(fun {let-tail n} {let {{m (- n 1)}} (if (< m 0) :let-done (let-tail m))})
+(fun {let-code n} {let {if (zero? n) :let-code-done (let-code (- n 1))}})
+(fun {eval-loop n} ?{(zero? n) :eval-done (eval {eval-loop (- n 1)})})
+(def {my-eval} (fexpr {x} {eval x}))
+(fun {fexpr-loop n} ?{(zero? n) :fexpr-done (my-eval (fexpr-loop (- n 1)))})
+(fun {unpack-loop n} ?{(zero? n) :unpack-done .(unpack-loop [(- n 1)])})
+(def {obj} (hash-create {{:go (fn {n} {if (zero? n) :method-done (obj :go (- n 1))})}}))
+(fun {partial-loop n} ?{(zero? n) :partial-done ((partial-loop) (- n 1))})
+(def {when} if)
+(fun {when-loop n} {when (zero? n) :when-done (when-loop (- n 1))})
+(fun {q-loop n} ?{(zero? n) :q-done (eval [(fn {} {q-loop (- n 1)})])})
+(fun {ev n} ?{(zero? n) :even (od (- n 1))})
+(fun {od n} ?{(zero? n) :odd (ev (- n 1))})
+; and ones that do cost: or's last argument; map's call of its function; a tail call whose argument calls; a
+; partial made each time (making it is a call of the function, though its body doesn't run: it needs a level of room)
+(fun {or-last n} {or NIL ?((zero? n) :or-done (or-last (- n 1)))})
+(fun {count-arg n} {do (if-loop 3) n})
+(fun {arg-then-tail n} ?{(zero? n) :atl-done (arg-then-tail (count-arg (- n 1)))})
+
+(def {loops} [
+  [:if (fn {} {if-loop 2000})] [:nested-if (fn {} {nested-if 2000})] [:do (fn {} {do-tail 2000})]
+  [:let (fn {} {let-tail 2000})] [:let-code (fn {} {let-code 2000})] [:eval (fn {} {eval-loop 2000})]
+  [:fexpr (fn {} {fexpr-loop 2000})] [:unpack (fn {} {unpack-loop 2000})] [:method (fn {} {obj :go 2000})]
+  [:partial (fn {} {partial-loop 2000})] [:when (fn {} {when-loop 2000})] [:q-fn (fn {} {q-loop 2000})]
+  [:mutual-even (fn {} {ev 2000})] [:mutual-odd (fn {} {ev 2001})]
+  [:or-1 (fn {} {or-last 1})] [:or-0 (fn {} {or-last 0})] [:map (fn {} {map if-loop {2000}})]
+  [:arg-tail (fn {} {arg-then-tail 3})] [:none (fn {} {:nothing})]])
+
+; each loop's value at the bottom, or :too-deep
+(fun {probe-all d} ?{(zero? d) (map (fn {p} {list (fst p) (try ((snd p)) :too-deep)}) loops) (fst [(probe-all (- d 1))])})
+(each print (probe-all 9997))
+
+; two calls shallower, the loops that cost one or two fit too
+(print (map (fn {p} {snd p}) (filter (fn {p} {in? (fst p) {:or-1 :map :arg-tail :partial}}) (probe-all 9995))))
+
+; the last: one deeper than the probe goes (10001 calls) ends the program
+(fun {at-depth d thunk} ?{(zero? d) (thunk) (fst [(at-depth (- d 1) thunk)])})
+(at-depth 10000 (fn {} {if-loop 5}))

@@ -1,0 +1,74 @@
+; 38-hash-tests.dl - tests/HashTests.dl as it is (lines 4-56 here): private entries, methods through &0, hash-clone
+; with overrides and child hashes; its ?(...) checks give back their branches as data (a Q-expression branch isn't
+; run), so they print nothing.  Then the same checks run (eval of the branch chosen), and the hashes printed
+=(h #())
+(hash-put h {:a "Hello, World!"}) ; add a single item
+(hash-put h {:b 10} {:f @({} {&0 :a})})
+(h :a)
+(hash-make-private h :a)
+(print (h :a)) ; get an error
+(print (h :f)) ; get the same value, but this time it works!
+
+=(h-clone
+  (hash-clone h {
+    {:a "Hello, Clone World!"}
+    {:b 15}
+  })
+)
+
+?((eq (h-clone :f) "Hello, Clone World!")
+  {print "Clone worked!"}
+  {error "Clone failed :("}
+)
+
+?((eq (h :f) "Hello, World!")
+  {print "Clone didn't corrupt the original!"}
+  {error "Clone corrupted the original :("}
+)
+
+; clone of hash with child hash
+(hash-put h-clone {
+  :h #({
+    {:a 100 :__private}
+    {:a-get @({}  {&0 :a})}
+    {:a-put @({v} {hash-put &0 {:a v}})}
+  })
+})
+
+(print ((h-clone :h) :a)) ; should fail
+(print ((h-clone :h) :a-get)) ; should work
+(print (hash-put (h-clone :h) :a 1000)) ; should fail
+(print ((h-clone :h) :a-put 1000)) ; should work
+
+=(h-clone2 (hash-clone h-clone))
+(print ((h-clone2 :h) :a)) ; should still fail
+(print ((h-clone2 :h) :a-get)) ; should work
+(print ((h-clone2 :h) :a-put 2000)) ; should work
+
+; test that the cloned child hashes are distinct
+?(
+  (and
+    (eq ((h-clone  :h) :a-get) 1000)
+    (eq ((h-clone2 :h) :a-get) 2000)
+  )
+  {print "Child clone worked"}
+  {error "Child clone failed"}
+)
+
+; ---- added: the checks' values, then the checks run
+(print ?((eq (h-clone :f) "Hello, Clone World!") {print "Clone worked!"} {error "Clone failed :("}))
+(eval ?((eq (h-clone :f) "Hello, Clone World!") {print "Clone worked!"} {error "Clone failed :("}))
+(eval ?((eq (h :f) "Hello, World!") {print "Clone didn't corrupt the original!"} {error "Clone corrupted the original :("}))
+(eval ?((and (eq ((h-clone :h) :a-get) 1000) (eq ((h-clone2 :h) :a-get) 2000)) {print "Child clone worked"} {error "Child clone failed"}))
+
+; the hashes, and what's in them
+(print h)
+(print h-clone)
+(print h-clone2)
+(print (hash-keys h) (hash-keys h-clone) (hash-private? h :a) (hash-private? h-clone :a) (hash-private? h :b))
+(print (h :b) (h-clone :b) (h-clone2 :b) (h-clone :f) (h-clone2 :f))
+(print ((h-clone :h) :a-get) ((h-clone2 :h) :a-get) (eq (h-clone :h) (h-clone2 :h)))
+(print (hash-get h :b) (hash-get h :a) (hash-get h :nope) (hash-key? h :a) (hash-key? h :nope))
+(print (hash-remove h :b) (hash-keys h) (hash-remove h :nope))
+(print (hash-put h {:b 11}) (hash-put h {:b 12}) (h :b))
+(print (from# h-clone2))

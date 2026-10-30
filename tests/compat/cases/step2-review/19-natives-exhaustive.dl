@@ -1,0 +1,32 @@
+; 19-natives-exhaustive.dl - the library's natives on a family of lists that share storage (a cons chain, its tails,
+; conses onto those, takes and joins of them): remove-fst of each item (its value the list's tail itself when it's the
+; first), remove-all, distinct, has-element?, zip and flatten, each checked against the same made by filter, foldl and
+; map (built-ins, no native way), every call made many times so the natives' ways are learned and used; then the
+; family printed again
+
+(def {chain} (foldl (fn {l i} {cons (mod i 5) l}) NIL (range 14)))
+(def {family} [chain (tail chain) (drop 4 chain) (cons 9 (tail chain)) (cons 8 (drop 4 chain)) (take 6 chain)
+  (join (take 3 chain) (drop 10 chain)) (cons 7 (cons 7 (take 2 chain))) (init chain) NIL (cons 3 NIL)])
+(print family)
+
+(fun {rf-ref x l} {do =(i (index-of l x)) (if (< i 0) l (join (take i l) (drop (+ i 1) l)))})
+(fun {ra-ref x l} {filter (fn {v} {not (eq v x)}) l})
+(fun {dist-ref l} {foldl (fn {acc v} {if (elem? v acc) acc (join acc [v])}) NIL l})
+(fun {zip-ref a b} {map (fn {i} {[(nth i a) (nth i b)]}) (range (min (len a) (len b)))})
+
+(dotimes {round 3} (do
+  (print "round" round)
+  (print (map (fn {l} {all? (fn {x} {eq (remove-fst x l) (rf-ref x l)}) {0 1 2 3 4 7 8 9 99}}) family))
+  (print (map (fn {l} {all? (fn {x} {eq (remove-all x l) (ra-ref x l)}) {0 1 2 3 4 7 8 9 99}}) family))
+  (print (map (fn {l} {eq (distinct l) (dist-ref l)}) family))
+  (print (map (fn {l} {all? (fn {x} {eq (has-element? l x) (elem? x l)}) {0 4 7 99}}) family))
+  (print (map (fn {l} {eq (zip l (tail (join l [0]))) (zip-ref l (tail (join l [0])))}) family))
+  (print (map (fn {l} {eq (flatten [l [l] l]) (join l l l)}) family))))
+
+; remove-fst's own tails, consed onto and removed from again
+(def {first-gone} (map (fn {l} {if l (remove-fst (fst l) l) l}) family))
+(print first-gone)
+(print (map (fn {l} {cons :x l}) first-gone) (map (fn {l} {cons :y l}) first-gone))
+(print (map (fn {l} {if l (remove-fst (fst l) l) l}) first-gone))
+(print (map distinct first-gone) (map (fn {l} {zip l l}) (take 3 first-gone)))
+(print family)

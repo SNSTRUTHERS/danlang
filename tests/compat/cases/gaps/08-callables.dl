@@ -1,0 +1,60 @@
+; 08-callables: every built-in that calls a function given every kind of callable value: a lambda, a partial
+; application, a built-in and a partial one, a special form, an fexpr (the items come as written), a method taken out
+; of a hash (its &0 kept), a hash and a buffer (called in an S-expression, but not functions here), library
+; functions (with native ways) and their partials and aliases, functions of no formals, of extras only, of too many
+; formals (each call a partial application); each result or error message, and the calls each made, in order.
+(def {log} NIL)
+(fun {note x} {do (set! {log} (cons x log)) x})
+(def {h} #({{:a 1} {:b 2} {0 :zero} {1 :one} {:m (fn {x} {note (list :m x (len &0))})}}))
+(def {callables} (list
+  (list :lambda (fn {x} {note (list :lam x)}))
+  (list :two-formals (fn {a b} {note (list :two a b)}))
+  (list :partial ((fn {a b} {note (list :part a b)}) :p))
+  (list :builtin len)
+  (list :builtin2 cons)
+  (list :partial-builtin (cons :c))
+  (list :eq-partial (eq 2))
+  (list :special if)
+  (list :fexpr (fexpr {x} {note (list :fx x (type-of x))}))
+  (list :method (h :m))
+  (list :hash h)
+  (list :buffer (buffer {10 20 30}))
+  (list :library even?)
+  (list :library2 mod)
+  (list :library-partial (mod 7))
+  (list :alias %)
+  (list :library-list zip)
+  (list :no-formals (fn {} {note :none}))
+  (list :extras-only (fn {} {note (list :ex &_)}))
+  (list :three (fn {a b c} {note (list :three a b c)}))
+  (list :print print)))
+(def {hofs} (list
+  (list :map (fn {f} {map f {1 2}}))
+  (list :filter (fn {f} {filter f {1 NIL 2}}))
+  (list :foldl (fn {f} {foldl f 0 {1 2}}))
+  (list :foldr (fn {f} {foldr f 0 {1 2}}))
+  (list :any? (fn {f} {any? f {NIL 1}}))
+  (list :all? (fn {f} {all? f {1 2}}))
+  (list :find (fn {f} {find f {NIL 2 3}}))
+  (list :count (fn {f} {count f {1 NIL 3}}))
+  (list :sort (fn {f} {sort {3 1 2} f}))
+  (list :each (fn {f} {each f {1 2}}))
+  (list :dotimes (fn {f} {dotimes 2 f}))
+  (list :unpack (fn {f} {unpack f {1 2}}))
+  (list :apply1 (fn {f} {apply f {0}}))
+  (list :pack (fn {f} {pack f 1 2}))
+  (list :flip (fn {f} {flip f 1 2}))
+  (list :comp (fn {f} {comp f 1+ 1}))))
+(each {c callables} (do
+  (print "--" (fst c) (repr (snd c)))
+  (each {k hofs} (do
+    (set! {log} NIL)
+    =(out (output-of =(r (try ((snd k) (snd c)) (list :error &err)))))
+    (print "  " (fst k) (repr r) (reverse log) (repr out))))))
+
+; the same through a hash's method and hash-call; and the higher-order built-ins given their own partials
+(def {obj} #({{:map (fn {f l} {map f l})} {:h h}}))
+(print "method" (obj :map (h :m) {1 2}) (try (obj :map h {:a}) &err) (hash-call obj :map even? {1 2}))
+(print "partials" ((map even?) {1 2 3}) ((filter odd?) {1 2 3}) ((foldl +) 0 {1 2 3}) (((foldl +) 0) {4 5}) ((sort) {2 1}))
+(print "nested" (map (map even?) {{1 2} {3 4}}) (map (fn {l} {filter (fn {x} {> x 1}) l}) {{1 2} {3 0}}))
+(print "returned" (map ((fn {} {fn {x} {* x 10}})) {1 2}) (map (eval {fn {x} {- x}}) {1 2}) (map (fst (list 1+)) {1 2}))

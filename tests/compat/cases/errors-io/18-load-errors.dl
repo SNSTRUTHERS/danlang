@@ -1,0 +1,67 @@
+; 18-load-errors.dl - load and its errors: a file's expressions run at the top level in turn (their output as they
+; go), its last value load's; an error stops it, load's value then "file: message" (its code kept); a file that can't
+; be read says the line ("file:3: missing )})", the open closers, innermost last); a file not there is :noent.  The
+; files are written here first.  The last error is made in a function a loaded file defined, called from here: its
+; trace has the loaded file's lines, and this one's
+
+(write-file "good.dl" "; a library\n(def {lib-value} 42)\n(fun {lib-double x} {* 2 x})\n(print \"good.dl loaded\")\n(lib-double lib-value)\n")
+(print (load "good.dl"))
+(print (load "good") lib-value (lib-double 5))
+(print (load "good.dl" "good"))
+
+(write-file "stops.dl" "(print \"stops.dl: first\")\n(def {before-error} :defined)\n(+ 1 (len 5))\n(print \"stops.dl: not reached\")\n(def {after-error} :defined)\n")
+(print (load "stops"))
+(print before-error (defined? after-error))
+(print (error-message (load "stops")))
+(write-file "coded.dl" "(error \"coded failure\" :mycode)\n")
+(print (load "coded") (error-code (load "coded")) (try (load "coded") (list &err &code)))
+
+; files that can't be read: nothing in them runs
+(write-file "open.dl" "(print \"never printed\")\n(fun {f x} {\n  (+ 1 2\n")
+(print (load "open"))
+(write-file "open2.dl" "{1 2\n(3\n")
+(print (load "open2"))
+(write-file "here.dl" "(print \"\"\"an open here string\n")
+(print (load "here"))
+(write-file "close.dl" "(print 1))\n")
+(print (load "close"))
+(write-file "wrong.dl" "\n\n(list 1 2]\n")
+(print (load "wrong"))
+(write-file "escape.dl" "(print \"never printed\")\n(print \"bad \\q escape\")\n")
+(print (load "escape"))
+(write-file "newline.dl" "(print \"a plain string\nover two lines\")\n")
+(print (load "newline"))
+(write-file "char.dl" "(print \\nosuchname)\n")
+(print (load "char"))
+(write-file "touch.dl" "(print 1)\n(f(x))\n")
+(print (load "touch"))
+(write-file "ratio.dl" "(print 1/0)\n")
+(print (load "ratio"))
+(write-file "control.dl" "(print 1)\n(print \x01)\n")
+(print (load "control"))
+(write-file "high.dl" "(print 1)\n(print caf\xE9)\n")
+(print (load "high"))
+(write-file "dollar.dl" "(print $(x))\n")
+(print (load "dollar"))
+
+; nothing there, nothing in it, not a name
+(print (load "no-such-file") (error-code (load "no-such-file")))
+(print (load "no-such-dir/file.dl"))
+(write-file "empty.dl" "")
+(print (load "empty") (load "empty.dl"))
+(write-file "comments.dl" "; only a comment\n")
+(print (load "comments"))
+(print (load 5) (load :good) (load))
+(mkdir "adir")
+(print (load "adir"))
+
+; a file loading a file
+(write-file "outer.dl" "(print \"outer.dl starts\")\n(load \"stops\")\n(print \"outer.dl: not reached\")\n")
+(print (load "outer"))
+
+(print "the last: an error in a function a loaded file defined, called from here")
+(write-file "shapes.dl" "; shapes\n(fun {area s} {\n  * (fst s)\n    (snd s)})\n\n(fun {total l} {foldl + 0 (map area l)})\n(fun {check l} {+ 0 (total l)})\n")
+(load "shapes")
+(print (check {{1 2} {3 4}}))
+(fun {run} {do (print "run:" (check {{5 6}})) (check {{1 2} {3 "four"}})})
+(+ 1 (run))

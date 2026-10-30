@@ -1,0 +1,153 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> exit
+--- stderr
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {mod x 3}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {mod 3 x}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {div x 7}))
+  at line 1  (- x (g))
+  called at line 1  (tst floor)
+  at line 1  (- x (g))
+  called at line 1  (tst ceil)
+  at line 1  (- x (g))
+  called at line 1  (tst round)
+  at line 1  (- x (g))
+  called at line 1  (tst even?)
+  at line 1  (- x (g))
+  called at line 1  (tst odd?)
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {pow x 2}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {pow x 3}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {pow 2 (- x 99990)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst square)
+  at line 1  {+ 70000 1}
+  called at line 1  (tst cube)
+  at line 1  {+ 70000 1}
+  called at line 1  (tst >=0)
+  at line 1  {+ 70000 1}
+  called at line 1  (tst <=0)
+  at line 1  {+ 70000 1}
+  called at line 1  (tst >0)
+  at line 1  {+ 70000 1}
+  called at line 1  (tst <0)
+  at line 1  {+ 70000 1}
+  called at line 1  (tst !=0)
+  at line 1  (- x (g))
+  called at line 1  (tst !=1)
+  at line 1  (- x (g))
+  called at line 1  (tst positive?)
+  at line 1  (- x (g))
+  called at line 1  (tst negative?)
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {between? 1 200000 x}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {between? x 1 5}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {between? 1 x 5}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {xor x NIL}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {avg (list x 1)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {avg (list x)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {?? x}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {?? NIL x}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {divmod x 7}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {zip (list x) (list 1)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {flatten (list x (list x))}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {distinct (list x 1 x)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {remove-all x (list 1 x 2)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {remove-all 1 (list x 1)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {remove-fst x (list 1 x 2)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {remove-fst 5 (list 1 x 2)}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {has-element? (list 1 x) x}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {has-element? (list 1 2) x}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {starts-with? (list x 1) x}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {starts-with? (list 1 x) x}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {contains? (list 1 x) x}))
+  at line 1  (- x (g))
+  called at line 1  (tst (fn {x} {minimum (list x 1)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {maximum (list x)}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {cond {T x}}))
+  at line 1  {+ 70000 1}
+  called at line 1  (tst (fn {x} {case x {1 2} {x 3}}))
+--- exit 0

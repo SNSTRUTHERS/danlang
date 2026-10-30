@@ -1,0 +1,50 @@
+; lib-cons: a library of its own (danlang loads the globals.dl in the folder it runs in before lib/'s; run as the
+; program too, it's the program once args is there): its cons puts the item last, and zip, flatten, distinct,
+; remove-all and remove-fst are as lib/globals.dl has them, so they build their lists with it
+(if (defined? args)
+  (do
+    (print "zip" (map (fn {i} {zip {1 2 3} {4 5 6}}) {1 2 3 4}))
+    (print "flatten" (map (fn {i} {flatten {1 {2 3} 4}}) {1 2 3 4}))
+    (print "distinct" (map (fn {i} {distinct {3 1 3 2}}) {1 2 3 4}))
+    (print "remove-all" (map (fn {i} {remove-all 1 {1 2 3 1 4}}) {1 2 3 4}))
+    (print "remove-fst" (map (fn {i} {remove-fst 3 {1 2 3 4}}) {1 2 3 4})))
+  (do
+    (def {cons0} cons)
+    (fun {cons x l} {join l (list x)})
+    (fun {zip a b} ?{
+      (and a b)
+      (cons [(fst a) (fst b)] (zip (tail a) (tail b)))
+      NIL
+    })
+    (fun {flatten l} ?{
+      l
+      ?((qexpr? (fst l))
+        (join (flatten (fst l)) (flatten (tail l)))
+        (cons (fst l) (flatten (tail l))))
+      NIL
+    })
+    (fun {distinct l} ?{l (cons (fst l) (distinct (remove-all (fst l) (tail l)))) NIL})
+    (fun {remove-fst f l} ?{
+      l
+      (do
+        =(hd (fst l))
+        =(tl (tail l))
+        ?(
+          (eq f hd)
+          tl
+          (cons hd (remove-fst f tl))
+        )
+      )
+    })
+    (fun {remove-all f l} ?{
+      l
+      (do
+        =(hd (fst l))
+        =(tl (tail l))
+        ?(
+          (eq f hd)
+          (remove-all f tl)
+          (cons hd (remove-all f tl))
+        )
+      )
+    })))

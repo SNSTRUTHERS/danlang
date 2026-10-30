@@ -1,0 +1,27 @@
+; 16-closures-same-code: functions one piece of code makes many of (closures, each with its own scope), with the
+; same formals list, with different ones (made each time, or chosen among), with formals that repeat in some; called
+; in turn, alternately, many times, partially applied, compared
+(fun {adder n} {fn {x} {+ x n}})
+(def {adders} (map adder (range 10)))
+(print "adders" (map (fn {f} {f 100}) adders) (eq (nth 1 adders) (nth 2 adders)) (map (fn {f} {repr f}) (take 2 adders)))
+(fun {mk-fs choice} {fn (nth choice {{a b} {b a} {a a} {x y z} {}}) {list (if (defined? a) a :no-a) (if (defined? b) b :no-b) &_}})
+(def {made} (map mk-fs {0 1 2 3 4 0 1 2 3 4}))
+(dotimes {round 3} (print "made" round (map (fn {f} {try (f 1 2 3) &err}) made)))
+(print "made partial" (map (fn {f} {repr (f 1)}) (take 5 made)) (map (fn {f} {try ((f 1) 2 3) &err}) (take 5 made)))
+(print "made eq" (eq (nth 0 made) (nth 5 made)) (eq (nth 0 made) (nth 1 made)) (eq (nth 2 made) (nth 7 made)))
+; one code, formals lists made fresh each time (join), many calls of each
+(fun {mk-join extra} {fn (join {p} extra) {list p &_ (if (defined? q) q :no-q)}})
+(def {js} [(mk-join {}) (mk-join {q}) (mk-join {q r}) (mk-join {p}) (mk-join {Q})])
+(def {tot} {})
+(dotimes {i 50} (each {f js} (set! {tot} (cons (try (f i 1 2) &err) tot))))
+(print "js" (len tot) (take 10 tot) (drop 245 tot))
+; counters: closures over a let, set! through them
+(fun {counter} {let {{n 0}} (fn {} {do (set! {n} (+ n 1)) n})})
+(def {c1} (counter))
+(def {c2} (counter))
+(print "counters" (c1) (c1) (c2) (c1) (c2) (c2) (c2))
+; a closure's formals the same names as its maker's
+(fun {shadow a b} {fn {b a} {list a b}})
+(print "shadow" ((shadow 1 2) 3 4) (((shadow 1 2) 3) 4))
+; the last: a closure given too many
+((nth 3 adders) 1 2)

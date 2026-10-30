@@ -1,0 +1,8 @@
+--- stdout
+one
+one
+
+two, exiting
+--- stderr
+
+--- exit 3

@@ -1,0 +1,24 @@
+--- stdout
+1 1 21845 3
+{100 1 3 -4} {<function>(fn {x} {:local}) 1 3 -4}
+{5 1}
+{2 3 8}
+{:local-mod {3 1} T}
+{:set-locally 1} 1
+{3 {{1 1} {2 2}}}
+-193 100
+-393 200
+-593 300
+-1 -3 -3 -3
+1 -4 -3 -4
+{0 1 -293 -393}
+{70 35 23 0 0 0}
+17 {70 35 23 17 14 11}
+-793
+1
+--- stderr
+Error: 33-redefine-midway.dl: S-Expression starts with incorrect type. Got String, Expected Function.
+  at <BUNDLE>\lib\globals.dl:148  (floor (/ a b))
+  called at 33-redefine-midway.dl:52  (mod h 12)
+  called at 33-redefine-midway.dl:53  (wrap 15)
+--- exit 1

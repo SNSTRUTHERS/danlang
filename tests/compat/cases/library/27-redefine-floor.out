@@ -1,0 +1,53 @@
+--- stdout
+1 3 3 3 {3 1} T NIL 1 32
+my floor of 5/2
+100
+<function>(fn {x} {do (print "my floor of" x) 100})
+my floor of 7/2
+-193
+my floor of 7/2
+100
+my floor of 7/2
+-193
+my floor of 3
+100
+my floor of 3
+-100
+3
+my floor of 7/2
+my floor of 7/2
+{100 -193}
+my floor of 3/2
+my floor of 3/2
+NIL NIL
+8
+my floor of 4611686018427387904
+my floor of -1025/1024
+9223372036854775608 100
+<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+Error: mod's b Error: Cannot perform 'div' on non-numbers
+5
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+1
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+4
+1
+-1 -3 {-3 -1} 1 -3 3 NIL T
+{-1 0 -2 -1 0 1 2 0 1}
+{-1 -1 0 0 0 0 0 1 1}
+<function>(fn {y} {list :floor-of x y})
+Error: All parameters to operator '*' must be numbers.
+<function>(fn {y} {list :floor-of x y})
+Error: no floor for 7/2
+Error: no floor for 4
+--- stderr
+27-redefine-floor.dl:26: warning: def replaces a function, floor, with a number
+27-redefine-floor.dl:37: warning: def replaces a number, floor, with a function
+27-redefine-floor.dl:54: warning: def replaces a function, floor, with a number
+Error: 27-redefine-floor.dl: S-Expression starts with incorrect type. Got Number, Expected Function.
+  at <BUNDLE>\lib\globals.dl:148  (floor (/ a b))
+  called at 27-redefine-floor.dl:55  (mod h 12)
+  called at 27-redefine-floor.dl:56  (clock-hour 15)
+--- exit 1

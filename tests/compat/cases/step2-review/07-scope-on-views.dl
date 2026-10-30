@@ -1,0 +1,36 @@
+; 07-scope-on-views.dl - the scope a list remembers (eval runs it there), on lists that share storage: head, tail,
+; init, end, reverse and join keep it; take, drop, cons, subset, sort, map and filter make lists that remember none;
+; each tried on lists written in a function, made by list there, and on conses and views of those (sharing their
+; storage), with a variable named who in every scope
+
+(def {who} :global)
+(fun {run-it c} {do =(who :in-run-it) (eval c)})
+
+(fun {mk} {do =(who :in-mk) (list print (fst {who}) 1)})
+(fun {mk-q} {do =(who :in-mk-q) {print who 2}})
+(def {l} (mk))
+(def {q} (mk-q))
+(print "l" (run-it l) "q" (run-it q))
+(print "tail" (run-it (cons print (tail l))) (run-it (join (head l) (tail l))) (run-it (init (join l {3}))))
+(print "init" (run-it (init l)) (run-it (init q)) (run-it (init (init (join q {4 5})))))
+(print "take" (run-it (take 2 l)) (run-it (take 2 q)) (run-it (drop 0 l)) (run-it (drop 0 q)))
+(print "cons" (run-it (cons print (tail (tail l)))) (run-it (cons print (drop 1 q))))
+(print "reverse" (run-it (reverse (reverse l))) (run-it (reverse (reverse q))))
+(print "join" (run-it (join (take 1 l) (drop 1 q))) (run-it (join (init q) (end l))) (run-it (join (drop 1 l) q)))
+(print "subset" (run-it (subset l 0 2)) (run-it (subset q 0 2)))
+
+; a list made in each of several calls, then views and conses of each: each remembers its own call
+(fun {mk-n n} {do =(who n) (list print (fst {who}))})
+(def {made} (map mk-n {:one :two :three}))
+(print (map run-it made))
+(print (map (fn {m} {run-it (init (join m {extra}))}) made))
+(print (map (fn {m} {run-it (take 2 (join m {extra}))}) made))
+(print (map (fn {m} {run-it (join (init m) (tail m))}) made))
+(print (map (fn {m} {run-it (cons print (tail m))}) made))
+
+; a Q-expression evaluated again keeps the scope it already remembers; a view of it, then evaluated, too
+(fun {keep} {do =(who :in-keep) =(v (tail {_ print who})) [v (eval v) (init (join v {}))]})
+(def {kept} (keep))
+(print (run-it (fst kept)) (run-it (thd kept)) kept)
+(fun {pass x} {do =(who :in-pass) (run-it x)})
+(print (pass (fst kept)) (pass (cons print (tail (fst kept)))) (pass (take 2 (fst kept))))

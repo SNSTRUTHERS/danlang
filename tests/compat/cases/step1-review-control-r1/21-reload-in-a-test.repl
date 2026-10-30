@@ -1,0 +1,21 @@
+; 21-reload-in-a-test: a clause's test that loads lib/globals.dl again, so cond, unpack and every library function are
+; new values (as the code they were: no native ways), while values kept from before are the old functions (their
+; natives' guards see what's changed): cond's code goes on with the new unpack and cond; the old ones keep working;
+; each value, and the places errors made right after say they were
+(fun {p a b} {+ a b})
+(def {old-mod old-floor old-cond old-zip old-even} mod floor cond zip even?)
+(each {i (range 4)} (list (mod 7 2) (floor 7/2) (cond {NIL 1} {T 2}) (zip {1} {2}) (even? 3)))
+(cond {(do (load "globals") NIL) 1} {T (mod 9 4)})
+(list (eq old-mod mod) (old-mod 7 2) (old-floor 7/2) (old-cond {NIL 1} {T (old-floor 9/2)}) (old-zip {1 2} {3 4}) (old-even 4))
+(each {i (range 4)} (list (old-mod 7 2) (old-floor 7/2) (old-cond {NIL 1} {T 2}) (old-zip {1} {2}) (old-even 3)))
+(p 1 2 (old-floor 7/2))
+(p 1 2 (old-mod 7 2))
+(p 1 2 (old-cond {NIL 1} {T (old-floor 9/2)}))
+(p 1 2 (mod 7 2))
+(p 1 2 (cond {NIL 1} {T (mod 9 4)}))
+(case 2 {(do (load "globals") 1) :a} {2 (floor 5/2)})
+(p 1 2 (case 2 {(do (load "globals") 1) :a} {2 (floor 5/2)}))
+(old-cond {(do (load "globals") NIL) 1} (cons T {:x}))
+(each {i (range 4)} (list (mod 7 2) (floor 7/2) (cond {NIL 1} {T 2}) (zip {1} {2}) (even? 3) (old-zip {1 2} {3 4})))
+(p 1 2 (old-zip {1 2} {3 4}))
+(p 1 2 (zip {1 2} {3 4}))

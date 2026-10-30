@@ -1,0 +1,10 @@
+; strings.dl - strings: joined by +, format, substring, splitting and joining, characters, to-str
+(def {str} "")
+(dotimes {i 5000} (set! {str} (+ str (to-str (mod i 10)))))
+(def {n} 0)
+(dotimes {i 5000} (if (eq (char-at str i) \5) (set! {n} (+ n 1))))
+(dotimes {i 20000} (set! {n} (+ n (len (format "{}-{}" i (* i 2))))))
+(dotimes {i 20000} (set! {n} (+ n (len (substring "the quick brown fox" (mod i 10) 5)))))
+(def {words} (str-split "the quick brown fox jumps over the lazy dog" " "))
+(dotimes {i 5000} (set! {n} (+ n (len (str-join (map str-upper words) "_")))))
+(print n)

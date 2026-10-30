@@ -1,0 +1,22 @@
+; 01-tail-loops-through-values: loops of many steps through a clause's value that's a function (a closure made in
+; the clause's scope, called with nothing in tail position: it takes cond's place, so no level more), through case,
+; through cond and case calling each other that way, and through a hand-over each step (a clause cons made, which
+; unpack evaluates again); each runs in constant space where the same loop through a value that's a call (not in
+; tail position) is too deep; then errors made right after one, and at the end one not caught, its trace
+(fun {p a b} {+ a b})
+(fun {count-down n acc} {cond {(zero? n) acc} {T (fn {} {count-down (- n 1) (+ acc (mod n 3))})}})
+(print (count-down 60000 0))
+(fun {k-down n} {case (even? n) {T (if (zero? n) :done (fn {} {k-down (- n 1)}))} {NIL (fn {} {k-down (- n 1)})}})
+(print (k-down 40001))
+(fun {ping n} {cond {(<= n 0) (list :ping-done n)} {T (fn {} {pong (- n 1)})}})
+(fun {pong n} {case (<= n 0) {T (list :pong-done n)} {NIL (fn {} {ping (- n 2)})}})
+(print (ping 50000) (ping 50001))
+(fun {via-cons n} {cond {(zero? n) :cons-done} (cons NIL {0}) (cons T (list (fn {} {via-cons (- n 1)})))})
+(print (via-cons 20000))
+(fun {named n} {cond {(zero? n) (list :named n)} {T (do (def {next-step} (fn {} {named (- n 1)})) next-step)}})
+(print (named 30000))
+(fun {not-tail n} {cond {(zero? n) 0} {T (+ 1 (not-tail (- n 1)))}})
+(print (try (not-tail 20000) &err) (not-tail 500))
+(print (try (p 1 2 (count-down 5 0)) &err) (try (p 1 2 (k-down 7)) &err) (try (p 1 2 (via-cons 3)) &err))
+(print "the last: an error made right after a loop through values, not caught")
+(p 1 2 (ping 9))

@@ -1,0 +1,24 @@
+--- stdout
+global {:fa 1 2 3} {:fb 3 2 1 {4}} {:fc 1 2} {:fd 1 2 {3}} {:fe 1 2} {:fa 1 2 3} {:fc 1 2}
+data {a b c} {a b c d} {:z a b c} {b c} {c} {a} {c b a} 3
+joined {1 2 3 4} {1 2 3 4} {a b c d} {a b c d e} {a b c x}
+consed {:q a b c} {:r a b c} {:s :q a b c}
+map formals {m1 m2 m3} {1 2 3 NIL} {1 2 3 {4}} {1 2 3 NIL} {m1 m2 m3 m4} {:m0 m1 m2 m3} {m2 m3}
+map formals 2 {1 2} {1 2} <function>(fn {x y} {list x y})
+read formals {1 2} {r1 r2} {r1 r2 r1 r2} :list
+mixed {1 2 3} {1 2 3} <function>(fn {p q r} {list p q r})
+mk {1 2} {1 2} {1} {1 2 3} {5 6}
+mk-fs <function>(fn NIL {map (fn {n} {eval n}) (map to-sym (map (fn {s} {to-str s}) names))}) The function takes 0 arguments, not 6
+mk-fs <function>(fn {u} {map (fn {n} {eval n}) (map to-sym (map (fn {s} {to-str s}) names))}) The function takes 1 argument, not 6
+mk-fs <function>(fn {u v} {map (fn {n} {eval n}) (map to-sym (map (fn {s} {to-str s}) names))}) The function takes 2 arguments, not 6
+mk-fs <function>(fn {u v w} {map (fn {n} {eval n}) (map to-sym (map (fn {s} {to-str s}) names))}) The function takes 3 arguments, not 6
+mk-fs <function>(fn {u v w x} {map (fn {n} {eval n}) (map to-sym (map (fn {s} {to-str s}) names))}) The function takes 4 arguments, not 6
+mk-fs <function>(fn {u v w x y} {map (fn {n} {eval n}) (map to-sym (map (fn {s} {to-str s}) names))}) The function takes 5 arguments, not 6
+mk-fs <function>(fn {u v w x y z} {map (fn {n} {eval n}) (map to-sym (map (fn {s} {to-str s}) names))}) {1 2 3 4 5 6}
+code {1 2} {:k1 5} Error: Unbound Symbol 'x'
+code again {3 4} Error: Unbound Symbol 'x' {:k1 9}
+--- stderr
+Error: 07-shared-formals.dl: The function takes 3 arguments, not 4
+  at 07-shared-formals.dl:39  (fa 1 2 3 4)
+  called at 07-shared-formals.dl:39  (fa 1 2 3 4)
+--- exit 1

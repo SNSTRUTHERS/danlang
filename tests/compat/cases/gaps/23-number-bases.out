@@ -1,0 +1,74 @@
+--- stdout
+named -2 -8 11 18 -1 8 59 -13 -26 5 15 24 35 48 80 99 36 15 5
+radix 15 23 1295 36 10 61 62 78 80 255 255 48 99
+own digits 5 2 21 6 3 1 16 16 16 -1 -1 -1
+signs -16 16 -1 -1 -35 -2
+fractions 1/2 1/2 3/2 1/2 1/3 1/3 Error: Unbound Symbol '#x-1/#x2' 0.5 1000.0001 16 5
+kinds {:number :number :number :number} T T T
+c {"0" "+" "-" "+-+" "+0-++" "-0+--" "0++00+" "+-+0-000+0+" "+-0+-0-++0-0-0+0+0-++--+0+-00+++00+++-+-+" "+00-+0+--0+0+0-0-0+--++-0-+00---00---+-+-" "-00+-0-++0-0-0+0+0-++--+0+-00+++00+++-+-+" "+.0" "++-/-+" "--+/-+"}
+e {"0" "+" "-" "#+" "00-+" "00+-" "0+0#" "+#+-0+-+" "#+#++=++=0-0==00+=#0-=--0+++" "#==--#--#0+0##00-#=0+#++0---" "=##++=++=0-0==00+=#0-=--0+++" "+/=+" "0-/#" "0+/#"}
+g {"0" "+" "-" "0+" "#0#" "=0=" "*+=+" "#*0#-~+" "00*#=+#=+==*++-++0+~~*#" "-0~=#-=#-##~--+--0-**~=" "+0*#=+#=+==*++-++0+~~*#" "+/*" "#-/#" "=+/#"}
+i {"O" "N" "U" "NUN" "NOUNN" "UONUU" "ONNOON" "NUNOUOOONON" "NUONUOUNNOUOUONONOUNNUUNONUOONNNOONNNUNUN" "NOOUNONUUONONOUOUONUUNNUOUNOOUUUOOUUUNUNU" "UOONUOUNNOUOUONONOUNNUUNONUOONNNOONNNUNUN" "N.O" "NNU/UN" "UUN/UN"}
+j {"O" "N" "U" "MN" "OOUN" "OONU" "ONOM" "NMNUONUN" "MNMNNWNNWOUOWWOONWMOUWUUONNN" "MWWUUMUUMONOMMOOUMWONMNNOUUU" "WMMNNWNNWOUOWWOONWMOUWUUONNN" "N/WN" "OU/M" "ON/M"}
+m {"S" "t" "l" "Dl" "nut" "ral" "asp" "hhenp" "Dnlnhnustruanshptl" "urtriraDlnaurDielt" "anlnhnustruanshptl" "t/h" "a/p" "u/p"}
+t {"0" "1" "-1" "21" "10201" "-10201" "100110" "10022220021" "2021110011022210012102010021220101220221" "-2021110011022210012102010021220101220222" "2021110011022210012102010021220101220222" "0.1" "-12/2" "12/2"}
+q {"0" "1" "-1" "13" "1210" "-1210" "3333" "100000000" "13333333333333333333333333333333" "-20000000000000000000000000000000" "20000000000000000000000000000000" "1/3" "-2.2" "2.2"}
+v {"0" "1" "-1" "12" "400" "-400" "2010" "4044121" "1104332401304422434310311212" "-1104332401304422434310311213" "1104332401304422434310311213" "1/3" "-10/2" "10/2"}
+f {"0" "1" "-1" "11" "244" "-244" "1103" "1223224" "1540241003031030222122211" "-1540241003031030222122212" "1540241003031030222122212" "0.2" "-2.3" "2.3"}
+s {"0" "1" "-1" "10" "202" "-202" "513" "362032" "22341010611245052052300" "-22341010611245052052301" "22341010611245052052301" "1/3" "-5/2" "5/2"}
+n {"0" "1" "-1" "7" "121" "-121" "313" "108807" "67404283172107811827" "-67404283172107811828" "67404283172107811828" "0.3" "-5/2" "5/2"}
+k {"0" "A" "N" "G" "DU" "QH" "IL" "CIPG" "BGLDISEKCHPKOO" "OTYQVFRXPUCXBA" "BGLDISEKCHPKON" "0.I" "R/B" "E/B"}
+y {"0" "A" "a" "G" "Bf" "bF" "Ej" "WRy" "A0nIwxZbozit" "a0NiWXzBOZIS" "A0nIwxZbozis" "A/C" "e/B" "E/B"}
+x {"0" "1" "-1" "7" "64" "-64" "FF" "10000" "7FFFFFFFFFFFFFFF" "-8000000000000000" "8000000000000000" "1/3" "-2.8" "2.8"}
+z {"0" "1" "-1" "7" "2S" "-2S" "73" "1EKG" "1Y2P0IJ32E8E7" "-1Y2P0IJ32E8E8" "1Y2P0IJ32E8E8" "0.C" "-2.I" "2.I"}
+b {"0" "1" "-1" "111" "1100100" "-1100100" "11111111" "10000000000000000" "111111111111111111111111111111111111111111111111111111111111111" "-1000000000000000000000000000000000000000000000000000000000000000" "1000000000000000000000000000000000000000000000000000000000000000" "1/11" "-10.1" "10.1"}
+o {"0" "1" "-1" "7" "144" "-144" "377" "200000" "777777777777777777777" "-1000000000000000000000" "1000000000000000000000" "1/3" "-2.4" "2.4"}
+d {"0" "1" "-1" "7" "100" "-100" "255" "65536" "9223372036854775807" "-9223372036854775808" "9223372036854775808" "1/3" "-5/2" "2.5"}
+#3r {"#3r0" "#3r1" "-#3r1" "#3r21" "#3r10201" "-#3r10201" "#3r100110" "#3r10022220021" "#3r2021110011022210012102010021220101220221" "-#3r2021110011022210012102010021220101220222" "#3r2021110011022210012102010021220101220222" "#3r0.1" "-#3r12/#3r2" "#3r12/#3r2"}
+#37r {"#37r0" "#37r1" "-#37r1" "#37r7" "#37r2Q" "-#37r2Q" "#37r6X" "#37r1AW9" "#37r1EV3XEWY4OWW5" "-#37r1EV3XEWY4OWW6" "#37r1EV3XEWY4OWW6" "#37r1/#37r3" "-#37r5/#37r2" "#37r5/#37r2"}
+#80r {"#80r0" "#80r1" "-#80r1" "#80r7" "#80r1K" "-#80r1K" "#80r3F" "#80rAJG" "#80r@viq78f|vl" "-#80r@viq78f|vm" "#80r@viq78f|vm" "#80r1/#80r3" "-#80r2.e" "#80r2.e"}
+#-2r {"#-2r0" "#-2r1" "#-2r11" "#-2r11011" "#-2r110100100" "#-2r11101100" "#-2r100000011" "#-2r10000000000000000" "#-2r11000000000000000000000000000000000000000000000000000000000000011" "#-2r1000000000000000000000000000000000000000000000000000000000000000" "#-2r11000000000000000000000000000000000000000000000000000000000000000" "#-2r1/#-2r111" "#-2r10.1" "#-2r111.1"}
+#-10r {"#-10r0" "#-10r1" "#-10r19" "#-10r7" "#-10r100" "#-10r1900" "#-10r355" "#-10r75676" "#-10r190837432044955385807" "#-10r11384788177266836212" "#-10r190837432044955385808" "#-10r1/#-10r3" "#-10r18.5" "#-10r3.5"}
+#<x {"#<x0" "#<x1" "-#<x1" "#<x7" "#<x46" "-#<x46" "#<xFF" "#<x00001" "#<xFFFFFFFFFFFFFFF7" "-#<x0000000000000008" "#<x0000000000000008" "#<x1/#<x3" "-#<x8.2" "#<x8.2"}
+#>x {"#>x0" "#>x1" "-#>x1" "#>x7" "#>x64" "-#>x64" "#>xFF" "#>x10000" "#>x7FFFFFFFFFFFFFFF" "-#>x8000000000000000" "#>x8000000000000000" "#>x1/#>x3" "-#>x2.8" "#>x2.8"}
+#<16r {"#<16r0" "#<16r1" "-#<16r1" "#<16r7" "#<16r46" "-#<16r46" "#<16rFF" "#<16r00001" "#<16rFFFFFFFFFFFFFFF7" "-#<16r0000000000000008" "#<16r0000000000000008" "#<16r1/#<16r3" "-#<16r8.2" "#<16r8.2"}
+#+x {"#+x0" "#+x1" "-#+x1" "#+x7" "#+x64" "-#+x64" "#+xFF" "#+x10000" "#+x7FFFFFFFFFFFFFFF" "-#+x8000000000000000" "#+x8000000000000000" "#+x1/#+x3" "-#+x2.8" "#+x2.8"}
+#x {"#x0" "#x1" "-#x1" "#x7" "#x64" "-#x64" "#xFF" "#x10000" "#x7FFFFFFFFFFFFFFF" "-#x8000000000000000" "#x8000000000000000" "#x1/#x3" "-#x2.8" "#x2.8"}
+X {"0" "1" "-1" "7" "64" "-64" "FF" "10000" "7FFFFFFFFFFFFFFF" "-8000000000000000" "8000000000000000" "1/3" "-2.8" "2.8"}
+back c {{T T} "'val': \"+\" isn't a number" "'val': \"-\" isn't a number" "'val': \"+-+\" isn't a number" "'val': \"+0-++\" isn't a number" "'val': \"-0+--\" isn't a number" "'val': \"0++00+\" isn't a number" "'val': \"+-+0-000+0+\" isn't a number" "'val': \"+-0+-0-++0-0-0+0+0-++--+0+-00+++00+++-+-+\" isn't a number" "'val': \"+00-+0+--0+0+0-0-0+--++-0-+00---00---+-+-\" isn't a number" "'val': \"-00+-0-++0-0-0+0+0-++--+0+-00+++00+++-+-+\" isn't a number" "'val': \"+.0\" isn't a number" "'val': \"++-/-+\" isn't a number" "'val': \"--+/-+\" isn't a number"}
+back e {{T T} "'val': \"+\" isn't a number" "'val': \"-\" isn't a number" "'val': \"#+\" isn't a number" "'val': \"00-+\" isn't a number" "'val': \"00+-\" isn't a number" "'val': \"0+0#\" isn't a number" "'val': \"+#+-0+-+\" isn't a number" "'val': \"#+#++=++=0-0==00+=#0-=--0+++\" isn't a number" "'val': \"#==--#--#0+0##00-#=0+#++0---\" isn't a number" "'val': \"=##++=++=0-0==00+=#0-=--0+++\" isn't a number" "'val': \"+/=+\" isn't a number" "'val': \"0-/#\" isn't a number" "'val': \"0+/#\" isn't a number"}
+back g {{T T} "'val': \"+\" isn't a number" "'val': \"-\" isn't a number" "'val': \"0+\" isn't a number" "'val': \"#0#\" isn't a number" "'val': \"=0=\" isn't a number" "'val': \"*+=+\" isn't a number" "'val': \"#*0#-~+\" isn't a number" "'val': \"00*#=+#=+==*++-++0+~~*#\" isn't a number" "'val': \"-0~=#-=#-##~--+--0-**~=\" isn't a number" "'val': \"+0*#=+#=+==*++-++0+~~*#\" isn't a number" "'val': \"+/*\" isn't a number" "'val': \"#-/#\" isn't a number" "'val': \"=+/#\" isn't a number"}
+back i {"'val': \"O\" isn't a number" "'val': \"N\" isn't a number" "'val': \"U\" isn't a number" "'val': \"NUN\" isn't a number" "'val': \"NOUNN\" isn't a number" "'val': \"UONUU\" isn't a number" "'val': \"ONNOON\" isn't a number" "'val': \"NUNOUOOONON\" isn't a number" "'val': \"NUONUOUNNOUOUONONOUNNUUNONUOONNNOONNNUNUN\" isn't a number" "'val': \"NOOUNONUUONONOUOUONUUNNUOUNOOUUUOOUUUNUNU\" isn't a number" "'val': \"UOONUOUNNOUOUONONOUNNUUNONUOONNNOONNNUNUN\" isn't a number" "'val': \"N.O\" isn't a number" "'val': \"NNU/UN\" isn't a number" "'val': \"UUN/UN\" isn't a number"}
+back j {"'val': \"O\" isn't a number" "'val': \"N\" isn't a number" "'val': \"U\" isn't a number" "'val': \"MN\" isn't a number" "'val': \"OOUN\" isn't a number" "'val': \"OONU\" isn't a number" "'val': \"ONOM\" isn't a number" "'val': \"NMNUONUN\" isn't a number" "'val': \"MNMNNWNNWOUOWWOONWMOUWUUONNN\" isn't a number" "'val': \"MWWUUMUUMONOMMOOUMWONMNNOUUU\" isn't a number" "'val': \"WMMNNWNNWOUOWWOONWMOUWUUONNN\" isn't a number" "'val': \"N/WN\" isn't a number" "'val': \"OU/M\" isn't a number" "'val': \"ON/M\" isn't a number"}
+back m {"'val': \"S\" isn't a number" "'val': \"t\" isn't a number" "'val': \"l\" isn't a number" "'val': \"Dl\" isn't a number" "'val': \"nut\" isn't a number" "'val': \"ral\" isn't a number" "'val': \"asp\" isn't a number" "'val': \"hhenp\" isn't a number" "'val': \"Dnlnhnustruanshptl\" isn't a number" "'val': \"urtriraDlnaurDielt\" isn't a number" "'val': \"anlnhnustruanshptl\" isn't a number" "'val': \"t/h\" isn't a number" "'val': \"a/p\" isn't a number" "'val': \"u/p\" isn't a number"}
+back t {{T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL}}
+back q {{T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {T T} {NIL NIL} {NIL NIL}}
+back v {{T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {T T} {NIL NIL} {NIL NIL}}
+back f {{T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL}}
+back s {{T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {T T} {T T} {T T}}
+back n {{T T} {T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {T T} {T T}}
+back k {{T T} "'val': \"A\" isn't a number" "'val': \"N\" isn't a number" "'val': \"G\" isn't a number" "'val': \"DU\" isn't a number" "'val': \"QH\" isn't a number" "'val': \"IL\" isn't a number" "'val': \"CIPG\" isn't a number" "'val': \"BGLDISEKCHPKOO\" isn't a number" "'val': \"OTYQVFRXPUCXBA\" isn't a number" "'val': \"BGLDISEKCHPKON\" isn't a number" "'val': \"0.I\" isn't a number" "'val': \"R/B\" isn't a number" "'val': \"E/B\" isn't a number"}
+back y {{T T} "'val': \"A\" isn't a number" "'val': \"a\" isn't a number" "'val': \"G\" isn't a number" "'val': \"Bf\" isn't a number" "'val': \"bF\" isn't a number" "'val': \"Ej\" isn't a number" "'val': \"WRy\" isn't a number" "'val': \"A0nIwxZbozit\" isn't a number" "'val': \"a0NiWXzBOZIS\" isn't a number" "'val': \"A0nIwxZbozis\" isn't a number" "'val': \"A/C\" isn't a number" "'val': \"e/B\" isn't a number" "'val': \"E/B\" isn't a number"}
+back x {{T T} {T T} {T T} {T T} {NIL NIL} {NIL NIL} "'val': \"FF\" isn't a number" {NIL NIL} "'val': \"7FFFFFFFFFFFFFFF\" isn't a number" {NIL NIL} {NIL NIL} {T T} {NIL NIL} {NIL NIL}}
+back z {{T T} {T T} {T T} {T T} "'val': \"2S\" isn't a number" "'val': \"-2S\" isn't a number" {NIL NIL} "'val': \"1EKG\" isn't a number" "'val': \"1Y2P0IJ32E8E7\" isn't a number" "'val': \"-1Y2P0IJ32E8E8\" isn't a number" "'val': \"1Y2P0IJ32E8E8\" isn't a number" "'val': \"0.C\" isn't a number" "'val': \"-2.I\" isn't a number" "'val': \"2.I\" isn't a number"}
+back b {{T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL}}
+back o {{T T} {T T} {T T} {T T} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {NIL NIL} {T T} {NIL NIL} {NIL NIL}}
+back d {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #3r {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #37r {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #80r {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #-2r {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #-10r {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #<x {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #>x {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #<16r {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #+x {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back #x {{T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T} {T T}}
+back X {{T T} {T T} {T T} {T T} {NIL NIL} {NIL NIL} "'val': \"FF\" isn't a number" {NIL NIL} "'val': \"7FFFFFFFFFFFFFFF\" isn't a number" {NIL NIL} {NIL NIL} {T T} {NIL NIL} {NIL NIL}}
+1000 {"#2r1111101000" "#9r1331" "#16r3E8" "#23r1KB" "#30r13A" "#37rR1" "#44rMW" "#51rJV" "#58rHE" "#65rFP" "#72rD+" "#79rCq"}
+symbols {:symbol :symbol :symbol :symbol :symbol :symbol :symbol :symbol :symbol :symbol :symbol :number} {1+ 1/x 12ab}
+errors 'read': Division by zero: 1/0 'read': Division by zero: #x1/0 'read': Closed a list without opening: ) 'read': '$(' isn't danlang: $name is the environment's variable 'read': 'f' touches '(': put a space between them {1.5.} {66}
+val 255 -3 -2 3 36 'val': "#xg" isn't a number 'val': "#" isn't a number
+--- stderr
+
+--- exit 0

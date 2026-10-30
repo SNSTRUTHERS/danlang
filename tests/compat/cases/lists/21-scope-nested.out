@@ -1,0 +1,49 @@
+--- stdout
+:in-run-it
+nested, fst NIL
+nested, head {print who}
+:in-run-it
+nested, fst of head NIL
+:in-mk-both
+outer NIL
+:in-run-it
+inner NIL
+:in-mk-lit
+[..] of a literal NIL
+:global
+hash :top NIL
+:in-put-in-f
+hash :f NIL
+:in-put-in-f
+hash :made NIL
+:global
+to# at the top NIL
+:in-to-in-f
+to# in a function NIL
+<function>(fn {x} {do (set who x) (eval c)})
+:in-mk-partial
+partial NIL
+:in-let
+let's last Q-expression is run NIL
+:in-let2
+let, a tail NIL
+:in-let3
+let, [..] NIL
+(print who) :sexpr
+:in-mk-fexpr
+fexpr arg NIL
+{who (+ 1 2)} {:symbol :sexpr} :in-mk-fexpr-all 3
+:in-extras
+&_ evaluated where it's named NIL
+:in-run-it
+&_ returned {<function>(+) 1 2} NIL
+:global
+NIL 3
+twice {2 :in-caller}
+:in-pick-caller
+a literal inside [..] NIL
+:in-pick-run
+a literal inside a literal NIL
+--- stderr
+
+--- exit 0

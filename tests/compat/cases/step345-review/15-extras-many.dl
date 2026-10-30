@@ -1,0 +1,25 @@
+; 15-extras-many: calls with 0 to 70 extra arguments (&1 ... &70, each its own name, made once), each read back by
+; name (eval of its symbol, made from its text), defined? past the last, &_'s length; with formals 0 to 8 before them
+(fun {nth-extra k} {eval (to-sym (+ "&" k))})
+(fun {probe} {list (len &_) (if &_ (fst &_) :none) (if &_ (last &_) :none)})
+(each {n [0 1 2 7 8 9 15 16 17 31 32 33 63 64 65 70]} (print "count" n (unpack probe (range n))))
+(fun {getter k} {fn {} {eval (to-sym (+ "&" k))}})
+(fun {all-extras} {map (fn {k} {eval (to-sym (+ "&" k))}) (range 1 (+ (len &_) 1))})
+(print "names" (unpack all-extras (range 100 140)))
+(print "names" (unpack all-extras (range 70)))
+(fun {at k} {list (eval (to-sym (+ "&" k))) (len &_)})
+(print "at" (at 1 :a) (at 5 1 2 3 4 5) (at 20 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21))
+(print "past" (try (at 3 1 2) &err) (try (at 70 1) &err))
+(fun {defs} {list (defined? &1) (defined? &8) (defined? &9) (defined? &16) (defined? &17) (defined? &33)})
+(print "defined" (defs) (unpack defs (range 8)) (unpack defs (range 9)) (unpack defs (range 17)) (unpack defs (range 40)))
+; formals before them: each count of formals, then extras
+(def {fns} (map (fn {k} {fn (take k {a b c d e f g h}) {list (len &_) &1 &2 &9 (if (defined? h) h :no-h)}}) (range 9)))
+(each {k (range 9)} (print "formals" k (try (unpack (nth k fns) (range 20)) &err)))
+; extras with direct names in the code
+(fun {direct} {list &1 &2 &3 &4 &5 &6 &7 &8 &9 &10 &11 &12 &13 &14 &15 &16 &17})
+(print "direct" (unpack direct (range 17)) (unpack direct (range 100 117)) (try (unpack direct (range 16)) &err))
+; nested calls with extras: each call's own
+(fun {outer-ex} {list &1 ((fn {} {list &1 &2}) :i1 :i2) &2 (len &_)})
+(print "nested" (outer-ex :o1 :o2) (outer-ex :o1 :o2 :o3))
+; the last: an extra past those given
+(direct 1 2 3)

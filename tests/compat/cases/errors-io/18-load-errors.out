@@ -1,0 +1,51 @@
+--- stdout
+good.dl loaded
+84
+good.dl loaded
+84 42 10
+good.dl loaded
+good.dl loaded
+84
+stops.dl: first
+Error: stops.dl: 'len' requires parameter of type string, list, hash or buffer
+:defined NIL
+stops.dl: first
+stops.dl: 'len' requires parameter of type string, list, hash or buffer
+Error: coded.dl: coded failure :mycode {"coded.dl: coded failure" :mycode}
+never printed
+Error: open.dl:3: missing )})
+Error: open2.dl:2: missing })
+Error: here.dl:1: missing )"""
+1
+Error: close.dl:1: Closed a SExpr without opening: 
+Error: wrong.dl:3: Closed a list without opening: )
+never printed
+Error: escape.dl:2: Unknown escape sequence \q
+Error: newline.dl:1: Newlines are not allowed in regular strings
+Error: char.dl:1: Unknown character name \nosuchname
+1
+Error: touch.dl:2: 'f' touches '(': put a space between them
+Error: ratio.dl:1: Division by zero: 1/0
+1
+Error: control.dl:2: Control sequences not allowed
+1
+Error: high.dl:2: Non-ASCII character outside of string literal
+Error: dollar.dl:1: '$(' isn't danlang: $name is the environment's variable
+Error: no-such-file: not found :noent
+Error: no-such-dir/file.dl: not found
+NIL NIL
+NIL
+Error: 'load' passed non-string parameter(s) Error: 'load' passed non-string parameter(s) <function>(load)
+Error: adir: not found
+outer.dl starts
+stops.dl: first
+Error: outer.dl: stops.dl: 'len' requires parameter of type string, list, hash or buffer
+the last: an error in a function a loaded file defined, called from here
+14
+run: 30
+--- stderr
+Error: 18-load-errors.dl: All parameters to operator '*' must be numbers.
+  at shapes.dl:2  {* (fst s) (snd s)}
+  called at shapes.dl:7  (total l)
+  called at 18-load-errors.dl:67  (run)
+--- exit 1

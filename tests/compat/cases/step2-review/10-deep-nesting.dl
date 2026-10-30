@@ -1,0 +1,33 @@
+; 10-deep-nesting.dl - lists nested deep, made by foldl with list (none of their levels frozen until it's bound,
+; then all of them at once), 100,000 deep: bound, compared (eq, cmp, ==), nested in views and conses, consed onto,
+; the library's natives given them (their code's, past the depth they go to); and a list of a thousand such levels
+; printed
+
+(def {deep} (foldl list NIL (range 100000)))
+(def {deep2} (foldl list NIL (range 100000)))
+(print (len deep) (snd deep) (snd (fst deep)) (eq deep deep2) (cmp deep deep2) (== deep deep2))
+(def {deep3} (foldl list NIL (join (range 99999) {-1})))
+(print (eq deep deep3) (cmp deep deep3) (cmp deep3 deep) (< deep3 deep))
+
+; views and conses of the deep lists, bound (frozen) in their turn
+(def {c} (cons :top deep))
+(def {c2} (cons :top2 deep))
+(def {t1} (tail c))
+(def {pair} [deep deep2 deep3])
+(def {pv} (tail pair))
+(print (len c) (fst c) (fst c2) (eq t1 deep) (len pv) (eq (fst pv) deep2) (eq (fst pv) (fst pair)))
+
+; a deep list under each item of a list, built by map (unfrozen), then bound
+(def {many} (map (fn {k} {foldl list k (range 2000)}) (range 50)))
+(print (len many) (map snd (take 5 many)) (eq (fst many) (snd many)))
+(def {many-t} (drop 25 many))
+(print (len many-t) (snd (fst many-t)) (fst (fst (fst many-t))))
+
+; the natives, given deep lists: distinct and has-element? compare them, the code past their depth
+(print (has-element? pair deep3) (len (distinct pair)) (len (distinct [deep deep deep2])))
+(print (try (len (flatten [1 [2 [3]]]))) (try (len (flatten (take 1 deep))) &err))
+
+; a thousand levels printed
+(def {shallow} (foldl list :x (range 1000)))
+(print shallow)
+(print (repr (init shallow)))

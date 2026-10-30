@@ -1,0 +1,48 @@
+; lib-fixed-one: a library of its own (danlang loads the globals.dl in the folder it runs in; run as the program too,
+; it's the program once args is there) whose pow is lib/globals.dl's but for its 1, written 1.0: a fixed decimal with
+; no places, which prints as 1 does, so its code reads as lib/globals.dl's; its powers are fixed decimals, from the
+; first call to the last (each call five times over)
+(if (defined? args)
+  (do
+    (fun {kinds g} {map (fn {i} {let {{v (g)}} (list v (fixed? v) (int? v))}) {1 2 3 4 5}})
+    (print (kinds (fn {} {pow 5 0})))
+    (print (kinds (fn {} {pow 2 10})))
+    (print (kinds (fn {} {pow -3 3})))
+    (print (kinds (fn {} {pow 2 -2})) (kinds (fn {} {pow 1/2 3})))
+    (print (map (fn {b} {fixed? (pow 7 b)}) {0 1 2 3 0 1 2 3 0 1 2 3})))
+  (do
+    :(trunc truncate)
+    :({=0 =1} zero? one?)
+    (fun {floor a} {
+      let {
+        do
+          =(tr (trunc a))
+          (<=> (cmp a tr) {< (1- tr)} {tr})
+      }
+    })
+    (fun {mod a b} ?{
+      (and (num? a) (num? b))
+      (- a (* b (floor (/ a b))))
+      (error "Cannot perform 'mod' on non-numbers")
+    })
+    (fun {even? n} ?{
+      (num? n)
+      (=0 (mod n 2))
+      (error "Cannot perform 'even?' on non-number")
+    })
+    (fun {negative? a} ?{(num? a) (neg? a) (error "Only numbers can be negative")})
+    :(-? negative?)
+    (fun {pow a b} ?{
+      (not (eq b (trunc b)))
+      (error "'pow' takes a whole number as its power")
+      ?((-? b)
+        (/ 1 (pow a (- b)))
+        ?((zero? b)
+          1.0
+          ?((even? b)
+            (* (pow a (/ b 2)) (pow a (/ b 2)))
+            (* a (pow a (1- b)))
+          )
+        )
+      )
+    })))

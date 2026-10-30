@@ -1,0 +1,42 @@
+--- stdout
+{1 4 9} {1 1/2 1/4} {1 2 -1} {2 -3} {NIL T NIL T NIL}
+{0 2 4 6 8} {1} {1 3} {1 2}
+T 1 64 1 9 {3 2 1}
+{1 4 9} 47 1
+{3 2 1} {3 2 1} Error: The function takes 1 argument, not 2 {1 -2 -3 4}
+T T 5 6 Error: Unbound Symbol '&3'
+3
+4
+4
+3
+49/4
+2/7
+NIL
+{85070591730234615847396907784232501249 784637716923335095224261902710254454442933591094742482943 T NIL 9223372036854775808 1/9223372036854775807}
+{1 2 2} {14 11} {1 256 65536} {0.3333333333 0.1428571428} {T NIL}
+{{{1} {2}} {{3} NIL}} {{{1 :a} {2 :b}} {{1 :c}}} {{2} {3}} {{6} {9}}
+{10 20} {4 9 16} {7 7 7}
+Error: Unbound Symbol '&2'
+Error: Unbound Symbol '&3'
+{1 3} {2 4} {T NIL} {<function>(neq 1) <function>(neq 2)}
+{NIL 1} {{1} {2}} {{1} {2 3}}
+{<function>(fn {n} {* n n}) <function>(fn {n} {* n (square n)}) <function>(fn {n} {/ 1 n}) <function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}})}
+{9 27 1/3 3} {49/4 -343/8 -2/7 -4}
+<hash>{{:sq <function>(fn {n} {* n n})} {:md <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})} {:rn <function>(fn {a} {(if (neg? a) (- (floor (- 1/2 a))) (floor (+ a 1/2)))})} {:zp <function>(fn {a b} {if (and a b) (cons (list (fst a) (fst b)) (zip (tail a) (tail b))) NIL})}}
+25 2 4 {{1 3} {2 4}} 4294967296
+2 <function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+Error: All parameters to operator '*' must be numbers.
+Error: The function takes 2 arguments, not 3
+T NIL T T T T T
+T T T T T T
+Error: Division by zero.
+Error: Cannot perform 'odd?' on non-number
+Error: Division by zero.
+Error: Cannot perform 'even?' on non-number
+{2 4 6 1 3 5}
+--- stderr
+Error: 32-library-as-values.dl: Cannot perform 'even?' on non-number
+  at <BUNDLE>\lib\globals.dl:178  (error "Cannot perform 'even?' on non-number")
+  called at 32-library-as-values.dl:47  (even? a)
+  called at 32-library-as-values.dl:49  (sorted-by-parity {1 2 "three" 4})
+--- exit 1

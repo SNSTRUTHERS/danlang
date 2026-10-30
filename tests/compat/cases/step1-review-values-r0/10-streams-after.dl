@@ -1,0 +1,12 @@
+; 10-streams-after: streams are ordered by where they are, not by value (cmp and sort see the same order each run);
+; compared here only after the library's functions (cond, case, minimum, maximum, ?? and the rest) have run many
+; times, their code or native ways, so the order shows whether anything on the way was different
+(fun {four g} {map (fn {i} {g}) {1 2 3 4}})
+(print (four (fn {} {list (cond {NIL 1} {T 2}) (case 2 {1 :a} {2 :b}) (minimum {3 1 2}) (maximum {3 1 2}) (?? NIL 1)})))
+(print (four (fn {} {list (mod 7 2) (floor 7/2) (zip {1} {2}) (distinct {1 1}) (remove-all 1 {1 2}) (flatten {{1}}) (pow 2 5)})))
+(print (four (fn {} {list (between? 1 9 5) (xor T NIL) (avg {1 2}) (starts-with? "ab" "a") (has-element? {1} 1) (even? 3)})))
+(def {ss} (list stdin stdout stderr (open "t1.txt" :write) (open "t2.txt" :write) (open "t3.txt" :write) (open "t4.txt" :write)))
+(print (map (fn {s} {map (fn {u} {cmp s u}) ss}) ss))
+(fun {rank s} {count (fn {u} {< u s}) ss})
+(print (map rank ss) (map rank (sort ss)) (map rank (sort ss (fn {a b} {> a b}))))
+(print (map rank (list (minimum ss) (maximum ss))) (between? stdin stdout stderr) (map (fn {s} {between? stdin stdout s}) ss))

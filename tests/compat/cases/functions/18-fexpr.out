@@ -1,0 +1,52 @@
+--- stdout
+:arg (+ 1 2) :sexpr
+3
+:arg x :symbol
+:global-x
+:arg 5 :number
+5
+:arg str :string
+str
+:arg :atom :atom
+:atom
+:arg {q expr} :list
+Error: Unbound Symbol 'q'
+:arg (error "as-value") :sexpr
+Error: as-value
+:arg (list 1 (+ 1 1)) :sexpr
+{1 2}
+:arg x :symbol
+:caller-x
+{x :caller2-x} {x :global-x}
+{(list x x) {:formal :formal}}
+{:caller-y :fexpr-local}
+:then
+NIL
+:else
+NIL
+:again
+:again
+:again
+:not-evaluated
+:by-fexpr Unbound Symbol 'set-here'
+Error: Unbound Symbol 'n'
+0 {<function>(+) n 1}
+7
+T T NIL T
+{4 {a (b c) "d" 5}} {0 NIL}
+<function>(fn {b} {list a b})
+{(+ 1 2) (* 3 4)}
+Error: The function takes 2 arguments, not 3
+(a b c) "q" T
+:list :symbol :sexpr
+{(+ 1 2) x}
+:arg 1 :number
+:arg x :symbol
+{1 x}
+:fe-done
+:arg (+ 1 :no) :sexpr
+--- stderr
+Error: 18-fexpr.dl: '+' adds numbers, or joins values to a string
+  at 18-fexpr.dl:80  (+ 1 :no)
+  called at 18-fexpr.dl:81  (calls-show)
+--- exit 1

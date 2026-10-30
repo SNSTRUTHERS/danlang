@@ -1,0 +1,66 @@
+; 19-cond: (cond {test value}...): each clause's test run (eval (head clause): the test is the head of a list run
+; as code, so a function value there is called with no arguments) where the clause was written, in turn, until one
+; isn't NIL; then its value (run the same way); the rest never run.  Clause tests and values with side effects show
+; the order and the laziness; clauses that aren't lists, of 1 or 3 items, empty; tests and values that are function
+; values or call functions; errors in tests and values; no clause matching (cond's own error, printed as a value).
+; Ends with cond's "Selection not found" from inside a user function (the trace through lib\globals.dl).
+
+(print cond)
+(print (cond {(print :t1) (print :v1)} {(do (print :t2) T) (do (print :v2) :two)} {(print :t3) :three}))
+(print (cond {(do (print :only-test) NIL) (print :never)} {T (do (print :second-value) 2)} {(print :never-tested) 3}))
+(print (cond {NIL 1} {T 2}) (cond {(> 2 1) :yes} {T :no}) (cond {0 :zero-is-true}) (cond {"" :empty-string-true}) (cond {() :x} {{} :y} {T :z}))
+(print (cond {(=0 (- 65536 65536)) :small} {T :no}) (cond {(> 9223372036854775808 9223372036854775807) :big}) (cond {(eq 1/2 0.5) :half}))
+(def {x} 5)
+(print (cond {(< x 0) :neg} {(=0 x) :zero} {(< x 10) :small} {T :large}))
+(fun {sign n} {cond {(< n 0) :neg} {(=0 n) :zero} {T :pos}})
+(print (map sign {-1025 -1 0 1 65536 -9223372036854775809 7/2 -0.1 0.0}))
+
+; no clause matches: cond's own error, as a value
+(print (cond))
+(print (cond {NIL 1}))
+(print (cond {NIL 1} {() 2} {{} 3}))
+(print (error? (cond {NIL :no})) (error-message (cond {NIL :no})))
+
+; clauses of other shapes
+(print (cond {T}))
+(print (cond {T 1 2}))
+(print (cond {T 1 (print :third-item-never-run)}))
+(print (cond {}))
+(print (cond 5))
+(print (cond {T 1} 5))
+(print (cond {NIL 1} 5))
+(print (cond 5 {T 1}))
+(print (cond NIL {T 1}))
+(print (cond "s"))
+(print (cond {T {1 2}}))
+(print (cond {T (list 1 2)}))
+(print (cond {1 2}))
+(print (cond {{} 2} {{1} 3}))
+(print (cond {T NIL} {T :not-reached}))
+
+; function values as tests and values: called with no arguments
+(print (cond {+ :plus-is-called-giving-0}))
+(print (cond {T +}))
+(print (cond {T -}))
+(print (cond {T (fn {x} {* x 2})}))
+(print ((cond {T (fn {x} {* x 2})}) 21))
+(print (cond {T (fn {} {:thunk-called})}))
+(print (cond {(fn {} NIL) :thunk-test-nil} {T :fell-through}))
+(print (cond {list :empty-list-is-false} {T :fell}))
+(print (cond {T (sign -5)} {T (sign 5)}))
+(print (cond {(sign 0) (sign (- 0 1))}))
+
+; errors in tests and values
+(print (cond {(error "in test") 1}))
+(print (cond {T (error "in value")}))
+(print (cond {NIL (error "skipped value")} {T :ok}))
+(print (cond {T :first} {(error "never tested") 2}))
+(print (cond {(/ 1 0) 1}))
+(print (cond (error "an argument")))
+(print (cond {T 1} (error "a later argument")))
+(print (cond {(print :evaluated-test) (unbound-fn 1)}))
+
+; cond's error from inside a user function: the program ends with its trace
+(fun {grade score} {list :grade (cond {(>= score 90) :a} {(>= score 80) :b} {(>= score 70) :c})})
+(print (grade 95) (grade 85) (grade 70))
+(grade 42)

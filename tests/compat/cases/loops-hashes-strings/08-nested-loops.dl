@@ -1,0 +1,77 @@
+; 08-nested-loops.dl - loops in loops, and loops doing real work: a multiplication table, each over strings in each
+; over a list, while in dotimes, five deep, loops in recursive functions and in a hash's methods, counting words into
+; a hash, building strings, output-of around loops
+
+; a table, built as strings (set! from the inner loop: a set there would bind the inner iteration's own line)
+(dotimes {r 4}
+  =(line "")
+  (dotimes {c 4} (set! {line} (+ line (str-pad-left (to-str (* (+ r 1) (+ c 1))) 4))))
+  (print line))
+(dotimes {r 2} =(line "unchanged") (dotimes {c 2} =(line "inner")) (print line))
+
+; each over the characters of each word
+(each {w {"ab" "" "xyz"}}
+  (write w ":")
+  (each {ch w} (write " " (char-code ch)))
+  (print))
+
+; while inside dotimes: collatz steps
+(dotimes {i 8}
+  =(n (+ i 1))
+  =(steps 0)
+  (while (neq n 1) =(n (if (eq (mod n 2) 0) (/ n 2) (+ (* 3 n) 1))) =(steps (+ steps 1)))
+  (write steps " "))
+(print)
+
+; five deep: count the tuples whose sum is 5
+(def {hits} 0)
+(dotimes {a 3} (dotimes {b 3} (dotimes {c 3} (dotimes {d 3} (dotimes {e 3}
+  (if (eq (+ a b c d e) 5) (set! {hits} (+ hits 1))))))))
+(print "tuples summing to 5:" hits)
+
+; loops in a recursive function: the permutations of a list
+(fun {perms l} {
+  if (nil? l) {{}} (do
+    =(out {})
+    (each {x l} (each {p (perms (remove-fst x l))} (set! {out} (join out (list (cons x p))))))
+    out)
+})
+(print (perms {1 2 3}))
+(print (len (perms {1 2 3 4 5})))
+
+; counting words into a hash: the order is the order of first appearance
+(def {counts} (hash-create))
+(each {w (str-split "the cat and the hat and the bat" " ")}
+  (hash-put counts [w (+ 1 (or (counts w) 0))]))
+(print counts)
+(each {k (hash-keys counts)} (write k "=" (counts k) " "))
+(print)
+
+; a hash's methods that loop, over its own entries through &0 (:total's set binds in each iteration: its s stays 0)
+(def {bag} #({
+  {:items {}}
+  {:add-all @({l} {each {x l} (hash-put &0 {:items (cons x (&0 :items))})})}
+  {:total @({} {do =(s 0) (each {x (&0 :items)} =(s (+ s x))) s})}
+  {:total2 @({} {do =(s 0) (each {x (&0 :items)} (set! {s} (+ s x))) s})}
+}))
+(bag :add-all {1 2 3 4})
+(print (bag :items) (bag :total) (bag :total2))
+
+; building a string in nested loops, then splitting it again
+(def {csv} "")
+(dotimes {r 3} (dotimes {c 3} (def {csv} (+ csv (* r c) (if (eq c 2) ";" ",")))))
+(print csv)
+(print (map (fn {row} {str-split row ","}) (str-split (substring csv 0 (- (len csv) 1)) ";")))
+
+; output-of around loops: what they printed, as a string
+(print (repr (output-of (dotimes {i 3} (write i)) (each {c "ab"} (print c)))))
+(print (repr (output-of (each {x {1 2}} (dotimes {j x} (write x j ","))))))
+
+; a loop over a range of rationals and fixed decimals
+(each {x (range 0 1 1/4)} (write x " "))
+(each {x (range 0.5 2 0.5)} (write x " "))
+(print)
+
+; the same loop twice: the same output (the loops keep nothing between runs)
+(fun {run-once} {do =(out {}) (dotimes {i 3} (each {x {:a :b}} (set! {out} (cons (list i x) out)))) out})
+(print (eq (run-once) (run-once)) (run-once))

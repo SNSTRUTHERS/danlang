@@ -1,0 +1,75 @@
+; 21-scope-nested.dl - more of the scope lists remember: a Q-expression inside another one written in a function
+; remembers none (only the outer one is evaluated there), so eval runs it where eval is called, even when taken out by
+; head; lists kept in a hash, bound by partial application, made in a let, given to an fexpr, and &_ (the extra
+; arguments' list, which remembers none); code passed to a function runs where it was written
+
+(def {who} :global)
+(fun {run-it c} {do =(who :in-run-it) (eval c)})
+
+; a list in a list: the inner one remembers nothing
+(fun {mk-nested} {do =(who :in-mk-nested) (fst {{print who}})})
+(print "nested, fst" (run-it (mk-nested)))
+(fun {mk-nested-head} {do =(who :in-mk-nh) (head {{print who}})})
+(print "nested, head" (run-it (mk-nested-head)))
+(print "nested, fst of head" (run-it (fst (mk-nested-head))))
+(fun {mk-both} {do =(who :in-mk-both) {{print who} print who}})
+(print "outer" (run-it (tail (mk-both))))
+(print "inner" (run-it (fst (mk-both))))
+(fun {mk-lit-list} {do =(who :in-mk-lit) [{print who}]})
+(print "[..] of a literal" (run-it (fst (mk-lit-list))))
+
+; kept in a hash: the value put is evaluated where hash-put is called
+(def {h} (hash-create))
+(hash-put h {:top {print who}})
+(fun {put-in-f} {do =(who :in-put-in-f) (hash-put h {:f {print who}}) (hash-put h [:made (tail {_ print who})])})
+(put-in-f)
+(print "hash :top" (run-it (h :top)))
+(print "hash :f" (run-it (h :f)))
+(print "hash :made" (run-it (h :made)))
+(def {h2} (to# {{:q {print who}}}))
+(fun {to-in-f} {do =(who :in-to-in-f) (to# {{:q {print who}}})})
+(print "to# at the top" (run-it (h2 :q)))
+(print "to# in a function" (run-it ((to-in-f) :q)))
+
+; bound by partial application: the list keeps its scope
+(fun {runner c x} {do =(who x) (eval c)})
+(fun {mk-partial} {do =(who :in-mk-partial) (runner {print who})})
+(def {p} (mk-partial))
+(print p)
+(print "partial" (p :ignored))
+
+; made in a let
+(fun {mk-let} {let {{who :in-let}} {print who}})
+(print "let's last Q-expression is run" (mk-let))
+(fun {mk-let2} {let {{who :in-let2}} (tail {_ print who})})
+(print "let, a tail" (run-it (mk-let2)))
+(fun {mk-let3} {let {{who :in-let3}} [print (fst {who})]})
+(print "let, [..]" (run-it (mk-let3)))
+
+; an fexpr's arguments remember the caller's scope
+(def {quoter} (fexpr {x} {x}))
+(fun {mk-fexpr} {do =(who :in-mk-fexpr) (quoter (print who))})
+(def {fx} (mk-fexpr))
+(print fx (type-of fx))
+(print "fexpr arg" (run-it fx))
+(def {quote-all} (fexpr {} {&_}))
+(fun {mk-fexpr-all} {do =(who :in-mk-fexpr-all) (quote-all who (+ 1 2))})
+(def {fa} (mk-fexpr-all))
+(print fa (map type-of fa) (run-it (fst fa)) (run-it (snd fa)))
+
+; &_: a list of the extra arguments that remembers no scope
+(fun {extras x} {do =(who :in-extras) (eval &_)})
+(print "&_ evaluated where it's named" (extras 1 print (fst {who})))
+(fun {give-extras} {&_})
+(print "&_ returned" (give-extras + 1 2) (run-it (give-extras print (fst {who}))))
+(print (ghost print (fst {who})) (ghost + 1 2))
+
+; code passed to a function runs where it was written
+(fun {twice c} {do =(who :in-twice) (eval c) (eval c)})
+(fun {caller} {do =(who :in-caller) =(n 0) (twice {set! {n} (+ n 1)}) [n who]})
+(print "twice" (caller))
+(fun {pick-run l} {do =(who :in-pick-run) (eval (fst l))})
+(fun {pick-caller} {do =(who :in-pick-caller) (pick-run (list {print who}))})
+(print "a literal inside [..]" (pick-caller))
+(fun {pick-caller2} {do =(who :in-pick-caller2) (pick-run {{print who}})})
+(print "a literal inside a literal" (pick-caller2))

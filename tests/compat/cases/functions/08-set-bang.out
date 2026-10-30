@@ -1,0 +1,38 @@
+--- stdout
+1 2 2
+NIL 100 101
+1 101
+111 111
+13
+26
+3026
+:changed-local :global
+{:was 1} :global
+:let-changed :global
+1 2 3 3
+1001 1002 3
+4 1003 5 5
+1001 1004 6 6
+{100 200 300}
+{10 11 12}
+{0 {1 2 3 4}}
+10 20
+30
+40 50
+NIL 1
+Unbound Symbol 'never-bound'
+Unbound Symbol 'nope-local'
+'set!' passed too many arguments or symbols.  Expected 2, got 1
+'set!' passed too many arguments or symbols.  Expected 1, got 2
+'set!' cannot define non-symbols
+'set!' cannot define non-symbols
+T kept by set!
+Unbound Symbol 'their-local'
+--- stderr
+Error: 08-set-bang.dl: Unbound Symbol 'unbound-deep'
+  at 08-set-bang.dl:90  (set! {unbound-deep} 1)
+  called at 08-set-bang.dl:90  (deep-bang (- n 1))
+  called at 08-set-bang.dl:90  (deep-bang (- n 1))
+  called at 08-set-bang.dl:90  (deep-bang (- n 1))
+  called at 08-set-bang.dl:91  (deep-bang 3)
+--- exit 1

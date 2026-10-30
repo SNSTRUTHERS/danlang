@@ -1,0 +1,9 @@
+--- stdout
+{{1 T NIL} {1 T NIL} {1 T NIL} {1 T NIL} {1 T NIL}}
+{{1024 T NIL} {1024 T NIL} {1024 T NIL} {1024 T NIL} {1024 T NIL}}
+{{-27 T NIL} {-27 T NIL} {-27 T NIL} {-27 T NIL} {-27 T NIL}}
+{{1/4 NIL NIL} {1/4 NIL NIL} {1/4 NIL NIL} {1/4 NIL NIL} {1/4 NIL NIL}} {{1/8 NIL NIL} {1/8 NIL NIL} {1/8 NIL NIL} {1/8 NIL NIL} {1/8 NIL NIL}}
+{T T T T T T T T T T T T}
+--- stderr
+
+--- exit 0

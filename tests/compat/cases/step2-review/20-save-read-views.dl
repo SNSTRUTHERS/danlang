@@ -1,0 +1,23 @@
+; 20-save-read-views.dl - views and conses printed, saved (written to be read back) and read again; repr and print of
+; them, nested in other lists; read's lists (S-expressions inside a list) made into views and run; a value saved,
+; read back, consed onto, and compared with the original
+
+(def {src} (cons "s" (cons \c (cons :a (cons 1/2 (cons {x (y)} NIL))))))
+(def {v1} (tail src))
+(def {v2} (drop 3 src))
+(def {v3} (cons "new" v2))
+(save src)
+(save v1)
+(save v3)
+(save [src v1 v2 v3])
+(print (repr src) (repr v3) (repr (take 2 src)) (repr (reverse v1)))
+(print src v1 v2 v3)
+(def {back} (fst (read (output-of (save v3)))))
+(print back (eq back v3) (type-of back) (cons :b back) v3)
+(def {code} (read "(+ 1 2) (list 3 4) (* 5 6)"))
+(print code (map (fn {x} {eval x}) code) (map (fn {x} {eval x}) (tail code)) (eval (cons list (tail code))) (eval (fst code)))
+(def {c2} (cons (fst (read "(- 10 1)")) (tail code)))
+(print c2 (map (fn {x} {eval x}) c2) code (map (fn {x} {eval x}) code))
+(def {written} (output-of (print v3) (write v1) (print (join v2 v3))))
+(print (len written) written)
+(print (str-join (map repr v3) "|") (+ "" v3) (+ "v2=" v2) (format "{} and {}" v1 v3))

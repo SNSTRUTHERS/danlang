@@ -1,0 +1,58 @@
+; 13-pow: (pow a b), b a whole number (2.0 and 4/2 are; 1/2 and 0.5 aren't: pow's own error): by squaring halves
+; and multiplying, so its results are * and /'s: integers crossing 2^63 and 2^64, negative powers (rationals),
+; rationals, fixed decimals, complex numbers, 0 to 0 and 0 to -1, a non-number base (* errors, except to the power
+; 0, which is 1 whatever the base), a non-number power (trunc's error), partial application, too many, errors.
+; Ends with pow's error, from a user function's map (the trace through lib\globals.dl).
+
+(print pow)
+(print (pow 2 10) (pow 2 0) (pow 2 1) (pow 2 -2) (pow 1/2 2) (pow 2 3.0) (pow 2 4/2) (pow -2 3) (pow -2 -3) (pow 0 0) (pow 0 5) (pow 1 -5))
+(print (pow 1.5 2) (pow 0.1 3) (pow 2.50 2) (pow -0.5 3) (pow 0.5 -2) (pow 7/2 3) (pow -7/2 -2) (fixed? (pow 0.5 -2)) (fixed? (pow 2 -1)))
+(print (pow 2 15) (pow 2 16) (pow 2 -16) (pow 65535 2) (pow 65536 2) (pow -1024 3) (pow -1025 3))
+(print (pow 2 62) (pow 2 63) (pow 2 64) (pow -2 63) (pow -2 64) (pow 2 -63))
+(print (pow 3037000499 2) (pow 3037000500 2) (pow 2097152 3) (pow -2097152 3) (pow 9223372036854775807 2) (pow 9223372036854775808 -1))
+(print (pow 10 40) (pow -10 21))
+(print (pow 3 100))
+(print (pow 7 77))
+(print (pow 2 200))
+(print (map (fn {n} {pow 2 n}) (range -4 9)) (map (fn {n} {pow n 2}) (range -4 5)) (map (fn {n} {pow -1 n}) (range 6)))
+(print (eq (pow 2 64) (* 18446744073709551616 1)) (eq (pow 2 63) 9223372036854775808) (int? (pow 4 -1)) (rational? (pow 4 -1)))
+
+; complex numbers
+(print (pow (complex 0 1) 2) (pow (complex 0 1) 3) (pow (complex 0 1) 4) (pow (complex 1 1) 4) (pow (complex 0 1) -1) (pow (complex 1 2) 0))
+(print (pow 2 (complex 1 1)))
+(print (pow 2 (complex 3 0)))
+
+; powers that aren't whole numbers, and division by zero
+(print (pow 2 1/2))
+(print (pow 2 0.5))
+(print (pow 2 -3/2))
+(print (pow 0 -1))
+(print (pow 0.0 -2))
+
+; non-numbers
+(print (pow 2 "3"))
+(print (pow "2" 3))
+(print (pow \a 2))
+(print (pow NIL 2))
+(print (pow 2 NIL))
+(print (pow {2} 2))
+(print (pow 2 T))
+(print (pow :a 1))
+(print (pow :a 0) (pow "x" 0) (pow NIL 0) (pow + 0) (pow (hash-create) 0.0))
+(print (pow "x" 1))
+(print (pow "x" 2))
+(print (pow "x" -1))
+
+; partial application, too many, errors, order
+(print (pow))
+(print (pow 2))
+(print ((pow 2) 8) ((pow 1/2) 3) ((pow -1) 1025))
+(print (pow 2 3 4))
+(print (pow (error "pow's a") 2))
+(print (pow 2 (error "pow's b")))
+(print (pow (do (print :base) 3) (do (print :power) 3)))
+
+; pow of a fraction, in a map in a user function: the program ends with its trace
+(fun {powers-of a l} {map (fn {b} {pow a b}) l})
+(print (powers-of 3 {0 1 2 -1}))
+(powers-of 3 {1 2 5/2 3})

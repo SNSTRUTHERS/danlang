@@ -1,0 +1,26 @@
+--- stdout
+dup2 2 2 {:b} 2
+dup3 {3 2} 3 {2 4}
+dup-extras {2 {3 4} 3} {3 2 NIL}
+dup-extras err The function takes 2 arguments, not 3 The function takes 3 arguments, not 5
+dup partial 0 <function>(fn {p q p r} {list p q r}) {12 11 13}
+dup partial 1 <function>(fn {q p r} {list p q r}) {11 10 12}
+dup partial 2 <function>(fn {p r} {list p q r}) {10 1 11}
+dup partial 3 <function>(fn {r} {list p q r}) {2 1 10}
+dup partial 4 {2 1 3} {2 1 3}
+dup steps {3 2 4} {3 2 4} {3 2 4} {3 2 4}
+dup closure :second T :changed
+dup set {:local 2}
+dup8 {8 2 3 4 5 6 7} {8 2 3 4 5 6 7} The function takes 8 arguments, not 9 <function>(fn {a} {list a b c d e f g})
+dup9 {9 2 3 4 5 6 7 8} {9 2 3 4 5 6 7 8} The function takes 9 arguments, not 10
+dup8 extras {8 2 3 4 5 6 7 {9 10}} {8 2 3 4 5 6 7 NIL}
+dup fun {3 2} {3 2} {3 2} <function>(fn {x y x} {list x y}) <function>(fn {x} {list x y})
+alt 0 {{3}} {{3}} {NIL} {{3 4}}
+alt 1 {{3}} {{3}} {NIL} {{3 4}}
+alt 2 {{3}} {{3}} {NIL} {{3 4}}
+eq NIL T T T T
+--- stderr
+Error: 01-formals-dup.dl: The function takes 2 arguments, not 3
+  at 01-formals-dup.dl:31  (fn {z z} {z})
+  called at 01-formals-dup.dl:31  ((fn {z z} {z}) 1 2 3)
+--- exit 1

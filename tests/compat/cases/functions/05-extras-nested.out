@@ -1,0 +1,45 @@
+--- stdout
+<function>(fn {x} {list x &_})
+<function>(fn {x} {list x &_})
+{:a NIL}
+{:a {:b :c}}
+<function>(fn NIL {list &_ &1 &2})
+{NIL :o1 :o2}
+{{:i1} :i1 :o2}
+{{:i1 :i2} :i1 :i2}
+Unbound Symbol '&1'
+Unbound Symbol '&2'
+{NIL :unbound NIL NIL}
+{NIL :o NIL NIL}
+{T :i T {:i}}
+:seen-through
+Unbound Symbol '&1'
+{1 :o NIL} {1 :i {:i}}
+5
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+{1 NIL}
+{1 NIL}
+{1 13}
+{1 :none}
+Error: The function takes 1 argument, not 2
+<function>(fn NIL {{deep {&2}}})
+:formal
+{:extra {:extra}}
+:formal
+{:extra}
+{1 4 3}
+<function>(fn {b} {list a b &_}) {1 2 NIL} {1 2 {3}} {1 2 {3 4}}
+{{1 NIL} {2 NIL}}
+6
+:e1 NIL
+:e2 NIL
+{{:m} NIL}
+{{:m} {:x :y}}
+NIL
+--- stderr
+Error: 05-extras-nested.dl: The function takes 1 argument, not 2
+  at 05-extras-nested.dl:86  {fn {x} {* x 2}}
+  called at 05-extras-nested.dl:87  ((plain-maker) 1 2)
+--- exit 1

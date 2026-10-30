@@ -1,0 +1,30 @@
+--- stdout
+Error: e1 Error: e2 Error: e3 Error: Division by zero. Error: e4
+Error: c Error: k Error: k2 Error: q Error: z
+Error: b Error: d Error: places Error: n
+first evaluated
+Error: second x
+<function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) 1 -1 {0 1 1 3} Error: Division by zero. Error: Cannot perform 'mod' on non-numbers
+<function>(pow 2) {1 2 4 8 16 32} 1/2
+<function>(fn {a b} {if (and (num? a) (num? b)) (cons (div a b) (list (mod a b))) (error "Cannot perform 'divmod' on non-numbers")}) {3 1} {3 1} T T NIL
+<function>(fn {x} {if &_ (if (eq x (eval (head (fst &_)))) (eval (head (tail (fst &_)))) (unpack case (cons x (tail &_)))) (error "Case not found")}) Error: Case not found <function>(fn {f a b} {f b a}) 9 9 <function>(fn {f g x} {f (g x)}) 5
+<function>(fn {l} {(list (take n l) (drop n l))}) {{1 2} {3}} <function>(fn {b} {if (and a b) (cons (list (fst a) (fst b)) (zip (tail a) (tail b))) NIL}) {{1 3} {2 4}} <function>(fn {l} {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd) (remove-all f tl) (cons hd (remove-all f tl))))}) {1 3}
+<function>(fn {sub} {=0 (index-of s sub)}) T <function>(fn {d} {if (=0 n) NIL (cons (eval d) (repeat (1- n) d))}) {:r :r}
+Error: The function takes 2 arguments, not 3 Error: The function takes 1 argument, not 2 Error: The function takes 1 argument, not 2 Error: The function takes 1 argument, not 2 Error: 'pow' takes 2 arguments, not 3 <function>(fn {x} {if &_ (if (eq x (eval (head (fst &_)))) (eval (head (tail (fst &_)))) (unpack case (cons x (tail &_)))) (error "Case not found")})
+T T T Error: Unbound Symbol '&3' Error: Unbound Symbol '&1' NIL
+0.33 0.33 0.3333333333 0.3333333333 1 3 <function>(min)
+NIL <function>(fn {a} {if a a (if &_ (unpack ?? &_))}) NIL 2 0 NIL 0 3 Error: Selection not found {NIL}
+Error: Cannot perform 'mod' on non-numbers Error: Cannot perform 'div' on non-numbers Error: Cannot perform 'divmod' on non-numbers Error: Cannot perform 'fdiv' on non-numbers Error: Cannot perform 'even?' on non-number Error: Cannot perform 'odd?' on non-number Error: Only numbers can be positive Error: Only numbers can be negative
+Error: 'pow' expects numbers Error: 'pow' expects numbers Error: 'truncate' expects a real number Error: 'truncate' expects a real number Error: '+' adds numbers, or joins values to a string Error: All parameters to operator '*' must be numbers. Error: All parameters to operator '*' must be numbers. Error: All parameters to operator '/' must be numbers. Error: 'truncate' expects a real number
+Error: Division by zero. Error: '+' adds numbers, or joins values to a string Error: 'sum' expects a list Error: 'index-of' expects a String and a String Error: 'len' requires parameter of type string, list, hash or buffer Error: 'index-of' expects a String and a String NIL
+Error: Too deep: more than 10000 calls nested Error: 'fst' expects a list Error: 'fst' expects a list Error: 'fst' expects a list Error: 'fst' expects a list Error: 'fst' expects a list Error: 'take': a count can't be negative
+Error: 'nth': the list has no such item Error: 'nth': the list has no such item Error: 'nth': the list has no such item 9 Error: 'sort' expects a QExpr Error: 'take': a count must be a whole number, not :a Error: 'cons' expects a list second
+T NIL T NIL T NIL T T NIL T
+<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(truncate) <function>(fn {n} {/ 1 n}) <function>(drop) <function>(nth 0) <function>(nth 1) <function>(nth 9) <function>(do) <function>(do) <function>(fn {n d} {if (=0 n) NIL (cons (eval d) (repeat (1- n) d))}) <function>(fn {n l} {take n (sort-desc l)}) <function>(fn {n l} {take n (sort l)}) <function>(fn NIL {if (<= &1 &2) (and (>= &3 &1) (<= &3 &2)) (between? &2 &1 &3)}) <function>(fn NIL {not (between? &1 &2 &3)}) <function>(fn NIL {if &3 (and (between? &1 &2 (fst &3)) (all-between? &1 &2 (tail &3))) T}) <function>(fn NIL {if &3 (and (not-between? &1 &2 (fst &3)) (all-not-between? &1 &2 (tail &3))) T}) <function>(fn NIL {not (all-between? &1 &2 &3)})
+<function>(fn {a} {if (num? a) (pos? a) (error "Only numbers can be positive")}) <function>(fn {a} {if (num? a) (neg? a) (error "Only numbers can be negative")}) <function>(zero?) <function>(zero?) <function>(one?) <function>(neq) <function>(neq) <function>(fn {f l} {eval (cons f l)}) <function>(fn {f l} {eval (cons f l)}) <function>(fn {f} {f &_}) <function>(fn {l x} {elem? x l}) <function>(one?) <function>(fn {n} {not (zero? n)})
+T T T T T T T T T T T T
+1 -3 1/4 {3} :a :b 9 2 NIL {:t :t} {3 2} {1 2} T NIL
+T T T T T T T T NIL 6 6 3 T T
+--- stderr
+
+--- exit 0

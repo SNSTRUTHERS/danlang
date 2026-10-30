@@ -1,0 +1,37 @@
+; 09-local-epoch: names made Local for the first time (a change to the calls' plans) by a call's formals bound at
+; once, by a partial application's, by extras (&9 ... past those used before), by a loop's name, in the middle of
+; library functions whose native ways are warm; after each, an error that starts no call (an unbound name) right
+; after a library call, so its trace's place is the Site the library's code left
+(fun {warm n} {if (zero? n) :warm (do (floor 5/2) (mod 7 3) (round 2.5) (even? n) (between? 1 9 n) (warm (- n 1)))})
+(print (warm 2000))
+(fun {site-after f x} {try (do (f x) never-bound-1) &err})
+(print "a" (site-after floor 7/2) (site-after round 9/4))
+; a formal named as nothing was named before: made Local in the call's own scope, bound at once
+(fun {fresh-formal qqfresh1 qqfresh2} {do (mod qqfresh1 qqfresh2) (list qqfresh1 qqfresh2)})
+(print "b" (fresh-formal 7 2) (site-after floor 9/2))
+; a formal named as a global the library uses (trunc, cmp, 1-, neg?): Local from now on
+(fun {shadow-lib trunc cmp} {list (floor 7/2) (ceil 7/2) trunc cmp})
+(print "c" (shadow-lib :t :c) (floor -7/2) (site-after ceil 11/3) (warm 50))
+(fun {shadow-1 1- neg?} {list (floor 1/2) (round -5/2) 1- neg?})
+(print "d" (shadow-1 :m :n) (site-after round -7/2) (warm 50))
+; a partial application of a formal that names a library global
+(def {pa} ((fn {square cube x} {list (pow 2 5) square cube x}) :sq))
+(print "e" (pa :cu :x) ((pa :cu) :y) (site-after square 5))
+; extras past any used before: &9, &10, &11 made Local
+(fun {many} {list &11 (len &_)})
+(print "f" (many 1 2 3 4 5 6 7 8 9 10 11) (site-after floor 13/4) (warm 50))
+; a loop's name, new
+(dotimes {qqloop1 3} (do (floor qqloop1) (mod qqloop1 2)))
+(each {qqloop2 {1 2 3}} (do (even? qqloop2) (div qqloop2 2)))
+(print "g" (site-after floor 3/2) (warm 50))
+; a function's formals bound many times, the plans steady, then one more fresh name
+(fun {steady a b} {+ (mod a b) (div a b)})
+(def {acc} 0)
+(dotimes {i 1000} (set! {acc} (+ acc (steady i 7))))
+(print "h" acc)
+(fun {late qqlate} {do (mod qqlate 5) qqlate})
+(print "i" (late 12) (site-after floor 5/3))
+; the last: right after library calls inside calls whose formals were bound at once, a name bound nowhere
+(fun {inner2 a b c} {do (floor a) (mod b c) (between? a b c) unbound-at-the-end})
+(fun {outer2 a b} {list (inner2 a b 3) :never})
+(outer2 7 9)

@@ -1,0 +1,37 @@
+--- stdout
+9998
+9999
+Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+9998
+Error: Too deep: more than 10000 calls nested
+9999
+Error: Too deep: more than 10000 calls nested
+{9998}
+Error: Too deep: more than 10000 calls nested
+9999
+Error: Too deep: more than 10000 calls nested
+{9999 :pong-bottom}
+Error: Too deep: more than 10000 calls nested
+4999
+Error: Too deep: more than 10000 calls nested
+{:caught "Too deep: more than 10000 calls nested" NIL}
+:bottom
+:caught-here
+9999
+--- stderr
+Error: 12-depth.dl: Too deep: more than 10000 calls nested
+  at 12-depth.dl:6  (- n 1)
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+  called at 12-depth.dl:6  (deep (- n 1))
+--- exit 1

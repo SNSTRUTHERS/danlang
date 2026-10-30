@@ -1,0 +1,34 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {:called-with 5}
+danlang>=> 7
+danlang>=> 3
+danlang>=> 3
+danlang>=> 3
+danlang>=> 3
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> :bare
+danlang>=> :bare-case
+danlang>=> 2
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>
+--- stderr
+  at (made, not read)  {<function>(min) 3 1 2}
+  at (made, not read)  {1}
+  at line 1  {p 1 2 x}
+  called at line 1  ((case 1 {1 (fn {x} {p 1 2 x})}) (floor 9/2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (cond {T (mod 7 2)}))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (case 4 {4 (floor 9/2)}))
+--- exit 5

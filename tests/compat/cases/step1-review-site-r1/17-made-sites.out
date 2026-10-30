@@ -1,0 +1,71 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'zz-unbound'
+danlang>=> Error: Unbound Symbol 'zz-unbound'
+danlang>=> Error: Unbound Symbol 'zz-unbound-function'
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: 'head' passed an empty list
+danlang>=> exit
+--- stderr
+  at (made, not read)  {<function>(min) 9 8 7}
+  called at line 1  (run minimum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {<function>(max) "b" "a" "c"}
+  called at line 1  (run maximum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {<function>(min) 1/2 0.25 \a :x "s" 7}
+  called at line 1  (run minimum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {<function>(max) {1 2} {3}}
+  called at line 1  (run maximum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {<function>(min) 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16...
+  called at line 1  (run minimum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {<function>(max) <function>(fn {a b} {+ a b}) <function>(...
+  called at line 1  (run maximum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {<function>(min) 5}
+  called at line 1  (run minimum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {<function>(min) 2 2 2}
+  called at line 1  (run minimum (list (list {3 1 2} f3) (list {3 1 2} f3) (l...
+  at (made, not read)  {"a long value, made a list by head: more than sixty char...
+  called at line 1  (run c1 (list (list 7 f3) (list 7 f3) (list 7 f3) (list 8...
+  at (made, not read)  {x}
+  called at line 1  (run c1 (list (list 7 f3) (list 7 f3) (list 7 f3) (list 1...
+  at (made, not read)  {\c}
+  called at line 1  (run c2 (list (list 7 f3) (list 7 f3) (list 3 f3) (list 3...
+  at (made, not read)  {{quoted list}}
+  called at line 1  (run c2 (list (list 7 f3) (list 7 f3) (list 7 f3) (list 7...
+  at line 1  (list x x)
+  called at line 1  (run k1 (list (list 1 f3) (list 2 f3) (list 1 f3) (list 2...
+  at (made, not read)  {1/3}
+  called at line 1  (run k1 (list (list 1 f3) (list 1 f3) (list 1 f3) (list 4...
+  at line 1  (floor zz-unbound)
+  at (made, not read)  {zz-unbound}
+  at line 1  (zz-unbound-function x)
+  at <BUNDLE>\lib\globals.dl:101  (head (tail (fst &_)))
+  at <BUNDLE>\lib\globals.dl:111  (head (tail (fst &_)))
+--- exit 0

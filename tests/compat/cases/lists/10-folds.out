@@ -1,0 +1,59 @@
+--- stdout
+10 10 -10 -2 24 1/24 3/8
+0 0 :unused :z 7
+{4 3 2 1} {1 2 3 4} {4 3 2 1} {4 3 2 1}
+{1 1 2 2 3 3 4 4} {1 2 3 4} {1 2 3 4}
+9 2 {1 2 3}
+1234 4321
+abc cba
+{{{{:z 1} 2} 3} 4} {1 {2 {3 {4 :z}}}}
+  foldl 0 1
+  foldl 1 2
+  foldl 3 3
+6
+  foldr 3 0
+  foldr 2 3
+  foldr 1 5
+6
+  start
+  the list
+  item 1
+  item 2
+3
+  at 1
+  at 2
+  at :c
+Error: '+' adds numbers, or joins values to a string
+  at 4
+  at 3
+  at :b
+Error: '+' adds numbers, or joins values to a string
+Error: 'cons' expects a list second
+Error: 'foldl' expects a function, a value and a list
+Error: 'foldr' expects a function, a value and a list
+Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+0
+Error: 'foldl' takes 3 arguments, not 4
+Error: The function takes 1 argument, not 2
+<function>(fn {c} {a})
+Error: no f
+<function>(foldl <function>(+)) 10 20 <function>(foldl <function>(+) 0) {3 3 0} {{1 2}}
+10 0 1 0.3 2 2 0
+24 1 2 0.25 10000000000000000000000 2432902008176640000
+500500 100000000000000000001 9223372036854775808 -1 Error: All parameters to operator '*' must be numbers.
+{1 3 0} {2 6 1}
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: 'sum' expects a list
+Error: All parameters to operator '*' must be numbers.
+Error: 'product' expects a list
+Error: 'sum' takes 1 argument, not 2
+Error: '+' adds numbers, or joins values to a string
+<function>(sum) 3
+5/2 2 5 3/8
+Error: Division by zero.
+{1 2 3 4}
+--- stderr
+
+--- exit 0

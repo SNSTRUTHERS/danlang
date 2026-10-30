@@ -1,0 +1,45 @@
+; 24-depth-near-limit: the library's recursive functions (zip, flatten, distinct, remove-all, remove-fst, repeat,
+; all-between? and the rest) each nest one call per item (none of their recursive calls is in tail position), so
+; called from inside a plain user recursion 9,990 deep, a list of a few items passes the 10,000-call limit: each
+; one's last length that works and the first that's "Too deep" (the error passed back up as a value, through
+; every level).  all-between? nests one call fewer than not-all-between? and all-not-between?, which nest a call of
+; their own.  Ends with zip's "Too deep" (the trace: the innermost 12 calls, in lib\globals.dl).
+
+(fun {deep n thunk} {if (=0 n) (thunk) (fst (list (deep (1- n) thunk)))})
+(print :plain (deep 9998 (fn {} {:ok})) (deep 9999 (fn {} {:ok})) (deep 10000 (fn {} {:ok})))
+(print :zip-8 (deep 9990 (fn {} {len (zip (range 8) (range 8))})))
+(print :zip-9 (deep 9990 (fn {} {len (zip (range 9) (range 9))})))
+(print :zip-uneven (deep 9990 (fn {} {len (zip (range 8) (range 500))})) (deep 9990 (fn {} {len (zip (range 500) (range 8))})))
+(print :flatten-8 (deep 9990 (fn {} {len (flatten (range 8))})))
+(print :flatten-9 (deep 9990 (fn {} {len (flatten (range 9))})))
+(fun {nest k} {foldl (fn {acc x} {list acc}) {1} (range k)})
+(print (nest 2) (eq (nest 8) {{{{{{{{{1}}}}}}}}}))
+(print :flatten-nested-8 (deep 9990 (fn {} {flatten (nest 8)})))
+(print :flatten-nested-9 (deep 9990 (fn {} {flatten (nest 9)})))
+(print :flatten-literal-8 (deep 9990 (fn {} {flatten {{{{{{{{{1}}}}}}}}}})))
+(print :remove-all-8 (deep 9990 (fn {} {len (remove-all -1 (range 8))})))
+(print :remove-all-9 (deep 9990 (fn {} {len (remove-all -1 (range 9))})))
+(print :remove-all-matches (deep 9990 (fn {} {len (remove-all 0 (map (fn {x} {0}) (range 500)))})))
+(print :remove-fst-8 (deep 9990 (fn {} {len (remove-fst -1 (range 8))})))
+(print :remove-fst-9 (deep 9990 (fn {} {len (remove-fst -1 (range 9))})))
+(print :remove-fst-early (deep 9990 (fn {} {len (remove-fst 2 (range 500))})))
+(print :repeat-8 (deep 9990 (fn {} {len (repeat 8 {:x})})))
+(print :repeat-9 (deep 9990 (fn {} {len (repeat 9 {:x})})))
+(print :distinct-8 (deep 9990 (fn {} {len (distinct (range 8))})))
+(print :distinct-9 (deep 9990 (fn {} {len (distinct (range 9))})))
+(print :distinct-same (deep 9990 (fn {} {distinct (map (fn {x} {:same}) (range 500))})))
+(print :all-between-9 (deep 9990 (fn {} {all-between? 0 99 (range 9)})))
+(print :all-between-10 (deep 9990 (fn {} {all-between? 0 99 (range 10)})))
+(print :all-between-swapped-9 (deep 9990 (fn {} {all-between? 99 0 (range 9)})))
+(print :all-between-stops-early (deep 9990 (fn {} {all-between? 0 1 (range 500)})))
+(print :all-not-between-8 (deep 9990 (fn {} {all-not-between? 100 199 (range 8)})))
+(print :all-not-between-9 (deep 9990 (fn {} {all-not-between? 100 199 (range 9)})))
+(print :not-all-between-8 (deep 9990 (fn {} {not-all-between? 0 99 (range 8)})))
+(print :not-all-between-9 (deep 9990 (fn {} {not-all-between? 0 99 (range 9)})))
+
+; a call in the thunk's tail position takes the thunk's place: one level fewer than len's argument
+(print :zip-9-in-tail-position (len (deep 9990 (fn {} {zip (range 9) (range 9)}))))
+(print :repeat-9-in-tail-position (len (deep 9990 (fn {} {repeat 9 {:x}}))))
+
+; zip one item past the limit: the program ends with its trace
+(deep 9990 (fn {} {len (zip (range 9) (range 9))}))

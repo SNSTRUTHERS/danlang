@@ -1,0 +1,45 @@
+--- stdout
+{1 2} {1 2 3} {1 2 3 4 5 6} {4 5 6 3 1 2} {1 2 1 2 1 2} {3}
+NIL NIL NIL {1 2 3} {x} {x}
+{{1} {2}} {(+ 1 2) x} {1 2 3 4} {NIL NIL}
+{1 2 3 4 5 6 7 8 9 10} {z} {0 1 2 0 1 0}
+{1 2} {3} {4 5 6}
+6 T {1 2 3 3 1 2} {5 6 4 5}
+  1st
+  2nd
+  3rd
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+  first
+Error: e2
+  a NIL from print is a list
+{1 2 3}
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+Error: Invalid parameter passed to 'join'.  Expected QExpr.
+Error: e1
+<function>(join) {1 2} {{1} {2 3}} {1 2 3 4}
+{2 1} {6 5 4} {x} NIL NIL {{3 4} {1 2}} {2 NIL 1 NIL}
+{4 5 6} T {4 5 6} {6 5} {5 4}
+"olleh" "" "a" "b\na" " ba"
+{"cd" "ab"} {{3 4} (1 2)} {{2 1} {5 4 3} NIL}
+{\c \b \a} cba xyz
+Error: 'reverse' expects a QExpr or a String
+Error: 'reverse' expects a QExpr or a String
+Error: 'reverse' expects a QExpr or a String
+Error: 'reverse' expects a QExpr or a String
+Error: 'reverse' takes 1 argument, not 2
+<function>(reverse) {2 1}
+{6 5 4 3 2 1} {6 5 4 3 2 1} T
+{19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0}
+{19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0}
+T {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19}
+128 {x y x y x} T
+31 {0 1 0 2 0 1 0 3 0 1 0 2 0 1 0 4 0 1 0 2 0 1 0 3 0 1 0 2 0 1 0}
+{0 1 0 2 0 1 0 3 0 1 0 2 0 1 0 4 0 1 0 2 0 1 0 3 0 1 0 2 0 1 0} T
+--- stderr
+
+--- exit 0

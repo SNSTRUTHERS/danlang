@@ -1,0 +1,22 @@
+; 03-clause-shapes-made: clauses with more than two items (the rest never run), a value that's a list (data,
+; remembering the clause's scope: eval of it runs there later), clauses made by the built-ins that keep a list's
+; scope (reverse, init, end, tail, head, join) and those that don't (subset, take, drop, sort, cons: no scope, so
+; the code's way, unpack evaluating them again), for cond and case, first, in the middle and last; each value or
+; error; at the end an error not caught, its trace
+(fun {say x} {do (print "say" x) x})
+(print (cond {(say T) (say 1) (say "never") (say "never")} {T 2}))
+(print (case 2 {1 (say :a) (say "never")} {2 (say :b) (say "never")} {3 :c}))
+(fun {mk n} {cond {(> n 0) {list :later n (* n 10)}} {T {list :zero n}}})
+(def {q1} (mk 4))
+(def {q2} (mk 0))
+(print q1 (eval q1) (eval q2))
+(fun {rv} {cond (reverse {:r1 NIL}) (reverse {:r2 (> 3 2)}) {T :none}})
+(print (rv) (cond (init {NIL 1 2}) (end {0 {T :end-value}}) (end {{T :end-value}})))
+(print (cond (tail {0 NIL 1}) (head {{T :head-value}}) {T :x}) (cond (join {NIL} {:j1}) (join (list T) {:j2})))
+(print (try (cond (subset {NIL 1 T 2} 0 2) {T :after-subset}) &err) (try (cond (take 2 {T 1 9}) {T :after-take}) &err))
+(print (try (cond {NIL 0} (drop 1 {9 T :dropped}) {T :x}) &err) (try (cond {NIL 0} (sort {2 1}) {T :x}) &err))
+(print (try (case 1 (subset {1 :s} 0) {1 :t}) &err) (try (case 1 {2 0} (take 2 {1 :taken}) {1 :later}) &err))
+(fun {local-made v} {cond {NIL 0} (take 2 (list (eq v 1) (list :took v))) (reverse (list (list :rev v) (eq v 2))) {T :neither}})
+(print (try (local-made 1) &err) (try (local-made 2) &err) (try (local-made 3) &err))
+(print "the last: a clause made by drop, of one item, not caught")
+(cond {NIL 0} (drop 2 {0 1 T}))

@@ -1,0 +1,18 @@
+; program.dl - a program: the queens on a board (lists, recursion), primes by a buffer's sieve, words counted in a hash
+(fun {safe? q qs d} {if qs (if (or (eq q (fst qs)) (eq (abs (- q (fst qs))) d)) NIL (safe? q (tail qs) (+ d 1))) T})
+(fun {queens n k} {if (zero? k) {{}}
+  (foldl join {} (map (fn {qs} {map (fn {q} {cons q qs}) (filter (fn {q} {safe? q qs 1}) (range n))}) (queens n (- k 1))))})
+(def {solutions} (len (queens 7 7)))
+(fun {sieve n} {do
+  (set {b} (buffer n))
+  (set {count} 0)
+  (dotimes {i n} (if (and (>= i 2) (zero? (b i))) (do
+    (set! {count} (+ count 1))
+    (set {j} (* i i))
+    (while {< j n} (buffer-put b j 1) (set! {j} (+ j i))))))
+  count})
+(def {primes} (sieve 30000))
+(def {text} (str-join (map (fn {i} {nth (mod (* i 7) 9) {"a" "b" "c" "dd" "e" "ff" "g" "h" "ii"}}) (range 5000)) " "))
+(def {freq} #({}))
+(each {w (str-split text " ")} (hash-put freq [w (+ 1 (or (hash-get freq w) 0))]))
+(print solutions primes (len (hash-keys freq)))

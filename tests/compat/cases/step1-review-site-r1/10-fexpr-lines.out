@@ -1,0 +1,173 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> {1 2}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 1
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 0
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 2
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 1
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pf 7/2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pf 7/2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pf 7/2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pf 9/2)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (pf -7/2)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (pf -7/2)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (pf -7/2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pf 3)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pf 3)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pf 5)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe -3)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe -3)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe -3)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe -5)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe -5)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe -7)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (pe 4)
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "c")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "c")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "c")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "c")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "b")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "b")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "b")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "a")
+  at <BUNDLE>\lib\globals.dl:190  {=0 (index-of s sub)}
+  called at line 1  (ps "a")
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (pn "a")
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (pn "a")
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (pn "a")
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (pn "a")
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (pn "ab")
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (pn "ab")
+  at <BUNDLE>\lib\globals.dl:191  (>= (len s) (len sub))
+  called at line 1  (pn "ab")
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp 3)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp 3)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp 3)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp 0)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp 0)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp 0)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp -2)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp -2)
+  at line 1  (pow 2 (eval x))
+  called at line 1  (pp -2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pc 7/2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pc 7/2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (pc 7/2)
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (pc -7/2)
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (pc -7/2)
+--- exit 0

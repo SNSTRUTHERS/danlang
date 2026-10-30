@@ -1,0 +1,48 @@
+; 11-lists-cons-sources: cons onto lists of every origin (NIL, {}, (), range, list, [..], read, a Q-expression written
+; there, &_, hash-keys, str-chars, the results of map, filter, join, sort, reverse, subset), twice onto the same one,
+; and onto what isn't a list; then lists (views among them) kept in hashes, got back, consed onto, cloned.
+(print (cons 1 NIL) (cons 1 {}) (cons 1 ()) (cons NIL NIL) (cons {} {}) (cons 1 (list)) (cons 1 []) (cons {1} {2}))
+(print (cons 0 (range 3)) (cons 0 (list 1 2)) (cons 0 [1 (+ 1 1)]) (cons 0 (read "1 (+ 1 1) x")) (cons 0 {1 (+ 1 1) x}))
+(print (type-of (cons 1 NIL)) (qexpr? (cons 1 (read "2"))) (sexpr? (snd (cons 0 (read "(a)")))) (len (cons 1 (read ""))))
+(print (cons 1 (fst (read "(a b)"))) (cons 1 5) (cons 1 "ab") (cons 1 :a) (cons (error "x") {1}) (cons 1 (error "y")))
+(print (cons 1 (fst (read "{a b}"))) (cons 0 ((fn {} {&_}) 1 2)) (cons 0 ((fn {} {&_}))) (cons 0 ((fn {x} {&_}) 1)))
+(def {r} (range 4))
+(def {l} (list :a :b))
+(def {q} {x y z})
+(def {rd} (read "p (q) {r}"))
+(print (cons :r1 r) (cons :r2 r) (cons :l1 l) (cons :l2 l) (cons :q1 q) (cons :q2 q) (cons :d1 rd) (cons :d2 rd))
+(print r l q rd (eval (cons + (read "1 2"))) (eval (cons list (tail q))))
+(def {h0} #({{:a 1} {:b 2}}))
+(print (cons :k (hash-keys h0)) (cons 0 (hash-values h0)) (cons \x (str-chars "ab")) (cons 0 (map 1+ {1 2}))
+  (cons 0 (filter even? (range 6))) (cons 0 (join {1} {2})) (cons 0 (sort {3 1 2})) (cons 0 (reverse r))
+  (cons 0 (subset r 1 2)) (cons 0 (take 2 r)) (cons 0 (init r)) (cons 0 (end r)) (cons 0 (head r)))
+
+; twice and more onto the same list, each time from a different origin
+(each {src [NIL (range 3) (list 7 8) [9] (read "u v") {w} (tail (range 4)) (drop 2 (range 5)) (cons 5 NIL)]} (do
+  =(one (cons :one src))
+  =(two (cons :two src))
+  =(three (cons :three (cons :two src)))
+  =(four (cons :four (tail one)))
+  (print "src" src one two three four (eq (tail one) (tail two)))))
+
+; views in hashes: put, got back, consed onto, put again, cloned
+(def {h} (hash-create))
+(def {lst} (range 6))
+(hash-put h {:t (tail lst)} {:d (drop 2 lst)} {:c (cons 9 (tail lst))})
+(hash-put h [(fst (tail lst)) (tail (tail lst))])
+(print h (h :t) (h 1) lst)
+(def {got} (h :t))
+(def {g1} (cons :a got))
+(def {g2} (cons :b got))
+(print got g1 g2 (h :t) lst)
+(hash-put h {:t (cons :new (h :t))})
+(hash-put h {:d (tail (h :d))})
+(print h)
+(def {hc} (hash-clone h))
+(hash-put hc {:t (tail (hc :t))} {:c (cons :cc (hc :c))})
+(print h hc)
+(def {hh} #({{:v (tail lst)} {:w (cons 0 (tail lst))} {:u (drop 3 lst)}}))
+(print hh (cons 1 (hh :v)) (cons 2 (hh :v)) (cons 3 (hh :u)) (cons 4 (hh :u)) hh)
+(print (from# hh) (cons :e (from# hh)) (to# (cons {:z 1} (from# hh))) (hash-values hh) (cons 0 (hash-values hh)))
+(def {hv} (hash-values hh))
+(print (cons :p hv) (cons :q hv) (map (fn {x} {cons :m x}) hv) hv (map len hv))

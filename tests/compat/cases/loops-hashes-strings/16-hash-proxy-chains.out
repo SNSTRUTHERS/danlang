@@ -1,0 +1,27 @@
+--- stdout
+1 2 6 24
+Error: :fact isn't a method: its value isn't a function
+:bottom
+Error: :down isn't a method: its value isn't a function
+24 Error: :fact isn't a method: its value isn't a function
+:secret :secret :secret NIL
+T T NIL
+2 2 2 0
+1 1 1 1 T NIL
+{:k :me} NIL NIL
+<hash>{{:k 1} {:me <function>(fn NIL {&0})}}
+Error: Object reference not set to an instance of an object.
+Error: Object reference not set to an instance of an object.
+Error: hash-put error: cannot modify read-only hash 1
+1 6
+Error: hash-put error: cannot add new entries to a locked hash NIL
+NIL T
+Error: hash-remove error: cannot remove an entry from a locked hash
+1 NIL
+<hash>{{:add <function>(fn {k} {hash-put &0 (list k :added)})} {:add2 <function>(fn {k} {&0 :add k})} {:rm <function>(fn {k} {hash-remove &0 k})} {:rm2 <function>(fn {k} {&0 :rm k})} {:c :added} :__locked}
+{NIL NIL NIL T}
+T T {NIL NIL NIL T}
+T T T
+--- stderr
+
+--- exit 0

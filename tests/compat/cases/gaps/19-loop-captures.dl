@@ -1,0 +1,86 @@
+; 19-loop-captures: what keeps a loop step's scope after the step is over, besides a closure: an fexpr's argument
+; kept (an S-expression remembering the step's scope), a body literal's head, tail or join (they keep its scope) but
+; not its cons or take (they keep none), a partial application of a closure; captures made on some steps only (the
+; rest capture nothing), set code run later in a finished step's scope (its closures see the new name), set! from a
+; kept closure changing only its own step's variable; each over a string; nested loops capturing at one level only;
+; the counter's value of each step kept past 65535 (in a list, a hash, a partial); Q-expressions kept in hashes.
+(def {i} :global-i)
+(def {x} :global-x)
+(def {kept} NIL)
+(fun {keep v} {set! {kept} (cons v kept)})
+(dotimes {i 8} (if (zero? (mod i 3)) (keep (fn {} {list :step i}))))
+(print "some steps" (map (fn {f} {f}) (reverse kept)))
+
+(def {grab} (fexpr {e} {keep e}))
+(def {kept} NIL)
+(dotimes {i 3} (do =(sq (* i i)) (grab (list i sq))))
+(print "fexpr args" (reverse kept) (map type-of kept) (map (fn {e} {eval e}) (reverse kept)))
+(def {kept} NIL)
+(each {x {:a :b}} (grab x))
+(print "fexpr args" (map (fn {e} {eval e}) (reverse kept)) (map (fn {e} {eval e}) kept))
+
+(def {kept} NIL)
+(dotimes {i 3} (keep (list (head {i x}) (tail {x i}) (join {list} {i}) (cons list {i}) (take 1 {i x}) (drop 1 {x i}))))
+(print "derived" (map (fn {l} {map (fn {e} {eval e}) l}) (reverse kept)))
+
+(def {kept} NIL)
+(dotimes {i 3} (do =(f (fn {a b} {list :in-step i a b})) (keep (f (* i 10)))))
+(print "partials" (map (fn {p} {p :b}) (reverse kept)))
+
+; set code kept from a step, run after the loop, in that step's scope: its closures see the name from then on
+(def {kept} NIL)
+(dotimes {i 3} (keep (list (fn {} {list i (if (defined? late) late :none)}) {set {late} (list :late i)} {set! {i} (* i 100)})))
+(def {kept} (reverse kept))
+(fun {look} {map (fn {k} {(fst k)}) kept})
+(print "late" (look))
+(eval (snd (nth 1 kept)))
+(print "late" (look) (try late &err))
+(eval (thd (nth 2 kept)))
+(eval (snd (nth 2 kept)))
+(print "late" (look) i)
+(each {k kept} (eval (thd k)))
+(print "late" (look) i)
+
+; set! from kept closures: each changes its own step's variable
+(def {kept} NIL)
+(each {x {1 2 3}} (keep (list (fn {} {x}) (fn {v} {set! {x} v}))))
+(def {kept} (reverse kept))
+((snd (fst kept)) :changed-first)
+((snd (thd kept)) :changed-third)
+(print "set!" (map (fn {k} {(fst k)}) kept) x)
+
+; each over a string; nested loops capturing at the inner level on some steps
+(def {kept} NIL)
+(each {c "abc"} (keep (fn {} {list c (char-code c)})))
+(print "string" (map (fn {f} {f}) (reverse kept)))
+(def {kept} NIL)
+(dotimes {i 3} (each {x {:p :q :r}} (if (eq (index-of {:p :q :r} x) i) (keep (fn {} {list i x})))))
+(print "nested" (map (fn {f} {f}) (reverse kept)))
+(def {kept} NIL)
+(dotimes {i 2} (do (keep {list :outer i}) (dotimes {j 2} (keep {list :inner i j}))))
+(print "nested qs" (map (fn {q} {eval q}) (reverse kept)))
+
+; the function forms: a call's scope each time, kept by what's made in it
+(def {kept} NIL)
+(dotimes 3 (fn {n} {keep (fn {} {* n n})}))
+(each (fn {s} {keep {list s}}) {"s1" "s2"})
+(print "fn forms" (map (fn {k} {if (function? k) (k) (eval k)}) (reverse kept)))
+(print "globals" i x (try sq &err) (try late &err))
+
+; the step's value of i kept (past 65535, where each integer is a value of its own): in a list, a hash (key and
+; value), a partial application, a string, a closure's argument, a global set!; and Q-expressions kept in a hash
+(def {acc} NIL)
+(def {hk} (hash-create))
+(def {parts} NIL)
+(def {last-i} NIL)
+(dotimes {i 65540} (if (> i 65533) (do
+  (set! {acc} (cons i acc))
+  (hash-put hk [i (list i (* i 2))])
+  (set! {parts} (cons ((fn {a b} {list a b}) i) parts))
+  (set! {last-i} i))))
+(print "kept i" acc (hash-keys hk) (hash-values hk) (map (fn {p} {p :b}) parts) last-i (hk 65535))
+(def {hq} (hash-create))
+(dotimes {i 3} (do (hash-put hq [i {list :hq i}]) (hash-put hq {:last {list :last i}})))
+(def {hc} NIL)
+(each {x {:p :q}} (set! {hc} (cons #({{:code {list :hc x}}}) hc)))
+(print "in hashes" (map (fn {k} {eval (hq k)}) {0 1 2}) (eval (hq :last)) (map (fn {h} {eval (h :code)}) hc))

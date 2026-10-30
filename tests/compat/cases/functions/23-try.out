@@ -1,0 +1,50 @@
+--- stdout
+m1
+:mycode
+NIL
+{"m4" :c4}
+{"Division by zero." NIL}
+Unbound Symbol 'undefined-sym'
+'fn' expects a list of symbols first
+5 NIL NIL 3
+m6
+fn got m7
+m8
+NIL
+Error: 'cons' expects a list second
+{"m10"}
+Error: The function takes 0 arguments, not 1
+<function>(fn {b} {list a b})
+{"m13" NIL "m13" NIL}
+{:named-handler "m14"}
+{"m15" "m15"}
+q: m16
+{"m17" NIL}
+Error: rethrown: m18
+outer from inner
+Error: from handler fn: m19
+:c
+NIL
+m22b
+Unbound Symbol '&err'
+NIL
+{":atom-msg" :string}
+:string
+{a b}
+:div-failed Division by zero.
+5 0
+bottom
+{10 :inf 2}
+{"Division by zero."}
+Error: z
+An error's code must be an atom
+'try' takes at most 2 arguments, not 3
+'try' expects an expression and maybe a handler
+:error
+1 Unbound Symbol 'in-handler'
+<function>(fn {b} {list a b}) {"only one message" :second}
+--- stderr
+Error: 23-try.dl: The function takes 0 arguments, not 1
+  at 23-try.dl:79  (fn NIL {:none})
+  called at 23-try.dl:80  (zero-handler)
+--- exit 1

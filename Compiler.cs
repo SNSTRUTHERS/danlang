@@ -342,26 +342,39 @@ public partial class LVal {
             var y = NodeAt(2).Eval(e);
             if (y.IsErr) return y;
             if (x.IsLong(out var a) && y.IsLong(out var b)) {
-                switch (_op) {
-                    case Op.Add: { var r = unchecked(a + b); if (((a ^ r) & (b ^ r)) >= 0) return Number(r); break; }
-                    case Op.Sub: { var r = unchecked(a - b); if (((a ^ b) & (a ^ r)) >= 0) return Number(r); break; }
-                    case Op.Lt: return Bool(a < b);
-                    case Op.Gt: return Bool(a > b);
-                    case Op.Le: return Bool(a <= b);
-                    case Op.Ge: return Bool(a >= b);
-                    case Op.Eq: return Bool(a == b);
-                    case Op.BitAnd: return Number(a & b);
-                    case Op.BitOr: return Number(a | b);
-                    case Op.BitXor: return Number(a ^ b);
-                    case Op.Shr: if (b >= 0) return Number(a >> (int)Math.Min(b, 63)); break;
-                    case Op.Shl: if (b >= 0 && b < 63 && ((a << (int)b) >> (int)b) == a) return Number(a << (int)b); break;
-                    case Op.Word: return Number((a & 255) + 256 * (b & 255));
-                    case Op.Bit: if (b >= 0) return Bool(((a >> (int)Math.Min(b, 63)) & 1) != 0); break;
-                }
+                var r = IntOp(a, b);
+                if (r != null) return r;
+            }
+            else if (x.IsSmallInt(out a) && y.IsSmallInt(out b)) {
+                // (Integers, one with its Num made (a Num's use of it made one, kept): the built-in's fast way's value,
+                // as Fast2 has it for them, and the Site it leaves)
+                Site = _info;
+                var r = IntOp(a, b);
+                if (r != null) return r;
             }
             Site = _info;
             var fi = f.Fn!;
             return Fast(fi.Fast2!, x, y) ?? Rest(e, f, fi, 2, x, y, null);
+        }
+        // Op2's for integers a and b (none: the built-in's own ways, for a sum too big, a shift the other way ...)
+        private LVal? IntOp(long a, long b) {
+            switch (_op) {
+                case Op.Add: { var r = unchecked(a + b); if (((a ^ r) & (b ^ r)) >= 0) return Number(r); break; }
+                case Op.Sub: { var r = unchecked(a - b); if (((a ^ b) & (a ^ r)) >= 0) return Number(r); break; }
+                case Op.Lt: return Bool(a < b);
+                case Op.Gt: return Bool(a > b);
+                case Op.Le: return Bool(a <= b);
+                case Op.Ge: return Bool(a >= b);
+                case Op.Eq: return Bool(a == b);
+                case Op.BitAnd: return Number(a & b);
+                case Op.BitOr: return Number(a | b);
+                case Op.BitXor: return Number(a ^ b);
+                case Op.Shr: if (b >= 0) return Number(a >> (int)Math.Min(b, 63)); break;
+                case Op.Shl: if (b >= 0 && b < 63 && ((a << (int)b) >> (int)b) == a) return Number(a << (int)b); break;
+                case Op.Word: return Number((a & 255) + 256 * (b & 255));
+                case Op.Bit: if (b >= 0) return Bool(((a >> (int)Math.Min(b, 63)) & 1) != 0); break;
+            }
+            return null;
         }
         private LVal Op1(LEnv e, LVal f) {
             var x = NodeAt(1).Eval(e);
@@ -369,6 +382,7 @@ public partial class LVal {
             if (_op == Op.Not) return Bool(x.IsNIL);
             if (x.IsLong(out var a)) return Bool(a == 0);
             Site = _info;
+            if (x.IsSmallInt(out a)) return Bool(a == 0);      // (zero?'s fast way's, for an integer with its Num made)
             var fi = f.Fn!;
             return Fast(fi.Fast1!, x) ?? Rest(e, f, fi, 1, x, null, null);
         }

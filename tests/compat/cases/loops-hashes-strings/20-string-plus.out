@@ -1,0 +1,33 @@
+--- stdout
+"abcd" "n=5" "" "only" 0
+"ab" "a" "a12" "xyz" :string
+"sct"
+"atom::a sym:sym t:T nil:NIL empty:NIL"
+"list:{1 \"two\" \\3 :four (5 6) {7}}"
+"nums:1 -2 1/3 2.5 1 1-2i 12345678901234567890"
+"hash:<hash>{{:k \"v\"}} empty hash:<hash>NIL"
+"fn:<function>(fn {x} {+ x \"!\"}) builtin:<function>(+) partial:<function>(eq 1)"
+"nested inside"
+"with\nnewline\ttab\x01"
+"é日本�" 8
+3 3.5 5/6 0 12345678901234567891
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: stopped
+Error: first
+[1][2][3]"<one2:three>"
+1000 0123456789012345678901234 5678901234567890123456789
+3000 9 0
+"x" {"v=1" "v=:b" "v=c" "v=d"}
+"start:123" 6
+"#0,#1,#2,#3,#4"
+--- stderr
+
+--- exit 0

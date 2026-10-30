@@ -1,0 +1,29 @@
+--- stdout
+s-expr: 30 3
+q-expr: 300 3
+mixed: {:i 2} 2
+never: NIL NIL NIL
+no body: NIL
+[test 0]<body 0>[test 1]<body 1>[test 2]<body 2>[test 3]NIL
+NIL {3 2 1 0}
+2 1 0 NIL -1
+{4 4 {4 3 2 1}}
+NIL NIL
+2 2
+{4 3 2 1 0}
+NIL
+<function>(while)
+m=3
+9223372036854775805 9223372036854775806 9223372036854775807 9223372036854775808 9223372036854775809 
+-9223372036854775806 -9223372036854775807 -9223372036854775808 -9223372036854775809 -9223372036854775810 
+{{1 0} {2 0} {2 1}}
+Error: test failed at 2 2
+1 2 Error: body failed at 3 3
+Error: q test
+Error: q body
+handler: caught
+Error: 'while' supplied too few parameters
+:function <function>(while)
+--- stderr
+
+--- exit 0

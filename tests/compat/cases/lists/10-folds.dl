@@ -1,0 +1,54 @@
+; 10-folds.dl - foldl and foldr: the order f is called in (shown by printing), building lists with cons, join and
+; flip; NIL and {} as the list; the first error stops them; f that isn't a function; partially applied; sum and
+; product over numbers of every kind, and their errors; the library's avg
+
+(def {l} {1 2 3 4})
+(print (foldl + 0 l) (foldr + 0 l) (foldl - 0 l) (foldr - 0 l) (foldl * 1 l) (foldl / 1 l) (foldr / 1 l))
+(print (foldl + 0 NIL) (foldr + 0 {}) (foldl + :unused NIL) (foldr 5 :z NIL) (foldl (fn {a b} {error "never"}) 7 {}))
+(print (foldl (fn {acc x} {cons x acc}) NIL l) (foldr cons NIL l) (foldl (flip cons) NIL l) (foldr (fn {x acc} {join acc [x]}) NIL l))
+(print (foldl (fn {acc x} {join acc [x x]}) NIL l) (foldl join NIL {{1} {2 3} NIL {4}}) (foldr join NIL {{1} {2 3} NIL {4}}))
+(print (foldl max 0 {3 9 2}) (foldl min 100 {3 9 2}) (foldl (fn {a b} {if (> (len b) (len a)) b a}) NIL {{1} {1 2 3} {4 5}}))
+(print (foldl (fn {acc x} {+ (* acc 10) x}) 0 l) (foldr (fn {x acc} {+ (* acc 10) x}) 0 l))
+(print (foldl (fn {acc s} {+ acc s}) "" {"a" "b" "c"}) (foldr (fn {s acc} {+ acc s}) "" {"a" "b" "c"}))
+(print (foldl list :z l) (foldr list :z l))
+
+; the order
+(print (foldl (fn {acc x} {do (print "  foldl" acc x) (+ acc x)}) 0 {1 2 3}))
+(print (foldr (fn {x acc} {do (print "  foldr" x acc) (+ acc x)}) 0 {1 2 3}))
+(print (foldl (fn {acc x} {+ acc (do (print "  item" x) x)}) (do (print "  start") 0) (do (print "  the list") {1 2})))
+
+; the first error stops them
+(print (foldl (fn {acc x} {do (print "  at" x) (+ acc x)}) 0 {1 2 :c 4}))
+(print (foldr (fn {x acc} {do (print "  at" x) (+ acc x)}) 0 {1 :b 3 4}))
+(print (foldl cons NIL l))
+(print (foldl + 0 5))
+(print (foldr + 0 "abc"))
+(print (foldl :f 0 {1}))
+(print (foldr {+} 0 {1}))
+(print (foldl 5 0 NIL))
+(print (foldl + 0 {1} {2}))
+(print (foldl (fn {a} {a}) 0 {1}))
+(print (foldr (fn {a b c} {a}) 0 {1 2}))
+(print (foldl (error "no f") (do (print "  never") 0) l))
+
+; partially applied
+(print (foldl +) ((foldl +) 0 l) ((foldl + 10) l) (foldl + 0) (map (foldl + 0) {{1 2} {3} NIL}) (map (foldr cons NIL) {{1 2}}))
+
+; sum and product: + from 0, * from 1
+(print (sum l) (sum NIL) (sum {1/2 1/3 1/6}) (sum {0.1 0.2}) (sum {1 0.5 1/2}) (sum [(complex 1 2) (complex 1 -2)]) (sum {-1 1}))
+(print (product l) (product NIL) (product {1/2 4}) (product {0.5 0.5}) (product {100000000000 100000000000}) (product (range 1 21)))
+(print (sum (range 1001)) (sum {100000000000000000000 1}) (sum {9223372036854775807 1}) (product {-1 -1 -1}) (product {0 :still-reached}))
+(print (map sum {{1} {1 2} NIL}) (map product {{2} {2 3} NIL}))
+(print (sum {1 "two"}))
+(print (sum {"one" 2}))
+(print (sum 5))
+(print (product {2 :x}))
+(print (product "ab"))
+(print (sum {1} {2}))
+(print (sum {{1}}))
+(print (sum) ((sum) {1 2}))
+
+; the average
+(print (avg {1 2 3 4}) (avg {1.5 2.5}) (avg {5}) (avg {1/2 1/4}))
+(print (avg NIL))
+(print l)

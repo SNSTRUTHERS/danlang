@@ -1,0 +1,53 @@
+; 10-trace-method.dl - errors in hash methods: a hash called with a key and arguments, (h :m x), applies the
+; function at the key with &0 the hash (its private entries reached through it); fewer arguments is a partial
+; application; a value that isn't a function, given arguments, is an error.  A method's call is one of the calls in a
+; trace.  And a quirk kept: a method calling itself through &0 loses the hash's entries four calls down.  The last
+; error is made in a method that another method calls, through &0
+
+(def {acct} #({
+  {:balance 100 :__private}
+  {:owner "ann"}
+  {:get @({} {&0 :balance})}
+  {:deposit @({n} {if (num? n) (do (hash-put &0 [:balance (+ (&0 :balance) n)]) (&0 :balance)) (error (+ "not an amount: " (repr n)) :amount)})}
+  {:withdraw @({n} {if (> n (&0 :balance)) (error "overdrawn" :funds) (&0 :deposit (- n))})}
+  {:add2 @({a b} {+ a b})}
+}))
+
+(print (acct :owner) (acct :get) (acct :deposit 10) (acct :withdraw 30) (acct :get))
+(print (acct :balance))
+(print (acct :deposit "ten"))
+(print (error-code (acct :deposit "ten")) (error-code (acct :withdraw 1000)))
+(print (acct :withdraw 1000) (acct :get))
+(print (acct :owner 1))
+(print (acct :nothing) (acct :nothing 1))
+(print (acct :add2 1 2) (acct :add2 1) ((acct :add2 1) 2) (acct :add2 1 2 3))
+(print (hash-call acct :deposit 5) (hash-call acct :owner) (hash-call acct :deposit))
+(print (hash-call acct :owner 1))
+(print (acct (error "the key is an error")))
+(print (acct :deposit (error "the argument is an error")))
+(print (try (acct :withdraw 5000) (list &err &code)))
+(print (map (acct :add2 10) {1 2 3}))
+(print (acct :get))
+
+; a method that isn't one: a value at the key with arguments after it
+(def {plain} #({{:n 5} {:list {1 2}} {:f +}}))
+(print (plain :n) (plain :list) (plain :f 1 2) (plain :n 1))
+(print ((plain :f) 3 4))
+
+; the quirk: a method calling itself through &0, each call's &0 the last one's: four calls down, &0 has no entries
+(def {rec} #({{:n 7} {:down @({k} {if (zero? k) (&0 :n) (do (write k ":" (&0 :n) " ") (&0 :down (- k 1)))})}}))
+(print (rec :down 2))
+(print (rec :down 3))
+(print (rec :down 5))
+; through the hash's own name, it doesn't
+(def {rec2} #({{:n 7} {:down @({k} {if (zero? k) (rec2 :n) (rec2 :down (- k 1))})}}))
+(print (rec2 :down 5000))
+
+(print "the last: an error in a method, called through &0 by another method")
+(def {shapes} #({
+  {:area @({s} {* (fst s) (snd s)})}
+  {:total @({l} {foldl (fn {acc s} {+ acc (&0 :area s)}) 0 l})}
+  {:report @({l} {do (print "total:" (&0 :total {{1 2}})) (+ 0 (&0 :total l))})}
+}))
+(print (shapes :report {{2 3} {4 5}}))
+(shapes :report {{2 3} {4 :five}})

@@ -1,0 +1,74 @@
+; 16-use-used: (use name) loads a library once (load's name: as it is, with .dl, or in the library's folder) and
+; adds the name to used; NIL, or the error that stopped the load (then it isn't counted: a second use loads it
+; again).  Libraries written here by write-file: one that prints, one that fails half way, ones that use each other
+; (a cycle: each use nests a load, so inside a deep recursion it soon passes the call limit: the error says every
+; file it was in), one that changes used itself; the bundle's own screen library; names that aren't strings.
+; Ends with a failing library's error, from a use inside a user function.
+
+(print used use)
+(write-file "mylib.dl" "(print :mylib-loading)\n(def {mylib.x} 42)\n(fun {mylib.f y} {* y 2})\n:mylib-last\n")
+(write-file "badlib.dl" "(print :badlib-loading)\n(def {badlib.before} 1)\n(error \"badlib fails\")\n(def {badlib.after} 2)\n")
+(write-file "first.dl" "(print :first-loading)\n(use \"second\")\n(print :first-done used)\n")
+(write-file "second.dl" "(print :second-loading)\n(def {second.y} 2)\n")
+(write-file "cyc-a.dl" "(use \"cyc-b\")\n")
+(write-file "cyc-b.dl" "(use \"cyc-a\")\n")
+(write-file "resets.dl" "(print :resets-used-was used)\n(def {used} {\"planted\"})\n")
+(write-file "returns.dl" "(+ 1 2)\n")
+(write-file "peek.dl" "(print :peek-sees-name (try name &err) (defined? name) (defined? used))\n(set {peek.set} :set-at-the-top-level)\n")
+(print (filter (fn {f} {and (ends-with? f ".dl") (not (starts-with? f "16-"))}) (ls)))
+
+(print (use "mylib"))
+(print used mylib.x (mylib.f 4))
+(print (use "mylib"))
+(print used)
+(print (use "mylib.dl"))
+(print (use "./mylib"))
+(print used)
+(print (use "first"))
+(print used)
+(print (use "second"))
+(print (use "returns"))
+
+; a library runs at the top level, not in use's scope: use's name isn't seen, and set binds globally
+(print (use "peek"))
+(print peek.set)
+
+; a library that fails: not counted, so loaded again
+(print (use "badlib"))
+(print used (defined? badlib.before) (defined? badlib.after))
+(print (use "badlib"))
+(print (error? (use "badlib")) (error-message (use "badlib")))
+(print (use "no-such-lib"))
+(print (error-code (use "no-such-lib")))
+(print used)
+
+; used changed by a library, and by hand
+(print (use "resets"))
+(print used)
+(set! {used} NIL)
+(print (use "mylib"))
+(print used)
+
+; the library's folder: the bundle's screen.dl
+(print (use "screen"))
+(print (repr (output-of (cls))) (repr (output-of (at 5 2))) (repr (output-of (color :red :white))))
+(print (use "screen"))
+(print used)
+
+; names that aren't strings, too few and too many arguments, errors
+(print (use :mylib))
+(print (use 5))
+(print (use NIL))
+(print (use {"mylib"}))
+(print (use (error "use's name")))
+(print (use))
+(print (use "a" "b"))
+
+; a cycle of libraries, from a recursion already near the limit
+(fun {deep n thunk} {if (=0 n) (thunk) (fst (list (deep (1- n) thunk)))})
+(print (deep 9970 (fn {} {use "cyc-a"})))
+(print used)
+
+; a failing library, loaded by use inside a user function: the program ends with its error
+(fun {setup} {list :setup (use "badlib")})
+(setup)

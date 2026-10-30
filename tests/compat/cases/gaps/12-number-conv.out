@@ -1,0 +1,68 @@
+--- stdout
+0 :int 0 1 0 :int 0 :int 0 0 0
+1 :int 1 1 1 :int 1 :int 1 1 1
+-1 :int -1 1 -1 :int -1 :int -1 -1 -1
+7 :int 7 1 7 :int 7 :int 7 7 7
+9223372036854775807 :int 9223372036854775807 1 9223372036854775807 :int 9223372036854775807 :int 9223372036854775807 9223372036854775807 9223372036854775807
+-9223372036854775808 :int -9223372036854775808 1 -9223372036854775808 :int -9223372036854775808 :int -9223372036854775808 -9223372036854775808 -9223372036854775808
+9223372036854775808 :int 9223372036854775808 1 9223372036854775808 :int 9223372036854775808 :int 9223372036854775808 9223372036854775808 9223372036854775808
+-9223372036854775809 :int -9223372036854775809 1 -9223372036854775809 :int -9223372036854775809 :int -9223372036854775809 -9223372036854775809 -9223372036854775809
+18446744073709551617 :int 18446744073709551617 1 18446744073709551617 :int 18446744073709551617 :int 18446744073709551617 18446744073709551617 18446744073709551617
+1/2 :rat 1 2 1/2 :rat 0 :int 0.5 0 0.5
+-7/3 :rat -7 3 -7/3 :rat -2 :int -2.3333333333 -2 -2.333
+9223372036854775807/2 :rat 9223372036854775807 2 9223372036854775807/2 :rat 4611686018427387903 :int 4611686018427387903.5 4611686018427387903 4611686018427387903.5
+1/9223372036854775808 :rat 1 9223372036854775808 1/9223372036854775808 :rat 0 :int 0 0 0
+2.5 :fixed 5 2 5/2 :rat 2 :int 2.5 2 2.5
+-0.125 :fixed -1 8 -1/8 :rat 0 :int -0.125 0 -0.125
+3 :fixed 3 1 3 :int 3 :int 3 3 3
+0.1 :fixed 1 10 1/10 :rat 0 :int 0.1 0 0.1
+-9223372036854775808.5 :fixed -18446744073709551617 2 -18446744073709551617/2 :rat -9223372036854775808 :int -9223372036854775808.5 -9223372036854775808 -9223372036854775808.5
+math 3/4 57721566490153286061/100000000000000000000 12500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 2 3.141592653589793238462643383279
+places 0 0.3 0.66666 -0.66666 0.1428571428571428571428571428571428571428 5 1.23
+places 10002 0.5 1 :fixed 9223372036854775807
+whole 2 2 2 :int 2 1
+error {rational.n (complex 1 2)} {"'rational.n' expects a real number" NIL}
+error {rational.d "x"} {"'rational.d' expects a real number" NIL}
+error {to-rational :a} {"'to-rational' expects a real number" NIL}
+error {to-rational (complex 0 1)} {"'to-rational' expects a real number" NIL}
+error {truncate (complex 1 1)} {"'truncate' expects a real number" NIL}
+error {truncate "3"} {"'truncate' expects a real number" NIL}
+error {to-fixed (complex 1 1)} {"'to-fixed' expects a real number" NIL}
+error {to-fixed 1 -1} {"'to-fixed': -1 places is outside 0 to 10000" NIL}
+error {to-fixed 1 10001} {"'to-fixed': 10001 places is outside 0 to 10000" NIL}
+error {to-fixed 1 1.5} {"'to-fixed': a number of places must be a whole number, not 1.5" NIL}
+error {to-fixed "1"} {"'to-fixed' expects a real number" NIL}
+error {to-fixed 1 :p} {"'to-fixed': a number of places must be a whole number, not :p" NIL}
+error {complex 1 :i} {"One or more parameters passed to 'complex' is not a Number" NIL}
+error {complex "1" 2} {"One or more parameters passed to 'complex' is not a Number" NIL}
+error {complex (complex 1 1) 1} {"Real part of complex must be an int, a rational, or a fixed" NIL}
+error {fib -1} {"'fib' parameter 'n' cannot be negative" NIL}
+error {fib 1.5} {"'fib': n must be a whole number, not 1.5" NIL}
+error {fib :n} {"'fib': n must be a whole number, not :n" NIL}
+error {val "x"} {"'val': \"x\" isn't a number" NIL}
+error {val ""} {"'val': \"\" isn't a number" NIL}
+error {val "1 2"} {"'val': \"1 2\" isn't a number" NIL}
+error {val 5} {"'val' expects a String" NIL}
+error {val "1/0"} {"Division by zero." NIL}
+error {val "#q4"} {"'val': \"#q4\" isn't a number" NIL}
+error {val "1.5e3"} {"'val': \"1.5e3\" isn't a number" NIL}
+error {val "1."} {"'val': \"1.\" isn't a number" NIL}
+error {val ".5"} {"'val': \".5\" isn't a number" NIL}
+error {to-atom (complex 1 2)} :1+2i
+error {to-sym 5} {"Only atoms and strings can be converted into symbols" NIL}
+error {to-sym 1.5} {"Only atoms and strings can be converted into symbols" NIL}
+complex {1+2i -1-2i 1i -1i 1/2+1/3i 1.5-2.25i 9223372036854775807+9223372036854775808i 2 0 1i} {:cplx :cplx :cplx :cplx :cplx :cplx :cplx :int :int :cplx}
+complex {-3+4i -3+4i -1 -1 5/36+1/3i -2.8125-6.75i -18446744073709551615+170141183460469231713240559642174554112i 4 0 -1}
+complex 2 0 1 1i
+complex 1.5i 3/2+1i T -1 {5i 1 1+1i}
+fib {0 1 1 2 55 12586269025 2880067194370816120 4660046610375530309 7540113804746346429 12200160415121876738 19740274219868223167 31940434634990099905 354224848179261915075} 1 1 :int :int
+fib 222232244629420445529739893461909967206666939096499764990979600 209
+val {42 -7 5 1/3 -3/2 2.5 255 -16 5 255 1000 7 0 0 12} 'val': "#x-ff" isn't a number
+val kinds {:int :rat :int :fixed :fixed :rat :int}
+val edges 9223372036854775807 -9223372036854775808 9223372036854775808 9223372036854775808
+to-atom {:5 :-5 :1/2 :2.5 :9223372036854775808 :2} :x T n1 k
+partial 0.3333333333 1+2i <function>(complex 1) 'to-fixed' takes at most 2 arguments, not 3 'fib' takes 1 argument, not 2 <function>(truncate)
+error args e1 e2 e3
+--- stderr
+
+--- exit 0

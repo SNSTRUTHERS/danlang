@@ -1,0 +1,50 @@
+--- stdout
+NIL 1 NIL <hash>{{:a 2} {:b 3}}
+{NIL NIL 2}
+<hash>{{:a 5} {:b 3} {:c 3} {:d 4}} 4
+5 5 NIL NIL NIL
+T NIL NIL
+5 NIL NIL 3
+NIL NIL
+3 <hash>{{:c 3} {:d 4}}
+NIL <hash>{{:e 5 :t1 :t2} {:c 3} {:d 4}}
+5 <hash>{{:e 6 :t1 :t2 :t3} {:c 3} {:d 4}}
+NIL NIL <hash>{{:e 6 :t1 :t2 :t3} {:c 3} {:d 4} :only}
+NIL 42
+NIL :zz-value
+<hash>{{"computed" 42} {:e 6 :t1 :t2 :t3} {:c 3} {:d 4} {:sym :zz-value} {0 0} {1 1} {2 4} :only}
+{:m local}
+Error: Unbound Symbol 'local'
+NIL :global-local
+NIL 42
+{NIL Error: A hash's entry is {key value tag...}, not 5 NIL Error: A tag must be an atom, not 2 NIL}
+<hash>{{:a 1} {:b 2} {:d 4}}
+[1][2]{1 2}
+10 NIL NIL <hash>{{:b 20} {:d 4}}
+:yes T
+<hash>{{:shared :yes} {:b 20} {:d 4} {:from-fn T}}
+:yes <hash>{{:shared :yes} {:b 20} {:d 4} {:from-fn T}} T
+Error: A hash's entry is {key value tag...}, not 5
+Error: A hash's entry is {key value tag...}, not NIL
+Error: A hash's entry is {key value tag...}, not {5}
+Error: A tag must be an atom, not "t"
+Error: value failed NIL
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: First parameter to 'hash-put' must be a hash
+Error: First parameter to 'hash-put' must be a hash
+Error: First parameter to 'hash-get' must be a hash
+Error: Unsupported key type Q-Expression
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: First parameter to 'hash-remove' must be a hash
+Error: Unsupported key type Character
+Error: First parameter to 'hash-key?' must be a hash
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: :d isn't a method: its value isn't a function
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: key failed
+<function>(hash-put <hash>{{:shared :yes} {:b 20} {:d 4} {:from-fn T}})
+<function>(hash-get <hash>{{:shared :yes} {:b 20} {:d 4} {:from-fn T}})
+Error: 'hash-get' takes 2 arguments, not 3
+--- stderr
+
+--- exit 0

@@ -1,0 +1,63 @@
+; 07-sort-less.dl - sort with a less function: <, >, lambdas on a key; stable for items whose keys are equal (sorted
+; up or down, from either end); a less true without being T; a less that's NIL for everything keeps the order; a
+; less that errors is the error (unless it's never called); a less that isn't a function, or takes the wrong number
+; of arguments; the library's sort-desc, best-of, worst-of, top, bottom, remove-min and remove-max
+
+(def {l} {5 3 9 1 7 3})
+(print (sort l <) (sort l >) (sort l (fn {a b} {< a b})) (sort l (fn {a b} {> a b})) l)
+
+; records sorted on a key: equal keys keep their order
+(def {recs} {{:b 2} {:a 1} {:c 2} {:d 1} {:e 3} {:f 2} {:g 1}})
+(fun {by-num a b} {< (snd a) (snd b)})
+(fun {by-num-desc a b} {> (snd a) (snd b)})
+(print (sort recs by-num))
+(print (sort recs by-num-desc))
+(print (sort (reverse recs) by-num))
+(print (sort (reverse recs) by-num-desc))
+(print (sort recs (fn {a b} {< (fst a) (fst b)})))
+(print (sort recs (fn {a b} {> (fst a) (fst b)})))
+(print (sort recs (fn {a b} {NIL})))
+(print (sort (sort recs (fn {a b} {> (fst a) (fst b)})) by-num))
+(print recs)
+
+; by length (stable), and by a computed key
+(print (sort {{1 2 3} {4} {5 6} {} {7} {8 9} NIL} (fn {a b} {< (len a) (len b)})))
+(print (sort {"pear" "fig" "apple" "kiwi" "plum" "banana" "date"} (fn {a b} {< (len a) (len b)})))
+(print (sort {"ab" "ca" "bc" "aa" "cb"} (fn {a b} {< (last (str-chars a)) (last (str-chars b))})))
+(print (sort (range 20) (fn {a b} {< (bit-and a 3) (bit-and b 3)})))
+(print (sort (range 10) (fn {a b} {> (bit-and a 1) (bit-and b 1)})))
+
+; a less that's true without being T
+(print (sort {3 1 2} (fn {a b} {if (< a b) :yes NIL})) (sort {3 1 2} (fn {a b} {if (< a b) {1} {}})))
+(print (sort {3 1 2} (fn {a b} {neg? (cmp a b)})) (sort {:c :a :b} (fn {a b} {< a b})))
+
+; one item, or none: the less isn't called
+(print (sort {} (fn {a b} {error "never called"})) (sort {1} (fn {a b} {error "never called"})))
+
+; errors
+(print (sort {2 1} (fn {a b} {error "less failed"})))
+(print (sort {3 2 1 4} (fn {a b} {error "less failed"})))
+(print (sort {1 :a} (fn {a b} {< (+ a 0) (+ b 0)})))
+(print (sort {2 1} (fn {a} {a})))
+(print (sort {2 1} (fn {a b} {c})))
+(print (sort {2 1} 5))
+(print (sort {2 1} :less))
+(print (sort {2 1} {<}))
+(print (sort {2 1} if))
+(print (sort {} 5))
+(print (sort {2 1} (error "no less")))
+(print (sort (error "no list") <))
+
+; partially applied (with no arguments: one is a whole call)
+(print (sort) ((sort) {3 1 2}) ((sort) {3 1 2} >) (map (sort) {{2 1} {4 3}}))
+(print ((sort {3 1 2}) >))
+(print (map (fn {xs} {sort xs >}) {{1 3 2} {} {5 4}}))
+
+; the library's
+(print (sort-desc l) (best-of 2 l) (worst-of 2 l) (top 3 l) (bottom 3 l) (best-of 10 l) (worst-of 0 l))
+(print (remove-min l) (remove-max l) (remove-min {3 1 1 2}) (remove-max {9 1 9}) (remove-min {5}))
+(print (sort-desc {{:a 1} {:b 1}}) (sort-desc {}) (sort-desc {1/2 0.5}) (best-of 1 {1/2 0.5}) (worst-of 1 {1/2 0.5}))
+(print (sort-desc 5))
+(print (best-of -1 l))
+(print (remove-min {}))
+(print l)

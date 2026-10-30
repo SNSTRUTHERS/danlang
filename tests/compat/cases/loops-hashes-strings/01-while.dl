@@ -1,0 +1,82 @@
+; 01-while.dl - while: its test and body as S-expressions, Q-expressions (run as code), names and constants; its
+; value (the last body value, NIL when the body never runs); no scope of its own (a set in the body binds where the
+; while is); how often the test runs; while built from data (Q-expressions remembering a function's scope), while by
+; another name; errors in the test and the body, as values
+
+(def {i} 0)
+(print "s-expr:" (while (< i 3) (set! {i} (+ i 1)) (* i 10)) i)
+(def {i} 0)
+(print "q-expr:" (while {< i 3} {set! {i} (+ i 1)} {* i 100}) i)
+(def {i} 0)
+(print "mixed:" (while (< i 2) {set! {i} (+ i 1)} (list :i i)) i)
+(print "never:" (while NIL (print "not run")) (while {} 1) (while (eq 1 2) 1))
+(print "no body:" (while NIL))
+
+; the test runs once more than the body: each time printed
+(def {n} 0)
+(print (while (do (write "[test " n "]") (< n 3)) (write "<body " n ">") (set! {n} (+ n 1))))
+
+; a name as the test: its value each time
+(def {going} T)
+(def {steps} {})
+(print (while going (def {steps} (cons (len steps) steps)) (if (eq (len steps) 4) (def {going} NIL))) steps)
+
+; a Q-expression test whose code is a name: (x), the name's value; a function there is called
+(def {left} 3)
+(fun {more?} {do (set! {left} (- left 1)) (>= left 0)})
+(print (while {more?} (write left " ")) left)
+
+; no scope of its own: set in the body binds in the enclosing scope (a function's here)
+(fun {count-up n} {do
+  =(k 0)
+  =(seen {})
+  (while (< k n) =(k (+ k 1)) =(last-k k) =(seen (cons k seen)))
+  (list k last-k seen)})
+(print (count-up 4))
+(print (defined? last-k) (defined? k))
+(def {w} 0)
+(while (< w 2) =(w (+ w 1)) =(top-level-set w))
+(print w top-level-set)
+
+; while built as data: the Q-expressions remember count-to's scope, and run there
+(fun {count-to n} {do
+  =(j 0)
+  =(out {})
+  (eval (list while {< j n} {=(out (cons j out))} {=(j (+ j 1))}))
+  out})
+(print (count-to 5))
+(print (count-to 0))
+
+; while by another name is still while
+(def {loop} while)
+(print loop)
+(def {m} 0)
+(print (loop (< m 3) (set! {m} (+ m 1)) (format "m={}" m)))
+
+; a counter crossing a long's edges, up and down
+(def {big} 9223372036854775805)
+(while (< big 9223372036854775810) (write big " ") (set! {big} (+ big 1)))
+(print)
+(def {big} -9223372036854775806)
+(while (> big -9223372036854775811) (write big " ") (set! {big} (- big 1)))
+(print)
+
+; nested whiles, building a list
+(def {a} 0)
+(def {pairs} {})
+(while (< a 3)
+  (def {b} 0)
+  (while (< b a) (def {pairs} (join pairs (list (list a b)))) (set! {b} (+ b 1)))
+  (set! {a} (+ a 1)))
+(print pairs)
+
+; errors: from the test, from the body (the rest of the body doesn't run), as the while's value
+(def {e} 0)
+(print (while (if (< e 2) T (error "test failed at 2")) (set! {e} (+ e 1))) e)
+(def {e} 0)
+(print (while (< e 5) (set! {e} (+ e 1)) (if (eq e 3) (error (+ "body failed at " e))) (write e " ")) e)
+(print (while {error "q test"} 1))
+(print (while T {error "q body"} (print "not reached")))
+(print (try (while T (error "caught")) (+ "handler: " &err)))
+(print (while))
+(print (type-of while) while)

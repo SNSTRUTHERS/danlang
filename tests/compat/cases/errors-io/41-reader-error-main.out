@@ -1,0 +1,6 @@
+--- stdout
+
+--- stderr
+Error: 41-reader-error-main.dl:16: Newlines are not allowed in regular strings
+  at <BUNDLE>\lib\globals.dl:274  (def !*><? not-all-between?)
+--- exit 1

@@ -1,0 +1,35 @@
+--- stdout
+{:my-len {1 2 3}}
+5
+{:my-snd {1 2}}
+:not-a-function
+{:flipped 1 2}
+four
+1 2 3
+{1} {3}
+:set-at-top
+:set-bang
+:my-last
+:my-reverse
+1 3 3
+Error: All parameters to operator '*' must be numbers. :my-floor :my-floor
+5 6
+{:my-abs -5}
+100
+T :my-zero? :my-zero? 
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+--- stderr
+33-warn-def.dl:8: warning: def replaces the built-in len with a function
+33-warn-def.dl:10: warning: def replaces the built-in fst with a number
+33-warn-def.dl:12: warning: def replaces the built-in snd with a function
+33-warn-def.dl:16: warning: def replaces a function, flip, with a atom
+33-warn-def.dl:18: warning: def replaces a atom, flip, with a function
+33-warn-def.dl:23: warning: def replaces a number, my-val, with a function
+33-warn-def.dl:25: warning: def replaces a function, my-val, with a string
+33-warn-def.dl:30: warning: def replaces the built-in cons with a number
+33-warn-def.dl:30: warning: def replaces the built-in tail with a number
+33-warn-def.dl:45: warning: def replaces the built-in last with a function
+redef.dl:2: warning: def replaces the built-in reverse with a function
+33-warn-def.dl:60: warning: def replaces the built-in abs with a function
+33-warn-def.dl:66: warning: def replaces the built-in zero? with a function
+--- exit 0

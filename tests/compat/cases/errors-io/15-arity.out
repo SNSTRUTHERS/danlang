@@ -1,0 +1,44 @@
+--- stdout
+{1 2} <function>(fn {b} {list a b}) {1 2} {1 2}
+Error: The function takes 2 arguments, not 3
+Error: The function takes 1 argument, not 2
+:none Error: The function takes 0 arguments, not 1
+Error: The function takes 1 argument, not 4
+{1 NIL} {1 {2 3}} <function>(fn {a} {list a &_})
+{:a :c}
+Error: Unbound Symbol '&3'
+{5 NIL}
+{1 4 2 NIL}
+{1 2 {3 4}}
+<function>(fn {b} {list a b}) {1 2} Error: The function takes 1 argument, not 2
+<function>(fn {b c} {+ a b c}) <function>(fn {c} {+ a b c}) 6 6 6
+Error: The function takes 1 argument, not 2
+Error: 'len' takes 1 argument, not 2
+Error: 'head' takes 1 argument, not 2
+Error: 'substring' takes at most 3 arguments, not 4
+Error: 'str-pad-left' takes at most 3 arguments, not 4
+Error: 'eq' takes 2 arguments, not 3
+<function>(cons 1) {1 2} Error: 'cons' takes 2 arguments, not 3
+<function>(eq 1) T NIL
+<function>(substring "abcdef") cdef cd
+0 1 0 NIL <function>(join)
+<function>(map) {2 1} {1}
+Error: 'if' supplied too few parameters Error: 'let' supplied too few parameters NIL Error: 'eval' takes 1 argument, not 2
+Error: Popping nonexistent item 0 from Expr Error: Popping nonexistent item 0 from Expr
+{1 2} <function>(fn {b} {list a b}) Error: The function takes 2 arguments, not 3
+Error: 'len' takes 1 argument, not 2
+3 <function>(fn {b} {+ a b}) 3 Error: The function takes 2 arguments, not 3 :zero Error: The function takes 0 arguments, not 1
+{x y} <function>(fn {b} {list a b}) {x y} Error: The function takes 2 arguments, not 3
+Error: an argument
+evaluated; Error: The function takes 2 arguments, not 3
+Error: 'len' takes 1 argument, not 2
+Error: 'len' takes 1 argument, not 2
+evaluated; Error: an argument
+the last: a built-in given too many arguments, two calls down
+measuring
+--- stderr
+Error: 15-arity.dl: 'len' takes 1 argument, not 2
+  at 15-arity.dl:69  (len s "extra")
+  called at 15-arity.dl:71  (measure-all {"a" "bb"})
+  called at 15-arity.dl:72  (report)
+--- exit 1

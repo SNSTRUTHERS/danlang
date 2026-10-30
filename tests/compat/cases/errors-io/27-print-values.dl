@@ -1,0 +1,59 @@
+; 27-print-values.dl - how the other values print (print, write and repr alike, but for the strings and characters
+; inside them): atoms, symbols, NIL and T, lists (Q- and S-expressions, nested, the shorthand prefixes as the calls
+; they are), functions (lambdas, partial applications, fexprs, methods, built-ins and their partial applications),
+; hashes (tags, private entries, a hash inside another), buffers, streams, errors and exit
+
+; atoms, symbols, NIL, T
+(print :a :ABC :with-dash (to-atom "Two Words") (to-atom 12) (repr :a))
+(print (fst {sym}) (fst {SYM}) (to-sym "MiXeD") (gensym) (gensym "x") (repr (fst {sym})))
+(print NIL nil {} () (list) T t (repr NIL) (repr T) (type-of NIL) (type-of ()))
+(write :a (fst {b}) NIL T "\n")
+
+; lists: Q-expressions, S-expressions (an fexpr's argument, read's), nested
+(print {1 {2 {3 {}}} "s" \c :a b} {{}} {{} {}} (list {} NIL))
+(print (read "(+ 1 2) {q} [l i] (a (b (c)))"))
+(print (read "=(x 1) ?(c a b) :(d 2) #(e) @(f g) .(h i) ~(j k)"))
+(print (read "?{c a b} ={y 2}"))
+(print (fst (read "(nested (s expr))")) (type-of (fst (read "(s)"))))
+(print (map type-of (read "a :b \"c\" \\d 1 (e) {f} [g] T NIL")))
+
+; functions: lambdas, with their formals and body as written (the shorthand expanded)
+(print (fn {x} {* x 2}) (fn {} {:none}) (fn {a b c} {list a b c}))
+(print (fn {x} {=(y x) ?(y :yes :no) [y]}))
+(print (fn {x} {fn {y} {+ x y}}) ((fn {x} {fn {y} {+ x y}}) 5))
+(fun {named a b} {+ a b})
+(print named (named 1) (repr named))
+(def {fx} (fexpr {a b} {list a b}))
+(print fx (fx 1))
+(print (fn {x} {"a string body" \c 1.5}))
+
+; built-ins and their partial applications
+(print + len print if def map fst mod)
+(print (eq 1) (cons 1) (substring "abc") ((substring "abcdef") 1) (str-join) (+) (join))
+(print (eq "s") (cons "s") (eq \c) (cons {1 2}) (cons (fn {x} {x})))
+(print (repr (eq "s")) (repr (cons \c)))
+
+; hashes: entries in order, tags, private entries, methods, a hash inside one
+(print #() #({{:a 1}}) #({{:a 1} {"s" "str"} {3 {x y}}}))
+(print #({{:a 1 :tag1 :tag2} {:b 2} :hash-tag :another}))
+(print #({{:p 9 :__private} {:m @({} {&0 :p})} :__locked}))
+(print #({{:inner #({{:x 1} {:deep #({{:y 2}})}})} {:list {1 2}}}))
+(print (repr #({{"k" "v\n"} {:c \c}})))
+(def {h} #({{:a 1}}))
+(hash-put h {:b 2} {:c 3})
+(hash-put h {:a NIL})
+(print h (hash-keys h) (hash-values h) (from# h))
+
+; buffers, streams, errors, exit
+(print (buffer 0) (buffer 3) (buffer 2 255) (buffer "AZ") (buffer {1 2 3}) (repr (buffer "x")))
+(print stdin stdout stderr (type-of stdout) (repr stderr))
+(print (error "e") (error "with \"quotes\"") (error "e" :code) (repr (error "r")))
+(print exit (repr exit))
+
+; all of them in one list, printed and repr'd
+(def {everything} (list 1 1.5 1/2 (complex 0 1) \c "s" :a (fst {b}) NIL T + (fn {x} {x}) #({{:k 1}}) (buffer 1) stdout exit))
+(print everything)
+(print (repr everything))
+(print (map type-of everything))
+(write everything "\n")
+(print (len (output-of (print everything))) (eq (output-of (print everything)) (+ (repr everything) "\n")))

@@ -1,0 +1,83 @@
+; 15-hash-methods.dl - a hash called with a key whose value is a function: a method, applied to the arguments that
+; follow with &0 the hash (its private entries reached through it), partially applied when given fewer than its
+; formals, with &1 ... &_ for extras; a built-in there gets no &0; a method taken out and called later still has its
+; &0; the same function in two hashes: &0 is the hash it's called through; hash-call; the errors
+
+(def {acct} #({
+  {:balance 100 :__private}
+  {:owner "dan"}
+  {:balance? @({} {&0 :balance})}
+  {:deposit @({amt} {do (hash-put &0 {:balance (+ amt (&0 :balance))}) (&0 :balance)})}
+  {:transfer @({amt to} {do (&0 :deposit (- amt)) (to :deposit amt) (list (&0 :balance) (to :balance?))})}
+  {:describe @({} {format "{} has {}" (&0 :owner) (&0 :balance)})}
+  {:sum-all @({} {foldl + 0 &_})}
+  {:extras @({a} {list a &1 &2 &_})}
+  {:self @({} {&0})}
+  {:no-self @({x} {* x 2})}
+  {:length len}
+  {:has-self? @({} {defined? &0})}
+}))
+(print (acct :owner) (acct :balance?) (acct :describe))
+(print (acct :balance))
+(print (acct :deposit 50) (acct :balance?))
+(print (acct :sum-all) (acct :sum-all 1 2 3))
+(print (acct :extras :a) (acct :extras :a :b :c))
+(print (acct :no-self 21) (acct :length "four") (acct :length {1 2}) (acct :has-self?))
+(print (eq (acct :self) acct) (type-of (acct :self)) (len (acct :self)))
+
+; fewer arguments than formals: partially applied, its &0 kept; called later
+(def {dep} (acct :deposit))
+(print dep)
+(print (dep 1) (dep 2) (acct :balance?))
+(def {other} #({{:balance 0 :__private} {:deposit @({amt} {do (hash-put &0 {:balance (+ amt (&0 :balance))}) (&0 :balance)})}
+              {:balance? @({} {&0 :balance})}}))
+(print (acct :transfer 30 other) (acct :balance?) (other :balance?))
+(def {half} (acct :transfer 5))
+(print (half other))
+
+; the same function in two hashes: &0 is the hash it's called through
+(def {getter} (fn {} {&0 :name}))
+(def {p1} #({{:name "one"} {:get getter}}))
+(def {p2} #({{:name "two"} {:get getter}}))
+(print (p1 :get) (p2 :get))
+(hash-put p2 {:get (p1 :get)})
+(print (p2 :get) (p2 :name))
+(print (getter))
+
+; a method made in a loop, each with its own value, calling through &0
+(def {ops} (hash-create))
+(each {pair {{:double 2} {:triple 3}}}
+  =(factor (snd pair))
+  (hash-put ops [(fst pair) (fn {x} {* x factor})]))
+(hash-put ops {:apply-all @({x} {map (fn {k} {&0 k x}) {:double :triple}})})
+(print (ops :double 5) (ops :triple 5) (ops :apply-all 7))
+
+; a method returning a closure over &0
+(def {ctr} #({{:n 0} {:incer @({} {fn {} {hash-put &0 {:n (+ 1 (&0 :n))}}})}}))
+(def {inc} (ctr :incer))
+(inc)
+(inc)
+(print (ctr :n))
+
+; hash-call: the same as a call through the hash
+(print (hash-call acct :balance?) (hash-call acct :deposit 1) (hash-call acct :extras 1 2 3) (hash-call acct :length "ab"))
+(print (hash-call acct :deposit))
+(print (hash-call acct :owner))
+(print (hash-call acct :none))
+(print (hash-call acct :balance))
+(print (hash-call 5 :x))
+(print (hash-call acct))
+
+; the order: the key first, then the method's arguments; a value that isn't a method: its arguments not evaluated
+(print (acct (do (write "[key]") :deposit) (do (write "[arg]") 0)))
+(print (acct (do (write "[key]") :owner) (do (write "[never evaluated]") 1)))
+
+; the errors of a call through a hash
+(print (acct :owner 1))
+(print (acct :none 1))
+(print (acct :deposit 1 2))
+(print (acct :no-self 1 2))
+(print (acct :deposit (error "argument failed")) (acct :balance?))
+(print (acct (error "key failed") 1))
+(print (acct 1.5 1))
+(print (acct :length "a" "b"))

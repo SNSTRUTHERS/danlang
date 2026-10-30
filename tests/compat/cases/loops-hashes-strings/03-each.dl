@@ -1,0 +1,70 @@
+; 03-each.dl - each, both forms: (each {x list} body...) and (each f list); over lists (items as they're written:
+; not evaluated), NIL, strings (each byte a character: UTF-8 text is its bytes), the value (NIL); several body
+; expressions, Q-expression bodies (run as code), a name as the body (its value, not run); the list evaluated once;
+; the errors
+
+(print "list:" (each {x {1 2 3}} (write x ",")))
+(print "nil:" (each {x NIL} (print "not run")) (each {x {}} 1) (each print NIL))
+(print "string:" (each {c "abc"} (write (repr c) " ")))
+(print "empty string:" (each {c ""} (print "not run")))
+(each {c "é!"} (print (repr c) (char-code c) (type-of c)))
+(each (fn {c} {write (char-code c) " "}) "日本")
+(print)
+
+; items as they're written: an S-expression, a name, a Q-expression, all kinds
+(each {x {(+ 1 2) undefined-name "s" \c {1 (+ 2 3)} :a 1/2 2.50 T NIL}} (print (type-of x) (repr x)))
+(each {x [(+ 1 2) "evaluated by list"]} (print (repr x)))
+
+; several body expressions, in turn; Q-expression bodies run as code
+(each {x {1 2}} (write "a" x " ") (write "b" x " ") {write "q" x " "})
+(print)
+(print (each {x {1 2}} {print "q1" x} {print "q2" x}))
+
+; a name as the body: its value (a Q-expression is data there), not run; eval runs it where it was written
+(def {body} {print "body ran with" x})
+(print "symbol body:" (each {x {1 2}} body))
+(print "eval body:" (each {x {1 2}} (eval body)))
+
+; the list is evaluated once, before the first item; changing the name in the body doesn't change the loop
+(def {items} {1 2 3})
+(each {x (do (print "list evaluated") items)} (write x " ") (def {items} (cons 0 items)))
+(print items)
+
+; the function form: a built-in, a function, a partial application, a hash's method
+(each print {:p 1 "s"})
+(each (fn {x} {write (* x x) " "}) {1 2 3})
+(print)
+(each ((fn {pre x} {print pre x}) "pre:") {:a :b})
+(def {counter} #({{:n 0} {:add @({x} {hash-put &0 {:n (+ x (&0 :n))}})}}))
+(each (counter :add) {1 2 3 4})
+(print "counter:" (counter :n))
+(print "partial only:" (each (fn {a b} {print a b}) {1 2}))
+(print (each (fn {} {print "no formals"}) {1}))
+(each (fn {} {print "extras:" &_ &1}) {1 "two"})
+(each (fn {a} {print "a and &_:" a &_}) {:x})
+(print (each print {}))
+
+; each over a hash's keys and values (each over a hash itself is an error)
+(def {h} #({{:a 1} {:b 2}}))
+(each {k (hash-keys h)} (write k "=" (h k) " "))
+(print)
+(print (each {k h} 1))
+
+; the errors
+(print (each {x 5} 1))
+(print (each {x :atom} 1))
+(print (each {x (error "list failed")} 1))
+(print (each print 5))
+(print (each 5 {1}))
+(print (each "print" {1}))
+(print (each h {1}))
+(print (each (error "fn failed") {1}))
+(print (each print (error "list failed too")))
+(print (each print {1} {2}))
+(print (each {x} 1))
+(print (each {x {1} {2}} 1))
+(print (each {"x" {1}} 1))
+(print (each {x {1}}))
+(print (each print))
+(print (each))
+(print (type-of each) each)

@@ -1,0 +1,45 @@
+; 07-lib-higher-order: library functions as the function given to map, filter, foldl, foldr, sort, any?, all?, find,
+; count, each, dotimes and the library's own unpack, pack, flip, comp, ghost: directly, partially applied, through
+; aliases; an error one of them makes stops the built-in at that item (what ran before it ran).
+(def {nums} [-7 -3 0 1 2 5 8 9223372036854775807 -9223372036854775808 9223372036854775808 7/2 2.0])
+(print (map even? nums))
+(print (map odd? nums))
+(print (filter even? nums) (filter odd? nums))
+(print (map (mod 10) {3 4 7 -3}) (map (flip mod 3) nums))
+(print (map (flip div 2) nums))
+(print (map round nums) (map floor nums) (map ceil nums))
+(print (map square {1 -2 3037000500}) (map cube {-1 2 2097152}) (map recip {1 2 -4}))
+(print (map (pow 2) {0 1 10 63 64}) (map (flip pow 2) {-3 0.5 1/2}) (map (comp square 1+) {1 2 3}))
+
+; folds with library functions: mod over a list, pow, max of mods
+(print (foldl mod 100 {7 5 3}) (foldl % 1000000007 {97 89 83}) (foldr mod 3 {100 50}) (foldl pow 2 {2 2 2}))
+(print (foldl (fn {acc x} {+ acc (pow x 2)}) 0 (range 10)) (foldl (fn {a x} {max a (mod x 7)}) 0 (range 30)))
+(print (foldl divmod 100 {7}) (foldr (fn {x acc} {cons (div x 3) acc}) {} (range -5 6)))
+
+; sort by library functions (a stable sort: ties stay in order)
+(print (sort (range 12) (fn {a b} {< (mod a 3) (mod b 3)})))
+(print (sort (range 12) (fn {a b} {> (mod a 4) (mod b 4)})))
+(print (sort {5/2 -5/2 3/2 -3/2 1/2} (fn {a b} {< (round a) (round b)})) (sort-desc (map (mod 17) {3 5 7 11})))
+(print (sort {9 4 7 2} (fn {a b} {even? a})) (sort {1 2 3 4 5 6} (fn {a b} {and (even? a) (odd? b)})))
+
+; the tests
+(print (any? even? {1 3 5}) (any? even? {1 4 5}) (all? odd? {1 3 5}) (all? odd? {1 3 6}) (find even? {1 3 6 8})
+  (count even? (range 25)) (count (fn {x} {zero? (mod x 7)}) (range 50)) (find (fn {x} {> (square x) 50}) (range 20)))
+
+; the library's own higher-order functions, with each other
+(print (unpack mod {7 2}) (apply pow {2 10}) (curry divmod {17 5}) (pack (fn {l} {map square l}) 1 2 3))
+(print (flip mod 2 7) (flip pow 3 2) (comp even? 1+ 3) (comp (mod 7) 1+ 2) (ghost mod 7 2) (ghost even? 4))
+(print (unpack (mod 7) {3}) (unpack between? {1 5 3}) (unpack ?? {NIL NIL :x}) (unpack cond {{NIL 1} {T 2}}))
+(print (map (unpack +) {{1 2} {3 4}}) (map (apply *) {{2 3} {4 5}}) (map (fn {p} {unpack div p}) {{7 2} {-7 2}}))
+
+; each and dotimes with them
+(each (fn {x} {print x (even? x) (mod x 3) (square x)}) {-2 0 7})
+(dotimes 4 (fn {i} {print i (pow 2 i) (odd? i)}))
+(each odd? {1 2 3})
+
+; an error in the middle stops each built-in there; the items before were done
+(print (map (fn {x} {do (write x " ") (mod 10 x)}) {1 2 0 4}))
+(print (filter (fn {x} {do (write x " ") (even? x)}) {2 4 :a 6}))
+(print (foldl (fn {a x} {do (write x " ") (div a x)}) 1000 {10 5 0 2}))
+(print (sort {3 1 2} (fn {a b} {< (mod a 0) b})) (any? even? {1 :a 2}) (all? even? {2 :a}) (find odd? {2 4 "x" 3}))
+(print (count even? {2 4 {} 6}) (each (fn {x} {write (pow 2 x) " "}) {1 2 0.5 3}))

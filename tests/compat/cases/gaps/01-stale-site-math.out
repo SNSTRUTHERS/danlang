@@ -1,0 +1,355 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Division by zero.
+danlang>=> Error: Cannot perform 'mod' on non-numbers
+danlang>=> Error: Cannot perform 'even?' on non-number
+danlang>=> Error: Only numbers can be positive
+danlang>=> Error: 'pow' takes a whole number as its power
+danlang>=> Error: Division by zero.
+danlang>=> Error: All parameters to operator '*' must be numbers.
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> Error: Unbound Symbol 'after'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 floor 5/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (w1 floor -5/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 floor 7 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 floor -7 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 floor 2.5 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (w1 floor -2.5 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 floor 3 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 floor 1180591620717411303425/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (w1 floor -1180591620717411303425/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 floor 0 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (wfloor 5/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (wfloor -5/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (wfloor 9223372036854775807 4)
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (w1 ceil 5/2 4)
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (w1 ceil -5/2 4)
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (w1 ceil 7 4)
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (w1 ceil -0.5 4)
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (w1 ceil 9223372036854775809/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 round 5/2 4)
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (w1 round -5/2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 round 2.4 4)
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (w1 round -2.6 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 round 7 4)
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (w1 round -7 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w1 round 0 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7 2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod -7 2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7 -2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7.5 2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7/2 1/3 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 9223372036854775807 -2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod -9223372036854775808 -1 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 6 3 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wmod 7 2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (wmod 7.25 0.5 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w2 div 7 2 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (w2 div -7 2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w2 div 6 3 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (w2 div 7.5 2.5 4)
+  at <BUNDLE>\lib\globals.dl:156  (cons (div a b) (list (mod a b)))
+  called at line 1  (w2 divmod 7 2 4)
+  at <BUNDLE>\lib\globals.dl:156  (cons (div a b) (list (mod a b)))
+  called at line 1  (w2 divmod -7 2.5 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (w1 even? 4 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (w1 even? 3 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (w1 even? -3 4)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (w1 even? 2 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (w1 odd? 3 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (w1 odd? 4 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (w1 odd? 7/2 4)
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (w1 odd? -9223372036854775807 4)
+  at <BUNDLE>\lib\globals.dl:195  (* (pow a (/ b 2)) (pow a (/ b 2)))
+  called at line 1  (w2 pow 2 10 4)
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (w2 pow 2 7 4)
+  at <BUNDLE>\lib\globals.dl:192  (zero? b)
+  called at line 1  (w2 pow 2 0 4)
+  at <BUNDLE>\lib\globals.dl:191  (/ 1 (pow a (- b)))
+  called at line 1  (w2 pow 2 -3 4)
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (w2 pow 3 1 4)
+  at <BUNDLE>\lib\globals.dl:195  (* (pow a (/ b 2)) (pow a (/ b 2)))
+  called at line 1  (w2 pow 2.5 2 4)
+  at <BUNDLE>\lib\globals.dl:195  (* (pow a (/ b 2)) (pow a (/ b 2)))
+  called at line 1  (w2 pow 2 64 4)
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (w2 pow -1/2 3 4)
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (w1 square 3 4)
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (w1 square 3037000500 4)
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (w1 square 2.5 4)
+  at <BUNDLE>\lib\globals.dl:35  {* n (square n)}
+  called at line 1  (w1 cube 3 4)
+  at <BUNDLE>\lib\globals.dl:35  {* n (square n)}
+  called at line 1  (w1 cube -2097152 4)
+  at <BUNDLE>\lib\globals.dl:35  {* n (square n)}
+  called at line 1  (w1 cube 1/2 4)
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (w1 >=0 3 4)
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (w1 >=0 -3 4)
+  at <BUNDLE>\lib\globals.dl:29  {<= n 0}
+  called at line 1  (w1 <=0 0 4)
+  at <BUNDLE>\lib\globals.dl:30  {> n 0}
+  called at line 1  (w1 >0 "s" 4)
+  at <BUNDLE>\lib\globals.dl:31  {< n 0}
+  called at line 1  (w1 <0 -1/2 4)
+  at <BUNDLE>\lib\globals.dl:32  (zero? n)
+  called at line 1  (w1 !=0 0 4)
+  at <BUNDLE>\lib\globals.dl:32  (zero? n)
+  called at line 1  (w1 !=0 5 4)
+  at <BUNDLE>\lib\globals.dl:33  (one? n)
+  called at line 1  (w1 !=1 1 4)
+  at <BUNDLE>\lib\globals.dl:33  (one? n)
+  called at line 1  (w1 !=1 :x 4)
+  at <BUNDLE>\lib\globals.dl:181  (pos? a)
+  called at line 1  (w1 positive? 3 4)
+  at <BUNDLE>\lib\globals.dl:181  (pos? a)
+  called at line 1  (w1 positive? -3 4)
+  at <BUNDLE>\lib\globals.dl:182  (neg? a)
+  called at line 1  (w1 negative? -1/2 4)
+  at <BUNDLE>\lib\globals.dl:182  (neg? a)
+  called at line 1  (w1 negative? 0 4)
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (w3 between? 1 3 2 4)
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (w3 between? 3 1 2 4)
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (w3 between? 1 3 5 4)
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at line 1  (w3 between? 1 3 0 4)
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (w3 between? 3 1 9 4)
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at line 1  (w3 between? 3 1 0 4)
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (w3 between? 2 2 2 4)
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (w2 xor 1 NIL 4)
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (w2 xor NIL 1 4)
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (w2 xor 1 1 4)
+  at <BUNDLE>\lib\globals.dl:25  (or a b)
+  called at line 1  (w2 xor NIL NIL 4)
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (w1 avg {1 2 3} 4)
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (w1 avg {1.5 2} 4)
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (w1 avg {1/2 1/3} 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7 2 4)
+  at line 1  {trunc a}
+  called at line 1  (w1 round 5/2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7 2 4)
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (w1 round -5/2 4)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (f x y)
+  called at line 1  (w2 mod 7 0 4)
+  at <BUNDLE>\lib\globals.dl:149  (error "Cannot perform 'mod' on non-numbers")
+  called at line 1  (f x y)
+  called at line 1  (w2 mod :a 2 4)
+  at <BUNDLE>\lib\globals.dl:178  (error "Cannot perform 'even?' on non-number")
+  called at line 1  (f x)
+  called at line 1  (w1 even? :a 4)
+  at <BUNDLE>\lib\globals.dl:181  (error "Only numbers can be positive")
+  called at line 1  (f x)
+  called at line 1  (w1 positive? :a 4)
+  at <BUNDLE>\lib\globals.dl:189  (error "'pow' takes a whole number as its power")
+  called at line 1  (f x y)
+  called at line 1  (w2 pow 2 1/2 4)
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (f x)
+  called at line 1  (w1 avg NIL 4)
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (f x)
+  called at line 1  (w1 square :a 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7 2 4)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (w2 mod 7 2 4)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (w1 floor -5/2 4)
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (w2 pow 2 7 4)
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (w3 between? 3 1 2 4)
+--- exit 0

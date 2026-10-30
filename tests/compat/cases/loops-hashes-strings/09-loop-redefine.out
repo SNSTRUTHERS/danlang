@@ -1,0 +1,47 @@
+--- stdout
+0 0
+1 2
+2 200
+3 300
+f after: 100
+:old 1
+:old 2
+{:new 0}
+{:new 1}
+{:newer 2}
+{:newer 3}
+len: 3
+len: :my-len
+len: :my-len
+:my-len
+3 <function>(len)
+h: :called
+h: 42
+h: 42
+42 Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+:function-again
+runs: 3
+{:made 2}
+4
+len is 1 2
+len is 2 2
+S-Expression starts with incorrect type. Got Number, Expected Function.
+4 4
+0 1 print is back
+len before set: 2
+len after set: 100
+len before set: 2
+len after set: 200
+3
+k: :global-k
+k now: :local-k
+k: :global-k
+k now: :local-k
+k after: :global-k
+10 9 8 6 6 0
+--- stderr
+09-loop-redefine.dl:19: warning: def replaces the built-in len with a function
+09-loop-redefine.dl:26: warning: def replaces a function, h, with a number
+09-loop-redefine.dl:28: warning: def replaces a number, h, with a function
+09-loop-redefine.dl:60: warning: def replaces the built-in + with a function
+--- exit 0

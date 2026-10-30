@@ -1,0 +1,11 @@
+; hashes.dl - hashes: put and get by integer, atom and string keys; keys; methods with &0; a hash called for a value
+(def {h} #({}))
+(dotimes {i 50000} (hash-put h [i (* i 2)]))
+(def {s} 0)
+(dotimes {i 50000} (set! {s} (+ s (hash-get h i))))
+(def {g} #({{:a 1} {:b 2} {"c" 3}}))
+(dotimes {i 50000} (set! {s} (+ s (g :a) (hash-get g "c"))))
+(def {o} #({{:n 0} {:inc (fn {} {hash-put &0 [:n (+ (&0 :n) 1)]})} {:get (fn {} {&0 :n})}}))
+(dotimes {i 30000} (o :inc))
+(dotimes {i 100} (set! {s} (+ s (len (hash-keys h)))))
+(print s (o :get))

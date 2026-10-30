@@ -1,0 +1,40 @@
+--- stdout
+<stream> :stream <stream>
+NIL NIL
+30
+NIL
+NIL NIL
+Error: Cannot write this stream Error: Cannot get the position of a non-seekable stream
+"one 2 :three\nfour5\r\nsix\n\neight"
+"one 2 :three" 13
+"four5" "six" "" "eight" NIL
+NIL NIL "" NIL
+0 0 111 110 2
+"e 2 :three\nfour5\r\nsix\n\neight" 30
+4 "2 :three" 30 NIL Error: Cannot seek past end of stream
+Error: Cannot seek before beginning of stream Error: Invalid parameter 'byteOffset': is not a number 1
+0 {111 110 101} NIL " 2 :three"
+Error: Cannot write this stream Error: Cannot write this stream
+Error: Cannot read from this stream Error: Cannot read from this stream Error: Cannot read from this stream Error: Cannot seek on a non-seekable stream
+6 <buffer>{111 110 101 32 50 32}
+3 <buffer>{111 110 58 116 104 32}
+1 <buffer>{111 110 58 116 104 114}
+NIL <buffer>{111 110 58 116 104 114} NIL
+5
+Error: Cannot read from this stream
+"first second\n"
+"one 2 :three" 13
+16 0 "one 2 :three" "XYZr5"
+"one 2 :three\nXYZr5\r\nsix\n\neight+tail"
+"" T
+NIL NIL NIL
+Error: 256 isn't a byte Error: -1 isn't a byte Error: 'write-bytes' expects a list of bytes, or a buffer
+{0 1 2 255 99 100 101 103 104}
+{0 1} 2 {255 99 100 101 103 104} NIL NIL
+Error: s/none.txt: not found Error: s/none.txt: not found :noent
+Error: s: is a directory :isdir Error: s: is a directory
+Error: s/no/such/dir.txt: not found Error: 'open' mode must be :read, :write, :append or :update, not :sideways Error: 'open' mode must be :read, :write, :append or :update Error: 'open' expects a String <function>(open)
+Error: 'close' expects a stream Error: 'read-line' expects a stream Error: 'read-byte' expects a stream Error: 'tell' expects a stream
+--- stderr
+
+--- exit 0

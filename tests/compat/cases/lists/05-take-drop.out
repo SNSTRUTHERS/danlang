@@ -1,0 +1,60 @@
+--- stdout
+NIL {a} {a b c} {a b c d e} {a b c d e} {a b c d e}
+{a b c d e} {b c d e} {d e} NIL NIL NIL
+{c d e} {{a b} {c d e}} {NIL {a b c d e}} {{a b c d e} NIL} {{a b c d e} NIL} {NIL NIL}
+NIL NIL NIL NIL {NIL} {NIL}
+{a b} {a b} {d e} {d e} {a b}
+{a b c d e} NIL
+{(+ 1 2) {x}} {"s"} {"s"}
+{a b c d e}
+   0 NIL {a b c d e} T {NIL {a b c d e}}
+   1 {a} {b c d e} T {{a} {b c d e}}
+   2 {a b} {c d e} T {{a b} {c d e}}
+   3 {a b c} {d e} T {{a b c} {d e}}
+   4 {a b c d} {e} T {{a b c d} {e}}
+   5 {a b c d e} NIL T {{a b c d e} NIL}
+   6 {a b c d e} NIL T {{a b c d e} NIL}
+{b c} {b c d} {a b} {e}
+Error: 'take': a count can't be negative
+Error: 'drop': a count can't be negative
+Error: 'take': a count must be a whole number, not 1.5
+Error: 'drop': a count must be a whole number, not 1/2
+Error: 'take': a count must be a whole number, not :a
+Error: 'drop': a count must be a whole number, not "1"
+Error: 'take': a count must be a whole number, not NIL
+Error: 'take' expects a list
+Error: 'drop' expects a list
+Error: 'take': a count must be a whole number, not {a b c d e}
+Error: 'take': a count can't be negative
+Error: 'drop': a count must be a whole number, not 1.5
+Error: 'take' takes 2 arguments, not 3
+Error: 'take': a count can't be negative
+Error: 'take' expects a list
+{a b c d e} {c d e} NIL {a b} {b c d} {d e} NIL NIL
+NIL NIL {b c} {c d e} {a b c d e}
+Error: 'subset': the list has no item 6
+Error: 'subset': the list has no item -1
+Error: 'subset': a count can't be negative
+Error: 'subset': an index must be a whole number, not 1.5
+Error: 'subset': a count must be a whole number, not 1/2
+Error: First 'subset' parameter must be a QExpr
+Error: 'subset': an index must be a whole number, not :x
+Error: 'subset': the list has no item 100000000000000000000
+Error: 'subset': the list has no item 9
+Error: 'subset' takes at most 3 arguments, not 4
+   0 {a b c d e} {a} {a b}
+   1 {b c d e} {b} {b c}
+   2 {c d e} {c} {c d}
+   3 {d e} {d} {d e}
+   4 {e} {e} {e}
+   5 NIL NIL NIL
+<function>(take 2) <function>(drop 1) <function>(subset {a b c d e}) <function>(take) <function>(fn {l} {(list (take n l) (drop n l))})
+{{1 2} {4} NIL} {{2 3} NIL NIL} {d e} {b c}
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+{NIL {a} {a b} {a b c} {a b c d} {a b c d e}}
+{{a b c d e} {b c d e} {c d e} {d e} {e} NIL}
+{{{1 2} {3}} {{4} NIL}}
+{a b c d e}
+--- stderr
+
+--- exit 0

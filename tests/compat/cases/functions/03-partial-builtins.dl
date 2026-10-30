@@ -1,0 +1,96 @@
+; 03-partial-builtins: an ordinary built-in given fewer arguments than it needs waits for the rest: what partials of
+; built-ins print as (their bound values shown), calling them, partials of partials, too many arguments (its own
+; count of all of them), errors given to partials, eq on partials, and special forms, which are never partial
+
+(print (eq 1))
+(print ((eq 1) 1) ((eq 1) 2))
+(print (substring "hello"))
+(print (repr (substring "hello")))
+(print ((substring "hello") 1) ((substring "hello") 1 3))
+(print (item-at {10 20 30}))
+(print ((item-at {10 20 30}) 2))
+(print (len))
+(print ((len) {1 2 3}))
+(print (cons 1))
+(print ((cons 1) {2 3}))
+(print (nth 1))
+(print ((nth 1) {:a :b :c}))
+(print (str-replace "a-b-c"))
+(print ((str-replace "a-b-c") "-"))
+(print (((str-replace "a-b-c") "-") "+"))
+(print ((str-replace "a-b-c" "-") "/"))
+(print (foldl +))
+(print ((foldl + 100) {1 2 3}))
+(print (((foldl +) 0) {4 5}))
+(print (map (eq 2)))
+(print ((map (eq 2)) {1 2 3}))
+(print (map (substring "abcdef") {0 2 4}))
+(print (map (cons :x) {{1} {2}}))
+(print (filter (< 2) {1 2 3 4}))
+(print (filter (> 3) {1 2 3 4}))
+
+; built-ins that need none aren't partial: called with none, they're called
+(print (+) (*) (list) (str-join {}))
+(print (repr (format "x")))
+
+; partials keep their values; one for each call (a partial given all it needs is called: substring needs 2)
+(def {repl} (str-replace "a.b.c"))
+(def {dots} (repl "."))
+(print repl dots)
+(print (dots "-") (dots "+") (repl "b" "B") (dots ""))
+(def {starts} (substring "abcdef"))
+(def {from2} (starts 2))
+(print (repr from2) (starts 0 1))
+(print (from2 2))
+(def {eqs} (map (fn {n} {eq n}) {1 2 3}))
+(print eqs)
+(print (map (fn {f} {f 2}) eqs))
+
+; too many: the count is all the arguments, bound and given
+(print ((substring "hello") 1 2 3))
+(print (((str-replace "a") "b") "c" "d"))
+(print ((eq 1) 2 3))
+(print ((len) {1} {2}))
+(print (len {1} {2}))
+(print ((cons 1) {2} {3}))
+(print ((str-replace "a") "b" "c" "d"))
+(print ((foldl +) 0 {1} {2}))
+
+; an error given to a partial: the call is that error
+(print ((eq 1) (error "into eq")))
+(print ((substring "hello") (error "into substring")))
+(print (substring (error "first") 1))
+(print (substring (error "first")))
+
+; a built-in that takes errors as values, partially applied? print takes any number: never partial
+(print (print))
+(print (repr (output-of (print))))
+
+; eq on partials: the built-in and the values given it
+(print (eq (eq 1) (eq 1)) (eq (eq 1) (eq 2)) (eq (eq 1) (neq 1)) (eq (len) len))
+(print (eq (substring "a") (substring "a")) (eq (substring "a") (substring "b")))
+
+; partials as values in lists and hashes
+(def {ops} [(nth 0) (take 2) (cons :head) (eq {3 4 5}) (+ 0)])
+(print ops)
+(print (map (fn {f} {f {3 4 5}}) (init ops)))
+(print ((last ops) 1))
+(def {h} (hash-create {{:tail-of (substring "hashed")}}))
+(print (h :tail-of 4))
+(print (h :tail-of))
+
+; special forms are never partial: too few is the form's own error
+(print (try (if T) &err))
+(print (try (let) &err))
+(print (try (def) &err))
+(print (try (each {x {1}}) &err))
+(print (try (dotimes 3) &err))
+(print (try (while) &err))
+(print (try (eval) &err))
+(print (try (try) &err))
+(print (try (<=> 1) &err))
+(print (try (if) &err))
+(print (if T 1 2 3))
+
+; the last: too many for a partial of substring ends the program
+((substring "hello") 1 2 3)

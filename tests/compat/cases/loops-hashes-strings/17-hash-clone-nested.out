@@ -1,0 +1,49 @@
+--- stdout
+<hash>{{:a 1} {:b 2} {:in {{:x 1}}} :btag} T
+base after changing the clone: <hash>{{:a 1} {:b 2} {:in {{:x 1}}} :btag}
+clone: <hash>{{:a 100} {:b 2} {:in {{:x 999}}} :btag}
+base after changing same's inner: <hash>{{:a 1} {:b 2} {:in {{:x 2}}} :btag}
+T T
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} {:c 3} :btag}
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} {:c (+ 1 2)} {:d undefined-name} :btag}
+<hash>{{:b 2} {:in {{:x 2}}} {:via-holder T} :btag}
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} {:c 3 :t1 :t2} :btag}
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} :newtag :btag}
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} :newtag :btag}
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} {:c 3} {:d 4} {:e 5} :tg :btag}
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} {:c 3} :tg :btag}
+<hash>{{:a 1} {:b 2} {:in {{:x 2}}} {:via-holder T} {:c 3} :btag}
+<hash>{{:a :override} {:b 2} {:in {{:x 2}}} {:via-holder T} {"s" 1} {5 :five} :btag}
+:override 1
+<hash>{{:a 1} {:b 2} :__locked}
+<hash>{:__locked}
+Error: hash-put error: cannot add new entries to a locked hash
+<hash>{{:a 2} :__read-only} Error: hash-put error: cannot modify read-only hash
+<hash>{{:s 1 :__private}} Error: hash-get error: cannot access private hash entry
+<hash>{{:name "l"}}
+r 1/2
+<hash>{{:name "root"} {:kids {{:left {{:name "l"}}} {:right {{:name "r"} {:n 1/2}}}}}}
+<hash>{{:name "root"} {:kids {{:left {{:name "l"}}} {:right {{:name "r"} {:n 1/2}}}}}}
+{{:name "root"} {:kids {{:left {{:name "l"}}} {:right {{:name "r"} {:n 1/2}}}}}}
+{<hash>{{:name "root"} {:kids {{:left {{:name "l"}}} {:right {{:name "r"} {:n 1/2}}}}}} <hash>{{:left {{:name "l"}}} {:right {{:name "r"} {:n 1/2}}}}}
+T
+T T
+T NIL T
+T NIL
+T NIL T
+0 -1 1 0
+1 -1 1 Error: e
+{<hash>{{:k 1}} <hash>{{:k 2}} <hash>{{:k 3}}}
+Error: A hash's entry is {key value tag...}, not 5
+Error: A hash's entry is {key value tag...}, not NIL
+Error: A hash's entry is {key value tag...}, not 5
+Error: A hash's entry is {key value tag...}, not 5
+Error: A tag must be an atom, not 3
+Error: A tag must be an atom, not 2
+Error: A hash's entry is {key value tag...}, not 5
+Error: A hash's entry is {key value tag...}, not "s"
+Error: First parameter to 'hash-clone' must be a hash
+Error: Cannot get/set value for reserved hash key __locked
+--- stderr
+
+--- exit 0

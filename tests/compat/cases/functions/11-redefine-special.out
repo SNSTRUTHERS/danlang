@@ -1,0 +1,42 @@
+--- stdout
+:neg :pos :zero 1 3 2
+<function>(if) :yes NIL
+:else-branch
+:when-done
+3
+3
+:my-eval-done
+5 Unbound Symbol 'loc'
+NIL T
+{<function>(if) <function>(do) <function>(and)}
+:first-of-list
+:in-do
+:do-last
+{:my-if T 1 2}
+:evaluated-anyway
+{:my-if NIL NIL 2}
+{:my-if T :short :hand}
+{:my-if T :neg {:my-if NIL :pos :zero}}
+{:my-if NIL 2 3}
+Error: Cannot perform 'mod' on non-numbers
+:orig-still-works
+:alias-unchanged
+:neg :pos :zero 1 3
+{:my-do {1 2 3}}
+3
+{:my-do {NIL 2}}
+2 3
+2 1 :pos
+NIL 2
+{:my-or 1 2}
+T
+T NIL
+2
+Error: 'if' can't be applied to values: it's a special form
+Error: 'and' can't be applied to values: it's a special form
+'do' can't be applied to values: it's a special form
+--- stderr
+Error: 11-redefine-special.dl: S-Expression starts with incorrect type. Got Number, Expected Function.
+  at 11-redefine-special.dl:7  {if (< n 0) :neg (if (> n 0) :pos :zero)}
+  called at 11-redefine-special.dl:77  (sign 5)
+--- exit 1

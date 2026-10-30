@@ -1,0 +1,58 @@
+; 02-neq-zero-one-xor: the library's aliases of built-ins (<> and != for neq; =0 and 0? for zero?; =1 and 1? for one?)
+; and xor: each over integers at the shared small-integer range's edges (65535/65536, -1024/-1025), near and past
+; 2^63, rationals, fixed decimals, complex numbers and every other kind; partial application, too many arguments,
+; errors as arguments, and the order xor's arguments are evaluated in (both, always: it's a function).
+; Ends with an error that xor passes on, from a user function.
+
+(print <> != =0 =1 0? 1?)
+(def {nums} {0 1 -1 65535 65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 7/2 -7/2 1/1 2/2 0/5 2.5 -2.50 0.1 1.0 1.00 0.0 -0.0})
+(def {others} [(complex 0 0) (complex 1 0) (complex 0 1) (complex 1 1) "0" "1" "" \0 \1 :zero NIL T {0} {1} + (fn {x} {x}) (to-sym "a") (hash-create)])
+(print nums)
+(print others)
+(print :=0 (map =0 nums))
+(print :0? (map 0? nums))
+(print :=1 (map =1 nums))
+(print :1? (map 1? nums))
+(print :=0 (map =0 others))
+(print :=1 (map =1 others))
+
+; <> and != (neq): numbers by value whatever their kinds; other kinds never equal a number
+(print (<> 1 2) (<> 1 1.0) (<> 1/2 0.5) (<> 65535 65536) (<> -1024 -1025) (<> 9223372036854775807 9223372036854775808))
+(print (!= 9223372036854775808 9223372036854775808) (!= -9223372036854775809 -9223372036854775809) (!= 7/2 3.5) (!= -7/2 -3.50) (!= 0.1 1/10))
+(print (!= "a" "a") (!= \a "a") (!= :a :a) (!= :a "a") (!= {1 2} {1 2}) (!= {1 2} (list 1 2)) (!= {} NIL) (!= NIL ()) (!= T T) (!= + +))
+(print (!= (complex 1 2) (complex 1 2)) (!= (complex 1 0) 1) (<> (fn {x} {x}) (fn {x} {x})) (<> (fn {x} {x}) (fn {y} {y})))
+(print (<> 1))
+(print ((<> 1) 2) ((!= 1) 1.0))
+(print (<>))
+(print (<> 1 2 3))
+(print (!= (error "first") (error "second")))
+(print (<> 1 (error "second only")))
+
+; =0, =1 and the rest: built-ins, so fewer arguments is the built-in itself, more an error
+(print (=0) (=1) (0?) (1?))
+(print (=0 0 0))
+(print (1? 1 1))
+(print (=0 (error "into =0")) (1? (error "into 1?")))
+(print (=0 (- 65536 65536)) (=1 (- 65536 65535)) (=0 (- 9223372036854775808 9223372036854775808)) (=1 (* 1/2 2)) (=0 (* 0.5 0)))
+
+; xor of two: (and (or a b) (not (and a b)))
+(print xor)
+(print (xor T NIL) (xor NIL T) (xor T T) (xor NIL NIL) (xor 1 2) (xor 1 NIL) (xor NIL "s") (xor {} ()) (xor 0 0) (xor "" NIL))
+(print (xor :a {}) (xor {1} {2}) (xor + NIL) (xor NIL (fn {x} {x})))
+(print (map (xor T) {T NIL 0 {}}))
+(print (xor T))
+(print ((xor T) NIL))
+(print ((xor NIL) NIL))
+(print (xor))
+(print (xor T T T))
+(print (xor T NIL NIL))
+(print (xor (error "xor's a") T))
+(print (xor T (error "xor's b")))
+(print (xor NIL (error "xor's b, a NIL")))
+(print (xor (print :a-evaluated) (print :b-evaluated)))
+(print (xor (do (print :first) T) (do (print :second) T)))
+
+; a user function passing on xor's error: the program ends with it
+(fun {exclusive a b} {list (xor a (b))})
+(print (exclusive T (fn {} NIL)))
+(exclusive T (fn {} {error "no b"}))

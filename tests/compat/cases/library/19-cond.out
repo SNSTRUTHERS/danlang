@@ -1,0 +1,58 @@
+--- stdout
+<function>(fn NIL {if &_ (if (eval (head (fst &_))) (eval (head (tail (fst &_)))) (unpack cond (tail &_))) (error "Selection not found")})
+:t1
+:t2
+:v2
+:two
+:only-test
+:second-value
+2
+2 :yes :zero-is-true :empty-string-true :z
+:small :big :half
+:small
+{:neg :neg :zero :pos :pos :neg :pos :neg :zero}
+Error: Selection not found
+Error: Selection not found
+Error: Selection not found
+T Selection not found
+Error: 'head' passed an empty list
+1
+1
+Error: 'head' passed an empty list
+Error: 'head' expects a QExpr
+1
+Error: 'head' expects a QExpr
+Error: 'head' expects a QExpr
+Error: 'head' passed an empty list
+Error: 'head' expects a QExpr
+{1 2}
+{1 2}
+2
+3
+NIL
+:plus-is-called-giving-0
+0
+0
+<function>(fn {x} {* x 2})
+42
+:thunk-called
+:fell-through
+:fell
+:neg
+:neg
+Error: in test
+Error: in value
+:ok
+:first
+Error: Division by zero.
+Error: an argument
+Error: a later argument
+:evaluated-test
+Error: Selection not found
+{:grade :a} {:grade :b} {:grade :c}
+--- stderr
+Error: 19-cond.dl: Selection not found
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at 19-cond.dl:64  (cond {(>= score 90) :a} {(>= score 80) :b} {(>= score 70...
+  called at 19-cond.dl:66  (grade 42)
+--- exit 1

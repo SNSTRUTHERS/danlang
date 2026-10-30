@@ -1,0 +1,79 @@
+; 09-shadowing: a formal or a let binding shadows a global of the same name, only inside; scope is lexical, so a
+; function called from inside sees the global, not its caller's formal; the same name a formal in one function and
+; a global used by another (both called, each way round); formals and lets that shadow built-ins (len, list, if,
+; print) and what calls of those names do there; a call site seeing a global, then a local of the same name
+
+(def {n} :global-n)
+(fun {uses-global} {list :sees n})
+(fun {has-formal n} {list :formal n (uses-global)})
+(print (uses-global))
+(print (has-formal :arg))
+(print (has-formal :arg2) (uses-global))
+(print (let {{n :let-n}} (list n (uses-global))))
+(print n)
+
+; the same name, a formal of one and a global of another, each calling the other
+(def {item} :global-item)
+(fun {show-item} {list :show item})
+(fun {wrap item} {list :wrap item (show-item)})
+(fun {call-wrap} {wrap (list :from-call-wrap item)})
+(print (wrap 1) (show-item))
+(print (call-wrap))
+(print (map wrap {:a :b}))
+(print (map (fn {item} {list item (show-item)}) {:c}))
+
+; a closure keeps the formal it was made with, not the global
+(fun {adder n} {fn {x} {list x n}})
+(def {add-five} (adder 5))
+(print (add-five 1) n)
+(def {n} :n-changed)
+(print (add-five 2) (uses-global))
+
+; nested shadowing: each level its own
+(fun {levels n} {list n (let {{n (list :let n)}} (list n ((fn {n} {list :inner n}) :inner-arg))) n})
+(print (levels :top))
+
+; a formal shadowing a built-in: the name is that value inside
+(fun {count-it len} {list :len-is len})
+(print (count-it 3) (len {1 2 3}))
+(fun {calls-shadowed len} {len {1 2 3}})
+(print (calls-shadowed reverse) (calls-shadowed (fn {l} {:mine})))
+(print (calls-shadowed 7))
+(print (len {1 2}))
+(fun {list-shadow list} {list})
+(print (list-shadow :not-a-list) (list 1 2))
+
+; shadowing if, and, do: a local function of that name is called as a function (its arguments all evaluated)
+(fun {if-shadow if} {if (print :test) (print :then) (print :else)})
+(print (if-shadow (fn {a b c} {:local-if-called})))
+(print (if T :real-if :no))
+(print (let {{and (fn {a b} {list :local-and a b})}} (and NIL (print :evaluated))))
+(print (and NIL (print :not-evaluated)))
+(print (let {{do list}} (do 1 2 3)))
+(print (do 1 2 3))
+
+; print shadowed by a let: then restored
+(print (let {{print (fn {x} {list :shadowed-print x})}} (print :hello)))
+(print :real-print)
+
+; a call site that saw a global function, then a local of that name in another call
+(fun {helper x} {list :global-helper x})
+(fun {call-helper h} {list (helper h) (if h (do =(helper (fn {x} {list :local-helper x})) (helper h)) :no-local)})
+(print (call-helper NIL))
+(print (call-helper 1))
+(print (call-helper NIL))
+(print (helper 2))
+(fun {formal-helper helper} {helper :via-formal})
+(print (formal-helper (fn {x} {list :passed x})))
+(print (helper 3))
+
+; a global defined after the function that uses it, and one shadowed after it's used
+(fun {uses-later} {later-global})
+(print (try (uses-later) &err))
+(def {later-global} :now-defined)
+(print (uses-later))
+(fun {shadow-after} {do =(a later-global) =(later-global :local-now) (list a later-global)})
+(print (shadow-after) later-global)
+
+; the last: a formal named like a built-in, called with a number there, ends the program
+(calls-shadowed 42)

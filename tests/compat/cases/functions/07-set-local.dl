@@ -1,0 +1,86 @@
+; 07-set-local: set binds in the current scope.  Inside a function it makes a local of that call: the global of the
+; same name is seen before it, the local after it, and the global is unchanged; another call (or the same function
+; called again) starts without it; a set that didn't run leaves the name unbound, or the global's.  At the top
+; level set is global.  set in do and if (no scope of their own) and in let, each and a Q-expression run by eval.
+
+(def {x} :global-x)
+(fun {show-set} {do (print :before x) =(x :local-x) (print :after x) x})
+(print (show-set))
+(print :top x)
+(print (show-set))
+(print :top x)
+
+; the same expression read before and after, in one call: while and if have no scope of their own, so the set binds
+; in the call's; a set in dotimes's body binds in that iteration's scope, so acc there is a new local each time
+(fun {flip n} {do =(acc {}) =(i 0) (while (< i n) =(acc (join acc [x])) (if (eq i 1) =(x :set-in-loop)) =(i (+ i 1))) acc})
+(print (flip 4))
+(print x)
+(fun {flip2 n} {do =(acc {}) (dotimes {i n} =(acc (join acc [x])) (if (eq i 1) =(x :set-in-loop))) acc})
+(print (flip2 4))
+
+; a set that runs only sometimes
+(fun {maybe-set c} {do (if c =(y :local-y)) y})
+(print (try (maybe-set NIL) &err))
+(print (maybe-set T))
+(print (try (maybe-set NIL) &err))
+(def {y} :global-y)
+(print (maybe-set NIL) (maybe-set T) (maybe-set NIL) y)
+
+; read in another function: the local isn't seen there
+(fun {reader} {try z &err})
+(fun {setter-then-reader} {do =(z :set-in-caller) (list z (reader))})
+(print (setter-then-reader))
+(print (reader))
+(def {z} :global-z)
+(print (setter-then-reader) (reader))
+
+; at the top level, set is global
+=(top-set 1)
+(print top-set (defined? top-set))
+(set {top-a top-b} 2 3)
+(print top-a top-b)
+(fun {reads-top} {list top-set top-a top-b})
+(print (reads-top))
+
+; set in let: the let's own scope; set in each: that iteration's own scope
+(print (let {{a 1}} =(b 2) (list a b)) (try b &err))
+(each {i {1 2 3}} (print i (defined? k)) =(k i))
+(print (defined? k))
+(fun {loop-set} {do =(seen {}) (each {i {1 2}} (set! {seen} (join seen [(defined? inner)])) =(inner i)) [seen (defined? inner)]})
+(print (loop-set))
+
+; set in a Q-expression run by eval: the scope it was written in
+(fun {eval-set} {do (print (try w &err)) (eval {=(w :set-by-eval)}) w})
+(print (eval-set))
+(print (try w &err))
+(fun {run-code c} {do (eval c) (try w2 &err)})
+(fun {code-from-caller} {do =(w2 :callers) (list (run-code {=(w2 :changed-in-caller)}) w2)})
+(print (code-from-caller))
+
+; set of a formal: the call's own binding changes
+(fun {set-formal a} {do =(a (* a 10)) a})
+(print (set-formal 5) (set-formal 6))
+
+; set many, and the same name twice
+(fun {many} {do (set {m1 m2 m3} 1 2 3) =(m1 (+ m1 m2 m3)) (set {m1} (* m1 2)) (list m1 m2 m3)})
+(print (many))
+
+; set's value is NIL; set (a special form) given an error binds it, as a value: reading it later is that error
+(fun {partway} {do (print (try (set {p1 p2} 1 (error "second")) &err)) (list (defined? p1) (defined? p2) p1 (error? p2) (try p2 &err))})
+(print (partway))
+(fun {err-local} {do =(e (error "kept")) (print :after-set (type-of e)) (+ e 1)})
+(print (err-local))
+
+; a closure made after a set sees it; one made before sees it too (the same scope)
+(fun {before-after} {do =(f1 (fn {} {try late &err})) =(late :late-value) =(f2 (fn {} {late})) (list (f1) (f2))})
+(print (before-after))
+
+; set in a function called from a loop: each call fresh
+(fun {fresh n} {do (if (defined? acc2) (print :leaked)) =(acc2 n) acc2})
+(print (map fresh {1 2 3}))
+
+; the last: reading a name only another call set ends the program
+(fun {sets-it} {=(only-there 1)})
+(sets-it)
+(fun {reads-it} {+ only-there 1})
+(reads-it)

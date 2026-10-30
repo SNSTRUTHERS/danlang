@@ -1,0 +1,23 @@
+--- stdout
+{<function>(fn NIL {list x y}) <function>(fn NIL {list x y}) <function>(fn NIL {list x y})}
+{{:c "y:c"} {:b "y:b"} {:a "y:a"}}
+{{list i sq} {list i sq} {list i sq}}
+{{2 4} {1 1} {0 0}}
+{<function>(eq 2) <function>(eq 1) <function>(eq 0)}
+{NIL T NIL}
+{NIL NIL} {NIL NIL}
+{{1 2} {0 2}}
+{{1 :y} {1 :x} {0 :y} {0 :x}}
+{3 3 3}
+{99 99 99}
+{3 3 3}
+{{3 6} {2 4} {1 2}}
+{20 10 0}
+{{ch} {ch} {ch}} {\z \y \x}
+{"one!" "two!" "three!"}
+{103 102 101 100}
+{<function>(fn {x} {+ x i}) <function>(fn {x} {+ x i})}
+NIL
+--- stderr
+
+--- exit 0

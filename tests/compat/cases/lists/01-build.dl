@@ -1,0 +1,56 @@
+; 01-build.dl - making lists: Q-expression literals, [..], list and cons; the empty list's forms ({}, NIL, (list),
+; [], (), nil); nesting; type-of, len, print and repr of what's made; a list call's arguments evaluated left to
+; right, the first error stopping the rest; cons's errors; cons and list partially applied (or not)
+
+(print "literal" {1 2 3} {a (b c) "d" \e :f} {{1 {2 {3}}}})
+(print "list" (list 1 (+ 1 1) "x" \y :z) (list) (list NIL) (list {} {}))
+(print "brackets" [1 (+ 1 1) [3 [4]]] [] [NIL] [[]] [[] []])
+(print "cons" (cons 1 {2 3}) (cons {1} {2}) (cons 1 NIL) (cons NIL NIL) (cons {} {}) (cons (list) (list)))
+(print "cons chain" (cons 1 (cons 2 (cons 3 NIL))) (cons {a} (cons {b} NIL)))
+(print "empties" {} NIL (list) [] () nil Nil)
+(print "empty types" (type-of {}) (type-of NIL) (type-of (list)) (type-of []) (type-of ()) (type-of nil))
+(print "eq empties" (eq {} NIL) (eq (list) []) (eq () NIL) (eq [] {}) (eq nil {}))
+(print "len" (len {}) (len {1}) (len {1 {2 3}}) (len [1 2 3]) (len (cons 0 {1 2})) (len {{} {} {}}) (len {NIL}))
+(print "repr" (repr {1 "a" \b :c d}) (repr []) (repr [[] {}]) (repr ["x\ny" \space]))
+(print "item types" (map type-of {1 "s" \c :a sym (s x) {q} T NIL 1/2 2.5}))
+(print "value types" (map type-of [1 "s" \c :a (fst {sym}) T NIL 1/2 2.5 + (fn {x} {x}) (hash-create) (buffer 1)]))
+
+; [..] and list evaluate their items; {..} doesn't
+(def {x} 10)
+(print {x (+ x 1)} [x (+ x 1)] (list x (+ x 1)) {[x]} [{x}])
+(print (repr {"s" (+ "a" "b")}) (repr ["s" (+ "a" "b")]))
+
+; a list holds every kind of value
+(print [1.5 -7 1/3 (complex 1 2) "str" \c :atom T + (+ 1) (fn {a} {a}) (hash-create {{:k 1}}) (buffer {1 2}) exit])
+(print (repr ["q\"" \" \\ "\\" \( \) \{ \} \[ \]]))
+
+; many items, and deep nesting
+(print (list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25))
+(print (list (list (list))) [[[]]] (len [[[]]]) [[[[[[[[1]]]]]]]] (fst (fst (fst [[[:deep]]]))))
+
+; the arguments are evaluated left to right; the first error stops the rest
+(print (list (do (print "  a") 1) (do (print "  b") 2) (do (print "  c") 3)))
+(print [(print "  one") (print "  two")])
+(print (list (print "  before") (error "stopped") (print "  never")))
+(print [(print "  first") (error "in brackets") (print "  never")])
+(print (cons (do (print "  item") 0) (do (print "  list") {1})))
+(print (cons (error "bad item") (do (print "  never") {})))
+(print (cons (do (print "  item first") 1) (error "bad list")))
+
+; cons's errors: the second must be a list
+(print (cons 1 2))
+(print (cons 1 "abc"))
+(print (cons 1 :a))
+(print (cons 1 (fst {(2 3)})))
+(print (cons 1 {2} {3}))
+
+; partially applied: cons needs two; list and [..] need none
+(print (cons) (cons 1) ((cons 1) {2 3}) ((cons {a}) NIL) (map (cons 0) {{1} {2 3} NIL}))
+(print (list) (eq (cons 1) (cons 1)) (eq (cons 1) (cons 2)) (function? (cons 1)) (function? (list)))
+
+; a list made is a new value each time
+(fun {fresh} {list 1 2})
+(def {f1 f2} (fresh) (fresh))
+(print f1 f2 (eq f1 f2) (cons 0 f1) f1)
+(fun {fresh-q} {do {1 2}})
+(print (fresh-q) (cons 0 (fresh-q)) (fresh-q))

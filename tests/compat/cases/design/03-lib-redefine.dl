@@ -1,0 +1,66 @@
+; 03-lib-redefine: a library function uses the globals its body names as they are at each call.  A dependency
+; redefined in the middle of a loop (by def, set!, fun, or set at the top level) changes the results from then on, and
+; put back, restores them; transitive ones too (mod uses floor, which uses trunc, cmp, 1-, <=>, let and set; even?
+; uses mod; pow uses even? and -?).  A set inside a loop's body binds in its scope: no change.
+(def {orig-floor orig-trunc orig-1- orig-cmp orig-num? orig-mod orig-and orig-if orig-error orig-<=>}
+     floor trunc 1- cmp num? mod and if error <=>)
+(def {probes} {{mod 7 2} {mod -7 2} {div -7 2} {even? 6} {odd? -3} {pow 2 5} {round 5/2} {divmod -7 2} {% 9 4}
+               {mod 7 :a} {floor -1/2} {ceil -1/2}})
+(fun {run-probes} {map (fn {q} {try (eval q) &err}) probes})
+(print "start" (run-probes))
+
+; def, mid-loop, then put back
+(dotimes {i 5} (do
+  (if (eq i 2) (def {floor} (fn {a} {:floor-gone})))
+  (if (eq i 4) (def {floor} orig-floor))
+  (print "def floor" i (run-probes))))
+
+; set! of trunc (floor's dependency), then of 1- (floor's, for negative fractions only)
+(dotimes {i 4} (do
+  (if (eq i 1) (set! {trunc} (fn {x} {0})))
+  (if (eq i 2) (set! {trunc} orig-trunc))
+  (if (eq i 3) (set! {1-} (fn {x} {- x 2})))
+  (print "set!" i (run-probes))))
+(set! {1-} orig-1-)
+(print "1- back" (run-probes))
+
+; fun: cmp redefined as a function of the library's own form, then put back with def
+(fun {cmp a b} {0})
+(print "fun cmp" (run-probes))
+(def {cmp} orig-cmp)
+(print "cmp back" (run-probes))
+
+; set at the top level binds globally; in a loop's body (or a function's), locally: no change
+(set {num?} (fn {x} {NIL}))
+(print "set num?" (run-probes))
+(set {num?} orig-num?)
+(dotimes {i 2} (do (set {num?} (fn {x} {NIL})) (set {floor} 0) (print "local set" i (run-probes))))
+(fun {shadow-set} {do (set {floor} 0) (set {mod} 1) (run-probes)})
+(print "in a function" (shadow-set))
+
+; mod itself redefined: % keeps the old one (it's its value); even?, odd? and divmod name mod, so they change
+(def {mod} (fn {a b} {:mine}))
+(print "mod gone" (run-probes))
+(def {mod} orig-mod)
+
+; and, if, error, <=> redefined as functions
+(def {and} or)
+(print "and is or" (run-probes))
+(def {and} orig-and)
+(def {error} (fn {m} {list :not-an-error m}))
+(print "error" (run-probes))
+(def {error} orig-error)
+(def {<=>} (fn {n a b} {:spaceship}))
+(print "<=>" (run-probes))
+(def {<=>} orig-<=>)
+(def {if} (fn {c a b} {list :if a}))
+(def {probe-if} (run-probes))
+(def {if} orig-if)
+(print "if" probe-if)
+
+; redefined while the arguments are evaluated: the body sees the new one
+(print (mod (do (def {floor} (fn {x} {100})) 7) 2) (mod 7 2) (even? 4))
+(def {floor} orig-floor)
+(print (mod (do (def {floor} orig-floor) 7) 2) (div (do (set! {trunc} (fn {x} {-5})) 9) 2) (div 9 2))
+(set! {trunc} orig-trunc)
+(print "end" (run-probes))

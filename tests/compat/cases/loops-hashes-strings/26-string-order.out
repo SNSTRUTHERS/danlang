@@ -1,0 +1,32 @@
+--- stdout
+{"" " " "1" "10" "9" "Apple" "B" "Z" "a" "ab" "abc" "apple" "apple" "b" "banana" "z" "~" "é"}
+{"é" "~" "z" "banana" "b" "apple" "apple" "abc" "ab" "a" "Z" "B" "Apple" "9" "10" "1" " " ""}
+{"é" "~" "z"} {"" " " "1"}
+{"banana" "Apple" "apple" "" "a" "ab" "abc" "B" "b" "10" "9" "1" "é" "z" "Z" " " "~"}
+apple pear a c
+"a" "b" -1 T NIL T NIL NIL NIL T
+"b" "a" 1 NIL T NIL T NIL NIL T
+"a" "a" 0 NIL NIL T T T T NIL
+"a" "ab" -1 T NIL T NIL NIL NIL T
+"ab" "a" 1 NIL T NIL T NIL NIL T
+"" "a" -1 T NIL T NIL NIL NIL T
+"" "" 0 NIL NIL T T T T NIL
+"B" "a" -1 T NIL T NIL NIL NIL T
+"é" "z" 1 NIL T NIL T NIL NIL T
+"abc" "abd" -1 T NIL T NIL NIL NIL T
+"a\0" "a" 1 NIL T NIL T NIL NIL T
+{1 2.5 \space \B \a "" "a" "b" :a :c sym {1} (x) T}
+-1 1 -1 1 -1 -1
+NIL NIL NIL NIL NIL T NIL
+NIL T T T
+{"a" "e" "bb" "dd" "ccc" "fff"}
+{"c" "b" "a"}
+{"apple" "Banana" "Cherry"}
+{"x1" "x10" "x100" "x9"}
+brown the
+T NIL NIL {"y" "z"} {"y" "x" "z"} 3
+T NIL -1 -1
+T T T T
+--- stderr
+
+--- exit 0

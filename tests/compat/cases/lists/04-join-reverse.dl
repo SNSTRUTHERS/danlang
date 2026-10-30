@@ -1,0 +1,58 @@
+; 04-join-reverse.dl - join (one list or many, NIL and {} among them; anything else an error, once all the arguments
+; are evaluated) and reverse (of lists and of strings); neither changes the lists it's given; a list joined to itself
+; again and again; reverse of joins and joins of reverses
+
+(def {a b c} {1 2} {3} {4 5 6})
+(print (join a) (join a b) (join a b c) (join c b a) (join a a a) (join b))
+(print (join {}) (join NIL) (join NIL NIL) (join {} a {} NIL b) (join NIL {x}) (join {x} NIL))
+(print (join {{1}} {{2}}) (join {(+ 1 2)} {x}) (join [1 2] (list 3) (cons 4 NIL)) (join {NIL} {NIL} {}))
+(print (join {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}) (join {} {} {} {} {z}) (join (range 3) (range 2) (range 1)))
+(print a b c)
+(print (len (join a b c)) (eq (join a b) {1 2 3}) (join (join a b) (join b a)) (join (tail c) (init c)))
+
+; the arguments are all evaluated, left to right, before the lists are checked
+(print (join (do (print "  1st") a) (do (print "  2nd") 7) (do (print "  3rd") b)))
+(print (join (do (print "  first") a) (error "e2") (do (print "  never") b)))
+(print (join a (print "  a NIL from print is a list") b))
+
+; errors
+(print (join a 5))
+(print (join 5 a))
+(print (join a "str"))
+(print (join a :x b))
+(print (join "ab" "cd"))
+(print (join a (fst {(x y)})))
+(print (join (hash-create) a))
+(print (join (error "e1") (error "e2")))
+
+; partially applied: join needs one
+(print (join) ((join) a) (map join {{1} {2 3}}) (foldl join NIL {{1} {2} NIL {3 4}}))
+
+; reverse
+(print (reverse a) (reverse c) (reverse {x}) (reverse {}) (reverse NIL) (reverse {{1 2} {3 4}}) (reverse {NIL 1 NIL 2}))
+(print (reverse (reverse c)) (eq (reverse (reverse c)) c) c (reverse (tail c)) (reverse (init c)))
+(print (repr (reverse "hello")) (repr (reverse "")) (repr (reverse "a")) (repr (reverse "a\nb")) (repr (reverse "ab ")))
+(print (reverse {"ab" "cd"}) (reverse {(1 2) {3 4}}) (map reverse {{1 2} {3 4 5} NIL}))
+(print (reverse (str-chars "abc")) (str-join (reverse (str-chars "abc"))) (reverse (reverse "xyz")))
+(print (reverse 5))
+(print (reverse \c))
+(print (reverse :atom))
+(print (reverse (fst {(1 2)})))
+(print (reverse {1} {2}))
+(print (reverse) ((reverse) {1 2}))
+
+; reverse of joins, joins of reverses
+(print (reverse (join a b c)) (join (reverse c) (reverse b) (reverse a)) (eq (reverse (join a b c)) (join (reverse c) (reverse b) (reverse a))))
+(def {r} (range 20))
+(print (reverse r))
+(print (join (reverse (drop 10 r)) (reverse (take 10 r))))
+(print (eq (reverse r) (join (reverse (drop 10 r)) (reverse (take 10 r)))) r)
+
+; a list joined to itself again and again
+(def {d} {x y})
+(dotimes {i 6} (set! {d} (join d d)))
+(print (len d) (take 5 d) (eq (take 64 d) (drop 64 d)))
+(def {e} {})
+(dotimes {i 5} (set! {e} (join e [i] e)))
+(print (len e) e)
+(print (reverse e) (eq (reverse e) e))

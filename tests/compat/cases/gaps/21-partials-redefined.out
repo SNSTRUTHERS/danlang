@@ -1,0 +1,24 @@
+--- stdout
+before {1 3 {3 1} 1024 128 {{1 :a} {2 :b}} :two {2 1} {2} T NIL T 1 2 3 T {1 2} 9 1 -3 NIL {1 T}}
+by name {1 3 {3 1} 1024 {{1 :a} {2 :b}} :two {2 1} {2} T T 3 T 27}
+floor new {{:error "All parameters to operator '*' must be numbers."} {:new-floor 7/2} {:error "All parameters to operator '*' must be numbers."} {:error "All parameters to operator '*' must be numbers."} {:error "All parameters to operator '*' must be numbers."} {{1 :a} {2 :b}} :two {2 1} {2} T NIL T {:error "All parameters to operator '*' must be numbers."} 2 {:new-floor 3} {:error "All parameters to operator '*' must be numbers."} {1 2} 9 {:error "All parameters to operator '*' must be numbers."} {:error "All parameters to operator '-' must be numbers."} {:error "All parameters to operator '*' must be numbers."} {:error "All parameters to operator '*' must be numbers."}}
+by name {{:error "All parameters to operator '*' must be numbers."} {:new-floor 7/2} {:error "All parameters to operator '*' must be numbers."} {:error "All parameters to operator '*' must be numbers."} {{1 :a} {2 :b}} :two {2 1} {2} T T {:new-floor 3} {:error "All parameters to operator '*' must be numbers."} 27}
+floor back {1 3 {3 1} 1024 128 {{1 :a} {2 :b}} :two {2 1} {2} T NIL T 1 2 3 T {1 2} 9 1 -3 NIL {1 T}}
+eq new {1 3 {3 1} 1024 128 {{1 :a} {2 :b}} :one {1 1} NIL T NIL T 1 2 3 T {1} 9 1 -3 NIL {1 T}}
+by name {1 3 {3 1} 1024 {{1 :a} {2 :b}} :one {1 1} NIL T T 3 T 27}
+eq back {1 3 {3 1} 1024 128 {{1 :a} {2 :b}} :two {2 1} {2} T NIL T 1 2 3 T {1 2} 9 1 -3 NIL {1 T}}
+cons new {1 3 {1 :consed 3} 1024 128 {:consed {2 :b} :consed {1 :a}} {:error "S-Expression starts with incorrect type. Got Q-Expression, Expected Function."} {1 :consed 2} {:consed 2} T NIL T 1 2 3 T {:error "Too deep: more than 10000 calls nested"} 9 1 -3 NIL {1 T}}
+by name {1 3 {1 :consed 3} 1024 {:consed {2 :b} :consed {1 :a}} {:error "S-Expression starts with incorrect type. Got Q-Expression, Expected Function."} {1 :consed 2} {:consed 2} T T 3 T 27}
+cons back {1 3 {3 1} 1024 128 {{1 :a} {2 :b}} :two {2 1} {2} T NIL T 1 2 3 T {1 2} 9 1 -3 NIL {1 T}}
+index-of new T T T T T
+index-of back NIL NIL NIL NIL
+and new :and-called :and-called Error: 'nth': the list has no such item 1 3
+* new Error: All parameters to operator '-' must be numbers. Error: All parameters to operator '-' must be numbers. {:times 3 3} {:times 4 4} {:times 2 {:times 2 2}}
+all back {1 3 {3 1} 1024 128 {{1 :a} {2 :b}} :two {2 1} {2} T NIL T 1 2 3 T {1 2} 9 1 -3 NIL {1 T}}
+by name {1 3 {3 1} 1024 {{1 :a} {2 :b}} :two {2 1} {2} T T 3 T 27}
+loop 0 1 1 :yes
+loop 1 1 2 :yes
+loop 2 3 4 :no
+--- stderr
+
+--- exit 0

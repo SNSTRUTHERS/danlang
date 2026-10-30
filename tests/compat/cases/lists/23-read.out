@@ -1,0 +1,37 @@
+--- stdout
+{1 2 (+ 1 2) {a b} "s" \c :k sym T NIL} 10 {:number :number :sexpr :list :string :char :atom :symbol :t :list} {1 2 (+ 1 2) {a b} "s" \c :k sym T NIL}
+NIL NIL NIL :list {42} :list 42
+{1 2} {a b c d} 1 {((NIL))} {{NIL}}
+{255 5 -7 5 3.25 60/7 1000 255 -16 1/2 0.5} {T T T NIL NIL}
+{:symbol :symbol :symbol :symbol :symbol} {1+ 1/x -x .5 1.2.3}
+{"a\nb" "tab\there" "q\"" "A"} {"here \"str\" "}
+{\a \space \lparen \lparen \rbracket \lf \tab} {97 32 40 93}
+{:a :b :long-name} {sym sym sym} {T T NIL NIL exit}
+{(if a b c) (set x 1) (def y 2) (hash-create {:k 1}) (fn {x} {x}) (unpack f l) (format "{}" 1) (list 1 2) {3 (list 4)}}
+{{if c a b}} {:list :sexpr}
+{'x a.b a:b x? (env "ok")}
+{(a (b (c {d (list e)})))} (a (b (c {d (list e)}))) :sexpr Error: 'fst' expects a list Error: 'snd' expects a list Error: 'last' expects a list
+3 42 {1 2} {1 2 3 "s"}
+{(def {read-made} 7) (+ read-made 1)} NIL 8 7
+NIL 5 {1 2}
+Error: 'read': missing )
+Error: 'read': missing }
+Error: 'read': Closed a SExpr without opening: 
+Error: 'read': Closed a QExpr without opening: 
+Error: 'read': Closed a list without opening: )
+Error: 'read': 'f' touches '(': put a space between them
+Error: 'read': Incomplete string literal
+Error: 'read': Unknown character name \nosuchchar
+Error: 'read': Unknown escape sequence \q
+Error: 'read': Division by zero: 1/0
+Error: 'read' expects a String
+Error: 'read' expects a String
+Error: 'read' takes 1 argument, not 2
+T {1 "two" \3 :four five {six (seven)} NIL 1/2 1.25 -7 "q\"\n"}
+T {1 "two" \3 :four five {six (seven)} {} 1/2 1.25 -7 "q\"\n"}
+
+{T T T T T T T T T T T}
+{"a b"} {\space} {NIL} {{NIL}}
+--- stderr
+
+--- exit 0

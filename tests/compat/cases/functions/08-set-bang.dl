@@ -1,0 +1,91 @@
+; 08-set-bang: set! changes the nearest binding of a name, wherever it is: an enclosing function's local from a
+; closure (shared by every closure over it), a global from deep inside (nested calls, let, loops, eval), a local
+; that shadows a global (the global untouched), a loop's variable, a formal; unbound, an error.  The same set! site
+; changing a global, then (once the name is bound locally somewhere) a local, then the global again.
+
+; closures sharing one variable
+(fun {make-pair} {do =(n 0) [(fn {} {do (set! {n} (+ n 1)) n}) (fn {} {n}) (fn {v} {set! {n} v})]})
+(def {pair} (make-pair))
+(def {inc get put} (fst pair) (snd pair) (thd pair))
+(print (inc) (inc) (get))
+(print (put 100) (get) (inc))
+(def {other} (make-pair))
+(print ((fst other)) (get))
+
+; set! of an enclosing function's local, two levels in
+(fun {outer} {do =(v 1) ((fn {} {do (set! {v} (+ v 10)) ((fn {} {set! {v} (+ v 100)}))})) v})
+(print (outer) (outer))
+
+; set! of a global from deep inside
+(def {gcount} 0)
+(fun {bump-deep n} {if (zero? n) (set! {gcount} (+ gcount 1)) (bump-deep (- n 1))})
+(fun {bump-in-let} {let {{a 1}} (each {i {1 2 3}} (dotimes {j 2} (set! {gcount} (+ gcount i))))})
+(bump-deep 50)
+(bump-in-let)
+(print gcount)
+(fun {bump-via-eval} {eval {set! {gcount} (* gcount 2)}})
+(bump-via-eval)
+(print gcount)
+(def {bumpers} (map (fn {k} {fn {} {set! {gcount} (+ gcount k)}}) {1000 2000}))
+(each (fn {f} {f}) bumpers)
+(print gcount)
+
+; a local shadowing the global: set! finds the local
+(def {sh} :global)
+(fun {shadow-bang} {do =(sh :local) (set! {sh} :changed-local) sh})
+(print (shadow-bang) sh)
+(fun {formal-bang sh} {do (set! {sh} (list :was sh)) sh})
+(print (formal-bang 1) sh)
+(print (let {{sh :let-local}} (set! {sh} :let-changed) sh) sh)
+
+; the same set! site: global first, then a closure's own local, then the global again
+(def {cnt} 0)
+(fun {make-bumper local?} {do (if local? =(cnt 1000)) (fn {} {do (set! {cnt} (+ cnt 1)) cnt})})
+(def {g1} (make-bumper NIL))
+(print (g1) (g1) (g1) cnt)
+(def {l1} (make-bumper T))
+(print (l1) (l1) cnt)
+(print (g1) (l1) (g1) cnt)
+(def {l2} (make-bumper T))
+(print (l2) (l1) (g1) cnt)
+
+; set! of a loop's variable: that iteration's binding (closures made in it see the change)
+(fun {loop-bang} {do =(acc {}) (each {i {1 2 3}} (set! {acc} (join acc [(fn {} {i})])) (set! {i} (* i 100))) (map (fn {f} {f}) acc)})
+(print (loop-bang))
+(fun {dotimes-bang} {do =(acc {}) (dotimes {i 3} (set! {i} (+ i 10)) (set! {acc} (join acc [i]))) acc})
+(print (dotimes-bang))
+
+; set! in a while loop changes the function's own local
+(fun {count-down n} {do =(steps {}) (while (> n 0) (set! {steps} (cons n steps)) (set! {n} (- n 1))) (list n steps)})
+(print (count-down 4))
+
+; set! of several names at once; the forms of the names
+(def {sa sb} 1 2)
+(set! {sa sb} 10 20)
+(print sa sb)
+(set! sa 30)
+(print sa)
+(set! (join {sa} {sb}) 40 50)
+(print sa sb)
+(print (set! {sa} 1) sa)
+
+; errors: unbound, too many, non-symbols; set! given an error binds it
+(print (try (set! {never-bound} 1) &err))
+(fun {bang-unbound} {set! {nope-local} 1})
+(print (try (bang-unbound) &err))
+(print (try (set! {sa sb} 1) &err))
+(print (try (set! {sa} 1 2) &err))
+(print (try (set! {1} 2) &err))
+(print (try (set! 5 2) &err))
+(set! {sb} (error "kept by set!"))
+(print (error? sb) (try sb &err))
+
+; a set! of a name another function only set locally: unbound here
+(fun {sets-local} {=(their-local 1)})
+(sets-local)
+(fun {bangs-it} {set! {their-local} 2})
+(print (try (bangs-it) &err))
+
+; the last: set! of an unbound name inside nested calls ends the program
+(fun {deep-bang n} {if (zero? n) (set! {unbound-deep} 1) (list (deep-bang (- n 1)))})
+(deep-bang 3)

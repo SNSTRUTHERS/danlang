@@ -1,0 +1,33 @@
+; 31-library-at-the-repl: the library's values and results as the REPL shows them (=> and repr), and its errors there (the message and the trace, then the next prompt)
+math.e
+(list flip comp ghost xor)
+(list first tenth skip begin % inverse trunc apply uncurry)
+??
+(mod 7)
+((mod 7) 3)
+(split 1 {1 "two" \3})
+(?? NIL "" 1)
+(zip {"a" \b} {:c 1.50})
+(fdiv 1 3 4)
+(divmod -7 2)
+(repeat 2 {"s"})
+(cond {NIL 1})
+(fun {f x} {case x {1 :one}})
+(f 2)
+(f 1)
+(mod 1 0)
+(round "a")
+(pow 2 1/2)
+(starts-with? "abc" "a")
+(remove-min {"b" "a"})
+(best-of 2 {"x" "z" "y"})
+(between? 1 5)
+used
+(use "screen")
+used
+(zip (range 3) "abc")
+(ghost list "a" \b "tab\there")
+(xor T)
+(unpack str-join {{"a" "b"} ", "})
+(flatten {"x" {\y {"z\n"}}})
+:done

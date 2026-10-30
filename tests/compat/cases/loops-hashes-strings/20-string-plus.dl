@@ -1,0 +1,45 @@
+; 20-string-plus.dl - + on strings: a string or a character first joins everything after it, as print shows it
+; (strings and characters as their text, lists with strings quoted, numbers of every kind, atoms, T, NIL, hashes,
+; functions); a character first makes a string; anything else first adds numbers only (the errors); an error among
+; the values stops it; the values evaluated in order; a long string built up
+
+(print (repr (+ "ab" "cd")) (repr (+ "n=" 5)) (repr (+ "" "")) (repr (+ "only")) (repr (+)))
+(print (repr (+ \a \b)) (repr (+ \a)) (repr (+ \a 1 2)) (repr (+ \x "yz")) (type-of (+ \a)))
+(print (repr (+ "s" \c "t")))
+(print (repr (+ "atom:" :a " sym:" (to-sym "Sym") " t:" T " nil:" NIL " empty:" {})))
+(print (repr (+ "list:" {1 "two" \3 :four (5 6) {7}})))
+(print (repr (+ "nums:" 1 " " -2 " " 1/3 " " 2.50 " " 1.000 " " (complex 1 -2) " " 12345678901234567890)))
+(print (repr (+ "hash:" #({{:k "v"}}) " empty hash:" #())))
+(print (repr (+ "fn:" (fn {x} {+ x "!"}) " builtin:" + " partial:" (eq 1))))
+(print (repr (+ "nested " (+ "in" (+ "side")))))
+(print (repr (+ "with\nnewline" "\ttab" "\x01")))
+(print (repr (+ "é" "日本" (code-char 200))) (len (+ "é" "日本")))
+
+; numbers first: adds numbers only
+(print (+ 1 2) (+ 1 2.5) (+ 1/2 1/3) (+ 1 -1) (+ 12345678901234567890 1))
+(print (+ 1 "a"))
+(print (+ 1 2 "a"))
+(print (+ :a "b"))
+(print (+ {1} 2))
+(print (+ {"a"} "b"))
+(print (+ T "x"))
+(print (+ NIL "x"))
+(print (+ #() "x"))
+(print (+ print "x"))
+
+; an error among the values: the error (+ isn't run); the values are evaluated in order
+(print (+ "a" (error "stopped") "b"))
+(print (+ (error "first") (error "second")))
+(print (repr (+ "<" (do (write "[1]") "one") (do (write "[2]") 2) (do (write "[3]") :three) ">")))
+
+; a long string built up in a loop
+(def {s} "")
+(dotimes {i 1000} (def {s} (+ s (mod i 10))))
+(print (len s) (substring s 0 25) (substring s 975))
+(def {t2} (+ s s s))
+(print (len t2) (char-at t2 2999) (char-at t2 1000))
+
+; + with a string partially applied: + isn't partial (it takes any number), so (+ "x") is "x"
+(print (repr (+ "x")) (repr (map (fn {v} {+ "v=" v}) {1 :b "c" \d})))
+(print (repr (foldl + "start:" {1 2 3})) (repr (foldl + 0 {1 2 3})))
+(print (repr (str-join (map (fn {n} {+ "#" n}) (range 5)) ",")))

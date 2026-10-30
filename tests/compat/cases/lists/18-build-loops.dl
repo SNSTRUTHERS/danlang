@@ -1,0 +1,82 @@
+; 18-build-loops.dl - lists built in loops (dotimes, each, while; their two forms) with cons, join and [..]; what a
+; loop step leaves in a list it builds: a Q-expression written in the body remembers that step's scope (each step
+; its own in each and dotimes; one scope for every step of while), as do closures and [..]; a loop inside a function
+; building a local list; the order of side effects; an error stopping a loop half way through a list
+
+(fun {ev q} {eval q})
+(def {acc} NIL)
+(dotimes {i 5} (set! {acc} (cons i acc)))
+(print acc)
+(def {acc} NIL)
+(dotimes {i 5} (set! {acc} (join acc [i (* i i)])))
+(print acc)
+(def {acc} NIL)
+(each {x {a b c}} (set! {acc} (join acc [x])))
+(print acc)
+(def {acc} NIL)
+(each {c (str-chars "hey")} (set! {acc} (cons (char-code c) acc)))
+(print acc)
+(def {acc} NIL)
+(def {k} 0)
+(while {< k 4} (set! {acc} (cons k acc)) (set! {k} (+ k 1)))
+(print acc k)
+(def {acc} NIL)
+(each (fn {x} {set! {acc} (cons [x] acc)}) {:p :q :r})
+(print acc)
+(def {acc} NIL)
+(dotimes 4 (fn {n} {set! {acc} (join acc (range n))}))
+(print acc)
+
+; a Q-expression written in the body remembers that step's scope
+(def {qs} NIL)
+(each {i {1 2 3}} (set! {qs} (cons {i} qs)))
+(print qs (map ev qs))
+(def {qs} NIL)
+(dotimes {i 3} (set! {qs} (cons {* i 10} qs)))
+(print qs (map ev qs))
+(def {qs} NIL)
+(def {w} 0)
+(while {< w 3} (set! {qs} (cons {w} qs)) (set! {w} (+ w 1)))
+(print qs (map ev qs))
+(def {qs} NIL)
+(dotimes 3 (fn {n} {set! {qs} (cons [n {n}] qs)}))
+(print qs (map (fn {p} {eval (snd p)}) qs))
+
+; closures, and [..] holding a name
+(def {fs} NIL)
+(dotimes {i 3} (set! {fs} (cons (fn {} {i}) fs)))
+(print fs (map (fn {f} {f}) fs))
+(def {ls} NIL)
+(dotimes {i 3} (set! {ls} (cons [print (fst {i})] ls)))
+(print ls)
+(print (map ev ls))
+
+; a loop in a function, building a local list
+(fun {collect n} {do =(out NIL) (dotimes {i n} (set! {out} (cons {i} out))) out})
+(print (collect 4) (map ev (collect 4)))
+(fun {squares n} {do =(out NIL) (each {x (range n)} (set! {out} (join out [(* x x)]))) out})
+(print (squares 6) (squares 0) (map squares {1 2 3}))
+(fun {evens-to n} {do =(out NIL) =(i 0) (while {<= i n} (if (zero? (bit-and i 1)) (set! {out} (join out [i]))) (set! {i} (+ i 1))) out})
+(print (evens-to 10) (evens-to 0))
+
+; the order of side effects
+(def {log} NIL)
+(each {x {1 2 3}} (do (set! {log} (cons [:before x] log)) (print "  step" x) (set! {log} (cons [:after x] log))))
+(print (reverse log))
+(print (output-of (each {x {a b}} (print x))) (output-of (dotimes {i 3} (write i))))
+
+; a step whose value is an error stops the loop: what was built so far is kept (but set! binds an error as it does
+; any value, and the loop goes on)
+(def {acc} NIL)
+(print "set! an error:" (each {x {1 2 :three 4}} (set! {acc} (cons (+ x 0) acc))))
+(print "acc:" acc)
+(def {acc} NIL)
+(print "an error step:" (each {x {1 2 :three 4}} (do (set! {acc} (cons x acc)) (+ x 0))))
+(print "acc:" acc)
+(def {acc} NIL)
+(print (dotimes {i 5} (if (eq i 3) (error "at three") (set! {acc} (cons i acc)))))
+(print acc)
+(print (each {x 5} (print x)))
+(print (each {x "ab"} (print "  char" x)))
+(print (dotimes {i -1} (print i)))
+(print (dotimes {i 2.5} (print i)))

@@ -1,0 +1,60 @@
+--- stdout
+NIL <function>(fn {name} {if (elem? name used) NIL (do (load name) (set! {used} (cons name used)) NIL)})
+{"badlib.dl" "cyc-a.dl" "cyc-b.dl" "first.dl" "mylib.dl" "peek.dl" "resets.dl" "returns.dl" "second.dl"}
+:mylib-loading
+NIL
+{"mylib"} 42 8
+NIL
+{"mylib"}
+:mylib-loading
+NIL
+:mylib-loading
+NIL
+{"./mylib" "mylib.dl" "mylib"}
+:first-loading
+:second-loading
+:first-done {"second" "./mylib" "mylib.dl" "mylib"}
+NIL
+{"first" "second" "./mylib" "mylib.dl" "mylib"}
+NIL
+NIL
+:peek-sees-name Unbound Symbol 'name' NIL T
+NIL
+:set-at-the-top-level
+:badlib-loading
+Error: badlib.dl: badlib fails
+{"peek" "returns" "first" "second" "./mylib" "mylib.dl" "mylib"} T NIL
+:badlib-loading
+Error: badlib.dl: badlib fails
+:badlib-loading
+:badlib-loading
+T badlib.dl: badlib fails
+Error: no-such-lib: not found
+:noent
+{"peek" "returns" "first" "second" "./mylib" "mylib.dl" "mylib"}
+:resets-used-was {"peek" "returns" "first" "second" "./mylib" "mylib.dl" "mylib"}
+NIL
+{"resets" "planted"}
+:mylib-loading
+NIL
+{"mylib"}
+NIL
+"\e[2J\e[H" "\e[2;5H" "\e[31;47m"
+NIL
+{"screen" "mylib"}
+Error: 'load' passed non-string parameter(s)
+Error: 'load' passed non-string parameter(s)
+Error: 'load' passed non-string parameter(s)
+Error: 'load' passed non-string parameter(s)
+Error: use's name
+<function>(fn {name} {if (elem? name used) NIL (do (load name) (set! {used} (cons name used)) NIL)})
+Error: The function takes 1 argument, not 2
+Error: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: cyc-a.dl: cyc-b.dl: Too deep: more than 10000 calls nested
+{"screen" "mylib"}
+:badlib-loading
+--- stderr
+Error: 16-use-used.dl: badlib.dl: badlib fails
+  at badlib.dl:3  (error "badlib fails")
+  called at 16-use-used.dl:73  (use "badlib")
+  called at 16-use-used.dl:74  (setup)
+--- exit 1

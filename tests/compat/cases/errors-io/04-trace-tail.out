@@ -1,0 +1,29 @@
+--- stdout
+:if-done :q-done :do-done :let-done
+:eval-done :method-done :unpack-done
+:odd :even
+:cond-done
+9000
+Error: Too deep: more than 10000 calls nested
+14 109
+Error: boom, through the tail calls
+boom, through the tail calls
+{9 10 11}
+1 5 9
+the last: the chain's error, twelve calls in its trace
+--- stderr
+Error: 04-trace-tail.dl: boom, through the tail calls
+  at 04-trace-tail.dl:51  (error "boom, through the tail calls")
+  called at 04-trace-tail.dl:49  (k9 x)
+  called at 04-trace-tail.dl:47  (k8 x)
+  called at 04-trace-tail.dl:46  (h8 x)
+  called at 04-trace-tail.dl:45  (k7 x)
+  called at 04-trace-tail.dl:44  (h7 x)
+  called at 04-trace-tail.dl:43  (k6 x)
+  called at 04-trace-tail.dl:41  (k5 x)
+  called at 04-trace-tail.dl:39  (k4 x)
+  called at 04-trace-tail.dl:37  (k3 x)
+  called at 04-trace-tail.dl:35  (k2 x)
+  called at 04-trace-tail.dl:33  (k1 x)
+  called at 04-trace-tail.dl:60  (h1 :boom)
+--- exit 1

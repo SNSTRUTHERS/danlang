@@ -1,0 +1,80 @@
+; 23-try: (try x [handler]) is x's value, or for an error NIL, or the handler's value: evaluated with &err the
+; message and &code the code (NIL without one), a Q-expression run as code, a function (a fn, a built-in, a partial)
+; called with the message (one argument: a handler of none or two is the error saying so).  A handler's own error
+; is the value; nested trys; &err only inside; try in functions and loops; errors of any depth; try's own errors.
+
+(print (try (error "m1") &err))
+(print (try (error "m2" :mycode) &code))
+(print (try (error "m3") &code))
+(print (try (error "m4" :c4) (list &err &code)))
+(print (try (/ 1 0) (list &err &code)))
+(print (try undefined-sym &err))
+(print (try (fn {1} {1}) &err))
+
+; values go through; no handler: NIL
+(print (try 5 (print :not-run)) (try NIL :handler) (try (error "m5")) (try {+ 1 2} &err))
+(print (try {error "m6"} &err))
+
+; function handlers: called with the message
+(print (try (error "m7") (fn {m} {+ "fn got " m})))
+(print (try (error "m8") print))
+(print (try (error "m9") (cons :caught)))
+(print (try (error "m10") (str-split)))
+(print (try (error "m11") (fn {} {:zero-args})))
+(print (try (error "m12") (fn {a b} {list a b})))
+(print (try (error "m13") (fn {a} {list a &_ &err &code})))
+(def {handler} (fn {m} {list :named-handler m}))
+(print (try (error "m14") handler))
+(print (try (error "m15") (fn {m} {list m &err})))
+
+; a Q-expression handler is run as code
+(print (try (error "m16") {+ "q: " &err}))
+(print (try (error "m17") {list &err &code}))
+
+; the handler's own error is the value; nested trys
+(print (try (error "m18") (error (+ "rethrown: " &err))))
+(print (try (try (error "inner") (error (+ "outer from " &err))) &err))
+(print (try (error "m19") (fn {m} {error (+ "from handler fn: " m)})))
+(print (error-code (try (error "m20" :c) (error &err &code))))
+(print (try (error "m21") (try &code :inner-caught)))
+(print (try (error "m22") (try (error "m22b") &err)))
+
+; &err and &code only inside the handler
+(print (try &err &err))
+(print (defined? &err))
+
+; error messages that aren't strings
+(print (try (error :atom-msg) (list &err (type-of &err))))
+(print (try (error 42) (type-of &err)))
+(print (try (error {a b}) &err))
+
+; try in a function, over a deep error; in a loop
+(fun {safe-div a b} {try (/ a b) (do (print :div-failed &err) 0)})
+(print (safe-div 10 2) (safe-div 1 0))
+(fun {thrower n} {if (zero? n) (error "bottom") (+ 1 (thrower (- n 1)))})
+(print (try (thrower 50) &err))
+(print (map (fn {x} {try (/ 10 x) :inf}) {1 0 5}))
+(def {log} {})
+(each {x {1 0 2}} (try (/ 1 x) (set! {log} (join log [&err]))))
+(print log)
+
+; a function given an error isn't run, even one made to catch it
+(fun {classify e} {try e (fn {m} {list :msg m})})
+(print (classify (error "z")))
+
+; try's own errors
+(print (try (error "x" "notatom") &err))
+(print (try (try 1 2 3) &err))
+(print (try (try) &err))
+(print (type-of (try (error "m23") (error "again"))))
+
+; the handler's scope: a set there is its own
+(print (try (error "m24") (do =(in-handler 1) in-handler)) (try in-handler &err))
+
+; a handler of two formals is partially applied: the value a function waiting for one more
+(fun {needs-two} {try (error "only one message") (fn {a b} {list a b})})
+(print (needs-two) ((needs-two) :second))
+
+; the last: a handler of no formals, given the message, is an error; inside a function, it ends the program
+(fun {zero-handler} {list (try (error "m25") (fn {} {:none}))})
+(zero-handler)

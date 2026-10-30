@@ -1,0 +1,52 @@
+--- stdout
+<function>(fn {f l} {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd) tl (cons hd (remove-fst f tl))))})
+<function>(fn {f l} {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd) (remove-all f tl) (cons hd (remove-all f tl))))})
+<function>(fn NIL {remove-fst (unpack min &1) &1}) <function>(fn NIL {remove-fst (unpack max &1) &1})
+{1 3 2} {1 2} NIL NIL {2} {1}
+{1} {\a} {a} {NIL NIL} {65535 65536}
+{9223372036854775807 -9223372036854775808} {-1024 -1025}
+{1 3} NIL {1} NIL {1 NIL} {4}
+{b} {\x :x x} {NIL {NIL}} {1}
+{NIL T} {T}
+200
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: 'fst' expects a list
+Error: rf's f
+Error: rf's l
+Error: ra's f
+<function>(fn {l} {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd) tl (cons hd (remove-fst f tl))))})
+{2 3}
+{2 1 3}
+Error: The function takes 2 arguments, not 3
+Error: The function takes 2 arguments, not 3
+<function>(fn {f l} {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd) tl (cons hd (remove-fst f tl))))})
+{3 2 1} {1 2 3} NIL NIL {65536 9223372036854775808} {65536 -1025}
+{"b" "a" \c} {"a" 2 \c} {:b :a} {{1} {1 2}}
+{7/2 3.5 -1} {NIL T T} {NIL NIL}
+{T NIL} {NIL NIL}
+{(+ 1 2) 2}
+{(+ 1 2)}
+{(* 65536 65536)}
+Error: Unbound Symbol 'b'
+Error: Unbound Symbol 'x-unbound'
+NIL
+NIL
+Error: Unbound Symbol '&1'
+Error: 'cons' expects a list second
+Error: 'cons' expects a list second
+{3}
+{3}
+Error: rm's list
+{7 3 10 6 2 9 5 1 8 4} {0 7 3 6 2 9 5 1 8 4}
+{:kept {70 80 95}}
+--- stderr
+Error: 17-remove.dl: 'cons' expects a list second
+  at <BUNDLE>\lib\globals.dl:42  (cons f l)
+  called at <BUNDLE>\lib\globals.dl:239  (unpack max &1)
+  called at 17-remove.dl:57  (remove-max scores)
+  called at 17-remove.dl:59  (drop-highest "95 80")
+--- exit 1

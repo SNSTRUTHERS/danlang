@@ -1,0 +1,6 @@
+--- stdout
+
+--- stderr
+Error: 27-reader-error-site.dl:30: missing )
+  at <BUNDLE>\lib\globals.dl:274  (def !*><? not-all-between?)
+--- exit 1

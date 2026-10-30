@@ -1,0 +1,48 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>a REPL with warnings: each says the line of its input ("line N": the REPL's code has no file)
+=> NIL
+danlang>=> NIL
+danlang>=> :my-len
+danlang>=> NIL
+danlang>=> :my-fst
+danlang>=> NIL
+danlang>=> NIL
+danlang>	) <=> NIL
+danlang>	) <=> NIL
+danlang>	) <	) <the def on this input's second line
+=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 1
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> :tail-replaced
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 5
+danlang>=> 1
+danlang>=> NIL
+danlang>=> Error: All parameters to operator '*' must be numbers.
+danlang>=> :my-floor
+danlang>=> NIL
+danlang>my print: through the new print
+=> NIL
+danlang>=> exit
+--- stderr
+line 1: warning: def replaces the built-in len with a function
+line 1: warning: fun replaces the built-in fst with a function
+line 1: warning: fun replaces a number, my-value, with a function
+line 1: warning: def replaces a function, my-value, with a atom
+line 3: warning: def replaces a atom, my-value, with a function
+line 1: warning: def replaces the built-in tail with a atom
+w.dl:3: warning: def replaces the built-in init with a number
+  at <BUNDLE>\lib\globals.dl:148  (* b (floor (/ a b)))
+  called at line 1  (mod 7 2)
+line 1: warning: fun replaces the built-in print with a function
+--- exit 0

@@ -1,0 +1,71 @@
+; 27-def-set-forms: the forms of def, set and set!: a symbol, a list of names, an S-expression evaluating to a list
+; of names (join, list); a value for each, evaluated left to right; NIL as the value; the shorthand :() and =();
+; errors (counts, non-symbols, T and NIL as names, no names, the internal message of none at all); errors as
+; values (bound, the rest still evaluated); def in a function (global) beside set (local); odd names, &1 too.
+
+(print (def {a} 1) a)
+(print (def {b c} 2 3) b c)
+(print (def d 4) d)
+(print (def (join {e} {f}) 5 6) e f)
+(print (def (list (to-sym "g")) 7) g)
+(print (def {h h} 8 9) h)
+(print :(i 10) i)
+(print =(j 11) j)
+(print (set {k} 12) k (set! {k} 13) k)
+
+; values left to right, each evaluated; NIL as a value
+(fun {say v} {do (write v "") v})
+(print (def {l1 l2 l3} (say 1) (say 2) (say 3)) l1 l2 l3)
+(print (def {n1} NIL) n1 (defined? n1))
+
+; counts and kinds
+(print (try (def {m1 m2} 1) &err))
+(print (try (def {m1} 1 2) &err))
+(print (try (def {m1}) &err))
+(print (try (def m1 1 2) &err))
+(print (try (def 5 1) &err))
+(print (try (def "s" 1) &err))
+(print (try (def {m1 5} 1 2) &err))
+(print (try (def {T} 1) &err))
+(print (try (def {nil} 1) &err))
+(print (try (def (list "s") 9) &err))
+(print (try (def (error "names err") 1) &err))
+(print (def {}) (def (list)))
+(print (try (def) &err) (try (set) &err) (try (set!) &err))
+(print (try (set {m1 m2} 1) &err) (try (set! {a b} 1) &err))
+(print (try (set "x" 2) &err) (try (set! 5 2) &err))
+
+; an error as a value: bound, and the next value still evaluated
+(print (def {o1 o2} (error "bound as a value") (say :second)))
+(print (error? o1) o2 (try o1 &err))
+
+; def in a function is global; set beside it local
+(fun {defines} {do (def {from-f} :defined-in-f) (set {from-f} :local-in-f) from-f})
+(print (defines) from-f)
+(fun {multi-def} {def {md1 md2} (* 2 2) (list md1-arg)})
+(print (try (multi-def) &err) (try md1 &err))
+(fun {def-from-args x y} {def {dx dy} x y})
+(def-from-args :x1 :y1)
+(print dx dy)
+
+; names are case-insensitive; odd characters are fine
+(print (def {UPPER} 1) upper Upper)
+(print (def {x-y.z?!} 2) x-y.z?!)
+(print (def {+x} 3) +x (def {1x} 4) 1x)
+
+; a global named &1: found by a function whose body names &1 when its call has no extras
+(print (def {&1} :global-amp1) &1)
+(fun {amp1} {&1})
+(print (amp1) (amp1 :given))
+
+; def and set of the same name: set at the top level is def
+=(same 1)
+(def {same} 2)
+(set {same} 3)
+(print same)
+(fun {reads-same} {same})
+(print (reads-same))
+
+; the last: def with fewer values than names, inside a function, ends the program
+(fun {bad-def} {def {z1 z2 z3} 1 2})
+(bad-def)

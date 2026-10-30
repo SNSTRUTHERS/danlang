@@ -1,0 +1,46 @@
+--- stdout
+<function>(fn {b c} {+ a b c})
+<function>(fn {c} {+ a b c})
+6
+6
+6
+6
+6
+<function>(fn {a b c} {+ a b c})
+6
+6
+Error: The function takes 1 argument, not 2
+Error: The function takes 2 arguments, not 3
+Error: The function takes 3 arguments, not 4
+Error: The function takes 3 arguments, not 4
+<function>(fn {b c} {+ a b c}) <function>(fn {b c} {+ a b c})
+xyz
+<function>(fn {i} {nth i l}) :a :c
+103 130 3
+T T NIL
+6 6
+{:new 1 2 3}
+{:new 1 2 3}
+:no-formals-now
+Error: The function takes 0 arguments, not 1
+6
+<function>(fn {b} {list a b &1 &_})
+Error: Unbound Symbol '&1'
+{1 2 3 {3 4}}
+{1 2 3 {3 4}}
+<function>(fn {b c d e} {list e d c b a}) <function>(fn {c d e} {list e d c b a}) <function>(fn {d e} {list e d c b a}) <function>(fn {e} {list e d c b a})
+{5 4 3 2 1} {5 4 3 2 1} {5 4 3 2 1} {5 4 3 2 1}
+{:x 4 3 2 1} {:y 4 3 2 1}
+{2 3 4}
+{13 23}
+{31 32 33}
+11
+{<function>(fn {b} {list a b}) <function>(fn {b} {list a b})}
+<function>(fn {b} {list a b})
+{(+ 1 2) (* 3 4)}
+10 500
+--- stderr
+Error: 02-partial-lambdas.dl: The function takes 2 arguments, not 3
+  at 02-partial-lambdas.dl:90  (q3 4 5 6)
+  called at 02-partial-lambdas.dl:90  (q3 4 5 6)
+--- exit 1

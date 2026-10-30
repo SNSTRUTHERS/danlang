@@ -1,0 +1,32 @@
+--- stdout
+{:global}
+{:maker-local}
+{list v} {:maker-local}
+{:maker-local}
+{:maker-local}
+:maker-local :maker-local
+{list v} {:runner-local}
+{:global}
+:global
+:es-local
+5 s :a c T NIL
+NIL {1 2} {+ 1 2} 3 5
+3 {<function>(+) 1 2}
+{:global}
+42
+{+ secret 1} 43 43
+{{* n 10} {* n 10} {* n 10}} Error: 'eval' can't be applied to values: it's a special form
+{10 20 30}
+2
+5
+{"Unbound Symbol 'k2'" 7}
+T :yes
+Incorrect number of parameters passed to 'eval'
+'eval' takes 1 argument, not 2
+Error: '+' adds numbers, or joins values to a string
+Error: Unbound Symbol 'no-such-thing'
+4000000
+--- stderr
+Error: 17-eval.dl: '+' adds numbers, or joins values to a string
+  at 17-eval.dl:70  {+ z :not-a-number}
+--- exit 1

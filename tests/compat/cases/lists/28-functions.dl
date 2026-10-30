@@ -1,0 +1,54 @@
+; 28-functions.dl - lists of functions: built-ins, partial applications, lambdas, closures, methods taken from a hash;
+; printed, applied (through map, by position, through eval and unpack), composed with foldl and foldr, sorted,
+; compared with eq, searched with elem? and index-of; a Q-expression of names against a list of their values
+
+; ((+ 100) and (- 5) aren't partial applications: + and - take any number of arguments, so they're numbers)
+(def {fs} [1+ (fn {x} {* x 10}) (+ 100) (- 5) square (fn {x} {[x x]})])
+(print fs (len fs) (map type-of fs))
+(def {lfs} [(take 1) (cons 0) (nth 0) head len reverse (map 1+) (filter odd?) sort (fn {l} {join l l})])
+(print lfs)
+(print (map (fn {f} {f {3 1 2}}) lfs))
+(print (map (fn {f} {f 3}) (take 2 fs)) (map (fn {f} {f 4}) (drop 4 fs)))
+(print ((fst fs) 41) ((snd fs) 4) ((last fs) :z) ((nth 4 fs) 9) ((item-at lfs 4) {1 2 3}))
+(print (map (fn {f} {f 3}) fs))
+
+; composed: foldl and foldr over a list of functions
+(def {pipeline} [1+ square (fn {x} {- x 1})])
+(print (foldl (fn {acc f} {f acc}) 3 pipeline) (foldr (fn {f acc} {f acc}) 3 pipeline))
+(fun {compose-all l} {fn {x} {foldl (fn {acc f} {f acc}) x l}})
+(def {composed} (compose-all pipeline))
+(print composed (composed 3) (map composed {0 1 2}) ((compose-all NIL) :same))
+
+; closures made by map, each with its own n
+(fun {adder n} {fn {x} {+ x n}})
+(def {adders} (map adder {1 10 100}))
+(print adders (map (fn {f} {f 5}) adders))
+(def {counters} (map (fn {start} {do =(c start) (fn {} {do (set! {c} (+ c 1)) c})}) {0 100}))
+(print (map (fn {f} {f}) counters) (map (fn {f} {f}) counters) ((fst counters)) ((snd counters)))
+
+; methods taken from a hash
+(def {obj} (hash-create {{:n 5} {:get (fn {} {&0 :n})} {:add (fn {k} {+ (&0 :n) k})}}))
+(def {methods} [(hash-get obj :get) (hash-get obj :add)])
+(print methods)
+(print (map (fn {k} {obj k}) {:n}) (obj :get) (obj :add 3) (map (fn {k} {obj :add k}) {1 2 3}))
+
+; eval and unpack of lists of functions and values
+(print (eval [(fst fs) 1]) (eval (cons (nth 4 fs) {7})) (unpack (snd fs) {2}) (map (fn {f} {unpack f {6}}) (take 3 fs)))
+(print (eval (list fs)) (eval [fs]))
+
+; equality, order and search among functions
+(print (eq fs fs) (eq [+ -] [+ -]) (eq [(+ 1)] [1]) (eq [(take 1)] [(take 1)]) (eq [(take 1)] [(take 2)]))
+(print (eq [(fn {x} {x})] [(fn {x} {x})]) (eq [(fn {x} {x})] [(fn {y} {y})]) (eq (adder 1) (adder 1)) (eq (adder 1) (adder 2)))
+(print (eq {+} [+]) (eq (fst {+}) +) (type-of (fst {+})) (type-of (fst [+])) (eq (eval (fst {+})) +))
+(print (sort [len head + - (fn {b} {b}) (fn {a} {a}) (take 2) (take 1) (map 1+) map]))
+(print (elem? + [- + *]) (index-of [- + *] *) (index-of [(fn {x} {x})] (fn {x} {x})) (index-of [(fn {x} {x})] (fn {y} {y})))
+(print (elem? (take 1) [(take 1)]) (index-of lfs len) (index-of lfs (filter odd?)) (find function? {1 a}) (find function? [1 +]))
+(print (filter function? [1 + "s" len (fn {} {}) :a]) (count function? fs) (all? function? lfs))
+
+; a Q-expression of names, and a list of their values
+(def {names} {+ - * max})
+(def {values} [+ - * max])
+(print names values (map type-of names) (map type-of values))
+(print (map (fn {n} {eval [n 6 3]}) names) (map (fn {f} {f 6 3}) values) (map (fn {n} {(eval n) 6 3}) names))
+(print (eq (map (fn {n} {eval n}) names) values))
+(print (map (fn {n} {n 6 3}) names))

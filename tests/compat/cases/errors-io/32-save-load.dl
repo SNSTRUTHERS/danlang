@@ -1,0 +1,68 @@
+; 32-save-load.dl - save: a value written so it reads back (a line, ending LF), to stdout or to a file (:overwrite,
+; :append; an existing file without one is an error); load reads it back.  Every kind of value saved: numbers of each
+; kind, characters, strings with every byte, atoms, symbols, lists, NIL and T, hashes (their tags, private entries),
+; buffers; what doesn't read back (functions, streams, exit), and the errors
+
+; to stdout
+(save 42)
+(save -9223372036854775809)
+(save 1.50)
+(save 7/3)
+(save (complex 1/2 -3))
+(save \a)
+(save \space)
+(save \lparen)
+(save "a\tb\"c\\d\x01\xff")
+(save :atom)
+(save (fst {sym}))
+(save NIL)
+(save T)
+(save {1 "two" \3 :four {five {}} (six)})
+(save (read "(+ 1 2) [a b]"))
+(save #({{:a 1} {"b" {2 3}} {4 :four :tag} {:p 5 :__private} :htag}))
+(save #({{:inner #({{:x 1}})}}))
+(save (buffer "AB"))
+(save (buffer 0))
+(save (fn {x} {* x 2}))
+(save +)
+(save (eq 1))
+(save stdout)
+(save exit)
+(print (save (error "save of an error is the error")))
+
+; to a file, and back
+(mkdir "sv")
+(fun {round-trip x} {do (save x "sv/v.txt" :overwrite) (list (eq (load "sv/v.txt") x) (read-file "sv/v.txt"))})
+(print (round-trip 42) (round-trip 1.25) (round-trip 2/3) (round-trip (complex 0 1)))
+(print (round-trip (pow 3 50)) (round-trip -0.001) (round-trip \tab) (round-trip \"))
+(print (round-trip "plain") (round-trip "\0\n\r\e\x7f") (round-trip "") (round-trip :k))
+(print (round-trip {1 {2 {3}}}) (round-trip NIL) (round-trip T) (round-trip {"s" \c :a b}))
+(def {all-bytes} (from-bytes (range 256)))
+(print (fst (round-trip all-bytes)) (eq (load "sv/v.txt") all-bytes) (len (load "sv/v.txt")))
+(def {h} #({{:a 1} {"s" "t"} {3 {4}} {:p 9 :__private} :tagged}))
+(save h "sv/h.txt" :overwrite)
+(print (read-file "sv/h.txt"))
+(def {h2} (load "sv/h.txt"))
+(print h2 (h2 :a) (h2 "s") (h2 3) (hash-tag? h2 :tagged) (hash-private? h2 :p) (h2 :p))
+(save (buffer {1 2 255}) "sv/b.txt" :overwrite)
+(print (read-file "sv/b.txt") (load "sv/b.txt") (type-of (load "sv/b.txt")))
+
+; :append adds a line; load's value is the last
+(save 1 "sv/many.txt" :overwrite)
+(save {2} "sv/many.txt" :append)
+(save "three" "sv/many.txt" :append)
+(print (repr (read-file "sv/many.txt")) (load "sv/many.txt") (read-lines "sv/many.txt"))
+
+; what doesn't read back
+(save (fn {x} {x}) "sv/f.txt" :overwrite)
+(print (read-file "sv/f.txt") (load "sv/f.txt"))
+(save stdout "sv/s.txt" :overwrite)
+(print (read-file "sv/s.txt") (load "sv/s.txt"))
+
+; the errors
+(print (save 1 "sv/many.txt"))
+(print (save 1 "sv/many.txt" "overwrite") (save 1 "sv/many.txt" :sideways))
+(print (save 1 5) (save 1 :name) (save 1 "sv/no/such.txt") (error-code (save 1 "sv/no/such.txt")))
+(print (save 1 "sv" :overwrite))
+(print (save) (save (error "e") "sv/e.txt"))
+(print (exists? "sv/e.txt") (ls "sv"))

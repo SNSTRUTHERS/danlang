@@ -1,0 +1,47 @@
+; 24-exit-value.dl - the value exit at a file's top level: an expression there whose value is exit ends the program,
+; its status 0, as (exit 0) would (at the REPL, exit alone ends it too); exit inside a value (a list, a hash), or as
+; a function's value given to another, or printed, doesn't.  A loaded file's top level is the same: one ending
+; with a call whose value is exit ends the whole program, so that's not done here.  The last: a function's value,
+; exit, at the top level
+
+(print "start")
+(fun {give-exit} {exit})
+(fun {give-list} {list exit 1})
+(print (give-exit) (type-of (give-exit)))
+(print (give-list))
+
+; values holding exit, at the top level: they don't end the program
+(give-list)
+(print "after a list holding exit")
+{exit}
+(print "after a q-expression holding exit")
+#({{:e exit}})
+(print "after a hash holding exit")
+(print (fst (give-list)))
+(def {saved} exit)
+(print "after def of exit" saved)
+(set {saved2} (give-exit))
+(print "after set of exit" saved2)
+(do (give-exit) 1)
+(print "after a do whose last value isn't exit")
+(map (fn {x} {give-exit}) {1 2})
+(print "after a map giving a list of exits")
+(each {x {1 2}} (give-exit))
+(print "after an each (its value NIL)")
+
+; in a function, exit as a value goes on being a value
+(fun {pass x} {if (eq (type-of x) :exit) :was-exit :was-not})
+(print (pass exit) (pass (give-exit)) (pass 1))
+(fun {nested} {do (give-exit) (print "nested goes on after exit's value") :nested-done})
+(print (nested))
+(print (try (give-exit) :caught) (output-of (give-exit)))
+
+; a loaded file's top-level expressions that hold exit, without being it
+(write-file "holds.dl" "(print \"holds.dl runs\")\n(list exit)\n")
+(print (load "holds"))
+
+(print-to stderr "stderr: before the exit value")
+(print "the last: a function's value, exit, at the top level: the program ends, status 0")
+(if T (give-exit))
+(print "not reached")
+(exit 9)

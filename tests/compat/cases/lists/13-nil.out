@@ -1,0 +1,32 @@
+--- stdout
+{NIL NIL NIL} {NIL 1 2} {1 NIL 2} {1 2 NIL} 3 3 1 0
+{NIL} {1 2} {1 2} {NIL} {NIL} NIL NIL {NIL}
+NIL NIL NIL NIL NIL NIL NIL
+{NIL} {NIL 1} {1 NIL} {NIL NIL NIL NIL} {NIL} {NIL NIL}
+{NIL NIL NIL NIL NIL NIL} {NIL NIL} NIL {NIL 1 2 1 2 NIL} 6
+{NIL NIL} {NIL} {NIL} {NIL} {NIL} {2 1 NIL} {NIL 2 1}
+{1 NIL NIL NIL {1}} {NIL NIL NIL} {NIL {1} {NIL} {NIL NIL}} {1 NIL 2}
+{NIL NIL NIL NIL NIL NIL {1} NIL NIL NIL NIL NIL} {:list :list :list :list :list :list :list :list :list :list :list :list} {T T T T T T NIL T T T T T}
+{T T T T T T NIL T T T T T} {0 0 0 0 0 0 1 0 0 0 0 0}
+{NIL (NIL) NIL {NIL}} {:sexpr :list} {T T T} NIL T T
+NIL T -1 2 NIL T
+0 -1 0 1 -1
+{NIL T NIL T NIL} {{NIL} {NIL} {NIL}} {0 1 2}
+{NIL NIL} {1} {NIL NIL NIL} {NIL}
+{NIL NIL NIL} {NIL 1 2} {NIL}
+NIL NIL 1 T T T
+1 2 2 T NIL T
+NIL,NIL,NIL NIL-1 {NIL NIL NIL} {NIL NIL}
+NIL NIL 0 0 1 NIL NIL 0
+NIL NIL NIL NIL NIL -1 NIL T
+Error: 'head' passed an empty list
+Error: 'tail' passed an empty list
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+0 NIL NIL NIL NIL
+:f :f :t :t :f :f
+T NIL NIL {NIL} {2} NIL NIL NIL
+{:b} {NIL} NIL NIL
+--- stderr
+
+--- exit 0

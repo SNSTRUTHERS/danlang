@@ -1,0 +1,36 @@
+--- stdout
+9 '+' adds numbers, or joins values to a string
+{7 2} {:x}
+'cons' expects a list second <function>(cons :x)
+{:fn 7 2} <function>(fn {b} {list :fn a b})
+The function takes 1 argument, not 2 {:fn-of-one :x}
+<function>(fn {c} {list :partial a b c}) <function>(fn {b c} {list :partial a b c})
+{:fexpr a b} <function>(fn {b} {list :fexpr a b})
+7 isn't a method: its value isn't a function :ex
+A buffer is called with an index: (b i) 'buffer-get': an index must be a whole number, not :x
+S-Expression starts with incorrect type. Got Number, Expected Function. S-Expression starts with incorrect type. Got Number, Expected Function.
+2 'if' supplied too few parameters
+2 :x
+2 :x
+NIL
+NIL <function>(eq :x)
+'eq' takes 2 arguments, not 3 NIL
+9 '+' adds numbers, or joins values to a string
+1000
+-1000
+2000
+1
+42
+5 42
+9 42
+3 -2 9223372036854775808 -9223372036854775809
+9223372036854775808 100000000000000000000 3
+5/6 0.75 1.5 a1 cd 3
+'+' adds numbers, or joins values to a string '+' adds numbers, or joins values to a string 7
+T NIL T T T NIL
+2 -9223372036854775809 -1/2 -1
+--- stderr
+Error: 29-call-sites.dl: S-Expression starts with incorrect type. Got String, Expected Function.
+  at 29-call-sites.dl:7  {op a b}
+  called at 29-call-sites.dl:77  (call-op 1 2)
+--- exit 1

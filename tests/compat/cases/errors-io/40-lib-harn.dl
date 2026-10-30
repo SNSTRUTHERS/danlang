@@ -1,0 +1,60 @@
+; 40-lib-harn.dl - lib/harn.dl (a HarnMaster character library) without its dice: tests/HarnTests.dl's report, made
+; for the fixed character temp/char.dl saved (not a random one from harn.create), and harn's tables and rules: names,
+; sunsigns for each month and day, frames, weights, attribute modifiers, skills.  The character has no birthday's day
+; and no volatiles: the errors that makes are kept as values
+
+(load "harn")
+=(h #({{:att #({{:bir #({{:sp :hum} {:sx :m} {:bd {:nav}} {:ss :mas}})} {:fam #({})} {:app #({{:ht 67} {:fr :l} {:owt 133} {:cml 10}})} {:phy #({{:str 11} {:sta 12} {:dex 8} {:agl 16} {:spd 13} {:eye 4} {:hrg 8} {:smt 9} {:tch 11} {:voi 12}})} {:per #({{:int 10} {:aur 16} {:wil 7} {:mor 12}})} {:rel #({{:pty 15} {:dty "<None chosen>"}})}})} {:ml #({{:cli 56} {:cnd 55} {:ddg 80} {:ini 65} {:jmp 60} {:mob 75} {:stl 39} {:thr 36} {:una 39} {:int 36} {:ora 24} {:rhe 33} {:sng 36}})}}))
+
+; HarnTests.dl's report, for this character
+(print)
+(print "**** Birth Attributes ****")
+(print (harn.attr-name :sp) (harn.species-name (harn.get-attr h :sp)))
+(print (harn.attr-name :sx) (harn.sex-name (harn.get-attr h :sx)))
+(do =(bd (harn.get-attr h :bd)) (print (harn.attr-name :bd) (harn.month-name (fst bd)) (snd bd)))
+(print (harn.attr-name :ss) (harn.sunsign-name (harn.get-attr h :ss)))
+(print (harn.attr-name :fr) (harn.frame-name (harn.get-attr h :fr)))
+(print)
+(print "**** Physical Attributes ****")
+(map
+  @({} {print (harn.attr-name &1) (harn.get-attr h &1)})
+  {:ht :owt :cml :str :sta :dex :agl :spd :eye :hrg :smt :tch :voi :int :aur :wil :mor :pty :dty}
+)
+(print (harn.attr-name :end) (harn.end h))
+(print)
+(print "**** Automatic Skills ****")
+=(auto-skills (map
+  @({} {print (harn.skill.name &1) (harn.get-oml h &1)})
+  (filter
+    @({} {harn.skill.auto &1})
+    (hash-keys harn.skills)
+  )
+))
+(print auto-skills)
+
+; the tables
+(print (map harn.species-name {:hum :sin :khu :x}) (map harn.sex-name {:f :m :n :a :h :x}))
+(print (map harn.month-name (map harn.month-of (range 1 13))))
+(print (map (fn {m} {harn.sunsign-of m 1}) (map harn.month-of (range 1 13))))
+(print (map (fn {d} {harn.sunsign-of :nav d}) {1 2 3 4 5 29 30}))
+(print (harn.sunsign-name (harn.sunsign-of :nuz 2)) (harn.sunsign-name (harn.sunsign-of :mor 2)))
+(print (map harn.frame-of {3 5 6 8 9 12 13 15 16 30}) (map harn.frame-name {:s :l :m :h :v}))
+(print (map (fn {f} {harn.weight 67 f}) {:s :l :m :h :v}) (harn.weight 40 :m) (harn.weight 80 :v))
+(print (map (fn {a} {harn.species-attr-mod :sin :f a}) {:fr :str :dex :mor :aur :int}))
+(print (map (fn {a} {harn.species-attr-mod :khu :m a}) {:aur :dex :sta :fr :str :int}))
+(print (harn.species-attr-mod :hum :f :fr) (harn.species-attr-mod :hum :m :fr) (harn.frame-attr-mod :s :agl) (harn.frame-attr-mod :s :str))
+(print (map (fn {w} {harn.weight-attr-mod w :str}) {10 50 100 150 200 300 600}) (harn.attr-mod :hum :m :l 133 NIL :str))
+(print (map harn.attr-group {:sp :ht :str :int :pty :zzz}))
+
+; skills
+(print (len (hash-keys harn.skills)) (harn.skill.name :acr) (harn.skill.att :acr) (harn.skill.oml :acr) (harn.skill.auto :acr))
+(print (harn.skill.ssb :una) (harn.skill.sp :swi) (harn.skill.name :nosuch))
+(print (map (fn {s} {harn.get-ssb h s}) {:sea :swi :lov :sng :acr}))
+(print (map (fn {s} {list s (harn.get-sb h s) (harn.get-ml h s)}) {:cli :ddg :sng}))
+(print (harn.get-si h :ddg) (harn.str h) (harn.agl h) (harn.ss h) (atom-str :mas))
+
+; what the character lacks: volatiles made when first asked for
+(print (harn.get-dp h) (harn.dp++ h) (harn.get-dp h) (harn.dp-- h) (harn.get-dp h))
+(print (harn.get-volatile h :bl) (harn.get-volatile h :nope) (harn.volatile-default :inj) (harn.put-volatile h :zz 1))
+(print (h :v))
+(print harn.equipment (harn.size h))

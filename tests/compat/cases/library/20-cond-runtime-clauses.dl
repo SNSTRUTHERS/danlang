@@ -1,0 +1,58 @@
+; 20-cond-runtime-clauses: cond's clauses made at run time.  Built by [..] or list, a clause remembers the scope it
+; was made in (so its test sees that function's variables); built by cons it remembers none, so as cond's first
+; clause it runs in cond's own scope (its &_ the clauses), and as a later one in unpack's (cond passes on the rest
+; as (unpack cond (tail &_)), which evaluates each clause again: f and l are unpack's).  A clause built at run time
+; is made, its items evaluated, before cond is called: eager, not lazy.  An S-expression clause past the first is
+; evaluated by unpack.  Ends with "Selection not found" from a recursive user function (the trace).
+
+(print (try &_ (+ "at the top level: " &err)))
+(print (cond (cons (fst {&_}) {:first-clause-sees-conds-args})))
+(print (cond (cons NIL {0}) (cons (fst {l}) {l})))
+(print (cond (cons NIL {0}) (cons (fst {f}) {:f-is-cond-so-it-runs-cond-with-nothing})))
+(print (cond (cons NIL {0}) (cons (fst {(defined? f)}) {:f-is-defined-in-unpack})))
+(print (cond [(fst {&_}) :v]))
+(print (cond (list T :made-by-list)))
+(print (cond [NIL (print :value-made-eagerly)] {T :literal-clause}))
+(print (cond {NIL (print :literal-value-is-lazy)} [T :made]))
+
+; inside a function: [..] and list see its variables; cons doesn't
+(fun {tst} {cond [(fst {&_}) :v] {T :lit}})
+(print (tst))
+(fun {tst2 x} {cond {(> x 0) :pos} [(< x 0) :neg] (cons (eq x 0) {:zero})})
+(print (tst2 5) (tst2 -5) (tst2 0) (tst2 65536) (tst2 -1025))
+(fun {tst3 x} {cond {NIL 0} (cons (fst {x}) {x})})
+(print (tst3 7))
+(fun {tst4 x} {cond {NIL 0} (list (fst {x}) (fst {x}))})
+(print (tst4 7))
+(fun {tst5 x} {cond {NIL 0} (cons (fst {(defined? x)}) {:yes})})
+(print (tst5 7))
+(fun {tst6 x} {cond (cons (fst {(defined? x)}) {:yes}) {T :no}})
+(print (tst6 7))
+(fun {tst7 x} {cond [(> x 9223372036854775807) (fst {x})] {T :small}})
+(print (tst7 9223372036854775808) (tst7 1))
+
+; a run-time clause's test, run in cond's scope, can change cond's own &_
+(print (cond (cons (fst {(do (set {&_} {{NIL :skipped} {T :hijacked}}) NIL)}) {0}) {T :normal}))
+(print (cond (cons (fst {(do (print :conds-args-are (len &_)) NIL)}) {0}) {NIL 1} {T :three-clauses}))
+
+; clauses as S-expressions: the first is an error, a later one is evaluated by unpack
+(print (cond {NIL 1} (fst {(list T 2)})))
+(print (cond (fst {(list T 2)})))
+(print (cond {NIL 1} (fst {(list (> 2 1) :computed)}) {T :not-this}))
+
+; clauses kept in a variable, and built by map
+(def {table} [(list (fst {(eq k 1)}) :one) (list (fst {(eq k 2)}) :two) {T :many}])
+(fun {lookup k} {unpack cond table})
+(print (lookup 1) (lookup 2) (lookup 3))
+(def {k} 2)
+(print (lookup 1) (lookup 3))
+(fun {by-map v} {unpack cond (map (fn {c} {list (fst {(eq v c)}) c}) {1 2 3})})
+(print (by-map 2))
+(print (by-map 9))
+(fun {by-map2 v} {unpack cond (join (map (fn {c} {list (eq v c) c}) {1 2 3}) {{T :default}})})
+(print (by-map2 2) (by-map2 9))
+
+; "Selection not found" from a recursion: the program ends with its trace
+(fun {countdown n} {cond {(> n 2) (countdown (1- n))} {(=0 n) :never}})
+(print (countdown 1))
+(countdown 5)

@@ -1,0 +1,39 @@
+; 26-load-files: files written here and loaded: a file that redefines a library function (the library's others see
+; it), the library itself loaded again (its functions new values, equal to the old: everything as before), errors as
+; values (a reader error: the file and the line; a run error: the file's name before the message, what ran before it
+; kept), traces through a loaded file's lines; last, an uncaught error made in a loaded file's function, called from
+; here: the trace through both files.
+(def {orig-mod orig-floor} mod floor)
+(write-file "redef.dl" """(fun {floor a} {:file-floor})
+(def {loaded-value} (mod 7 2))
+(print "in redef.dl" (div 7 2) (round 5/2))
+""")
+(print "load" (load "redef.dl") loaded-value (mod 7 2) (div 7 2) (eq floor orig-floor))
+(print "again" (load "globals") (mod 7 2) (div -7 2) (eq mod orig-mod) (eq floor orig-floor) (orig-mod 7 2) (% 9 4))
+(print "used" used (use "globals.dl") used (mod -7 2))
+
+; errors as values
+(write-file "bad-reader.dl" "(print 1)\n(+ 1 2\n(print 3)\n")
+(write-file "bad-run.dl" "(def {from-file} 1)\n(mod 1 0)\n(def {never} 2)\n")
+(write-file "bad-q.dl" "{1 2\n")
+(write-file "bad-char.dl" "(print \\nosuchchar)\n")
+(print "reader" (try (load "bad-reader.dl") &err) (try (load "bad-q.dl") &err) (try (load "bad-char.dl") &err))
+(print "run" (try (load "bad-run.dl") &err) from-file (try never &err))
+(print "missing" (try (load "no-such-file.dl") &err) (try (load "no-such-file") (list &err &code)) (try (load 5) &err))
+(def {e} (load "bad-run.dl"))
+(print "value" e (error-message e) (error? e))
+
+; a function made in a loaded file: its errors' places are that file's
+(write-file "lib-a.dl" """(fun {file-fn x} {+ 1 (div x 0)})
+(fun {file-wrap x} {list (file-fn x)})
+(fun {file-ok x} {pow 2 x})
+""")
+(load "lib-a.dl")
+(print "file fns" (file-ok 10) (try (file-wrap 5) &err) file-ok)
+(write-file "lib-b.dl" "(load \"lib-a.dl\")\n(fun {file-b x} {file-wrap x})\n(def {b-loaded} :yes)\n")
+(print "nested load" (load "lib-b.dl") b-loaded (try (file-b 1) &err))
+(write-file "ends.dl" "(def {ends-value} 1)\n(exit-not-really)\n")
+(print "unbound in file" (try (load "ends.dl") &err) ends-value)
+(fun {main-fn n} {+ n (file-b n)})
+(fun {main-outer} {list (main-fn 3)})
+(main-outer)

@@ -1,0 +1,56 @@
+; 16-error-values.dl - errors as values: error makes one (its message as print shows the value, its code an atom);
+; error?, type-of, error-message, error-code, repr, print look at one; try catches one (the handler with &err and
+; &code, or a function given the message; a Q-expression handler run as code).  The system's errors have codes too.
+; The last error has a code, made two calls down: the code isn't in the message on stderr
+
+(def {e1} (error "plain"))
+(def {e2} (error "with a code" :mine))
+(print e1 e2 (repr e1) (type-of e1) (error? e1) (error? 5) (error? NIL))
+(print (error-message e1) (error-message e2) (error-message 5) (error-message "text"))
+(print (error-code e1) (error-code e2) (error-code 5) (error-code (error "x" :ANOTHER)))
+(print (error 42) (error {1 "two" :three}) (error "a" "b") (error \c) (error 1.5))
+(print (error-message (error {1 2})) (type-of (error-message (error {1 2}))))
+(print (error (error "inner as the message")))
+(print (error "code is an error" (error "this one")))
+
+; equality and order: errors by their messages
+(print (eq (error "a") (error "a")) (eq (error "a") (error "b")) (eq (error "a" :x) (error "a" :y)))
+(print (cmp (error "a") (error "b")) (eq e1 e1))
+
+; try: the value, or the handler's
+(print (try 5) (try (error "x")) (try (error "x") :handled) (try 5 :not-used))
+(print (try (error "msg" :c) (list &err &code)))
+(print (try (error "msg") (list &err &code)))
+(print (try (error "msg") (fn {m} {+ "fn got: " m})))
+(print (try (error "msg" :c) (fn {m} {list m &_})))
+(print (try (error "msg") {list :q &err}))
+(print (try (error "msg") (error (+ "rethrown: " &err))))
+(print (try (try (error "inner") (error (+ "outer from " &err))) &err))
+(print (try (error "x") &err) (defined? &err))
+(print (try {error "a q-expression"} &err))
+(print (try (+ 1 2) (error "handler not run")))
+(print (try (do (write "partial output; ") (error "after output")) &err))
+(print (try (error "x") (do (write "handler output; ") :done)))
+(print (try (error "x") 1 2))
+
+; the system's errors: a text after the name, and a code
+(print (read-file "no-such-file.txt"))
+(print (error-code (read-file "no-such-file.txt")) (try (read-file "no-such-file.txt") &code))
+(mkdir "d")
+(print (mkdir "d") (error-code (mkdir "d")) (error-code (read-file "d")) (error-code (open "d")))
+(write-file "d/f" "x")
+(print (remove "d") (error-code (remove "d")))
+(print (error-code (load "no-such-file-at-all")) (error-code (stat "nope")) (error-code (ls "nope")))
+(print (error-code (buffer-put (buffer 1) 0 300)) (error-code (sleep -1)))
+
+; built-ins that take errors as values, and those that don't
+(print (num? e1) (string? e1) (qexpr? e1) (function? e1) (nil? e1) (t? e1) (sexpr? e1) (atom? e1))
+(print (len e1) (list e1) (str-join (list "a" e1)) (+ "text " e1))
+(print (to-str e1))
+(print (output-of (print e2) (write e2 "|") (print-to stdout e1)))
+
+(print "the last: an error with a code, two calls down")
+(fun {validate n} {if (< n 0) (error (format "negative: {}" n) :range) n})
+(fun {process l} {map (fn {x} {* 2 (validate x)}) l})
+(fun {main} {do (print (process {1 2})) (print (try (process {-1}) (list &err &code))) (+ 0 (len (process {3 -4})))})
+(main)

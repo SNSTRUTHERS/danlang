@@ -1,0 +1,65 @@
+; flags: -w
+; 30-redefine-library: redefining the library's own functions.  An alias made with :(...) holds the old value, so
+; it's unchanged (% after mod, ><? after between?, +? after positive?, times after repeat, apply after unpack, =0
+; after zero?, first after nth, skip after drop, begin after do); a function that calls the name is changed
+; (divmod, odd?, even?, pow after mod; not-between? and all-between? after between?; !=0 after zero?; split after
+; drop; cond, case, ?? and minimum after unpack, which . names; floor and remove-fst after do; cond after eval), and
+; so is an alias's own recursion (times calls repeat, ><? calls between?: the new ones).
+; Ends with divmod's error from a mod that fails, inside a user function (the trace through lib\globals.dl).
+
+(fun {mod a b} {do (print "new mod" a b) :new-mod})
+(print (mod 7 3) (% 7 3) (divmod 7 3))
+(print (odd? 7) (even? 8))
+(print (pow 2 3))
+(print mod)
+(print %)
+
+(fun {between? lo hi x} {list :new-between lo hi x})
+(print (between? 1 5 3) (><? 1 5 3) (not-between? 1 5 3) (!><? 1 5 3) (all-between? 1 5 {2 3}) (*><? 1 5 {2 3}))
+(print (><? 5 1 3) (times 3 {:x}))
+
+(fun {positive? x} {:always-positive})
+(print (positive? -1) (+? -1) (negative? -1))
+(fun {repeat n d} {list :new-repeat n})
+(print (repeat 2 {:x}) (times 2 {:x}))
+
+(fun {zero? x} {:new-zero})
+(print (zero? 1) (=0 1) (0? 1) (!=0 0) (!=0 1) (even? 3))
+
+(def {orig-nth orig-drop orig-unpack} nth drop unpack)
+(fun {nth i l} {list :new-nth i})
+(print (nth 0 {1 2}) (first {1 2}) (tenth (range 10)))
+(def {nth} orig-nth)
+(fun {drop n l} {list :new-drop n})
+(print (drop 1 {1 2}) (skip 1 {1 2}) (split 1 {1 2}))
+(def {drop} orig-drop)
+
+(fun {unpack f l} {do (print "new unpack" f l) :new-unpack})
+(print (unpack + {1 2}) (apply + {1 2}) (curry + {1 2}))
+(print (cond {NIL 1} {T 2}))
+(print (case 2 {1 :a} {2 :b}))
+(print (?? NIL 5))
+(print (minimum {3 1 2}))
+(print (remove-max {1 3 2}))
+(def {unpack} orig-unpack)
+(print (cond {NIL 1} {T 2}) (minimum {3 1 2}))
+
+; do and eval: special forms, replaced by functions
+(def {orig-do orig-eval} do eval)
+(def {do} (fn {a b c} {list :new-do}))
+(print (begin 1 2) (block 1 2))
+(print (floor 5/2))
+(print (remove-fst 1 {2 1}))
+(def {do} orig-do)
+(print (floor 5/2) (remove-fst 1 {2 1}))
+(def {eval} (fn {x} {list :my-eval x}))
+(print (cond {T 1}))
+(print (case 1 {1 :one}))
+(print (ghost + 1 2))
+(def {eval} orig-eval)
+(print (cond {T 1}) (case 1 {1 :one}) (ghost + 1 2))
+
+; a mod that fails: divmod passes on its error, and the program ends with it
+(fun {mod a b} {error (+ "mod is broken: " a " " b)})
+(fun {split-time minutes} {list :hours-and-minutes (divmod minutes 60)})
+(split-time 135)

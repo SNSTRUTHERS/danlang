@@ -1,0 +1,71 @@
+; 17-eval: a Q-expression remembers the scope it was written (or made) in, and eval runs it there, not in the
+; caller's: one written at the top level, one written in a function, ones made by list ([...]), join, head and tail
+; (they keep a scope), and by cons (it doesn't: eval runs that one in the evaluating call's scope).  A symbol
+; (no scope of its own) is evaluated where eval is called.  eval of other values, of nested lists, sets in the
+; code (the remembered scope's), the same code run twice, and eval in tail position (a million iterations).
+
+(def {v} :global)
+(fun {run-it q} {do =(v :runner-local) (eval q)})
+(print (run-it {list v}))
+(fun {make-q} {do =(v :maker-local) {list v}})
+(print (run-it (make-q)))
+(fun {make-list} {do =(v :maker-local) (list (to-sym "list") (to-sym "v"))})
+(print (make-list) (run-it (make-list)))
+(fun {make-brackets} {do =(v :maker-local) [(to-sym "list") (to-sym "v")]})
+(print (run-it (make-brackets)))
+(fun {make-join} {do =(v :maker-local) (join {list} {v})})
+(print (run-it (make-join)))
+(fun {make-head} {do =(v :maker-local) (head {v w})})
+(fun {make-tail} {do =(v :maker-local) (tail {w v})})
+(print (run-it (make-head)) (run-it (make-tail)))
+(fun {make-cons} {do =(v :maker-local) (cons (to-sym "list") {v})})
+(print (make-cons) (run-it (make-cons)))
+(print (eval (make-cons)))
+
+; symbols: evaluated where eval is called
+(print (eval (fst {v})))
+(fun {eval-sym s} {do =(v :es-local) (eval s)})
+(print (eval-sym (fst {v})))
+
+; other values are themselves; nested lists
+(print (eval 5) (eval "s") (eval :a) (eval \c) (eval T) (eval NIL))
+(print (eval {}) (eval {{1 2}}) (eval {{+ 1 2}}) (eval {(+ 1 2)}) (eval {5}))
+(print (eval (list + 1 2)) (eval (list (list + 1 2))))
+(print (eval (eval {{list v}})))
+(print (eval {eval {eval {+ 40 2}}}))
+
+; code made in a call keeps that call's scope after it returns
+(fun {later} {do =(secret 42) {+ secret 1}})
+(def {q1 q2} (later) (later))
+(print q1 (eval q1) (eval q2))
+(fun {later-arg n} {{* n 10}})
+(def {qs} (map later-arg {1 2 3}))
+(print qs (map eval qs))
+(print (map (fn {q} {eval q}) qs))
+
+; sets and set!s in the code: the remembered scope's
+(fun {count-twice} {do =(k 0) (twice {set! {k} (+ k 1)}) k})
+(fun {twice q} {do (eval q) (eval q)})
+(print (count-twice))
+(fun {set-in-q} {do =(k 0) (eval {=(k 5)}) k})
+(print (set-in-q))
+(fun {run-set q} {do (eval q) (try k2 &err)})
+(fun {caller-set} {do =(k2 0) (list (run-set {=(k2 7)}) k2)})
+(print (caller-set))
+(def {top-code} {=(made-by-top-code :yes)})
+(fun {runs-top-code} {do (eval top-code) (defined? made-by-top-code)})
+(print (runs-top-code) made-by-top-code)
+
+; eval's own errors
+(print (try (eval) &err))
+(print (try (eval 1 2) &err))
+(print (eval {+ 1 :a}))
+(print (eval {no-such-thing}))
+
+; eval in tail position: a million iterations, constant depth
+(fun {count-eval n acc} ?{(zero? n) acc (eval {count-eval (- n 1) (+ acc 4)})})
+(print (count-eval 1000000 0))
+
+; the last: code from a function, run at the top level, failing, ends the program (its trace)
+(fun {bad-code} {do =(z 1) {+ z :not-a-number}})
+(eval (bad-code))

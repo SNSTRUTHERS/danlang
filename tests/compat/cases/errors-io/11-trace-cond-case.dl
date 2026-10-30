@@ -1,0 +1,46 @@
+; 11-trace-cond-case.dl - errors in the library's cond and case: no clause chosen is the library's error (made in
+; lib/globals.dl, so a trace has its line); an error in a clause's test stops the search; an error in the chosen
+; clause's value is cond's value.  The clauses run where they were written.  The last error is case's own, made in
+; the library, for a key no clause has, from a function two calls down
+
+(fun {sign x} {cond {(< x 0) :negative} {(eq x 0) :zero} {(> x 0) :positive}})
+(print (sign -5) (sign 0) (sign 5))
+(print (sign "text"))
+(print (sign :a))
+(print (cond {NIL 1} {NIL 2}))
+(print (cond))
+(print (cond {T}))
+(print (cond {(error "the first test") 1} {T 2}))
+(print (cond {NIL (error "not chosen")} {T :chosen} {T (error "not reached")}))
+(print (cond {T (error "the chosen value")}))
+(print (cond {(do (write "test1 ") NIL) 1} {(do (write "test2 ") T) (do (write "value2 ") 2)} {(do (write "test3 ") T) 3}))
+(print (cond {(print "a test that prints") :printed}))
+(print (try (cond {NIL 1}) (list &err &code)))
+
+; case: the key compared with eq, each clause's key evaluated where it was written
+(fun {name-of n} {case n {1 "one"} {2 "two"} {(+ 1 2) "three"}})
+(print (name-of 1) (name-of 2) (name-of 3) (name-of 3.0))
+(print (name-of 4))
+(print (case :b {:a 1} {:b (error "b's value")} {:c 3}))
+(print (case :c {:a 1} {(error "a key that's an error") 2} {:c 3}))
+(print (case (error "the key itself") {:a 1}))
+(print (case :x))
+(print (case "s" {"s" :string-key} {:s :atom-key}))
+(print (case {1 2} {{1 2} :list-key}))
+(print (try (case 9 {1 :one}) &err))
+
+; the clauses see the variables where they were written (a function's, here)
+(fun {describe x} {let {{big 100}} (cond {(> x big) :big} {(eq x big) (+ "exactly " big)} {T (list :small x)})})
+(print (describe 500) (describe 100) (describe 1))
+(fun {lookup k} {do =(table {{:a 1} {:b 2}}) (case k {:a (snd (fst table))} {:b (undefined-in-case k)})})
+(print (lookup :a) (lookup :b) (lookup :z))
+
+; the library's floor, ceil and round (made of let, <=> and trunc): their errors, from inside them
+(print (floor "x") (ceil :y) (round {1}))
+
+(print "the last: case's own error, made in the library, from two calls down")
+(fun {day-name d} {case d {0 "Sun"} {1 "Mon"} {2 "Tue"} {3 "Wed"} {4 "Thu"} {5 "Fri"} {6 "Sat"}})
+(fun {week-of days} {map (fn {d} {+ "" (day-name d)}) days})
+(fun {calendar} {do (print (week-of {0 1 2})) (len (week-of {5 6 7}))})
+(print (calendar))
+(+ 1 (calendar))

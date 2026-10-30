@@ -1,0 +1,50 @@
+--- stdout
+{{a c} {b d}}
+{{b c}}
+{{b}}
+{{b c}}
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: '+' adds numbers, or joins values to a string
+Error: All parameters to operator '-' must be numbers.
+{1}
+{3}
+{100 300}
+{{n} {l}}
+Error: Unbound Symbol 'n'
+Error: Unbound Symbol 'l'
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+{{n} {l}}
+:local-n
+{z} Unbound Symbol 'z'
+{z} 5
+{z} 5
+{z} 5
+{z} 5
+{z} Unbound Symbol 'z'
+{z} 5
+{z} Unbound Symbol 'z'
+:global-z
+:global-z
+:global-z
+{{:local-l} {:local-l} {:local-l :local-f}}
+Error: Unbound Symbol 'l'
+{1 2}
+{1 2}
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+{1}
+{4 3}
+{9}
+{1}
+NIL NIL NIL Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+{1 2}
+{1}
+{:local-a}
+3
+{3 4}
+--- stderr
+Error: 26-eval-library-results.dl: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+  at (made, not read)  {a c}
+--- exit 1

@@ -1,0 +1,45 @@
+--- stdout
+<hash>NIL
+<hash>NIL
+T :hash 0
+<hash>{{:a 1} {"b" 2} {3 :three}}
+<hash>{{:a 1} {"b" 2} {3 :three}}
+<hash>{{:a 1 :t1 :t2} {:b 2} :htag :other}
+<hash>{{:s "text\twith\"escapes"} {:c \c} {:sp \space}}
+{<hash>{{:k 1}} <hash>NIL}
+<hash>{{:in {{:x 1} :itag}} {:l {1 (+ 1 1)}}}
+[a][b]<hash>{{:a 11} {:b 20} {:c 10}}
+<hash>{{:n 7} {:sq 49} {:self-n {n}}}
+49
+<hash>{{:computed 3} {"s" 5} {:plain 1}}
+<hash>{{:sym :found-it}}
+<hash>{{:a 3} {:b 2}}
+<hash>{{:b 2}}
+Error: hash-add-tag failed: entry not found
+<hash>{{:a 1} {:b 2} :t}
+{{:a 1 :x} {"b" {1 2}} {3 {{:i 1}}} :ht}
+{{:z 26} {:y 25}}
+<hash>NIL
+NIL
+Error: A hash's entry is {key value tag...}, not 5
+Error: A hash's entry is {key value tag...}, not {:a}
+Error: A hash's entry is {key value tag...}, not NIL
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: A hash's entry is {key value tag...}, not {{1} 1}
+Error: A hash's entry is {key value tag...}, not {\c 1}
+Error: A tag must be an atom, not "tag"
+Error: A tag must be an atom, not 5
+Error: A hash's entry is {key value tag...}, not "tag"
+Error: value failed
+Error: entry failed
+Error: Cannot get/set value for reserved hash key __locked
+Error: A hash's entries are a list
+Error: A hash's entries are a list
+Error: 'hash-create' takes at most 1 argument, not 2
+Error: First parameter to 'to#' must be a QExpr
+Error: First parameter to 'from#' must be a hash
+Error: First parameter to 'from#' must be a hash
+:function <function>(hash-create)
+--- stderr
+
+--- exit 0

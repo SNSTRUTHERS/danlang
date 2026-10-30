@@ -1,0 +1,59 @@
+; flags: -w
+; 29-redefine-arithmetic: the library calls the built-ins -, *, /, trunc, <= and >= by name, so redefining them (-w
+; warns) changes mod, round, floor, square, cube, recip, avg, pow, between? ...; but the library's built-in
+; functions (1-, abs, sum ...) hold the original built-ins, so they don't change.  - made a function of two that
+; prints: round's (- x) becomes a partial application; - made +; trunc redefined: floor, ceil, round and pow; * and /
+; redefined; <= reversed: between? and its family.  Ends with round's error from a trunc that fails, in a user
+; function (the trace through lib\globals.dl).
+
+(def {orig-minus orig-times orig-div orig-trunc orig-le} - * / trunc <=)
+(print (% 7 3) (round -5/2) (floor 1/2) (1- 5) (abs -3) (square 4) (cube 2) (recip 4) (avg {1 2}) (pow 2 3) (between? 1 5 3))
+
+; - of two, printing
+(def {-} (fn {a b} {do (print "minus" a b) (orig-minus a b)}))
+(print (% 7 3))
+(print (round -5/2))
+(print (round 5/2))
+(print (floor 1/2))
+(print (1- 5) (abs -3) (abs -9223372036854775809))
+(print (pow 2 -2))
+(def {-} +)
+(print (% 7 3) (round -5/2) (mod -7 2) (div 7 2))
+(def {-} orig-minus)
+(print (% 7 3) (round -5/2))
+
+; * and /
+(def {*} (fn {a b} {list :times a b}))
+(print (square 3) (cube 2) (mod 7 2) (product {2 3}))
+(print (pow 2 2))
+(def {*} orig-times)
+(def {/} (fn {a b} {orig-div b a}))
+(print (recip 4) (avg {2 4 6}) (mod 7 2) (div 7 2) (fdiv 1 4 3) (pow 2 -1))
+(def {/} orig-div)
+
+; trunc
+(fun {trunc x} {:my-trunc})
+(print (floor 5/2))
+(print (ceil 5/2))
+(print (round 5/2))
+(print (pow 2 3))
+(print (pow 2 1/2))
+(print (mod 7 2))
+(def {trunc} (fn {x} {orig-trunc (* 2 x)}))
+(print (floor 5/2) (ceil 5/2) (floor -5/2) (ceil -5/2) (round 5/2) (round -5/2))
+(print (pow 2 3) (pow 2 5/2))
+(def {trunc} orig-trunc)
+(print (floor 5/2) (ceil 5/2) (pow 2 3))
+
+; <= reversed
+(def {<=} (fn {a b} {orig-le b a}))
+(print (between? 1 5 3) (between? 5 1 3) (between? 1 5 7) (not-between? 1 5 3) (all-between? 1 5 {2 3}) (all-between? 5 1 {2 3}))
+(print (<=0 5) (<=0 -5) (>=0 5) (sort {3 1 2}) (sort-desc {3 1 2}))
+(def {<=} orig-le)
+(print (between? 1 5 3) (between? 5 1 3) (<=0 5))
+
+; a trunc that fails: round fails through floor, and the program ends with it
+(fun {trunc x} {error (+ "no trunc of " x)})
+(fun {rounded l} {map round l})
+(print (rounded NIL))
+(rounded {1/2 3/2})

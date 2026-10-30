@@ -1,0 +1,51 @@
+--- stdout
+"hello world" "world" "hello" "o w"
+"" "" "" "world"
+"llo" "llo world" "ello world"
+"" "Ã" "©" 4
+Error: 'substring': index 12 is outside the string
+Error: 'substring': index -1 is outside the string
+Error: 'substring': a count can't be negative
+Error: 'substring': an index must be a whole number, not 1/2
+Error: 'substring': a count must be a whole number, not 2.5
+Error: 'substring': an index must be a whole number, not "1"
+Error: 'substring': index 99999999999999999999999 is outside the string
+Error: First 'substring' parameter must be a String
+Error: First 'substring' parameter must be a String
+<function>(substring "hello world")
+{"a" "b" "c"} {"a" "b" "" "c" ""} {"" "a"}
+{""} {"abc"} {"abc"}
+{"" "" "a" "" "b" "c" "d" "e" ""}
+{""} {"a" "" "b"}
+{"a" "a" "ab"} {"" "a"} {"" "" ""}
+{"a" "b" "c" "" "d"} {"a" "b"} {"a" "" "b"}
+{"x" "y" "z"} {"Ã©" "æ—¥"} {"a" "b"}
+Error: Second 'str-split' parameter must be a list of strings or a single string
+Error: Second 'str-split' parameter must be a list of strings or a single string
+Error: Second 'str-split' parameter must be a list of strings or a single string
+Error: Second 'str-split' parameter must be a list of strings or a single string
+Error: First 'str-split' parameter must be a string
+Error: First 'str-split' parameter must be a string
+"a, b, c" "ab" "" "x"
+"a|b|:c|1|1/2|{1 \"x\"}|T|NIL|q\"r"
+"a-b" "a+b+c" "(+ 1 2) y"
+Error: 'str-join' expects a QExpr
+Error: 'str-join' expects a String
+Error: 'str-join' expects a QExpr
+{\a \b \space \c} NIL {\z} {\a \tab \b \lf}
+{195 169 230 151 165}
+Error: 'str-chars' expects a String
+2 3 3 -1 1
+0 5 0 -1 -1
+0 1 1 3 2
+1 3 -1 -1 -1
+1 1 2 1 1
+2 0
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+Error: 'index-of' expects a String and a String
+Error: 'last-index-of' expects a String and a String
+--- stderr
+
+--- exit 0

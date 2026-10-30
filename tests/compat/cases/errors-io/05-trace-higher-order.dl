@@ -1,0 +1,48 @@
+; 05-trace-higher-order.dl - errors in the functions map, filter, foldl, foldr, any?, all?, find, count and sort call:
+; the first one stops them (the items before it done, with their side effects; the rest not), and is their value.  A
+; function a built-in calls isn't a call in the trace (only the calls written in the code are); the last error is
+; made in a foldl's lambda, under a map's, three functions down
+
+(def {noisy} (fn {x} {do (write "<" x ">") (if (eq x 3) (error (+ "bad item " x)) (* x 10))}))
+(print (map noisy {1 2 3 4 5}))
+(print (filter noisy {1 2 3 4 5}))
+(print (foldl (fn {acc x} {+ acc (noisy x)}) 0 {1 2 3 4 5}))
+(print (foldr (fn {x acc} {+ acc (noisy x)}) 0 {1 2 3 4 5}))
+(print (any? (fn {x} {do (noisy x) NIL}) {1 2 3 4 5}))
+(print (all? noisy {1 2 3 4 5}))
+(print (find (fn {x} {do (noisy x) NIL}) {1 2 3 4 5}))
+(print (count noisy {1 2 3 4 5}))
+(print (sort {5 3 1 4 2} (fn {a b} {if (eq a 3) (error "can't sort 3") (< a b)})))
+(print (each noisy {1 2 3 4 5}))
+(print (each {x {1 2 3 4 5}} (noisy x)))
+(print (dotimes 5 noisy))
+
+; the same with values: no errors
+(print (map noisy {1 2}) (filter (fn {x} {> x 1}) {1 2 3}) (foldl + 0 {1 2 3}) (foldr cons {} {1 2 3}))
+(print (any? (fn {x} {> x 2}) {1 2 3}) (all? (fn {x} {> x 2}) {1 2 3}) (find (fn {x} {> x 1}) {1 2 3}) (count (fn {x} {> x 1}) {1 2 3}))
+
+; built-ins and partial applications as the function
+(print (map (cons 0) {{1} {2} 3 {4}}))
+(print (map (+ 1) {1 2}))
+(print (map len {"ab" {1} 5}))
+(print (foldl + 0 {1 2 :x 4}))
+(print (filter (eq 1) {1 2 1}) (map (fn {a b} {+ a b}) {1 2}))
+(print (map 5 {1 2}))
+(print (map (fn {a b} {+ a b}) {1 2} {3 4}))
+(print (filter print {1 2}))
+(print (map if {1 2}))
+(print (sort {3 1 2} if))
+
+; a function that takes too few or too many: map gives each item alone
+(print (map (fn {} {:none}) {1 2}))
+(print (map (fn {a b} {list a b}) {1 2}))
+
+; nested: an inner map's error stops the outer one too
+(print (map (fn {row} {map (fn {x} {/ 12 x}) row}) {{1 2} {3 0} {4 6}}))
+(print (map (fn {row} {try (map (fn {x} {/ 12 x}) row) :row-failed}) {{1 2} {3 0} {4 6}}))
+
+(print "the last: an error in a foldl's lambda, in a map's, in three functions")
+(fun {total row} {foldl (fn {acc x} {+ acc (/ 60 x)}) 0 row})
+(fun {totals rows} {map (fn {r} {* 1 (total r)}) rows})
+(fun {report rows} {do (print "report:" (totals {{1 2}})) (+ 0 (len (totals rows)))})
+(report {{1 2} {3 0} {4 5}})

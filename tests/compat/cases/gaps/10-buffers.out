@@ -1,0 +1,76 @@
+--- stdout
+made <buffer>{0 0 0} <buffer>{255 255} <buffer>{97 97} <buffer>{104 105} <buffer>{1 2 255} <buffer>{} <buffer>{} <buffer>{}
+copy <buffer>{1 2 3} <buffer>{9 2 3} NIL T <buffer>{8 9} <buffer>{1 2 3 4} <buffer>{97 98}
+kinds :buffer T NIL NIL NIL <buffer>{1 2 3} <buffer>{1 2 3} b=<buffer>{1 2 3}
+printed <buffer>{1 2 3} {<buffer>{1 2 3} <buffer>{0}} <buffer>{1 2 3}|<buffer>{1 2 3} <<buffer>{1 2 3}>
+(buffer {1 2 3})
+{(buffer {0 255}) (buffer {})}
+read back <buffer>{7 0 255} T
+get 10 30 20 30 30 {10 20 30} 20
+get error {b 3} {"'buffer-get': index 3 is outside the buffer" NIL}
+get error {b -1} {"'buffer-get': index -1 is outside the buffer" NIL}
+get error {b :x} {"'buffer-get': an index must be a whole number, not :x" NIL}
+get error {b 1.5} {"'buffer-get': an index must be a whole number, not 1.5" NIL}
+get error {b 0 1} {"A buffer is called with an index: (b i)" NIL}
+get error {b} <buffer>{10 20 30}
+get error {buffer-get "abc" 0} {"'buffer-get' expects a buffer, not \"abc\"" NIL}
+get error {buffer-get b 9} {"'buffer-get': index 9 is outside the buffer" NIL}
+get error {buffer-get b NIL} {"'buffer-get': an index must be a whole number, not NIL" NIL}
+put 20 99 10 65 Error: 'buffer-put': 0 isn't a byte (0-255) <buffer>{65 99 30}
+shared {<buffer>{65 99 30} <buffer>{65 99 30}} <buffer>{65 99 30} 65 99 T 2
+shared <buffer>{0 99 30} <buffer>{0 99 30} 0
+put error {buffer-put b 3 0} {"'buffer-put': index 3 is outside the buffer" NIL}
+put error {buffer-put b 0 256} {"'buffer-put': 256 isn't a byte (0-255)" :inval}
+put error {buffer-put b 0 -1} {"'buffer-put': -1 isn't a byte (0-255)" :inval}
+put error {buffer-put b 0 "x"} {"'buffer-put': \"x\" isn't a byte (0-255)" :inval}
+put error {buffer-put b 0 1.5} {"'buffer-put': 1.5 isn't a byte (0-255)" :inval}
+put error {buffer-put "abc" 0 1} {"'buffer-put' expects a buffer, not \"abc\"" NIL}
+put error {buffer-put b :i 1} {"'buffer-put': an index must be a whole number, not :i" NIL}
+fill NIL {1 1 1 1 1 1} NIL {1 1 1 1 2 2} NIL {1 3 3 1 2 2} NIL {1 3 3 1 2 0}
+fill NIL {1 3 3 1 2 0} NIL {1 3 3 1 2 0} NIL {1 3 8 8 2 0}
+fill error {buffer-fill f 0 7} {"'buffer-fill': index 7 is outside the buffer" NIL}
+fill error {buffer-fill f 0 0 -1} {"'buffer-fill': a count can't be negative" NIL}
+fill error {buffer-fill f 256} {"'buffer-fill': 256 isn't a byte (0-255)" :inval}
+fill error {buffer-fill f 0 1.5} {"'buffer-fill': an index must be a whole number, not 1.5" NIL}
+fill error {buffer-fill "s" 0} {"'buffer-fill' expects a buffer, not \"s\"" NIL}
+copy NIL {9 8 3 4 5 6 7 8} NIL {9 8 3 4 5 6 6 5}
+overlap up NIL {9 9 8 3 4 5 6 5}
+overlap down NIL {3 4 5 6 5 5 6 5}
+from a string NIL {3 4 98 6 5 5 6 5} NIL {3 4 98 6 5 5 6 120}
+nothing NIL NIL NIL {3 4 98 6 5 5 6 120}
+copy error {buffer-copy g 9 g} {"'buffer-copy': index 9 is outside the buffer" NIL}
+copy error {buffer-copy g 0 "abc"} {"'buffer-copy' expects a buffer, not \"abc\"" NIL}
+copy error {buffer-copy g 0 g 9} {"'buffer-copy': index 9 is outside the buffer" NIL}
+copy error {buffer-copy g -1 g} {"'buffer-copy': index -1 is outside the buffer" NIL}
+copy error {buffer-copy g 0 g 0 -1} {"'buffer-copy': a count can't be negative" NIL}
+cmp 0 0 0 -1 1
+cmp -1 0 -1 0 0
+cmp -1 0 1
+cmp 0 -1 1 0 -1
+cmp error {buffer-cmp s 7 "a"} {"'buffer-cmp': index 7 is outside the buffer" NIL}
+cmp error {buffer-cmp s 0 "a" 2} {"'buffer-cmp': index 2 is outside the buffer" NIL}
+cmp error {buffer-cmp s 0 {97}} {"'buffer-cmp' expects a buffer or a string, not {97}" NIL}
+cmp error {buffer-cmp "abc" 0 "a"} {"'buffer-cmp' expects a buffer, not \"abc\"" NIL}
+cmp error {buffer-cmp s 0 "a" 0 -1} {"'buffer-cmp': a count can't be negative" NIL}
+eq T NIL NIL NIL
+order -1 1 1 1
+sorted {5 "s" <hash>{{:k 1}} <buffer>{} <buffer>{1} <buffer>{1 0} <buffer>{2}} <buffer>{2 9} <buffer>{3} T
+as key {"Unsupported key type Buffer" NIL} {"A hash's entry is {key value tag...}, not {<buffer>{1} 2}" NIL}
+make error {buffer -1} {"'buffer': -1 bytes is outside 0 to 2147483591" NIL}
+make error {buffer 1.5} {"'buffer': a size must be a whole number, not 1.5" NIL}
+make error {buffer 2 256} {"'buffer': 256 isn't a byte (0-255)" :inval}
+make error {buffer {1 256}} {"'buffer': 256 isn't a byte (0-255)" :inval}
+make error {buffer {1 :x}} {"'buffer': :x isn't a byte (0-255)" :inval}
+make error {buffer "ab" 1} {"'buffer' takes a fill only with a count" NIL}
+make error {buffer :x} {"'buffer': a size must be a whole number, not :x" NIL}
+make error {buffer 2 -1} {"'buffer': -1 isn't a byte (0-255)" :inval}
+make error {buffer 2 "ab"} {"'buffer': \"ab\" isn't a byte (0-255)" :inval}
+make error {from-bytes (buffer {1}) 2} {"'from-bytes' takes 1 argument, not 2" NIL}
+partial <function>(buffer-put <buffer>{1 1 1} 0) 0 <buffer>{1 1 1} NIL <buffer>{1 1 1} <function>(buffer-copy <buffer>{1 1 1}) <function>(buffer-cmp <buffer>{97 98 99 100 101 102} 0)
+too many {"'buffer' takes at most 2 arguments, not 3" NIL} {"'buffer?' takes 1 argument, not 2" NIL} {"'buffer-get' takes 2 arguments, not 3" NIL} {"'buffer-fill' takes at most 4 arguments, not 5" NIL}
+bytes "a\0ÿ" {254} 1000 1000
+read 4 {0 1 2 3} 2 {0 255 8 3} 1 {0 255 8 7} NIL 0
+file {0 1 2 3 255 8 7} {"Cannot read from this stream" NIL} {"'read-buffer' expects a stream" NIL} {"'write-bytes': index 3 is outside the buffer" NIL}
+--- stderr
+
+--- exit 0

@@ -1,0 +1,38 @@
+--- stdout
+Error: Unbound Symbol 'undefined-a'
+Error: Unbound Symbol 'undefined-b'
+Error: Unbound Symbol 'undefined-c'
+Error: Unbound Symbol 'undefined-d'
+Error: Unbound Symbol 'undefined-e'
+Error: Unbound Symbol 'undefined-f' Error: Unbound Symbol 'undefined-g'
+5 5 5 T
+2 3 <function>(fn {x} {+ x 1})
+Error: Unbound Symbol 'later-defined'
+42
+1 Error: Unbound Symbol 'only-here' NIL
+1 Error: Unbound Symbol 'let-var'
+NIL Error: Unbound Symbol 'each-var'
+Error: Unbound Symbol '&1' Error: Unbound Symbol '&2' {1 2 {1 2 3}}
+Error: Unbound Symbol '&1'
+Error: Unbound Symbol '&_' NIL NIL
+{1 NIL NIL}
+Error: Unbound Symbol 'never-bound' NIL
+NIL NIL 2
+Error: Unbound Symbol 'secret'
+{:make-q}
+Error: Unbound Symbol 'undefined-in-hash'
+Error: Unbound Symbol 'undefined-in-put'
+Error: Unbound Symbol 'undefined-in-map'
+Unbound Symbol 'undefined-h' {:handled "Unbound Symbol 'undefined-i'"}
+Unbound Symbol 'undefined-j' T :error
+NIL NIL T T T
+Error: Unbound Symbol 'with space'
+Error: Unbound Symbol ''
+Error: Unbound Symbol '1+x' Error: Unbound Symbol 'a-b->c' Error: Unbound Symbol '*star*' Error: Unbound Symbol 'a.b.c'
+the last: an unbound name in cons's list, eval'd in a function
+{no-such-function 1 2} :symbol
+--- stderr
+Error: 13-unbound.dl: Unbound Symbol 'no-such-function'
+  at (made, not read)  {no-such-function 1 2}
+  called at 13-unbound.dl:70  (run-code code)
+--- exit 1

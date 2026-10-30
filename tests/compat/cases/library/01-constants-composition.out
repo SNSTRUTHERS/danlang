@@ -1,0 +1,76 @@
+--- stdout
+3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384
+2.71828182845904523536028747135266249775724709369995
+1.61803398874989484820458683436563811772030917980576
+0.57721566490153286061
+3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384 :number T NIL NIL
+6.28318530717958647692528676655900576839433879875021164194988918461563281257241799725606965068423413596429617302656461329418768
+64365636569180904707205749427053249955144941873999/20000000000000000000000000000000000000000000000000 -1.61803398874989484820458683436563811772030917980576 57721566490153286061/200000000000000000000
+T NIL T 3 2.718 -1
+NIL
+<function>(fn {f a b} {f b a})
+9 1/2 {1 2 3} {:b :a} {2 1} hello world
+-9223372036854775808 -1 1049600 -1/2 2.4
+{:x 2 :y 1}
+<function>(fn {a b} {f b a})
+<function>(fn {b} {f b a})
+9
+{2 1}
+<function>(fn {f a b} {f b a})
+Error: The function takes 3 arguments, not 4
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: S-Expression starts with incorrect type. Got String, Expected Function.
+Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+Error: flip's f
+Error: flip's a
+Error: flip's b
+:f-first
+:a-second
+:b-third
+{2 1}
+NIL
+<function>(fn {f g x} {f (g x)})
+-5 3 {{1}} 3 :ABC
+85070591730234615865843651857942052864
+<function>(fn {x} {f (g x)})
+5
+<function>(fn {g x} {f (g x)})
+4
+<function>(fn {f g x} {f (g x)})
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: The function takes 3 arguments, not 4
+Error: S-Expression starts with incorrect type. Got String, Expected Function.
+Error: comp's f
+Error: comp's x
+:f
+:g
+:x
+-7
+<function>(fn NIL {eval &_})
+3 {1 2 3} 9 49 a-b
+NIL
+0
+5
+Error: S-Expression starts with incorrect type. Got String, Expected Function.
+:then
+NIL
+printed by ghost
+NIL
+:arg-a
+:arg-b
+NIL
+{{<function>(list) &_}}
+Error: Unbound Symbol 'f'
+{3 2.71828182845904523536028747135266249775724709369995}
+Error: ghost's f
+Error: ghost's arg
+-1
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: All parameters to operator '-' must be numbers.
+--- stderr
+Error: 01-constants-composition.dl: All parameters to operator '-' must be numbers.
+  at <BUNDLE>\lib\globals.dl:12  {f b a}
+  called at 01-constants-composition.dl:74  (flip - x "nine")
+  called at 01-constants-composition.dl:76  (use-flip 2)
+--- exit 1

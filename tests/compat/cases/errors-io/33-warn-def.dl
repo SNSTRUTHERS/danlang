@@ -1,0 +1,69 @@
+; flags: -w
+; 33-warn-def.dl - danlang -w: a warning on stderr (file:line: warning: ...) when def replaces a built-in, or a global
+; of another kind (a function with a value, a value with a function); none when a function replaces a function, or a
+; value a value, nor for set and set!.  And what a redefinition does: code already run (the library's too) uses the
+; new value from then on
+
+; built-ins replaced, with a function and with a value
+(def {len} (fn {x} {list :my-len x}))
+(print (len {1 2 3}))
+(def {fst} 5)
+(print fst)
+(def {snd} (fn {l} {list :my-snd l}))
+(print (snd {1 2}))
+
+; library functions (lib/globals.dl's) replaced with values, and back with functions
+(def {flip} :not-a-function)
+(print flip)
+(def {flip} (fn {f a b} {list :flipped a b}))
+(print (flip + 1 2))
+
+; a value replaced by a function, a function by a value, then the same kinds: no warning
+(def {my-val} 1)
+(def {my-val} (fn {} {2}))
+(def {my-val} (fn {} {3}))
+(def {my-val} "three")
+(def {my-val} "four")
+(print my-val)
+
+; several names at once: a warning for each that's replaced
+(def {cons tail new-name} 1 2 3)
+(print cons tail new-name)
+
+; the same built-in again, under its own name or another: no warning
+(def {head} head)
+(def {my-head} head)
+(print (head {1 2}) (my-head {3 4}))
+
+; set and set! don't warn, even for a built-in's name
+(set {init} :set-at-top)
+(print init)
+(set! {init} :set-bang)
+(print init)
+
+; def inside a function: the warning's place is the def's
+(fun {redefine-last} {def {last} (fn {l} {:my-last})})
+(redefine-last)
+(print (last {1 2}))
+
+; def in a loaded file: its file and line
+(write-file "redef.dl" "; redef.dl\n(def {reverse} (fn {x} {:my-reverse}))\n(def {my-val} 5)\n")
+(load "redef")
+(print (reverse {1 2}))
+
+; a redefinition is seen by code that ran before it: the library's mod uses floor, div too
+(print (mod 7 2) (div 7 2) (round 2.5))
+(def {floor} (fn {x} {:my-floor}))
+(print (mod 7 2) (div 7 2) (round 2.5))
+(fun {uses-abs x} {abs x})
+(print (uses-abs -5) (uses-abs -6))
+(def {abs} (fn {x} {list :my-abs x}))
+(print (uses-abs -5))
+; a built-in called many times, then replaced part way through a loop: the next call is the new one's
+(def {loop-sum} 0)
+(dotimes {i 100} (def {loop-sum} (+ loop-sum (if (zero? 0) 1 0))))
+(print loop-sum)
+(dotimes {i 3} (if (eq i 1) (def {zero?} (fn {x} {:my-zero?}))) (write (zero? 0) " "))
+(print)
+; the library's cond takes its clauses apart with fst, replaced by 5 above: cond fails now
+(print (cond {(zero? 1) :cond-saw-new-zero?} {T :no}))

@@ -1,0 +1,37 @@
+--- stdout
+11 {10 9 13 0 7 8 12 11 27 92 34} "\n\t\r\0\a\b\f\v\e\\\""
+{65 74 7 0 255 255} "AJ\a" "\x7F" "\x01" "\x01g"
+"tab\there" "quote\"inside" "back\\slash" "\\n is not a newline"
+"\0\x01\x02\x03\x04\x05\x06\a\b\t\n\v\f\r\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\e\x1C\x1D\x1E\x1F\x7F"
+"a\x01b\x1Fc\x7Fd�e"
+a	b c
+w1w23c:d{1 "e"}
+q"uote {"q\"uote" \q "\\"}
+
+"x\ty\nz\n"
+"\n\n"
+"a \"quoted\" \\n not escaped"
+"five \"\" and \"\"\" inside"
+"\nfirst line\n  second \"line\"\n"
+4 "\\x41" "" " "
+"a" T
+"plain" T 5
+"\n\t\r" T 3
+"\x01\x1F\x7F" T 3
+"\"\\" T 2
+"é日" T 5
+"" T 0
+"a\0b" T 3
+{"a\nb" "c"} {"d\te"} <hash>{{"k\n" "v\t"}}
+{"a\nb"} "\"x\"" "\"\\\"\\\\n\\\"\""
+a   	 \tab \a \quote \backslash
+"\t\n\0" {\tab \lf}
+"a\nb" "\"a\\nb\"" "1/2" "1/2" "\\c"
+Error: 'read': Unknown escape sequence \q
+Error: 'read': \x needs a hex digit
+Error: 'read': Incomplete string literal
+Error: 'read': missing """
+{"ok"}
+--- stderr
+
+--- exit 0

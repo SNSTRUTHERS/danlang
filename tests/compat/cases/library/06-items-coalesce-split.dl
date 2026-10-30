@@ -1,0 +1,80 @@
+; 06-items-coalesce-split: first ... tenth (partial applications of nth, printed as such), ?? (the first argument that
+; isn't NIL: all of them evaluated first, then the rest re-run as code by unpack, so a symbol or an S-expression
+; among them is evaluated again, in unpack's scope), skip (drop), split, has-element?, and begin and block (do, a
+; special form, by another name).  Wrong kinds, partial application, too many arguments, errors as arguments.
+; Ends with an error from nth, through second, inside a user function.
+
+(print first second third fourth fifth sixth seventh eighth ninth tenth)
+(def {ten} {a (b c) {d} "e" \f :g 7/2 -2.50 65536 9223372036854775808})
+(print (first ten) (second ten) (third ten) (fourth ten) (fifth ten) (sixth ten) (seventh ten) (eighth ten) (ninth ten) (tenth ten))
+(print (map type-of (map (fn {f} {f ten}) [first second third fourth fifth sixth seventh eighth ninth tenth])))
+(print (repr (fourth ten)) (repr (fifth ten)) (type-of (second ten)) (type-of (third ten)))
+(print (tenth (range 9)))
+(print (second {1}))
+(print (first NIL))
+(print (first "abc"))
+(print (third :abc))
+(print (first {1} {2}))
+(print (first))
+(print (first (error "first's list")))
+(print (map second {{1 2} {3 4} {5 6}}))
+(print (eq first (nth 0)) (eq first (nth 1)) (eq tenth (nth 9.0)))
+
+; ??: the first that isn't NIL
+(print ??)
+(print (?? NIL NIL 3) (?? 1 2) (?? NIL) (?? NIL NIL) (?? 0) (?? NIL {} () 5) (repr (?? NIL "" 1)) (?? NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL 11))
+(print (??))
+(print (?? NIL (error "late")))
+(print (?? 1 (error "late, but evaluated")))
+(print (?? (error "early") 1))
+(print (?? (print :a) (print :b) :c (print :d)))
+(print (?? NIL x-unbound))
+(print (?? NIL {x-unbound}))
+(print (?? NIL (fst {x-unbound})))
+(print (?? NIL (fst {(+ 1 2)})))
+(print (?? NIL NIL (fst {(+ 3 4)})))
+(print (?? NIL (fst {l})))
+(print (?? NIL (fst {f})))
+(print (?? NIL (fst {&_})))
+(print (?? NIL NIL (fst {&_})))
+(print (?? (fst {(+ 5 6)})))
+(print (?? NIL (fst {:k}) (fst {never-looked-at})))
+(print (?? NIL 65536 (/ 1 0)))
+
+; skip and split
+(print skip split has-element?)
+(print (skip 1 {1 2 3}) (skip 0 {1}) (skip 5 {1 2}) (skip 2.0 {1 2 3}) (skip 4/2 {1 2 3}) (skip 1 NIL))
+(print (skip -1 {1 2}))
+(print (skip 1 "abc"))
+(print (split 1 {1 2 3}) (split 0 {1 2}) (split 5 {1 2}) (split 0 NIL) (split 2 {a (b) {c} d}) (split 1.0 {1 2}) (split 4/2 {1 2 3}))
+(print (split -1 {1 2}))
+(print (split 1.5 {1 2}))
+(print (split 1 "ab"))
+(print (split 1))
+(print ((split 1) {:a :b}))
+(print (split 1 {1} 2))
+(print (split (error "split's n") {1}))
+(print (split 9223372036854775808 {1 2}) (skip 9223372036854775808 {1 2}))
+
+; has-element?: (elem? x l), the list first
+(print (has-element? {1 2} 2) (has-element? {1 2} 3) (has-element? NIL NIL) (has-element? {NIL} NIL) (has-element? {{}} NIL) (has-element? {()} NIL))
+(print (has-element? {1 2} 2.0) (has-element? {1/2} 0.5) (has-element? {"a"} \a) (has-element? {a b} (fst {b})) (has-element? {(+ 1 2)} 3))
+(print (has-element? "abc" \a))
+(print (has-element? {1 2}))
+(print ((has-element? {1 2}) 1))
+(print (has-element? {1} 1 2))
+(print (has-element? (error "he") 1))
+(print (has-element? (hash-create) 1) (split 1 (hash-create)) (skip 1 +) (first (hash-create)) (?? NIL (hash-create) 1) (?? NIL + 1))
+
+; begin and block: do itself, a special form
+(print begin block)
+(print (begin) (begin 1 2) (block (print :x) :y) (begin {+ 1 2}) (block (+ 1 2) {+ 1 2}))
+(print (begin (print 1) (error "stops here") (print 2)))
+(print (map begin {1 2}))
+(print (unpack begin {(print :u1) :u2}))
+(print (begin =(local-in-begin 5) local-in-begin))
+
+; nth's error through second, in a user function: the program ends with its trace
+(fun {pair-second p} {list :got (second p)})
+(print (pair-second {1 2}))
+(pair-second {1})

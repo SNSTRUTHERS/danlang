@@ -1,0 +1,60 @@
+; 11-fdiv-frecip: fdiv (a quotient as a fixed decimal of &1 places, 10 when &1 isn't given or isn't a number: cut
+; short, not rounded), frecip and its alias finverse (fdiv 1 n, passing on &1): places 0, 3, 20, 30, a non-number
+; (ignored), a fraction or a negative or too many (to-fixed's errors), extra arguments past &1 (ignored, as the body
+; names &1); edge numbers, rationals, fixed decimals, complex numbers, non-numbers, division by zero, partial
+; application, errors as arguments.  Ends with to-fixed's error on a complex quotient, from frecip in a user function.
+
+(print fdiv)
+(print frecip finverse (eq frecip finverse))
+(print (fdiv 1 4) (fdiv 1 3) (fdiv 2 3) (fdiv -2 3) (fdiv 1 3 3) (fdiv 1 3 0) (fdiv 22 7 20) (fdiv 355 113 30))
+(print (fdiv 1 3 :x) (fdiv 1 3 "5") (fdiv 1 3 NIL) (fdiv 1 3 {5}) (fdiv 1 3 4 5) (fdiv 1 3 2 :ignored "too"))
+(print (fdiv 9223372036854775808 3) (fdiv 1 9223372036854775807 30) (fdiv 7/2 2) (fdiv 2.5 0.1) (fdiv 65536 65535 12) (fdiv -1025 1024 6))
+(print (fdiv 9223372036854775807 9223372036854775808 25) (fdiv -9223372036854775809 2 1) (fdiv 1 65536 20) (fdiv -1 1024 3))
+(print (fdiv 4 2) (repr (fdiv 4 2)) (fixed? (fdiv 4 2)) (int? (fdiv 4 2)) (type-of (fdiv 1 4)) (fdiv 0 5) (fdiv -0.5 1 2))
+(print (fdiv math.pi 1 5) (fdiv math.e 2 8) (fdiv 1 math.phi 15))
+(print (fdiv -1 3) (fdiv -2 3 1) (fdiv -1 3 0) (fdiv -5 3 0) (fdiv 5 3 0) (fdiv 1/3 1 4) (fdiv 0.123456789 1 4))
+
+; places that to-fixed won't take
+(print (fdiv 1 3 -1))
+(print (fdiv 1 3 10001))
+(print (fdiv 1 3 2.5))
+(print (fdiv 1 3 10000.5))
+(print (fdiv 1 3 4/2) (fdiv 1 3 2.0))
+(print (len (to-str (fdiv 1 7 100))))
+
+; division by zero, complex numbers, non-numbers
+(print (fdiv 1 0))
+(print (fdiv 0 0 3))
+(print (fdiv 1 0.0))
+(print (fdiv (complex 1 2) 2))
+(print (fdiv 2 (complex 0 1)))
+(print (fdiv (complex 4 0) 2))
+(print (fdiv "a" 1) (fdiv 1 "a") (fdiv 1 NIL) (fdiv \1 2) (fdiv T 1) (fdiv :a :b) (fdiv {1} 2))
+
+; partial application, too many is fine, errors
+(print (fdiv))
+(print (fdiv 1))
+(print ((fdiv 1) 8))
+(print ((fdiv 1) 3 2))
+(print (fdiv (error "fdiv's a") 1))
+(print (fdiv 1 (error "fdiv's b")))
+(print (fdiv 1 3 (error "fdiv's places")))
+(print (fdiv (do (print :a) 1) (do (print :b) 3) (do (print :places) 2)))
+
+; frecip and finverse
+(print (frecip 4) (frecip 3) (frecip 3 2) (frecip 3 :x) (frecip -8) (frecip 7/2) (frecip 0.3) (frecip 65536 20) (frecip 9223372036854775808 25))
+(print (finverse 3) (finverse 3 5) (finverse 3 5 6) (finverse -1025 7) (frecip 1/9223372036854775808))
+(print (frecip 0))
+(print (frecip 0 3))
+(print (frecip "a"))
+(print (frecip 3 -2))
+(print (frecip 3 1.5))
+(print (frecip (complex 0 1)))
+(print (frecip))
+(print (frecip (error "frecip's n")))
+(print (frecip 3 (error "frecip's places")))
+
+; a complex reciprocal, inside a user function: the program ends with to-fixed's error
+(fun {fixed-recips l} {map (fn {x} {frecip x 4}) l})
+(print (fixed-recips {1 2 3 7}))
+(fixed-recips [2 (complex 1 1)])

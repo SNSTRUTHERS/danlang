@@ -1,0 +1,58 @@
+; 08-lib-cond-case: cond and case as the library has them.  Each clause's test and value run as code where the clause
+; was written (a set there binds in that scope), in order, only as far as needed; a clause's item is run as a list of
+; one: a function there is called.  case compares its key with each clause's first item, run; going on to the next
+; clause, the key is put in code again and evaluated (a symbol or an S-expression key changes).  The value is in tail
+; position, but a call written there is evaluated inside the list, not in tail position.
+(fun {classify x} {cond {(< x 0) :neg} {(> x 0) :pos} {T :zero}})
+(print (map classify {-5 0 5}) (classify 1/2) (classify -0.0))
+(fun {sets x} {do (cond {(> x 0) =(y :pos)} {T =(y :nonpos)}) (list x y)})
+(def {y} :global-y)
+(print (sets 1) (sets -1) y)
+(fun {count-tests x} {do =(n 0) (cond {(do (set! {n} (+ n 1)) (< x 0)) :a} {(do (set! {n} (+ n 1)) (eq x 0)) :b}
+  {(do (set! {n} (+ n 1)) T) :c}) n})
+(print (count-tests -1) (count-tests 0) (count-tests 1))
+(print (cond {(do (print "test 1") NIL) (print "value 1")} {(do (print "test 2") T) (do (print "value 2") 2)}
+  {(print "test 3") (print "value 3")}))
+
+; a clause's item run as code: a function there is called (with nothing: given nothing, a function of formals is itself)
+(def {zero-arg} (fn {} {:called}))
+(print (cond {NIL 1} {+ 2}) (cond {T (fn {} {42})}) (cond {T zero-arg}) (cond {zero-arg :test-was-called}))
+(print (cond {T print}) (cond {T len}) (cond {T (fn {x} {x})}) (cond {{} 1} {{1} 2}) (cond {"" :empty-string}))
+(print (case 0 {+ :plus-zero}) (case :called {zero-arg :key-called}) (case 2 {1 :a} {(+ 1 1) :b}) (case "s" {"s" 1}))
+
+; case's key, put in code again for the next clause: evaluated
+(def {foo} 5)
+(print (case (fst {(+ 1 2)}) {0 :zero} {3 :three}) (try (case (fst {(+ 1 2)}) {3 :three}) &err))
+(print (case (fst {foo}) {6 :a} {foo :b}) (try (case (fst {foo}) {5 :five}) &err) (case {1 2} {{1 2} :list}))
+(print (case {1 2} {0 :no} {{1 2} :second}) (try (case (fst {nope}) {1 :a} {2 :b}) &err))
+
+; errors: none found, a test's error, a bad clause
+(print (cond {NIL 1}) (cond) (case 3 {1 :a}) (case 3) (cond {(error "in test") 1}) (cond {T (error "in value")}))
+(print (cond 5) (cond {}) (cond {T}) (case 1 {}) (case 1 {1}) (cond {NIL 1} 7) (case 1 {2 :b} :x))
+
+; the value in tail position: a name there, called, is a tail call (no level); a call written there isn't (a level
+; for each clause it goes through that way): measured where only 10 levels are left
+(def {maxd} 0)
+(fun {dp n} {do (set! {maxd} n) (or (dp (+ n 1)))})
+(print "levels" (try (dp 1) &err) maxd)
+(fun {down n th} ?{(zero? n) (th) (or (down (- n 1) th))})
+(fun {at-free free th} {down (- maxd free 1) th})
+(fun {cl1 n} {cond {(zero? n) :done} {T (cl1 (- n 1))}})
+(fun {cl2 n} {do =(next (fn {} {cl2 (- n 1)})) (cond {(zero? n) :done} {T next})})
+(fun {ca1 n} {case (zero? n) {T :done} {NIL (ca1 (- n 1))}})
+(print "cl1" (at-free 10 (fn {} {cl1 9})) (at-free 10 (fn {} {cl1 10})) (at-free 10 (fn {} {cl1 11})))
+(print "ca1" (at-free 10 (fn {} {ca1 9})) (at-free 10 (fn {} {ca1 10})) (at-free 10 (fn {} {ca1 11})))
+(print "cl2" (at-free 10 (fn {} {cl2 200})) (at-free 0 (fn {} {cl2 50})) (cl1 50) (cl2 50) (ca1 50))
+
+; a test that redefines what cond goes on with: the next clause is cond's new way
+(def {orig-unpack orig-cond orig-case orig-head} unpack cond case head)
+(print (cond {(do (def {unpack} (fn {f l} {:hijacked})) NIL) 1} {T 2}))
+(def {unpack} orig-unpack)
+(print (cond {(do (def {cond} (fn {} {list :new-cond (len &_)})) NIL) 1} {T 2} {T 3}) (cond {T :again}))
+(def {cond} orig-cond)
+(print (case 3 {(do (def {case} (fn {x} {list :new-case x &_})) 1) :a} {3 :b}) (case 3 {3 :c}))
+(def {case} orig-case)
+(def {head} (fn {l} {list (fn {} {:fake-head})}))
+(def {fake-result} (cond {NIL :never} {T :real}))
+(def {head} orig-head)
+(print fake-result (cond {NIL :never} {T :real}) (case 2 {1 :a} {2 :b}) (sets 1))

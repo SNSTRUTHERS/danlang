@@ -1,0 +1,70 @@
+; 02-trace-depth3.dl - an error three calls deep: as a value it stops each call it reaches (the callers' work after
+; it isn't done, their prints don't happen); at the end one ends the program, its trace the place it was made
+; ("at"), then each call of a function it was in, innermost first ("called at": the call's file:line and its code)
+
+(def {log} {})
+(fun {note x} {def {log} (join log (list x))})
+
+(fun {level3 x}
+  {do (note (list :level3 x))
+      (if (eq x 0) (error "level3 got zero") (/ 100 x))})
+
+(fun {level2 x}
+  {do (note (list :level2 x))
+      =(r (level3 x))
+      (note (list :level2-after r))
+      (* 2 r)})
+
+(fun {level1 x}
+  {do (note (list :level1 x))
+      =(r (+ 1 (level2 x)))
+      (note (list :level1-after r))
+      r})
+
+; a value, then an error as a value, from each depth
+(print (level1 5))
+(print log)
+(def {log} {})
+(print (level1 0))
+(print log)
+(def {log} {})
+(print (level2 0))
+(print (level3 0))
+(print log)
+
+; the error through built-ins and special forms on the way up: each stops at it
+(print (list 1 (level1 0) (print "not printed")))
+(print (if (level1 0) :then :else))
+(print (and T (level1 0) (print "not printed")))
+(print (or NIL (level1 0) (print "not printed")))
+(print (do (level1 0) (print "not printed")))
+(print (let {{a (level1 0)}} (print "not printed")))
+(print (str-join (list "a" (level1 0))))
+(print (try (level1 0) &err))
+(print (try (level1 0) (fn {m} {+ "handled: " m})))
+(print (error? (level1 0)) (type-of (level1 0)) (error-message (level1 0)))
+
+; a deeper error through other built-ins: a list's items made by map
+(print (map level1 {1 2 0 4}))
+(print (map (fn {x} {try (level1 x) :bad}) {1 2 0 4}))
+
+; the same functions, written on one line each: the trace's lines say where the calls are
+(fun {c3 x} {+ 1 (len x)})
+(fun {c2 x} {* 2 (c3 x)})
+(fun {c1 x} {- (c2 x) 1})
+(print (c1 {1 2 3}))
+(print (c1 5))
+
+(print "the last: an error three calls deep")
+(def {log} {})
+(fun {run} {
+  do
+    (print "run starts")
+    =(v (level1 0))
+    (print "set binds the error as a value: do goes on")
+    v
+    (print "not printed: v is the error, and do stops at it")
+})
+(print (+ 1000 (run)))
+(print log)
+(+ 1 (run))

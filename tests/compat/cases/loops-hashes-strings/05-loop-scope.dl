@@ -1,0 +1,79 @@
+; 05-loop-scope.dl - the scopes loops make: each iteration of each and dotimes has its own scope (the loop variable
+; and anything set there: gone at the next iteration and after the loop), whose parent is the scope the loop is in;
+; set! and def reach out of it; a loop variable shadows a global or an outer loop's of the same name, which stay as
+; they were; while makes no scope (a set in its body binds where the while is)
+
+; set in the body binds in the iteration's scope: not there at the next iteration, nor after the loop
+(each {x {1 2 3}} (print "iteration" x "y defined?" (defined? y)) =(y (* x 10)) (print "  y" y))
+(print "after: y defined?" (defined? y) "x defined?" (defined? x))
+(dotimes {i 2} (print "i" i (defined? z)) =(z i) (print "  z" z (defined? z)))
+(print "after: z defined?" (defined? z) "i defined?" (defined? i))
+
+; a global of the loop variable's name is shadowed, not changed; set! in the body changes the iteration's binding
+(def {x} :global-x)
+(each {x {1 2}} (print "inner x" x) (set! {x} (* x 100)) (print "  after set! x" x))
+(print "global x" x)
+(def {i} :global-i)
+(dotimes {i 2} (set! {i} :changed) (print "i is" i))
+(print "global i" i)
+
+; set! reaches the nearest binding outside; def binds globally
+(def {total} 0)
+(each {x {1 2 3}} (set! {total} (+ total x)) (def {last-seen} x))
+(print "total" total "last-seen" last-seen)
+
+; inside a function: the loop's scope has the function's as its parent
+(fun {sum-squares l} {do
+  =(acc 0)
+  =(count 0)
+  (each {v l} (set! {acc} (+ acc (* v v))) =(count 999) (set! {count} (+ count 1)))
+  (list acc count)})
+(print "sum-squares" (sum-squares {1 2 3}))
+(fun {tally n} {do
+  =(acc {})
+  (dotimes {k n} =(acc :iteration-only) (print "  set in body:" acc))
+  acc})
+(print "tally" (tally 2))
+
+; nested loops with the same name: the inner shadows the outer, which comes back after it
+(each {x {:outer1 :outer2}}
+  (each {x {1 2}} (write x " "))
+  (print "| outer again:" x))
+(dotimes {n 2} (dotimes {n 3} (write n)) (print " outer n" n))
+
+; the inner loop sees the outer loop's variables; set in the outer body is seen by the inner one
+(each {row {:r1 :r2}} =(prefix (+ "<" row ">")) (each {col {1 2}} (write prefix col " ")) (print))
+
+; while makes no scope: set in its body binds where the while is
+(def {wn} 0)
+(while (< wn 2) =(wn (+ wn 1)) =(made-by-while wn))
+(print "made-by-while" made-by-while (defined? made-by-while))
+(fun {w-in-fn} {do =(k 0) (while (< k 3) =(k (+ k 1)) =(inner k)) (list k inner)})
+(print "w-in-fn" (w-in-fn) (defined? inner))
+
+; a while inside an each: its sets bind in the each's iteration scope
+(each {x {1 2}} =(c 0) (while (< c x) =(c (+ c 1)) =(seen c)) (print "x" x "c" c "seen" seen))
+(print "seen defined after?" (defined? seen) "c defined after?" (defined? c))
+
+; let inside a loop, and a loop inside let
+(each {x {1 2}} (let {{y (* x 3)}} (print "let in each" x y)))
+(let {{base 10}} (dotimes {i 2} (print "dotimes in let" (+ base i))))
+
+; a Q-expression body sees the iteration's scope too; a function body made outside the loop doesn't
+(fun {show-x} {x})
+(each {x {7 8}} {print "q sees" x} (print "fn sees" (show-x)))
+
+; eval of a Q-expression made in the body binds in the iteration's scope; an fexpr's argument remembers it too
+(each {x {1 2}} (eval {=(made-by-eval (* x 5))}) (print "made-by-eval" made-by-eval (defined? made-by-eval)))
+(print "made-by-eval after?" (defined? made-by-eval))
+(def {show-expr} (fexpr {e} {list e (eval e)}))
+(dotimes {i 2} (print "fexpr sees" (show-expr i) (show-expr (* i 10))))
+(each {x {:a}} (print "defined? x" (defined? x) (defined? {x i}) (defined? &_)))
+
+; the loop variable in the each list and count expressions: evaluated outside the iteration scope
+(def {n} 2)
+(dotimes {n (+ n 1)} (write "n=" n " "))
+(print "global n" n)
+(def {l} {9 8})
+(each {l l} (write "l=" l " "))
+(print "global l" l)

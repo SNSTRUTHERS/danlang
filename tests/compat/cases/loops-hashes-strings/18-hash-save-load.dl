@@ -1,0 +1,70 @@
+; 18-hash-save-load.dl - save and load of hashes (files in the case's own folder): (save x) printed, (save x path
+; [mode]) written as #({...}) to be read back, tags (the hash's and its entries', reserved ones too), nested hashes,
+; strings with escapes, numbers of every kind; load's value the last expression's (so a saved hash comes back, equal
+; and with its tags); an existing file needs :overwrite or :append; what can't be read back; the errors
+
+(def {h} #({{:a 1} {"s" "q\"uote\n\ttab"} {5 \c} {:l {1 (+ 2 3) "x"}} {:in #({{:x 1} :itag})} {:r 7/2} {:f 1.50}
+           {:t T} {:neg -12345678901234567890} {:e 9 :etag :__private} :htag}))
+(save h)
+(print (save h "h1.dat"))
+(print (repr (read-file "h1.dat")))
+(def {back} (load "h1.dat"))
+(print back)
+(print (eq back h) (len back) (hash-keys back))
+(print (hash-tag? back :htag) (hash-tag? back {:e :etag}) (hash-private? back :e) (back :e))
+(print (back :in) (hash-tag? (back :in) :itag) (repr (back "s")) (back :l) (back :r) (back :f))
+
+; an existing file: an error without a mode; :overwrite; :append (load's value is then the last one's)
+(print (save h "h1.dat"))
+(print (save #({{:first 1}}) "h1.dat" :overwrite))
+(print (save #({{:second 2} :locked-later}) "h1.dat" :append))
+(print (repr (read-file "h1.dat")))
+(print (load "h1.dat"))
+(print (save h "h1.dat" "overwrite"))
+
+; reserved tags come back too: a locked, read-only hash still is one
+(def {lk} #({{:a 1} {:b 2 :__not_nil} :__locked :__read-only}))
+(save lk "lk.dat")
+(def {lk2} (load "lk.dat"))
+(print lk2 (hash-locked? lk2) (hash-const? lk2) (hash-tag? lk2 {:b :__not_nil}))
+(print (hash-put lk2 {:a 5}))
+
+; the order of the entries is kept (taken out and put back: the saved order is the hash's)
+(def {ord} #({{:x 1} {:y 2} {:z 3}}))
+(hash-remove ord :x)
+(hash-put ord {:w 0} {:v -1})
+(save ord "ord.dat")
+(print (repr (read-file "ord.dat")) (hash-keys (load "ord.dat")))
+
+; save of other values, to compare: lists, strings, an empty hash, NIL
+(save #())
+(save {1 #({{:a 1}}) "s"})
+(save (list 1 (list) "q\\"))
+(save NIL)
+(save "a\x01b")
+(save :atom)
+(save 1/3)
+
+; what can't be read back: a hash with functions in it saves, but loading it fails (the reader's error)
+(def {fh} #({{:f @({x} {* x 2})} {:b print}}))
+(save fh)
+(save fh "fh.dat")
+(print (load "fh.dat"))
+
+; a complex number saves as 1+2i, which doesn't read back as a number: loading it is an error
+(save #({{:z (complex 1 2)} {:ok 1}}) "cx.dat")
+(print (repr (read-file "cx.dat")))
+(print (load "cx.dat"))
+
+; a hash saved, loaded and saved again: the same text
+(save h "round1.dat")
+(save (load "round1.dat") "round2.dat")
+(print (eq (read-file "round1.dat") (read-file "round2.dat")))
+
+; the errors
+(print (save h 5))
+(print (save h "h1.dat" :overwrite 5))
+(print (save h "no-such-folder/h.dat"))
+(print (load "no-such-file.dat"))
+(print (load 5))
+(print (save))

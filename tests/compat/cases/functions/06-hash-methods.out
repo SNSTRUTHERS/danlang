@@ -1,0 +1,41 @@
+--- stdout
+10
+15 15 15
+42
+acct
+NIL
+<function>(fn {n} {do (hash-put &0 (list :balance (+ (&0 :balance) n))) (&0 :balance)})
+115 115
+116
+116
+Error: The function takes 1 argument, not 2
+Error: :name isn't a method: its value isn't a function
+Error: :missing isn't a method: its value isn't a function
+Error: :balance isn't a method: its value isn't a function
+117 117 Error: Second parameter to 'hash-call' must be a key to a member function
+8
+8
+Error: Unbound Symbol '&0'
+Unbound Symbol '&0'
+<hash>{{:balance 117} {:get <function>(fn NIL {&0 :balance})} {:dep <function>(fn {n} {do (hash-put &0 (list :balance (+ (&0 :balance) n))) (&0 :balance)})} {:plain <function>(fn {x} {* x 2})} {:name "acct"}}
+42 43 43
+Error: hash-get error: cannot access private hash entry
+Error: hash-get error: cannot access private hash entry
+:hash {:v :self :put} 7 3
+8 8 {:v :self :put :w}
+1 2 4 4
+1 1 2 6
+Error: :f isn't a method: its value isn't a function
+Error: :f isn't a method: its value isn't a function
+3628800 2432902008176640000
+:looped :looped Error: :go isn't a method: its value isn't a function
+3 thods met
+:printed :by :a :hash
+<hash>{{:n 100} {:adder <function>(fn {k} {fn {x} {+ x k (&0 :n)}})}}
+106
+106
+:hash
+--- stderr
+Error: 06-hash-methods.dl: Object reference not set to an instance of an object.
+  at 06-hash-methods.dl:89  (print (p :self))
+--- exit 1

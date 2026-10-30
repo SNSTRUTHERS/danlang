@@ -1,0 +1,56 @@
+; 17-method-self: &0 is a name like any other, bound in a method's call scope: one function called as a method of
+; one hash, of another, and plainly (no &0 then, or an enclosing method's &0 that it closes over, or a global one),
+; in turns, many times at the same places; closures made in a method keep its &0; a method's local names, set in its
+; call, beside &0; partial applications of methods; a method that calls the same function plainly and as a method.
+(def {who} (fn {} {try (&0 :name) &err}))
+(def {h1} #({{:name "h1"} {:who who}}))
+(def {h2} #({{:name "h2"} {:who who}}))
+(print "turns" (h1 :who) (h2 :who) (who) (h1 :who) (who) (h2 :who))
+(def {log} NIL)
+(dotimes {i 9} (set! {log} (cons (if (zero? (mod i 3)) (who) (if (odd? i) (h1 :who) (h2 :who))) log)))
+(print "loop" (reverse log))
+(fun {via f} {f})
+(print "via" (via who) (via (hash-get h1 :who)) (via (h1 :who)) (hash-call h2 :who) (map (fn {h} {h :who}) (list h1 h2 h1)))
+
+; a closure made in a method: its &0 is that method call's, wherever it's called from (as a method too)
+(def {maker} #({{:name "maker"} {:make (fn {} {fn {} {try (&0 :name) &err}})} {:make2 (fn {tag} {fn {x} {list tag x (&0 :name)}})}}))
+(def {made} (maker :make))
+(def {h3} #({{:name "h3"} {:m made}}))
+(print "closure" (made) (h3 :m) (made) (h3 :m) (via made))
+(def {m2} (maker :make2 :t))
+(def {h4} #({{:name "h4"} {:m m2}}))
+(print "closure" (m2 1) (h4 :m 2) (m2 3) (hash-call h4 :m 4) (map m2 {5 6}))
+
+; a method with locals of its own (set) beside &0, and the same function plain
+(def {count-m} (fn {k} {do (set {seen} (list k (len &0))) (set {self} &0) (list seen (self :name))}))
+(def {c1} #({{:name "c1"} {:c count-m}}))
+(def {c2} #({{:name "c2"} {:c count-m} {:extra 1}}))
+(print "locals" (c1 :c 1) (c2 :c 2) (try (count-m 3) &err) (c1 :c 4) (c2 :c 5))
+
+; a method calling the same function plainly and as a method of another hash
+(def {both} (fn {other} {list (who) (other :who) (&0 :who) (try (&0 :name) &err)}))
+(def {hb} #({{:name "hb"} {:who who} {:both both}}))
+(print "both" (hb :both h1) (hb :both h2) (try (both h1) &err))
+
+; partial applications of methods keep their &0
+(def {adder} (fn {a b} {list (&0 :name) a b}))
+(def {ha} #({{:name "ha"} {:add adder}}))
+(def {hc} #({{:name "hc"} {:add adder}}))
+(def {pa} (ha :add 1))
+(def {pc} (hc :add 2))
+(print "partial" (pa 10) (pc 20) (pa 30) ((ha :add) 1 2) (try ((hash-get ha :add) 1 2) &err) (map pa {7 8}))
+
+; a global named &0: seen where no method's &0 is nearer
+(def {&0} (hash-create {{:name "global &0"}}))
+(print "global &0" (who) (h1 :who) (who) (made) (h3 :m) (pa 1))
+(def {inner} (fn {} {list (defined? &0) (try (&0 :name) &err)}))
+(print "global &0" (inner) (h1 :who) (inner) ((fn {} {&0 :name})))
+(def {&0} NIL)
+(print "global &0 NIL" (who) (h2 :who) (who))
+
+; recursion through methods: each call's &0 is its own hash
+(def {down} (fn {n} {if (zero? n) (list (&0 :name)) (cons (&0 :name) ((&0 :next) :down (- n 1)))}))
+(def {r1} #({{:name "r1"} {:down down}}))
+(def {r2} #({{:name "r2"} {:down down} {:next r1}}))
+(hash-put r1 {:next r2})
+(print "recursion" (r1 :down 3) (r2 :down 4) (r1 :down 0))

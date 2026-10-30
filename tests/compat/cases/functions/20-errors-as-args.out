@@ -1,0 +1,47 @@
+--- stdout
+123[f3 ran]{:a :b :c}
+1Error: second
+1Error: direct
+Error: first
+1234Error: The function takes 3 arguments, not 4
+:head123[f3 ran]{:a :b :c}
+Error: head error
+Error: bare head
+1Error: in list
+1Error: in plus
+Error: e1
+Error: in len
+Error: print takes it
+NIL
+:error T Error: r NIL NIL
+m :code1 NIL
+Error: into partial
+Error: into built-in partial
+1<function>(fn {b c} {do (write "[f3 ran]") (list a b c)})
+1Error: into fresh partial
+1Error: in do
+1Error: in and
+1Error: in or
+Error: in if test
+Error: in a branch
+1Error: in let b
+12Error: each at 2
+01Error: dotimes at 1
+:wError: in while
+1Error: map at 2
+12Error: filter at 3
+Error: fold at 3
+Error: the list itself
+{:fexpr-ran :sexpr T}
+Error: fn not run
+T kept by def
+Error: at the bottom
+1Error: Division by zero.
+1Error: 'head' passed an empty list
+1Error: Unbound Symbol 'undefined-name'
+--- stderr
+Error: 20-errors-as-args.dl: '+' adds numbers, or joins values to a string
+  at 20-errors-as-args.dl:70  {+ x :oops}
+  called at 20-errors-as-args.dl:71  (bad x)
+  called at 20-errors-as-args.dl:73  (top {1 2})
+--- exit 1

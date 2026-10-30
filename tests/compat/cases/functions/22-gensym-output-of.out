@@ -1,0 +1,42 @@
+--- stdout
+g__1 g__2 tmp__3 __4 mixed__5
+:symbol T
+'gensym' expects a String
+'gensym' expects a String
+'gensym' takes at most 1 argument, not 2
+g__8
+v__9 T NIL
+123 123 Unbound Symbol 'v__10'
+{g__11 g__12 g__13}
+NIL
+local__16 local__17
+{r__18 r__19 r__20}
+built-1__21
+"1\n2\n"
+"1\n23"
+"" "" ""
+"a b\n"
+":before\ninner\n\n"
+"no newlinec123"
+"to stdout\nw"
+""
+oops
+Error: Division by zero.
+":after-error\n"
+:stdout-still-works
+":chatty 1\n:chatty 2\n"
+":chatty 1\n:chatty 2\n"
+":a\n:b\n"
+"012"
+100
+":from-a-function\n" ":from-a-function\n"
+"\":deep\\n\"\n"
+{:out ":ok\n"}
+Error: inside
+":handler e\n"
+--- stderr
+to stderr: not captured
+Error: 22-gensym-output-of.dl: All parameters to operator '*' must be numbers.
+  at 22-gensym-output-of.dl:41  (* n 2)
+  called at 22-gensym-output-of.dl:60  (chatty :not-a-number)
+--- exit 1

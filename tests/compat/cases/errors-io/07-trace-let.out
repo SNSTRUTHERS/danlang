@@ -1,0 +1,34 @@
+--- stdout
+{1 2}
+Error: b's value
+Error: Division by zero.
+first
+Error: second
+2
+Error: a q-expression body, run as code
+11
+NIL
+Error: A 'let' binding is {name value}
+Error: A 'let' binding is {name value}
+Error: A 'let' binding is {name value}
+5
+{a 1}
+5
+3
+10
+Error: '+' adds numbers, or joins values to a string
+Error: 'len' requires parameter of type string, list, hash or buffer :global
+Error: Unbound Symbol 'undefined-in-let'
+{"caught in let" :code}
+3 Error: empty string Error: 'val': "x" isn't a number
+Error: deep at the bottom
+the last: a let's binding, in a let's body, in a function called from another
+inner-let body, a is 10
+Error: 'len' requires parameter of type string, list, hash or buffer
+inner-let body, a is 10
+--- stderr
+Error: 07-trace-let.dl: 'len' requires parameter of type string, list, hash or buffer
+  at 07-trace-let.dl:43  (len b)
+  called at 07-trace-let.dl:47  (inner-let {1 2})
+  called at 07-trace-let.dl:49  (outer-let "a label long enough that this call's code is ...
+--- exit 1

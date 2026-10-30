@@ -1,0 +1,63 @@
+; 30-repl-functions: function values at the REPL, shown as "=> value".  A line is one S-expression of its items,
+; so a lone function is called with nothing: a function of formals gives itself back (a partial with none bound),
+; one of no formals runs, a built-in runs ((+) is 0, (print) prints a line); a call whose value is a function of no
+; formals is called again.  Two items on a line are a call of the first.  Errors show "=> Error:" and the trace
+; (stderr).  Multi-line definitions (the open brackets shown).  (This comment is a line of its own: NIL.)
+(fn {x} {* x 2})
+(fun {add a b} {+ a b})
+add
+(add 1)
+((add 1) 2)
+(add 1 2 3)
+(eq 1)
+(substring "hi")
+(fexpr {x} {x})
++
+print
+(print :printed)
+(def {f0} (fn {} {:f0-ran}))
+f0
+(print f0)
+(fun {mk0} {fn {} {:made-and-called}})
+(mk0)
+(print (mk0))
+(fun {mk1} {fn {x} {list :x x}})
+(mk1)
+((mk1) 5)
+1 2
+(def {n} 5)
+n
+"str"
+{1 2}
+(list 1 2)
+:atom
+\c
+(def {h} (hash-create {{:m (fn {} {list :method (hash-keys &0)})} {:v 7}}))
+(h :m)
+(h :v)
+(hash-get h :m)
+(error "shown")
+(add (error "arg"))
+(fun {f} {undefined-name})
+(f)
+(fun {multi a b}
+  {list
+    a
+    b})
+multi
+(multi 1 2)
+(fun {deep n} ?{(zero? n) 0 (+ 1 (deep (- n 1)))})
+(deep 100)
+(deep 10000)
+(let {{a 1}} (fn {} {a}))
+(map (fn {x} {* x x}) {1 2 3})
+(def {fs} [(fn {} {:a}) (fn {x} {x})])
+fs
+(fst fs)
+(snd fs)
+(gensym)
+(gensym)
+(output-of (print :captured))
+(try (error "caught") &err)
+(do (fn {} {:do-last-called}))
+(if T (fn {} {:if-branch-called}) 0)

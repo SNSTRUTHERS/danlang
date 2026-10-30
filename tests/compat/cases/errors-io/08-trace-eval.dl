@@ -1,0 +1,52 @@
+; 08-trace-eval.dl - errors in code eval runs, and the scope it runs in: a Q-expression runs in the scope it was
+; written in; list's list remembers the scope list was called in, and join's its first list's; cons's list and read's
+; code remember none, and run where eval is.  Where an error is made, a trace says: a file's line for code read from
+; the file, "line N" (of the text) for read's, "(made, not read)" for a list made at run time.  The last error is in
+; read's code, eval'd in an each, in a function
+
+; the scope each kind of code runs in
+(def {where} :global)
+(fun {run-it code} {do =(where :in-run-it) (eval code)})
+(fun {mk-q} {do =(where :in-mk-q) {list where}})
+(fun {mk-list} {do =(where :in-mk-list) (list (fst {list}) (fst {where}))})
+(fun {mk-cons} {do =(where :in-mk-cons) (cons (fst {list}) {where})})
+(fun {mk-join} {do =(where :in-mk-join) (join {list} (list (fst {where})))})
+(print (run-it {list where}) (eval (mk-q)) (run-it (mk-q)))
+(print (eval (mk-list)) (run-it (mk-list)))
+(print (eval (mk-cons)) (run-it (mk-cons)))
+(print (eval (mk-join)) (run-it (mk-join)))
+(print (eval (fst (read "(list where)"))) (run-it (fst (read "(list where)"))))
+
+; errors in eval'd code: the error is eval's value
+(print (run-it {+ 1 (undefined-in-code)}))
+(print (eval {/ 10 (- 2 2)}))
+(print (eval {do (print "ran first") (error "then an error") (print "not run")}))
+(def {made} (list (fst {+}) 1 (fst {where})))
+(print made (eval made))
+(def {made2} (cons (fst {len}) {5}))
+(print made2 (eval made2))
+(print (eval (join {+ 1} {2 3})) (eval (join {+ 1} (list "x"))))
+
+; read's code
+(def {text} "(+ 1 2)\n(len 5)\n(* 2 (/ 1 0))")
+(def {exprs} (read text))
+(print exprs (type-of exprs) (map type-of exprs))
+(print (map eval exprs))
+(print (eval (fst exprs)) (eval (snd exprs)) (eval (thd exprs)))
+(print (each {x exprs} (write (eval x) "; ")))
+(print (read "(1 2") (read "\\nosuchcharacter") (read "") (eval (read "")))
+
+; eval of what isn't code: itself; a symbol: its value
+(print (eval 5) (eval "s") (eval :a) (eval (fst {where})) (eval (fst {undefined-sym})))
+(print (eval {}) (eval {5}) (eval {{1 2}}) (eval {"a" "b"}))
+
+; nested evals
+(print (eval {eval {eval {+ 1 (len 3)}}}))
+(print (eval (list (fst {eval}) {* 3 3})))
+(print (try (eval {error "eval'd error" :evalcode}) (list &err &code)))
+
+(print "the last: read's code, eval'd in an each in a function, its error on the text's fifth line")
+(def {program} (read "(print \"program starts\")\n(def {pv} 7)\n\n(do (print pv)\n  (+ pv (len pv)))"))
+(fun {run-program p} {do (each {x p} (eval x)) (print "not reached")})
+(fun {main} {+ 0 (run-program program)})
+(main)

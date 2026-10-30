@@ -1,0 +1,44 @@
+; 24-strings.dl - lists from strings and back: str-split (the default separators, a string, a list of them; empty
+; pieces kept), str-chars, bytes; str-join and from-bytes back; lists of characters and strings mapped, sorted,
+; reversed, searched, counted; errors (their messages)
+
+(print (repr (str-split "a b  c")) (repr (str-split " lead and trail ")) (repr (str-split "a\tb\nc\rd e")))
+(print (repr (str-split "a,b,,c" ",")) (repr (str-split "" ",")) (repr (str-split "abc" "")) (repr (str-split "," ",")))
+(print (repr (str-split "a-b_c" {"-" "_"})) (repr (str-split "one::two::three" "::")) (repr (str-split "aaa" "a")))
+(print (repr (str-split "x" {"x" "xx"})) (repr (str-split "a1b22c" {"1" "22"})) (len (str-split "a b c d e")))
+(print (repr (str-chars "ab c")) (repr (str-chars "")) (repr (str-chars \x)) (repr (str-chars "\t\n\"\\")) (len (str-chars "hello")))
+(print (bytes "AB") (bytes "") (from-bytes {72 105}) (from-bytes NIL) (repr (from-bytes (bytes "x\ny"))))
+
+; and back
+(def {words} (str-split "the quick brown fox" " "))
+(print words (str-join words) (str-join words " ") (str-join words ", ") (str-join (reverse words) " "))
+(print (str-join (str-chars "abc") "-") (str-join {1 2 3} "+") (str-join {"a" \b :c {d "e"} 1/2} "|") (repr (str-join {} ",")))
+(print (eq (str-join (str-split "a,b,,c" ",") ",") "a,b,,c") (eq (str-join (str-chars "xyz")) "xyz"))
+
+; lists of characters and strings, worked on
+(def {cs} (str-chars "hello world"))
+(print cs (len cs) (reverse cs) (sort cs) (str-join (sort cs)))
+(print (count (fn {c} {eq c \l}) cs) (index-of cs \o) (last-index-of cs \o) (elem? \w cs) (elem? "w" cs) (index-of cs "o"))
+(print (map char-code cs) (map str-upper cs) (map (fn {c} {type-of c}) (take 2 cs)) (filter alpha? cs))
+(print (str-join (map (fn {c} {if (eq c \space) \_ c}) cs)) (str-join (filter (fn {c} {not (space? c)}) cs)))
+(print (map len words) (map str-upper words) (sort words) (sort words >) (map (fn {w} {char-at w 0}) words))
+(print (map str-chars {"ab" "" "c"}) (map (fn {w} {str-join (reverse (str-chars w))}) words))
+(print (foldl (fn {acc w} {+ acc (len w)}) 0 words) (find (fn {w} {> (len w) 4}) words) (any? (fn {w} {eq w "fox"}) words))
+(def {csv} "name,age\nann,31\nbob,4")
+(def {rows} (map (fn {line} {str-split line ","}) (str-split csv "\n")))
+(print rows (map fst rows) (map (fn {r} {val (snd r)}) (tail rows)) (sum (map (fn {r} {val (snd r)}) (tail rows))))
+(print (repr (map (fn {l} {str-join l ";"}) rows)) (str-join (map (fn {l} {str-join l ";"}) rows) "\n"))
+
+; errors
+(print (str-split 5))
+(print (str-split "a" 5))
+(print (str-split "a" {}))
+(print (str-split "a" {1}))
+(print (str-split {"a b"}))
+(print (str-chars 5))
+(print (str-chars {"a"}))
+(print (str-join "abc"))
+(print (str-join {1 2} 3))
+(print (from-bytes {300}))
+(print (from-bytes {"a"}))
+(print (bytes {1 2}))

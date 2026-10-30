@@ -1,0 +1,51 @@
+--- stdout
+<function>(fn {a b} {if (and (num? a) (num? b)) (to-fixed (/ a b) (if (and (defined? &1) (num? &1)) &1 10)) (error "Cannot perform 'fdiv' on non-numbers")})
+<function>(fn {n} {if (defined? &1) (fdiv 1 n &1) (fdiv 1 n)}) <function>(fn {n} {if (defined? &1) (fdiv 1 n &1) (fdiv 1 n)}) T
+0.25 0.3333333333 0.6666666666 -0.6666666666 0.333 0 3.14285714285714285714 3.141592920353982300884955752212
+0.3333333333 0.3333333333 0.3333333333 0.3333333333 0.3333 0.33
+3074457345618258602.6666666666 0.000000000000000000108420217248 1.75 25 1.000015259021 -1.000976
+0.9999999999999999998915797 -4611686018427387904.5 0.0000152587890625 0
+2 2 T NIL :number 0 -0.5
+3.14159 1.35914091 0.618033988749894
+-0.3333333333 -0.6 0 -1 1 0.3333 0.1234
+Error: 'to-fixed': -1 places is outside 0 to 10000
+Error: 'to-fixed': 10001 places is outside 0 to 10000
+Error: 'to-fixed': a number of places must be a whole number, not 2.5
+Error: 'to-fixed': a number of places must be a whole number, not 10000.5
+0.33 0.33
+102
+Error: Division by zero.
+Error: Division by zero.
+Error: Division by zero.
+Error: 'to-fixed' expects a real number
+Error: 'to-fixed' expects a real number
+2
+Error: Cannot perform 'fdiv' on non-numbers Error: Cannot perform 'fdiv' on non-numbers Error: Cannot perform 'fdiv' on non-numbers Error: Cannot perform 'fdiv' on non-numbers Error: Cannot perform 'fdiv' on non-numbers Error: Cannot perform 'fdiv' on non-numbers Error: Cannot perform 'fdiv' on non-numbers
+<function>(fn {a b} {if (and (num? a) (num? b)) (to-fixed (/ a b) (if (and (defined? &1) (num? &1)) &1 10)) (error "Cannot perform 'fdiv' on non-numbers")})
+<function>(fn {b} {if (and (num? a) (num? b)) (to-fixed (/ a b) (if (and (defined? &1) (num? &1)) &1 10)) (error "Cannot perform 'fdiv' on non-numbers")})
+0.125
+0.33
+Error: fdiv's a
+Error: fdiv's b
+Error: fdiv's places
+:a
+:b
+:places
+0.33
+0.25 0.3333333333 0.33 0.3333333333 -0.125 0.2857142857 3.3333333333 0.0000152587890625 0.0000000000000000001084202
+0.3333333333 0.33333 0.33333 -0.0009756 9223372036854775808
+Error: Division by zero.
+Error: Division by zero.
+Error: Cannot perform 'fdiv' on non-numbers
+Error: 'to-fixed': -2 places is outside 0 to 10000
+Error: 'to-fixed': a number of places must be a whole number, not 1.5
+Error: 'to-fixed' expects a real number
+<function>(fn {n} {if (defined? &1) (fdiv 1 n &1) (fdiv 1 n)})
+Error: frecip's n
+Error: frecip's places
+{1 0.5 0.3333 0.1428}
+--- stderr
+Error: 11-fdiv-frecip.dl: 'to-fixed' expects a real number
+  at <BUNDLE>\lib\globals.dl:162  (to-fixed (/ a b) (if (and (defined? &1) (num? &1)) &1 10))
+  called at 11-fdiv-frecip.dl:60  (fixed-recips (list 2 (complex 1 1)))
+--- exit 1

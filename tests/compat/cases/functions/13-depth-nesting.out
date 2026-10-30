@@ -1,0 +1,48 @@
+--- stdout
+{:and :and-done}
+{:or :or-done}
+{:arg :arg-done}
+{:do-mid :after}
+{:let-mid :after}
+{:let-bind :lb-done}
+{:while :w-done}
+{:cond :cond-done}
+{:case :case-done}
+{:try :try-done}
+{:each-set NIL}
+{:each-bang :each-done}
+{:repeat 19}
+{:if-tail :if-done}
+{:none :nothing}
+{:and :too-deep}
+{:or :too-deep}
+{:arg :too-deep}
+{:do-mid :too-deep}
+{:let-mid :too-deep}
+{:let-bind :too-deep}
+{:while :too-deep}
+{:cond :too-deep}
+{:case :too-deep}
+{:try :caught-inside}
+{:each-set NIL}
+{:each-bang :too-deep}
+{:repeat :too-deep}
+{:if-tail :if-done}
+{:none :nothing}
+998 :too-deep
+--- stderr
+Error: 13-depth-nesting.dl: Too deep: more than 10000 calls nested
+  at 13-depth-nesting.dl:7  (- n 1)
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+  called at 13-depth-nesting.dl:7  (and-loop (- n 1))
+--- exit 1

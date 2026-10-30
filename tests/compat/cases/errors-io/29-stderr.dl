@@ -1,0 +1,53 @@
+; 29-stderr.dl - print-to and write-to stdout, stderr and a file, in turn: each stream gets its own, in order
+; (print-to as print: spaces between, a newline after; write-to as write: neither); every kind of value printed to
+; stderr; the console's streams can't be closed, read or written the wrong way.  The last error's message and trace
+; come on stderr after what was printed there
+
+(print "stdout 1")
+(print-to stderr "stderr 1")
+(write "stdout 2, ")
+(write-to stderr "stderr 2, ")
+(print-to stdout "stdout 3" "and more" 3)
+(write-to stderr "stderr 3" 3 "\n")
+(print (print-to stderr "print-to's value") (write-to stderr "write-to's value\n"))
+
+; every kind of value, to stderr: as print shows it
+(print-to stderr 1 1.5 1/2 (complex 1 1) \c "s" :a (fst {b}) NIL T + (fn {x} {x}) #({{:k 1}}) (buffer 1) stdout (error "e") exit)
+(print-to stderr {1 "s" \c} (repr "quoted\n"))
+(write-to stderr "w" 1 "w" 2 "\n")
+(print-to stderr)
+(write-to stderr)
+(print-to stderr "after the empty ones")
+
+; a file stream, between them
+(def {f} (open "out.log" :write))
+(print-to f "log line 1")
+(print "stdout between the file's lines")
+(write-to f "log " "line " 2 "\n")
+(print-to stderr "stderr between the file's lines")
+(print-to f :three (list 3))
+(close f)
+(print (repr (read-file "out.log")))
+
+; the console's streams: what they can't do
+(print (close stdout) (close stderr) (close stdin))
+(print (read-line stdout) (read-line stderr) (read-byte stderr) (read-all stdout))
+(print (write-to stdin "x") (print-to stdin "x"))
+(print (seek stdout 0) (tell stdout))
+(print (print-to 5 "x") (write-to "stderr" "x") (print-to (error "the stream is an error") "x"))
+(print (print-to stderr (error "an error printed to stderr")))
+(print (type-of stdin) (type-of stdout) (type-of stderr) (eq stdout stdout) (eq stdout stderr))
+(print args (type-of args) (map type-of args))
+(print-to stderr args)
+
+; output-of captures stdout only
+(print (repr (output-of (print-to stderr "stderr, not captured") (print-to stdout "stdout, captured"))))
+
+; errors printed as values go to stdout; to stderr when asked
+(print (/ 1 0))
+(print-to stderr (/ 1 0))
+
+(print "the last: an error, its message and trace on stderr after the rest")
+(print-to stderr "stderr: just before the error")
+(fun {fail} {+ 1 (print-to stderr "in fail") (error "fail's error")})
+(fail)

@@ -1,0 +1,51 @@
+--- stdout
+<function>(neq) <function>(neq) <function>(zero?) <function>(one?) <function>(zero?) <function>(one?)
+{0 1 -1 65535 65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 7/2 -7/2 1 1 0 2.5 -2.5 0.1 1 1 0 0}
+{0 1 1i 1+1i "0" "1" "" \0 \1 :zero NIL T {0} {1} <function>(+) <function>(fn {x} {x}) a <hash>NIL}
+:=0 {T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL T NIL NIL NIL NIL NIL T T}
+:0? {T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL T NIL NIL NIL NIL NIL T T}
+:=1 {NIL T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL T T NIL NIL NIL NIL T T NIL NIL}
+:1? {NIL T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL T T NIL NIL NIL NIL T T NIL NIL}
+:=0 {T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL}
+:=1 {NIL T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL}
+T NIL NIL T T T
+NIL NIL NIL NIL NIL
+NIL T NIL T NIL NIL NIL NIL NIL NIL
+NIL NIL NIL T
+<function>(neq 1)
+T NIL
+<function>(neq)
+Error: 'neq' takes 2 arguments, not 3
+Error: first
+Error: second only
+<function>(zero?) <function>(one?) <function>(zero?) <function>(one?)
+Error: 'zero?' takes 1 argument, not 2
+Error: 'one?' takes 1 argument, not 2
+Error: into =0 Error: into 1?
+T T T T T
+<function>(fn {a b} {and (or a b) (not (and a b))})
+T T NIL NIL NIL T T NIL NIL T
+T NIL T T
+{NIL T NIL T}
+<function>(fn {b} {and (or a b) (not (and a b))})
+T
+NIL
+<function>(fn {a b} {and (or a b) (not (and a b))})
+Error: The function takes 2 arguments, not 3
+Error: The function takes 2 arguments, not 3
+Error: xor's a
+Error: xor's b
+Error: xor's b, a NIL
+:a-evaluated
+:b-evaluated
+NIL
+:first
+:second
+NIL
+{T}
+--- stderr
+Error: 02-neq-zero-one-xor.dl: no b
+  at 02-neq-zero-one-xor.dl:58  {error "no b"}
+  called at 02-neq-zero-one-xor.dl:56  (b)
+  called at 02-neq-zero-one-xor.dl:58  (exclusive T (fn NIL {error "no b"}))
+--- exit 1

@@ -1,0 +1,21 @@
+--- stdout
+some steps {{:step 0} {:step 3} {:step 6}}
+fexpr args {(list i sq) (list i sq) (list i sq)} {:sexpr :sexpr :sexpr} {{0 0} {1 1} {2 4}}
+fexpr args {:a :b} {:b :a}
+derived {{0 0 {0} {:global-i} :global-i :global-i} {1 1 {1} {:global-i} :global-i :global-i} {2 2 {2} {:global-i} :global-i :global-i}}
+partials {{:in-step 0 0 :b} {:in-step 1 10 :b} {:in-step 2 20 :b}}
+late {{0 :none} {1 :none} {2 :none}}
+late {{0 :none} {1 {:late 1}} {2 :none}} Unbound Symbol 'late'
+late {{0 :none} {1 {:late 1}} {200 {:late 200}}} :global-i
+late {{0 :none} {100 {:late 1}} {20000 {:late 200}}} :global-i
+set! {:changed-first 2 :changed-third} :global-x
+string {{\a 97} {\b 98} {\c 99}}
+nested {{0 :p} {1 :q} {2 :r}}
+nested qs {{:outer 0} {:inner 0 0} {:inner 0 1} {:outer 1} {:inner 1 0} {:inner 1 1}}
+fn forms {0 1 4 {"s1"} {"s2"}}
+globals :global-i :global-x Unbound Symbol 'sq' Unbound Symbol 'late'
+kept i {65539 65538 65537 65536 65535 65534} {65534 65535 65536 65537 65538 65539} {{65534 131068} {65535 131070} {65536 131072} {65537 131074} {65538 131076} {65539 131078}} {{65539 :b} {65538 :b} {65537 :b} {65536 :b} {65535 :b} {65534 :b}} 65539 {65535 131070}
+in hashes {{:hq 0} {:hq 1} {:hq 2}} {:last 2} {{:hc :q} {:hc :p}}
+--- stderr
+
+--- exit 0

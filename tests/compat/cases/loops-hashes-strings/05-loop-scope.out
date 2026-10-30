@@ -1,0 +1,56 @@
+--- stdout
+iteration 1 y defined? NIL
+  y 10
+iteration 2 y defined? NIL
+  y 20
+iteration 3 y defined? NIL
+  y 30
+after: y defined? NIL x defined? NIL
+i 0 NIL
+  z 0 T
+i 1 NIL
+  z 1 T
+after: z defined? NIL i defined? NIL
+inner x 1
+  after set! x 100
+inner x 2
+  after set! x 200
+global x :global-x
+i is :changed
+i is :changed
+global i :global-i
+total 6 last-seen 3
+sum-squares {14 0}
+  set in body: :iteration-only
+  set in body: :iteration-only
+tally NIL
+1 2 | outer again: :outer1
+1 2 | outer again: :outer2
+012 outer n 0
+012 outer n 1
+<:r1>1 <:r1>2 
+<:r2>1 <:r2>2 
+made-by-while 2 T
+w-in-fn {3 3} NIL
+x 1 c 1 seen 1
+x 2 c 2 seen 2
+seen defined after? NIL c defined after? NIL
+let in each 1 3
+let in each 2 6
+dotimes in let 10
+dotimes in let 11
+q sees 7
+fn sees :global-x
+q sees 8
+fn sees :global-x
+made-by-eval 5 T
+made-by-eval 10 T
+made-by-eval after? NIL
+fexpr sees {i 0} {(* i 10) 0}
+fexpr sees {i 1} {(* i 10) 10}
+defined? x T T NIL
+n=0 n=1 n=2 global n 2
+l=9 l=8 global l {9 8}
+--- stderr
+
+--- exit 0

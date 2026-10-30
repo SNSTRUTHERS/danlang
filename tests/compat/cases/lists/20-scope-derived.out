@@ -1,0 +1,67 @@
+--- stdout
+:in-mk-q
+q NIL
+:in-mk-tail
+tail NIL
+head :in-mk-head
+:in-mk-init
+init NIL
+end :in-mk-end
+:in-mk-rev
+reverse NIL
+:in-mk-list
+[..] NIL
+:in-mk-list2
+list NIL
+:in-mk-join
+join NIL
+:in-mk-juf
+join, its first remembering none NIL
+:in-mk-q :in-mk-q
+join of two scopes NIL
+:in-run-it
+cons NIL
+:in-run-it
+take NIL
+:in-run-it
+drop NIL
+:in-run-it
+subset NIL
+sort :in-run-it
+:in-run-it
+map NIL
+:in-run-it
+filter NIL
+:in-run-it
+read NIL
+:in-mk-q
+top q NIL
+:in-mk-tail
+top tail NIL
+:global
+top cons NIL
+:global
+top take NIL
+:global
+top [..] NIL
+{print who} {print who} {who} {<function>(print) who} {<function>(print) who} {print who who}
+:in-run-it
+kept cons NIL
+:in-keep
+kept q NIL
+:in-eval-here
+cons evaluated where it's made NIL
+:in-deep-tail
+:in-deep-tail
+:in-deep-tail
+tail of tail NIL NIL NIL
+:in-run-it
+:in-run-it
+a tail made into a new list NIL NIL
+{{print who} {print who} {print who}}
+:first
+:second
+:third
+--- stderr
+
+--- exit 0

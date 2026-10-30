@@ -1,0 +1,44 @@
+--- stdout
+NIL 1
+NIL 2 3
+NIL 4
+NIL 5 6
+NIL 7
+NIL 9
+NIL 10
+NIL 11
+NIL 12 NIL 13
+123NIL 1 2 3
+NIL NIL T
+'def' passed too many arguments or symbols.  Expected 2, got 1
+'def' passed too many arguments or symbols.  Expected 1, got 2
+'def' passed too many arguments or symbols.  Expected 1, got 0
+'def' passed too many arguments or symbols.  Expected 1, got 2
+'def' cannot define non-symbols
+'def' cannot define non-symbols
+'def' cannot define non-symbols
+'def' cannot define non-symbols
+'def' cannot define non-symbols
+'def' cannot define non-symbols
+names err
+NIL NIL
+Popping nonexistent item 0 from Expr Popping nonexistent item 0 from Expr Popping nonexistent item 0 from Expr
+'set' passed too many arguments or symbols.  Expected 2, got 1 'set!' passed too many arguments or symbols.  Expected 2, got 1
+'set' cannot define non-symbols 'set!' cannot define non-symbols
+:secondNIL
+T :second bound as a value
+:local-in-f :defined-in-f
+NIL 4
+:x1 :y1
+NIL 1 1
+NIL 2
+NIL 3 NIL 4
+NIL :global-amp1
+:global-amp1 :given
+3
+3
+--- stderr
+Error: 27-def-set-forms.dl: 'def' passed too many arguments or symbols.  Expected 3, got 2
+  at 27-def-set-forms.dl:70  {def {z1 z2 z3} 1 2}
+  called at 27-def-set-forms.dl:71  (bad-def)
+--- exit 1

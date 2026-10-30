@@ -1,0 +1,45 @@
+--- stdout
+:before :global-x
+:after :local-x
+:local-x
+:top :global-x
+:before :global-x
+:after :local-x
+:local-x
+:top :global-x
+{:global-x :global-x :set-in-loop :set-in-loop}
+:global-x
+NIL
+Unbound Symbol 'y'
+:local-y
+Unbound Symbol 'y'
+:global-y :local-y :global-y :global-y
+{:set-in-caller "Unbound Symbol 'z'"}
+Unbound Symbol 'z'
+{:set-in-caller :global-z} :global-z
+1 T
+2 3
+{1 2 3}
+{1 2} Unbound Symbol 'b'
+1 NIL
+2 NIL
+3 NIL
+NIL
+{{NIL NIL} NIL}
+Unbound Symbol 'w'
+:set-by-eval
+Unbound Symbol 'w'
+{"Unbound Symbol 'w2'" :changed-in-caller}
+50 60
+{12 2 3}
+NIL
+{T T 1 T "second"}
+:after-set :error
+Error: kept
+{:late-value :late-value}
+{1 2 3}
+--- stderr
+Error: 07-set-local.dl: Unbound Symbol 'only-there'
+  at 07-set-local.dl:85  {+ only-there 1}
+  called at 07-set-local.dl:86  (reads-it)
+--- exit 1

@@ -1,0 +1,45 @@
+; 20-calls-tail: calls in tail position (through if, do, let, eval, cond's value names, a method, unpack) take their
+; caller's place, whatever the number of arguments each passes: extras one step, fewer (a partial application as the
+; value) another, a different function each time; non-tail calls nest (10000 at most).  It ends with an error made
+; deep in a tail loop, uncaught: the trace has only the calls not in tail position.
+(fun {ta n} ?{(zero? n) :done-a (tb (- n 1) :x :y)})
+(fun {tb n} ?{(zero? n) (list :done-b &_) (tc (- n 1) &1)})
+(fun {tc n x} ?{(zero? n) (list :done-c x) (ta (- n 1))})
+(print "abc" (ta 12000) (ta 12001) (ta 12002) (tb 3 1 2) (tc 4 :q))
+(fun {tp n} ?{(zero? n) (tq) (tp (- n 1))})
+(fun {tq a b} {list a b})
+(print "partial at the end" (tp 12000) ((tp 12000) 1 2) (((tp 5) 1) 2))
+(fun {tv n acc} ?{(zero? n) acc (do (set {m} (- n 1)) (tv m (+ acc 1)))})
+(fun {tl n} {let {{m (- n 1)}} ?((< m 0) :done-let (tl m))})
+(fun {te n} ?{(zero? n) :done-eval (eval {te (- n 1)})})
+(fun {tu n} ?{(zero? n) :done-unpack (unpack tu [(- n 1)])})
+(fun {tx n} ?{(zero? n) :done-ghost (ghost tx (- n 1))})
+(print "forms" (tv 12000 0) (tl 12000) (te 11000) (tu 11000) (tx 11000))
+(def {counter} #({{:n 0} {:step (fn {k} {if (zero? k) (&0 :n) (do (hash-put &0 {:n (+ (&0 :n) 1)}) (counter :step (- k 1)))})}}))
+(print "method" (counter :step 11000) (counter :n))
+(fun {tw n} {do =(next (fn {} {tw (- n 1)})) (cond {(zero? n) :done-cond} {T next})})
+(print "cond" (tw 11000))
+
+; a different function each step, chosen from a list by the count, each given as many as it takes (1 to 4), or not
+(def {steps} {})
+(fun {s1 n} ?{(zero? n) [:s1 n] (pick (- n 1) 1 2 3)})
+(fun {s2 n a} ?{(zero? n) [:s2 a] (pick (- n 1))})
+(fun {s3 n a b} ?{(zero? n) [:s3 a b] (pick (- n 1) 1)})
+(fun {s4 n a b c} ?{(zero? n) [:s4 a b c] (pick (- n 1) 1 2)})
+(fun {pick n} {eval (cons (nth (bit-and n 3) [s1 s2 s3 s4]) (cons n &_))})
+(print "pick" (pick 12000) (pick 12001 :a) (pick 12002 :a :b) (pick 12003 :a :b :c) (pick 3) (pick 12001) (try (pick 12000 :extra) &err) (try (pick 12004 1 2 3) &err))
+
+; not in tail position: they nest, and too deep is an error
+(fun {nt n} ?{(zero? n) 0 (+ 1 (nt (- n 1)))})
+(fun {nt-do n} ?{(zero? n) 0 (do (nt-do (- n 1)) n)})
+(fun {nt-and n} ?{(zero? n) T (and (nt-and (- n 1)) T)})
+(fun {nt-arg n} ?{(zero? n) :bottom (list (nt-arg (- n 1)))})
+(print "nest" (nt 9000) (try (nt 10000) &err) (nt-do 9000) (try (nt-do 10000) &err) (nt-and 9000) (try (nt-and 10000) &err))
+(print "nest" (len (nt-arg 50)) (try (nt-arg 10000) &err) (try (nt 99999) &err))
+
+; an error deep in a tail loop: its trace (only the calls not in tail position are in it)
+(fun {wrapper n} {+ 0 (loop-to-error n)})
+(fun {loop-to-error n} ?{(zero? n) (+ 1 (error "deep in a tail loop")) (loop-to-error (- n 1))})
+(print "caught" (try (wrapper 12000) &err))
+(fun {outer-call} {list (wrapper 12000)})
+(outer-call)

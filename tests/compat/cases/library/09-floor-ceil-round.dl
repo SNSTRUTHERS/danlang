@@ -1,0 +1,64 @@
+; 09-floor-ceil-round: floor and ceil (by trunc and cmp, in a let of their own, the result an integer), round (a half
+; away from zero, by floor): integers at the small-integer range's edges and past 2^63, halves of odd numbers there
+; (131071/2, -2049/2, (2^63-1)/2 ...), rationals, fixed decimals (2.5, -2.50, 0.1, 2.4999), complex numbers (trunc's
+; error), every other kind (round's (+ a 1/2) joins a string), partial application, too many, errors.
+; Ends with floor's error on a complex number, from round inside a user function (the trace through lib\globals.dl).
+
+(print floor)
+(print ceil)
+(print round)
+(def {xs} {0 1 -1 65535 65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 18446744073709551616 7/2 -7/2 1/2 -1/2 3/2 -3/2 5/2 -5/2 1/3 -1/3 2/3 -2/3 2.5 -2.50 0.1 -0.1 2.4999 -2.4999 0.5 -0.5 1.5 -1.5 0.0 -0.0 0.49999 -0.50001})
+(print :floor (map floor xs))
+(print :ceil (map ceil xs))
+(print :round (map round xs))
+(print :trunc (map trunc xs))
+(print (map (fn {x} {type-of (floor x)}) {2.5 7/2 3}) (map int? [(floor 2.5) (ceil 2.5) (round 2.5) (floor 7/2) (round -0.5)]))
+(print (repr (floor 2.5)) (repr (floor -2.5)) (repr (ceil 2.5)) (repr (round 2.5)) (repr (round -2.5)) (repr (round 0.5)))
+
+; halves at the edges
+(print (floor 131071/2) (ceil 131071/2) (round 131071/2) (round -131071/2) (floor -2049/2) (ceil -2049/2) (round -2049/2) (round 2049/2))
+(print (floor 9223372036854775807/2) (ceil 9223372036854775807/2) (round 9223372036854775807/2))
+(print (floor -9223372036854775809/2) (ceil -9223372036854775809/2) (round -9223372036854775809/2))
+(print (floor 18446744073709551615/2) (round 18446744073709551615/2) (round -18446744073709551617/2))
+(print (floor 65535.5) (ceil 65535.5) (round 65535.5) (round 65535.49) (floor -1024.5) (ceil -1024.5) (round -1024.5) (round -1024.49))
+(print (floor 9223372036854775807.5) (ceil 9223372036854775807.5) (round 9223372036854775807.5) (round -9223372036854775808.5))
+(print (floor math.pi) (ceil math.pi) (round math.pi) (round math.e) (floor (- math.phi)) (ceil (- math.gamma)) (round (- math.gamma)))
+
+; computed arguments
+(print (floor (/ 7 2)) (ceil (/ -7 2)) (round (/ 5 2)) (round (/ -5 2)) (floor (* 0.5 3)) (ceil (- 0.1 0.2)))
+(print (floor (/ 9223372036854775808 3)) (ceil (/ 9223372036854775808 3)) (round (/ 9223372036854775808 3)))
+
+; complex numbers: trunc's error
+(print (floor (complex 1 2)))
+(print (ceil (complex 1 2)))
+(print (round (complex 1 2)))
+(print (round (complex -1 2)))
+(print (floor (complex 5 0)))
+
+; other kinds
+(print (floor "a"))
+(print (ceil \a))
+(print (round "a"))
+(print (round "-a"))
+(print (round {1}))
+(print (floor NIL))
+(print (round NIL))
+(print (round T))
+(print (round :a))
+(print (round +))
+(print (ceil (hash-create)))
+
+; partial application, too many, errors
+(print (floor))
+(print (round))
+(print (floor 1 2))
+(print (ceil 1 2))
+(print (round 1 2))
+(print (floor (error "floor's a")) (ceil (error "ceil's a")) (round (error "round's a")))
+(print (floor (round (ceil 7/3))) (round (floor -7/3)) (ceil (round -7/3)))
+(print (map round (map (fn {n} {/ n 4}) (range -10 11))))
+
+; round of a complex number, inside a user function: the program ends with floor's error
+(fun {nearest x} {list :nearest (round x)})
+(print (nearest 7/3) (nearest -7/2))
+(nearest (complex 3 4))

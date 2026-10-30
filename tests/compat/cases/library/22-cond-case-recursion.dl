@@ -1,0 +1,57 @@
+; 22-cond-case-recursion: recursive functions whose recursive call is a cond or case clause's value.  The value is
+; run as (eval (head (tail clause))): the head of a list run as code, so the call is that code's first item, not
+; in tail position: each level nests one call (at most 10,000 nested), unlike an if's branch, a tail call (20,000
+; levels and more).  The limit found from inside a plain recursion 9,900 deep: one more level than the last that
+; works is "Too deep", for cond, case, a cond of four clauses, and mutual recursion through cond and case.  A list
+; built through case's values; a clause made by [..] is made eagerly, before case runs.
+; Ends with "Too deep" from a case recursion at the limit (the trace: its innermost 12 calls).
+
+(fun {deep n thunk} {if (=0 n) (thunk) (fst (list (deep (1- n) thunk)))})
+(fun {cd1 n} {cond {(=0 n) :done} {T (cd1 (1- n))}})
+(print (cd1 0) (cd1 1) (cd1 100))
+(print :cd1-99 (deep 9900 (fn {} {cd1 99})))
+(print :cd1-100 (deep 9900 (fn {} {cd1 100})))
+(fun {cd2 n} {cond {(=0 n) 0} {T (+ 1 (cd2 (1- n)))}})
+(print (cd2 100))
+(print :cd2-99 (deep 9900 (fn {} {cd2 99})))
+(print :cd2-100 (deep 9900 (fn {} {cd2 100})))
+(fun {cd3 n} {cond {(=0 n) :done} {NIL :never} {(< n 0) :negative} {T (cd3 (1- n))}})
+(print (cd3 -1) (cd3 3))
+(print :cd3-99 (deep 9900 (fn {} {cd3 99})))
+(print :cd3-100 (deep 9900 (fn {} {cd3 100})))
+
+; an if's branch is a tail call: no nesting
+(fun {loop n} {if (=0 n) :loop-done (loop (1- n))})
+(print (loop 20000))
+(fun {loop2 n} {do (if (=0 n) :loop2-done (loop2 (1- n)))})
+(print (loop2 20000))
+(print (deep 9900 (fn {} {loop 20000})))
+
+; case
+(fun {cs1 n} {case (=0 n) {T :done} {NIL (cs1 (1- n))}})
+(print (cs1 0) (cs1 50))
+(print :cs1-99 (deep 9900 (fn {} {cs1 99})))
+(print :cs1-100 (deep 9900 (fn {} {cs1 100})))
+(fun {cs2 n} {case n {0 :zero} {1 :one} {2 :two} [n (if (< n 3) :small (cs2 (- n 3)))]})
+(print (cs2 7) (cs2 2))
+(print (deep 9900 (fn {} {cs2 300})))
+(fun {cs3 n} {case n {0 :zero} {1 :one} [n (cs3 (- n 2))]})
+(print (cs3 5))
+
+; mutual recursion, cond calling case calling cond
+(fun {ping n} {cond {(=0 n) :ping-done} {T (pong (1- n))}})
+(fun {pong n} {case (=0 n) {T :pong-done} {NIL (ping (1- n))}})
+(print (ping 10) (pong 10) (ping 11))
+(print :ping-99 (deep 9900 (fn {} {ping 99})))
+(print :ping-100 (deep 9900 (fn {} {ping 100})))
+
+; a list built through case's values
+(fun {digits n} {case (< n 10) {T (list n)} {NIL (join (digits (div n 10)) (list (mod n 10)))}})
+(print (digits 0) (digits 65536) (digits 9223372036854775808) (digits -1025))
+
+; deep, then a cond with no match at the bottom: its error comes back up through every level
+(fun {cd4 n} {cond {(=0 n) (cond {NIL :inner-no-match})} {T (cd4 (1- n))}})
+(print (cd4 50))
+
+; a case recursion one level past the limit: the program ends with the error and its trace
+(deep 9900 (fn {} {cs1 100}))

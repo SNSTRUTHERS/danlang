@@ -1,0 +1,28 @@
+--- stdout
+{1} {1} {1} {NIL} {NIL} {1} {1} {{1} 2}
+{0 0 1 2} {0 1 2} {0 1 2} {0 1 (+ 1 1) x} {0 1 (+ 1 1) x}
+:list T T 1
+Error: 'cons' expects a list second Error: 'cons' expects a list second Error: 'cons' expects a list second Error: 'cons' expects a list second Error: x Error: y
+{1 a b} {0 1 2} {0} {0}
+{:r1 0 1 2 3} {:r2 0 1 2 3} {:l1 :a :b} {:l2 :a :b} {:q1 x y z} {:q2 x y z} {:d1 p (q) {r}} {:d2 p (q) {r}}
+{0 1 2 3} {:a :b} {x y z} {p (q) {r}} 3 Error: Unbound Symbol 'y'
+{:k :a :b} {0 1 2} {\x \a \b} {0 2 3} {0 0 2 4} {0 1 2} {0 1 2 3} {0 3 2 1 0} {0 1 2} {0 0 1} {0 0 1 2} {0 3} {0 0}
+src NIL {:one} {:two} {:three :two} {:four} T
+src {0 1 2} {:one 0 1 2} {:two 0 1 2} {:three :two 0 1 2} {:four 0 1 2} T
+src {7 8} {:one 7 8} {:two 7 8} {:three :two 7 8} {:four 7 8} T
+src {9} {:one 9} {:two 9} {:three :two 9} {:four 9} T
+src {u v} {:one u v} {:two u v} {:three :two u v} {:four u v} T
+src {w} {:one w} {:two w} {:three :two w} {:four w} T
+src {1 2 3} {:one 1 2 3} {:two 1 2 3} {:three :two 1 2 3} {:four 1 2 3} T
+src {2 3 4} {:one 2 3 4} {:two 2 3 4} {:three :two 2 3 4} {:four 2 3 4} T
+src {5} {:one 5} {:two 5} {:three :two 5} {:four 5} T
+<hash>{{:t {1 2 3 4 5}} {:d {2 3 4 5}} {:c {9 1 2 3 4 5}} {1 {2 3 4 5}}} {1 2 3 4 5} {2 3 4 5} {0 1 2 3 4 5}
+{1 2 3 4 5} {:a 1 2 3 4 5} {:b 1 2 3 4 5} {1 2 3 4 5} {0 1 2 3 4 5}
+<hash>{{:t {:new 1 2 3 4 5}} {:d {3 4 5}} {:c {9 1 2 3 4 5}} {1 {2 3 4 5}}}
+<hash>{{:t {:new 1 2 3 4 5}} {:d {3 4 5}} {:c {9 1 2 3 4 5}} {1 {2 3 4 5}}} <hash>{{:t {1 2 3 4 5}} {:d {3 4 5}} {:c {:cc 9 1 2 3 4 5}} {1 {2 3 4 5}}}
+<hash>{{:v {1 2 3 4 5}} {:w {0 1 2 3 4 5}} {:u {3 4 5}}} {1 1 2 3 4 5} {2 1 2 3 4 5} {3 3 4 5} {4 3 4 5} <hash>{{:v {1 2 3 4 5}} {:w {0 1 2 3 4 5}} {:u {3 4 5}}}
+{{:v {1 2 3 4 5}} {:w {0 1 2 3 4 5}} {:u {3 4 5}}} {:e {:v {1 2 3 4 5}} {:w {0 1 2 3 4 5}} {:u {3 4 5}}} <hash>{{:z 1} {:v {1 2 3 4 5}} {:w {0 1 2 3 4 5}} {:u {3 4 5}}} {{1 2 3 4 5} {0 1 2 3 4 5} {3 4 5}} {0 {1 2 3 4 5} {0 1 2 3 4 5} {3 4 5}}
+{:p {1 2 3 4 5} {0 1 2 3 4 5} {3 4 5}} {:q {1 2 3 4 5} {0 1 2 3 4 5} {3 4 5}} {{:m 1 2 3 4 5} {:m 0 1 2 3 4 5} {:m 3 4 5}} {{1 2 3 4 5} {0 1 2 3 4 5} {3 4 5}} {5 6 3}
+--- stderr
+
+--- exit 0

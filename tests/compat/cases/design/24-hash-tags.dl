@@ -1,0 +1,55 @@
+; 24-hash-tags: hashes whose tags are added after their entries: locked (a key there can change, in place, or be
+; NIL, kept as NIL; no key added or taken out), read-only, an entry private, not-nil, read-only, locked, or with a tag of
+; its own; a hash with no tags of its own but entries with them (each entry's still checked); reserved keys; the tags
+; a method sees through &0 (none: its &0 is a proxy, the hash's entries only, at most three proxies deep).
+(fun {show label h} {print label (hash-keys h) (hash-values h) (len h) h})
+(def {h} #({{:a 1} {:b 2} {:c 3}}))
+(hash-lock h)
+(print "locked" (hash-locked? h) (hash-put h {:a 10}) (hash-put h {:new 1}) (hash-remove h :b) (hash-put h {:b NIL}))
+(show "locked" h)
+(print "locked" (h :b) (hash-key? h :b) (hash-get h :b) (hash-put h {:b 20}) (hash-put h {:zz NIL}) (h :zz))
+(show "locked" h)
+(def {hl} (hash-clone h {:c 30}))
+(print "clone" hl (hash-locked? hl) (hash-put hl {:d 4}) (eq h hl) (eq h (hash-clone h)))
+(def {r} #({{:a 1} {:b 2}}))
+(hash-make-const r)
+(print "read-only" (hash-const? r) (hash-put r {:a 5}) (hash-put r {:z 1}) (hash-remove r :a) (hash-put r {:a NIL}) r)
+
+; no tags on the hash, tags on entries: each still checked
+(def {e} #({{:pub 1} {:sec 2} {:nn 3} {:ro 4} {:lk 5} {:own 6 :mine}}))
+(hash-make-private e :sec)
+(hash-make-not-nil e :nn)
+(hash-make-const e :ro)
+(hash-lock e :lk)
+(print "entries" (hash-tag? e :mine) (hash-tag? e {:own :mine}) (hash-private? e) (hash-private? e :sec) (hash-const? e :ro))
+(print "get" (e :pub) (e :sec) (hash-get e :sec) (e :nn) (e :ro) (e :lk) (e :own) (hash-key? e :sec))
+(print "put" (hash-put e {:pub 10}) (hash-put e {:sec 20}) (hash-put e {:nn NIL}) (hash-put e {:nn 30}) (hash-put e {:ro 40}))
+(print "put" (hash-put e {:lk NIL}) (hash-key? e :lk) (hash-put e {:own NIL}) (hash-key? e :own) (hash-put e {:pub 1 :t1 :t2}))
+(show "entries" e)
+(print "remove" (hash-remove e :sec) (hash-remove e :ro) (hash-remove e :lk) (hash-remove e :nn) (hash-keys e))
+(print "tags" (hash-add-tag e :later) (hash-add-tag e :later) (hash-add-tag e {:pub :t3}) (hash-put e {:later}) (hash-put e {:pub}) e)
+(print "tags" (hash-tag? e :later) (hash-tag? e :pub) (hash-tag? e {:pub :t3}) (try (hash-tag? e {:none :t}) &err) (from# e))
+(hash-put e {:sec2 7 :__private})
+(print "private by put" (e :sec2) (hash-private? e :sec2) (hash-put e {:sec2 8}) (hash-keys e))
+
+; reserved names: two are no keys; the other two are (only their tags are reserved)
+(def {k} (hash-create))
+(print "reserved" (hash-put k {:__locked 1}) (hash-put k {:__read-only 1}) (hash-put k {:__private 1}) (hash-put k {:__not_nil 2}))
+(print "reserved" (k :__locked) (k :__private) (hash-keys k) (hash-locked? k) (hash-private? k) k)
+(hash-put k [(to-atom "") :empty])
+(print "empty atom" (hash-keys k) (k (to-atom "")) (hash-key? k (to-atom "")) (len k) (hash-put k [(to-atom "") :again]) k)
+
+; a method's &0: the entries, private ones too, but none of the hash's tags
+(def {m} #({{:t 1} {:s 2} {:look @({} {list (hash-tag? &0 :mytag) (hash-locked? &0) (&0 :s) (hash-keys &0) (len &0) &0})}
+  {:set @({v} {hash-put &0 {:t v}})} {:add @({} {hash-put &0 {:new 1}})}}))
+(hash-make-private m :s)
+(hash-add-tag m :mytag)
+(print "method" (m :look) (hash-tag? m :mytag) (try (m :s) &err))
+(hash-lock m)
+(print "method" (m :set 5) (m :t) (m :add) (m :look) m)
+
+; a method calling a method through &0: each &0 a proxy of the one before; deep enough, it finds nothing
+(def {chain} #({{:n :found} {:down @({k} {if (zero? k) (list (&0 :n)) (cons (&0 :n) (&0 :down (- k 1)))})}
+  {:put @({k} {if (zero? k) (list (hash-put &0 {:n :put}) (&0 :n)) (&0 :put (- k 1))})}}))
+(print "chain" (chain :down 6) (try (chain :put 0) &err) (try (chain :put 2) &err) (try (chain :put 3) &err) (try (chain :put 5) &err))
+(print "chain" chain (hash-call chain :down 4))

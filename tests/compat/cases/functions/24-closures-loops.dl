@@ -1,0 +1,78 @@
+; 24-closures-loops: closures keep the variables of the scope they were made in.  Each iteration of each and
+; dotimes (both forms) has a scope of its own, so closures made in it keep that iteration's variable (and its
+; locals); a set! of the variable changes only that iteration's; while has no scope, so closures made in its body
+; share the function's variables.  Counters and accumulators made by functions; closures over arguments and lets.
+; dotimes's count: 0, negative (nothing), 2.0 and 4/2 (whole), 2.5 (an error), bigger than a long (stopped early).
+
+(def {fs} {})
+(each {i {1 2 3}} (def {fs} (join fs [(fn {} {i})])))
+(print fs (map (fn {f} {f}) fs))
+(def {ds} {})
+(dotimes {i 3} (def {ds} (join ds [(fn {} {* i 10})])))
+(print (map (fn {f} {f}) ds))
+(def {cs} {})
+(each {c "abc"} (def {cs} (join cs [(fn {} {c})])))
+(print (map (fn {f} {f}) cs))
+
+; the function forms: each call its own scope
+(def {fs2} {})
+(each (fn {i} {def {fs2} (join fs2 [(fn {} {i})])}) {:a :b :c})
+(print (map (fn {f} {f}) fs2))
+(def {fs3} {})
+(dotimes 3 (fn {i} {def {fs3} (join fs3 [(fn {} {i})])}))
+(print (map (fn {f} {f}) fs3))
+
+; while: one scope for every pass, so the closures share the last value
+(def {ws} {})
+(def {wi} 0)
+(while (< wi 3) (def {ws} (join ws [(fn {} {wi})])) (set! {wi} (+ wi 1)))
+(print (map (fn {f} {f}) ws))
+(fun {while-in-fn} {do =(j 0) =(acc {}) (while (< j 3) =(acc (join acc [(fn {} {j})])) =(j (+ j 1))) (map (fn {f} {f}) acc)})
+(print (while-in-fn))
+
+; an iteration's locals and set! of its variable: that iteration's
+(fun {each-locals} {do =(acc {}) (each {i {1 2 3}} =(k (* i 2)) (set! {acc} (join acc [(fn {} {list i k})]))) (map (fn {f} {f}) acc)})
+(print (each-locals))
+(fun {each-bang} {do =(acc {}) (each {i {1 2 3}} (set! {acc} (join acc [(fn {} {i})])) (set! {i} (* i 100))) (map (fn {f} {f}) acc)})
+(print (each-bang))
+(fun {nested-loops} {do =(out {}) (each {a {1 2}} (dotimes {b 2} (set! {out} (join out [(fn {} {list a b})])))) (map (fn {f} {f}) out)})
+(print (nested-loops))
+
+; the loop variable shadows a global of the same name only inside
+(def {each-i} :global-i)
+(each {each-i {1 2}} (write each-i ""))
+(print each-i)
+
+; counters and accumulators
+(fun {make-counter} {do =(c 0) (fn {} {do (set! {c} (+ c 1)) c})})
+(def {c1 c2} (make-counter) (make-counter))
+(print (c1) (c1) (c1) (c2) (c1) (c2))
+(fun {make-acc start} {fn {n} {do (set! {start} (+ start n)) start}})
+(def {acc1 acc2} (make-acc 100) (make-acc 0))
+(print (acc1 10) (acc1 10) (acc2 1) (acc1 1) (acc2 1))
+(fun {adders} {map (fn {n} {fn {x} {+ x n}}) {1 10 100}})
+(print (map (fn {f} {f 5}) (adders)))
+(def {lfs} (let {{base 1000}} (map (fn {n} {fn {} {+ base n}}) {1 2})))
+(print (map (fn {f} {f}) lfs))
+
+; a closure made in a loop that keeps counting after the loop
+(def {tickers} {})
+(dotimes {i 2} (def {tickers} (join tickers [(let {{tk (* i 100)}} (fn {} {do (set! {tk} (+ tk 1)) tk}))])))
+(print ((fst tickers)) ((fst tickers)) ((snd tickers)) ((fst tickers)))
+
+; dotimes counts
+(dotimes {i 0} (print :never))
+(print (dotimes {i -1} (print :never)))
+(dotimes {i 2.0} (write i ""))
+(dotimes {i 4/2} (write i ""))
+(print)
+(print (try (dotimes {i 2.5} (print i)) &err))
+(print (try (dotimes {i :a} (print i)) &err))
+(print (try (dotimes {i 100000000000000000000} (write i "") (if (> i 2) (error "stopped at 3"))) &err))
+(print (try (dotimes {i 9223372036854775808} (if (> i 1) (error (+ "stopped at " i)))) &err))
+(print (try (dotimes 100000000000000000000 (fn {i} {if (> i 1) (error (+ "fn form stopped at " i))})) &err))
+
+; the last: a closure over a loop variable that was a function, called wrongly, ends the program
+(def {fns} {})
+(each {f [len reverse]} (def {fns} (join fns [(fn {} {f {1 2} 3})])))
+((fst fns))

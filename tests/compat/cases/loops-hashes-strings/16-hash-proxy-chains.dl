@@ -1,0 +1,51 @@
+; 16-hash-proxy-chains.dl - &0 when methods call methods through it: each call through &0 makes a new &0 standing
+; for the one before (a chain back to the hash). The base interpreter's quirks, kept for compatibility: four calls
+; deep (a method recursing through &0), the entries can't be found (the key "isn't a method", a value is NIL, len
+; is 0); two deep, a method's put or remove gets past the hash's read-only and locked tags; the tag tests of &0 are
+; NIL whatever the hash has; a printed &0 of &0 is an error
+
+; recursion through &0: works 4 calls deep, not 5
+(def {r} #({{:fact @({n} {if (< n 2) 1 (* n (&0 :fact (- n 1)))})}
+           {:down @({n} {if (eq n 0) :bottom (&0 :down (- n 1))})}}))
+(print (r :fact 1) (r :fact 2) (r :fact 3) (r :fact 4))
+(print (r :fact 5))
+(print (r :down 3))
+(print (r :down 4))
+(print (hash-call r :fact 4) (hash-call r :fact 5))
+
+; a private entry through &0: three methods deep it's there, four deep it's NIL
+(def {p} #({{:s :secret :__private} {:get1 @({} {&0 :s})} {:get2 @({} {&0 :get1})} {:get3 @({} {&0 :get2})}
+           {:get4 @({} {&0 :get3})}}))
+(print (p :get1) (p :get2) (p :get3) (p :get4))
+
+; &0 handed out: each (x :me) one link more
+(def {c} #({{:k 1} {:me @({} {&0})}}))
+(def {c1} (c :me))
+(def {c2} (c1 :me))
+(def {c3} (c2 :me))
+(print (eq c1 c) (eq c2 c) (eq c3 c))
+(print (len c) (len c1) (len c2) (len c3))
+(print (c1 :k) (c2 :k) (c3 :k) (hash-get c3 :k) (hash-key? c2 :k) (hash-key? c3 :k))
+(print (hash-keys c2) (hash-keys c3) (hash-values c3))
+(print c1)
+(print (repr c2))
+(print (from# c2))
+
+; two methods deep, a put and a remove get past read-only and locked
+(def {ro} #({{:a 1} {:set @({v} {hash-put &0 {:a v}})} {:set2 @({v} {&0 :set v})} :__read-only}))
+(print (ro :set 5) (ro :a))
+(print (ro :set2 6) (ro :a))
+(def {lk} #({{:a 1} {:add @({k} {hash-put &0 [k :added]})} {:add2 @({k} {&0 :add k})}
+            {:rm @({k} {hash-remove &0 k})} {:rm2 @({k} {&0 :rm k})} :__locked}))
+(print (lk :add :b) (hash-key? lk :b))
+(print (lk :add2 :c) (hash-key? lk :c))
+(print (lk :rm :a))
+(print (lk :rm2 :a) (hash-key? lk :a))
+(print lk)
+
+; the tag tests of &0 look at none of the hash's tags; a tag added through &0 is the hash's
+(def {tg} #({{:k 1 :__private} {:tests @({} {list (hash-locked? &0) (hash-const? &0) (hash-tag? &0 :mine) (hash-private? &0 :k)})}
+            {:tag @({} {hash-add-tag &0 :mine})} :__locked :__read-only}))
+(print (tg :tests))
+(print (tg :tag) (hash-tag? tg :mine) (tg :tests))
+(print (hash-locked? tg) (hash-const? tg) (hash-private? tg :k))

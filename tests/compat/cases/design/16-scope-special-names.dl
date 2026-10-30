@@ -1,0 +1,60 @@
+; 16-scope-special-names: the shorthand's names ([..] is list; the prefixes ?( if, =( set, @( fn, :( def, #(
+; hash-create, .( unpack, ~( format) are looked up where they're written, as any name is: bound locally (a formal, a
+; let, a loop's variable, a method's formal, a closure's scope), that binding is what's called.  Then a call of a
+; global, made many times (its way learned), made where a local of that name is bound, or after the global changes
+; to another kind of value.
+(fun {with-list list} {[1 2 3]})
+(print "list" (with-list +) (with-list (fn {a b c} {* a b c})) (with-list list) [1 2 3])
+(fun {with-if if} {?(T :then :else)})
+(print "if" (with-if (fn {c a b} {list :my-if c a b})) ?(T :then :else) (with-if list))
+(fun {with-set set} {do =({zz} 5) (try zz &err)})
+(print "set" (with-set (fn {a b} {list :my-set a b})) (with-set set) (try zz &err))
+(fun {with-fn fn} {@({x} {x})})
+(print "fn" (with-fn (fn {a b} {list :my-fn a b})) ((with-fn fn) :identity))
+(fun {with-def def} {:({dd} 1)})
+(print "def" (with-def (fn {a b} {list :my-def a b})) (try dd &err) (with-def def) dd)
+(fun {with-hc hash-create} {#({{:a 1}})})
+(print "#" (with-hc (fn {e} {list :my-hash e})) (with-hc hash-create))
+(fun {with-unpack unpack} {.(+ {1 2})})
+(print "." (with-unpack (fn {f l} {list :my-unpack l})) (with-unpack unpack))
+(fun {with-format format} {~("a{}c" :b)})
+(print "~" (with-format (fn {s v} {list :my-format s v})) (with-format format))
+
+; the same through let, loops, methods, closures made where they're bound
+(print "let" (let {{list +}} [4 5]) (let {{if (fn {c a b} {:let-if})}} ?(NIL 1 2)) [4 5] ?(NIL 1 2))
+(each {list [+ * -]} (print "each" [6 3]))
+(dotimes {if 2} (print "dotimes" (try ?(T 1 2) &err)))
+(def {obj} #({{:m (fn {list} {[2 3 4]})} {:n (fn {if x} {?(x :yes :no)})}}))
+(print "method" (obj :m +) (obj :m *) (obj :n (fn {c a b} {:method-if}) T) (obj :n if NIL))
+(fun {mk-if-closure if} {fn {c} {?(c :yes :no)}})
+(def {cl} (mk-if-closure (fn {c a b} {:closure-if})))
+(def {cl2} (mk-if-closure if))
+(print "closure" (cl T) (cl NIL) (cl2 T) (cl2 NIL) ?(T :yes :no))
+(def {fx} (fexpr {list} {[:a :b]}))
+(print "fexpr" (fx whatever) [:a :b])
+
+; a global's call, its way learned, then made where a local of the name is bound
+(fun {helper} {:global-helper})
+(def {call-helper} (read "helper"))
+(print "plan" (eval call-helper) (eval call-helper) (eval call-helper))
+(fun {with-local helper} {eval call-helper})
+(print "plan" (with-local (fn {} {:local-helper})) (eval call-helper) (with-local (fn {} {:again})) (eval call-helper))
+(def {code2} (read "len {1 2}"))
+(print "plan" (eval code2) (eval code2) ((fn {len} {eval code2}) (fn {l} {:my-len})) (eval code2))
+(def {code3} (read "1+ 41"))
+(fun {loop-1+ n} {if (zero? n) (eval code3) (do (eval code3) (loop-1+ (- n 1)))})
+(print "plan" (loop-1+ 50) (let {{1+ (fn {x} {:let-1+})}} (eval code3)) (loop-1+ 3))
+
+; the global changed: another function, a number, a hash, a buffer, an error value's not reachable: a function again
+(def {helper} (fn {} {:redefined}))
+(print "kinds" (eval call-helper))
+(def {helper} 42)
+(print "kinds" (eval call-helper) (try (eval (read "helper 1")) &err))
+(def {helper} #({{:k :hash-value} {1 :one}}))
+(print "kinds" (eval call-helper) (eval (read "helper :k")) (eval (read "helper 1")))
+(def {helper} (buffer "AB"))
+(print "kinds" (eval call-helper) (eval (read "helper 1")) (try (eval (read "helper 1 2")) &err))
+(def {helper} if)
+(print "kinds" (eval (read "helper T :t :f")) (try (eval call-helper) &err))
+(def {helper} (fn {} {:fn-again}))
+(print "kinds" (eval call-helper) (with-local (fn {} {:local-last})))

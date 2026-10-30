@@ -1,0 +1,24 @@
+--- stdout
+global {1 2 3 4 5 6 7 8 :global :no-p9} {1 2 3 4 5 6 7 9 :global :no-p9} {{1 2 3 4 5 6 7 10 :global :no-p9} {1 2 3 4 5 6 7 11 :global :no-p9}}
+hooks {:a :b :c :d :d-many :e :f :g}
+at c {1 2 3 4 5 6 7 8 {:c 3} :no-p9} {1 2 3 4 5 6 7 9 {:c 3} :no-p9}
+at f {1 2 3 4 5 6 7 8 {:f 6} :no-p9} :global
+at a, farther {1 2 3 4 5 6 7 8 {:f 6} :no-p9}
+d with 9 more {1 2 3 4 5 6 7 8 {:f 6} 9}
+at g, nearest {1 2 3 4 5 6 7 8 {:g 7} 9} {{1 2 3 4 5 6 7 1 {:g 7} 9} {1 2 3 4 5 6 7 2 {:g 7} 9}}
+another chain {:x :y :z :w :u :t2 :s :r :global :no-p9} {1 2 3 4 5 6 7 8 {:g 7} 9}
+global changed {1 2 3 4 5 6 7 8 {:g 7} 9} :global-again
+set! {1 2 3 {:set 1}} {1 2 3 {:set 2}} :global-again
+set! global {1 2 {:set-global 5}} {:set-global 5}
+loops {{:let-x 0 :p {0 :p} :g3} {:let-x 0 :q {0 :q} :g3} {:let-x 1 :p {1 :p} :g3} {:let-x 1 :q {1 :q} :g3}}
+i 0 {{:let-x 0 :p {0 :p} {:i 0}} {:let-x 0 :q {0 :q} {:i 0}} {:let-x 1 :p {1 :p} :g3} {:let-x 1 :q {1 :q} :g3}}
+y 1 q {{:let-x 0 :p {0 :p} {:i 0}} {:let-x 0 :q {0 :q} {:i 0}} {:let-x 1 :p {1 :p} :g3} {:let-x 1 :q {1 :q} {:y 1 :q}}}
+z 0 q {{:let-x 0 :p {0 :p} {:i 0}} {:let-x 0 :q {0 :q} {:z {0 :q}}} {:let-x 1 :p {1 :p} :g3} {:let-x 1 :q {1 :q} {:y 1 :q}}}
+i 1 {{:let-x 0 :p {0 :p} {:i 0}} {:let-x 0 :q {0 :q} {:z {0 :q}}} {:let-x 1 :p {1 :p} {:i 1}} {:let-x 1 :q {1 :q} {:y 1 :q}}}
+every y {{:let-x 0 :p {0 :p} {:y 0 :p}} {:let-x 0 :q {0 :q} {:z {0 :q}}} {:let-x 1 :p {1 :p} {:y 1 :p}} {:let-x 1 :q {1 :q} {:y 1 :q}}} :g3
+   {:let-w :g3}
+callers {:let-w :g3} {:let-w :g3} {:let-w :g3} {:let-w :g3} NIL
+late in a let {:let-w2 :g3} NIL {:let-w2 :in-the-let} :g3
+--- stderr
+
+--- exit 0

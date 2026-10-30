@@ -1,0 +1,70 @@
+; 13-unbound.dl - unbound symbols: the error "Unbound Symbol 'name'" (the name in lower case: names are case
+; insensitive), wherever the name is: a call's function or argument, a function's body (only when it runs), a
+; Q-expression eval'd, a hash's value, set! of a name never bound; a function's own variables and its extras
+; (&1, &_) are its own.  The last error is an unbound name in a list made at run time (cons's), eval'd in a function
+
+(print undefined-a)
+(print (undefined-b 1 2))
+(print (+ 1 UNDEFINED-C))
+(print (list 1 2 Undefined-D))
+(print (if undefined-e 1 2))
+(print (and T undefined-f) (or NIL undefined-g))
+
+; names are case insensitive: one binding, however it's written
+(def {Mixed-Case} 5)
+(print mixed-case MIXED-CASE Mixed-Case (defined? mIxEd-CaSe))
+(fun {Shout X} {+ x 1})
+(print (shout 1) (SHOUT 2) shout)
+
+; a body's names are looked up when it runs, not when it's made
+(fun {uses-later} {+ 1 later-defined})
+(print (uses-later))
+(def {later-defined} 41)
+(print (uses-later))
+
+; a function's variables are its own: gone when it returns
+(fun {local-only} {do =(only-here 1) only-here})
+(print (local-only) only-here (defined? only-here))
+(print (let {{let-var 1}} let-var) let-var)
+(print (each {each-var {1}} each-var) each-var)
+
+; the extras: &1, &_ in a function that names them; at the top level, &1 isn't bound
+(fun {extras} {list &1 &2 &_})
+(print (extras) (extras 1) (extras 1 2 3))
+(print &1)
+(print &_ (defined? &_) (defined? &1))
+(fun {no-extras x} {list x &_ (defined? &1)})
+(print (no-extras 1))
+
+; set!: the nearest binding; none is an error.  set! doesn't make one
+(print (set! {never-bound} 1) (defined? never-bound))
+(def {counter} 0)
+(fun {bump} {set! {counter} (+ counter 1)})
+(print (bump) (bump) counter)
+
+; a Q-expression's names are where it was written
+(fun {run-q q} {do =(secret :run-q) (eval q)})
+(print (run-q {list secret}))
+(fun {make-q} {do =(secret :make-q) {list secret}})
+(print (run-q (make-q)))
+
+; in a hash: the entry's value evaluated as the hash is made
+(print #({{:a undefined-in-hash}}))
+(print (hash-put #() {:b undefined-in-put}))
+
+; in higher-order calls, and with try
+(print (map (fn {x} {+ x undefined-in-map}) {1 2}))
+(print (try undefined-h &err) (try (undefined-i) (fn {m} {list :handled m})))
+(print (error-message undefined-j) (error? undefined-k) (type-of undefined-l))
+(print (defined? undefined-m) (defined? {undefined-n print}) (defined? {print +}) (defined? T) (defined? NIL))
+
+; odd names
+(print (eval (to-sym "with space")))
+(print (eval (to-sym "")))
+(print 1+x a-b->c *star* a.b.c)
+
+(print "the last: an unbound name in cons's list, eval'd in a function")
+(def {code} (cons (to-sym "no-such-function") {1 2}))
+(print code (type-of (fst code)))
+(fun {run-code c} {+ 1 (eval c)})
+(run-code code)

@@ -1,0 +1,32 @@
+--- stdout
+9998 9999
+Error: Too deep: more than 10000 calls nested
+{:caught "Too deep: more than 10000 calls nested"}
+50000
+Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+before; Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+9999 100
+the last: three functions in a loop, too deep
+Error: Too deep: more than 10000 calls nested
+--- stderr
+Error: 14-too-deep.dl: Too deep: more than 10000 calls nested
+  at 14-too-deep.dl:44  (+ n 1)
+  called at 14-too-deep.dl:44  (loop-b (+ n 1))
+  called at 14-too-deep.dl:46  (loop-a (- n 0))
+  called at 14-too-deep.dl:45  (loop-c (* n 1))
+  called at 14-too-deep.dl:44  (loop-b (+ n 1))
+  called at 14-too-deep.dl:46  (loop-a (- n 0))
+  called at 14-too-deep.dl:45  (loop-c (* n 1))
+  called at 14-too-deep.dl:44  (loop-b (+ n 1))
+  called at 14-too-deep.dl:46  (loop-a (- n 0))
+  called at 14-too-deep.dl:45  (loop-c (* n 1))
+  called at 14-too-deep.dl:44  (loop-b (+ n 1))
+  called at 14-too-deep.dl:46  (loop-a (- n 0))
+  called at 14-too-deep.dl:45  (loop-c (* n 1))
+--- exit 1

@@ -1,0 +1,64 @@
+; 14-scope-shapes: one function's body run with its scope in different shapes: a set (or eval of set code) binding a
+; name on some calls only, a global of that name there too; code that remembers no scope (read's, cons's) run in the
+; scopes of functions whose formals are in other orders; a name unbound at first, then defined.  So where a name was
+; found on one call (how many scopes out, which slot) mustn't be taken on another.
+(def {x} :global-x)
+(fun {f flag} {do (if flag (set {x} :local-x)) x})
+(print "f" (f NIL) (f T) (f NIL) (f T) (f T) (f NIL) (f NIL) x)
+(fun {g a b} {do (if a (set {p} :p)) (if b (set {x} :local-x)) (list a b x (if a p :no-p))})
+(print "g" (g NIL NIL) (g T T) (g NIL T) (g T NIL) (g NIL NIL) (g T T))
+(dotimes {i 6} (print "loop" i (f (odd? i)) (g (even? i) (odd? i))))
+(fun {g2 n} {do (if (> n 2) (set {c} 3)) (if (> n 1) (set {b} 2)) (if (> n 0) (set {a} 1)) (list
+  (try a &err) (try b &err) (try c &err) x)})
+(print "g2" (g2 0) (g2 3) (g2 1) (g2 2) (g2 0))
+
+; unbound, then defined; defined, then shadowed by a set at the top level of the same name (the global itself)
+(fun {late} {list x maybe-later})
+(print "late" (try (late) &err))
+(def {maybe-later} :now-defined)
+(print "late" (late))
+(set {maybe-later} :set-at-top)
+(print "late" (late))
+
+; eval of set code inside a function: written there (it remembers the call's scope), passed in (it remembers its
+; own), read's (it remembers none: run where eval is), made by list there
+(def {y} :global-y)
+(fun {h2 n} {do (if (> n 0) (eval {set {y} :local-y})) y})
+(print "h2" (h2 0) (h2 1) (h2 0) (h2 1) y)
+(fun {h3 code} {do (eval code) y})
+(print "h3" (h3 {set {y} :set-at-top}) y)
+(def {y} :global-y)
+(print "h3" (h3 (read "set {y} :read-local")) y (h3 (read "list 1")) (h3 (list set {y} :listed-top)) y)
+(def {y} :global-y)
+(fun {h4 n} {do (if n (eval (list set {y} :listed-local))) y})
+(print "h4" (h4 NIL) (h4 T) (h4 NIL) y)
+(fun {h5 n} {do (if n (eval (read "set {y} :read-in-h5"))) (list y (eval (read "y")))})
+(print "h5" (h5 NIL) (h5 T) (h5 NIL) y)
+
+; the same code, remembering no scope, run in different functions' scopes
+(def {z} :global-z)
+(def {rc} (read "list x y z"))
+(def {cc} (cons list {x y z}))
+(fun {fa x} {eval rc})
+(fun {fb y x} {eval rc})
+(fun {fc z y x} {eval rc})
+(fun {fd x} {list (eval cc) (eval rc)})
+(print "rc" (eval rc) (fa 1) (fb 1 2) (fc 1 2 3) (fa 4) (fb 5 6) (eval rc) (fc 7 8 9) (fd 10) (eval cc))
+(fun {fe y} {do (set {x} :fe-x) (eval rc)})
+(fun {ff} {do (set {z} :ff-z) (set {y} :ff-y) (eval rc)})
+(print "rc" (fe 1) (ff) (fa 2) (ff) (fe 3) (eval rc))
+
+; an fexpr's argument evaluated where it was written, from different shapes of scope
+(def {ev} (fexpr {e} {eval e}))
+(fun {u1 x} {ev x})
+(fun {u2 a x} {ev x})
+(fun {u3 a b} {do (set {x} (list a b)) (ev x)})
+(print "fexpr" (ev x) (u1 1) (u2 1 2) (u3 3 4) (u1 5) (ev x) (u2 6 7) (u3 8 9))
+(def {ev2} (fexpr {e} {do (set {x} :fexpr-own-x) (list x (eval e))}))
+(fun {u4 x} {ev2 x})
+(print "fexpr2" (ev2 x) (u4 :u4-x) (ev2 (list x)) (u4 :again))
+
+; set! where a local of the name is bound on some calls only: the nearest binding, the global otherwise
+(def {qq} :global-qq)
+(fun {sb flag} {do (if flag (set {qq} :local-qq)) (set! {qq} (list :changed flag)) qq})
+(print "set!" (sb NIL) qq (sb NIL) (sb T) qq (sb NIL) qq (sb T) qq)

@@ -1,0 +1,44 @@
+--- stdout
+"1 + 2 = 3"
+"none" "" "" "123"
+"{}" "{7}" "}}" "{{" "}{"
+"{x} { } {  } {x}"
+"lone { and lone } and }{"
+"{" "}" "1{" "}2" Error: 'format' has more arguments than {}s
+"asbcc"
+":x-:y"
+"prefix form"
+"str=text chr=c atom=:atom sym=sym"
+"int=42 neg=-7 big=123456789012345678901234567890 rat=22/7 fix=2.5 cx=1i"
+"list={1 \"two\" \\3} empty=NIL nested={{\"a\"} (b c)}"
+"t=T nil=NIL"
+"hash=<hash>{{:k \"v\"} {\"s\" \\c}} empty=<hash>NIL"
+"fn=<function>(fn {x} {format \"{}\" x}) builtin=<function>(format) partial=<function>(str-pad-left \"x\")"
+Error: 'format' has too few arguments for its {}s
+"controls: line\nbreak|tab\there|\x01"
+"utf-8: 日本 has 6 bytes"
+"{} {{"
+"c" "{"
+Error: 'format' has too few arguments for its {}s
+Error: 'format' has too few arguments for its {}s
+Error: 'format' has more arguments than {}s
+Error: 'format' has more arguments than {}s
+Error: 'format' has more arguments than {}s
+Error: value failed
+Error: first
+Error: the error first
+Error: 'format' expects a String
+Error: 'format' expects a String
+Error: 'format' expects a String
+Error: text failed
+<function>(format)
+[a][b]":a<:b>"
+[1][2]Error: 'format' has more arguments than {}s
+row 0: 0 
+row 1: 1 *
+row 2: 4 **
+"{} {} {} !" ":a :b :c !"
+"this is a placeholder"
+--- stderr
+
+--- exit 0

@@ -1,0 +1,29 @@
+--- stdout
+3
+Error: 'nth': the list has no such item
+'nth': the list has no such item
+caught: 'head' passed an empty list
+NIL NIL msg: 'take': a count can't be negative
+'tail' passed an empty list T :error NIL
+Error: 'len' requires parameter of type string, list, hash or buffer
+{1 :none 2 :none}
+7
+Error: 'nth': the list has no such item
+{a c}
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'head' passed an empty list
+Error: 'head' passed an empty list
+  in do
+Error: 'tail' passed an empty list
+3 Error: 'head' passed an empty list
+  reporting {x y z}
+--- stderr
+Error: 30-trace.dl: 'nth': the list has no such item
+  at 30-trace.dl:20  {nth i l}
+  called at 30-trace.dl:33  (pick-all l {0 1 9})
+  called at 30-trace.dl:34  (report {x y z})
+  called at 30-trace.dl:35  (outer)
+--- exit 1

@@ -1,0 +1,83 @@
+; 21-non-functions: an S-expression whose first item isn't a function: alone, (x) is x; with arguments, an error
+; naming its type - numbers (of each kind), strings, characters, atoms, T, NIL, lists - but a hash (a lookup) and
+; a buffer (a byte), which take their own arguments.  The same through a name bound to the value, a function's
+; result, a list's item; and the built-ins that call a function given something else (each, map, foldl, sort ...).
+; A function body of one item: a name of a function there is called; a value is itself.
+
+(print (try (1 2) &err))
+(print (try (1.5 2) &err))
+(print (try (1/2 2) &err))
+(print (try (1+2i 2) &err))
+(print (try ((complex 1 2) 2) &err))
+(print (try ("s" 1) &err))
+(print (try (\c 1) &err))
+(print (try (:a 1) &err))
+(print (try (T 1) &err))
+(print (try (NIL 1) &err))
+(print (try (() 1) &err))
+(print (try ({1 2} 3) &err))
+(print (try ({+ 1 2} 3) &err))
+(print (try ((list 1) 2) &err))
+
+; alone, the value itself
+(print (5) ("s") (:a) ({1 2}) (T) (NIL) (()) ((((5)))) (\c) (1/2))
+(print (repr ("s")) (repr (\c)))
+
+; through a name, a result, a list item
+(def {n} 42)
+(print (n) (try (n 1) &err))
+(fun {ret-num} {7})
+(print (ret-num) (try ((ret-num) 1) &err))
+(def {items} [1 + "s"])
+(print (try ((fst items) 2) &err) ((snd items) 2 3) (try ((thd items) 1) &err))
+; a Q-expression's items are as written: there + is a symbol, not the function
+(def {written} {1 + "s"})
+(print ((snd written) 2 3))
+(print ((fst {+}) 1 2))
+
+; a hash and a buffer take their own arguments
+(def {h} (hash-create {{:k 1}}))
+(print (h) (h :k) (h :none))
+(print (try (h :k 2) &err))
+(print (try (h 5) &err))
+(print (try (h {1}) &err))
+(def {b} (buffer 3 7))
+(print (b 1) (b))
+(print (try (b 1 2) &err))
+(print (try (b 5) &err))
+(print (try (b :x) &err))
+
+; errors and exit at the head
+(print (try ((error "e") 1) &err))
+(print (try (undefined-fn 1) &err))
+(print (type-of (exit)) (exit))
+
+; built-ins that call what they're given
+(print (try (each 5 {1}) &err))
+(print (try (map 5 {1}) &err))
+(print (try (map "f" {1}) &err))
+(print (try (foldl 1 0 {1}) &err))
+(print (try (foldr :f 0 {1}) &err))
+(print (try (filter :a {1}) &err))
+(print (try (any? T {1}) &err))
+(print (try (dotimes 2 5) &err))
+(print (try (sort {2 1} 5) &err))
+(print (try (unpack 5 {1 2}) &err))
+(print (try (try (error "x") 5) &err))
+(print (map 5 {}) (filter "f" {}) (foldl 1 0 {}))
+
+; a body of one item: a function's name there is called (with nothing); a value is itself
+(print ((fn {} {})) ((fn {} {5})) ((fn {} {{5}})) ((fn {} {(5)})) ((fn {} {"s"})))
+(print ((fn {} {+})) ((fn {} {+ 1})) ((fn {} {(+ 1)})) ((fn {} {list})))
+(print (try ((fn {} {5 6})) &err))
+(print (try ((fn {} {"s" 6})) &err))
+(fun {body-is-print} {print})
+(print (body-is-print))
+(fun {body-is-partial} {(eq 1)})
+(print (body-is-partial))
+(fun {body-is-fn} {(fn {} {:inner-called})})
+(print (body-is-fn))
+
+; the last: a number called with an argument, inside a function, ends the program
+(fun {call-n} {n 1})
+(call-n)

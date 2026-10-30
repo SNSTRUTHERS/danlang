@@ -1,0 +1,43 @@
+--- stdout
+Error: each stopped at 3
+{1 10 2 20 3}
+Error: '+' adds numbers, or joins values to a string
+{0 :after 1 :after 2}
+Error: fn form stopped at :b
+{:a}
+Error: Division by zero.
+  v is 1
+  after v 1
+  v is Error: bound as a value
+Error: bound as a value
+print shows 0
+print shows Error: shown, not stopping
+print shows 2
+NIL
+q body 1
+Error: q stopped
+012 handler got: caught outside
+12 :div0 6 :div0 3 NIL
+
+break 8
+:a0 :a1 :a2 :b0 :b1 Error: inner stopped outer
+Error: while stopped, k=4 4
+Error: 'str-upper' expects a String
+Error: 'char-at': index 2 is outside the string
+Error: Unbound Symbol 'undefined-function'
+NIL
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+T :error kept Error: kept
+item 0
+  j 0
+  j 1
+item 1
+  j 0
+  j 1
+--- stderr
+Error: 06-loop-errors.dl: bad item 2
+  at 06-loop-errors.dl:52  (error (+ "bad item " x))
+  called at 06-loop-errors.dl:56  (check-item (+ x j))
+  called at 06-loop-errors.dl:58  (walk {0 1 2})
+  called at 06-loop-errors.dl:59  (outer)
+--- exit 1

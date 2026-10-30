@@ -1,0 +1,6 @@
+# The compatibility corpus's cases and outputs, byte for byte: an output's line ends are danlang's own (print's LF, the
+# console's CRLF), and a case's here strings keep theirs
+tests/compat/cases/** -text
+
+# Shell scripts: LF, so bash runs them
+*.sh text eol=lf

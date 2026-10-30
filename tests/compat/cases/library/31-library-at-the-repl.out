@@ -1,0 +1,55 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> 2.71828182845904523536028747135266249775724709369995
+danlang>=> {<function>(fn {f a b} {f b a}) <function>(fn {f g x} {f (g x)}) <function>(fn NIL {eval &_}) <function>(fn {a b} {and (or a b) (not (and a b))})}
+danlang>=> {<function>(nth 0) <function>(nth 9) <function>(drop) <function>(do) <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {n} {/ 1 n}) <function>(truncate) <function>(fn {f l} {eval (cons f l)}) <function>(fn {f} {f &_})}
+danlang>=> <function>(fn {a} {if a a (if &_ (unpack ?? &_))})
+danlang>=> <function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+danlang>=> 1
+danlang>=> {{1} {"two" \3}}
+danlang>=> ""
+danlang>=> {{"a" :c} {\b 1.5}}
+danlang>=> 0.3333
+danlang>=> {-4 1}
+danlang>=> {"s" "s"}
+danlang>=> Error: Selection not found
+danlang>=> NIL
+danlang>=> Error: Case not found
+danlang>=> :one
+danlang>=> Error: Division by zero.
+danlang>=> Error: 'truncate' expects a real number
+danlang>=> Error: 'pow' takes a whole number as its power
+danlang>=> T
+danlang>=> {"b"}
+danlang>=> {"z" "y"}
+danlang>=> Error: Unbound Symbol '&3'
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {"screen"}
+danlang>=> Error: 'fst' expects a list
+danlang>=> {"a" \b "tab\there"}
+danlang>=> <function>(fn {b} {and (or a b) (not (and a b))})
+danlang>=> "a, b"
+danlang>=> {"x" \y "z\n"}
+danlang>=> :done
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (f 2)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod 1 0)
+  at <BUNDLE>\lib\globals.dl:121  (trunc a)
+  called at <BUNDLE>\lib\globals.dl:136  (floor (+ a 1/2))
+  called at line 1  (round "a")
+  at <BUNDLE>\lib\globals.dl:189  (error "'pow' takes a whole number as its power")
+  called at line 1  (pow 2 1/2)
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at line 1  (between? 1 5)
+  at <BUNDLE>\lib\globals.dl:75  (fst b)
+  called at line 1  (zip (range 3) "abc")
+--- exit 0

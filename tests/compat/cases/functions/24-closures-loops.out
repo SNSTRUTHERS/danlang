@@ -1,0 +1,29 @@
+--- stdout
+{<function>(fn NIL {i}) <function>(fn NIL {i}) <function>(fn NIL {i})} {1 2 3}
+{0 10 20}
+{\a \b \c}
+{:a :b :c}
+{0 1 2}
+{3 3 3}
+{3 3 3}
+{{1 2} {2 4} {3 6}}
+{100 200 300}
+{{1 0} {1 1} {2 0} {2 1}}
+12:global-i
+1 2 3 1 4 2
+110 120 1 121 2
+{6 15 105}
+{1001 1002}
+1 2 101 3
+NIL
+0101
+'dotimes': a count must be a whole number, not 2.5
+'dotimes': a count must be a whole number, not :a
+0123stopped at 3
+stopped at 2
+fn form stopped at 2
+--- stderr
+Error: 24-closures-loops.dl: 'len' takes 1 argument, not 2
+  at 24-closures-loops.dl:77  {f {1 2} 3}
+  called at 24-closures-loops.dl:78  ((fst fns))
+--- exit 1

@@ -1,0 +1,46 @@
+--- stdout
+Error: plain Error: with a code Error: plain :error T NIL NIL
+plain with a code NIL NIL
+NIL :mine NIL :another
+Error: 42 Error: {1 "two" :three} Error: An error's code must be an atom Error: c Error: 1.5
+{1 2} :string
+Error: inner as the message
+Error: this one
+Error: a Error: a Error: a
+Error: a Error: plain
+5 NIL :handled 5
+{"msg" :c}
+{"msg" NIL}
+fn got: msg
+{"msg" NIL}
+{:q "msg"}
+Error: rethrown: msg
+outer from inner
+x NIL
+a q-expression
+3
+partial output; after output
+handler output; :done
+Error: 'try' takes at most 2 arguments, not 3
+Error: no-such-file.txt: not found
+:noent :noent
+Error: d: already exists :exist :isdir :isdir
+Error: d: directory not empty :notempty
+:noent :noent :noent
+:inval NIL
+NIL NIL NIL NIL NIL NIL NIL NIL
+Error: plain Error: plain Error: plain Error: plain
+Error: plain
+Error: with a code
+Error: with a code|Error: plain
+
+the last: an error with a code, two calls down
+{2 4}
+{"negative: -1" :range}
+--- stderr
+Error: 16-error-values.dl: negative: -4
+  at 16-error-values.dl:53  (error (format "negative: {}" n) :range)
+  called at 16-error-values.dl:54  (validate x)
+  called at 16-error-values.dl:55  (process {3 -4})
+  called at 16-error-values.dl:56  (main)
+--- exit 1

@@ -1,0 +1,47 @@
+--- stdout
+"HELLO, WORLD 123" "hello, world 123" ""
+"HéLLO WöRLD" "hÉllo" "ß日本"
+\A \a \1 "A" :char
+"[`{@" "[`{@"
+Error: 'str-upper' expects a String
+Error: 'str-lower' expects a String
+"x y" "x" "" ""
+"" \a "\0x\0"
+"�x"
+Error: 'str-trim' expects a String
+"a+b+c" "bbbbbb" "aa"
+"ac" "abc" ""
+"a-b-c" "abababab" ""
+"cafe" "Hello" "line1\\nline2"
+Error: 'str-replace' cannot replace an empty String
+Error: 'str-replace' expects a String
+Error: 'str-replace' expects a String
+Error: 'str-replace' expects a String
+<function>(str-replace "abc" "a")
+"007" "***ab" "ab***" "ab.."
+"1234" "abc" "   " ""
+"  ab" "--ab" "  a" " é"
+    0 .... |
+   37 #... |
+   74 ##.. |
+  111 ###. |
+Error: 'str-pad-left' pads with one character
+Error: 'str-pad-left' pads with one character
+Error: 'str-pad-left' expects a String
+Error: 'str-pad-left': a number must be a whole number, not 2.5
+Error: 'str-pad-left' length cannot be negative
+Error: 'str-pad-right' length cannot be negative
+Error: 'str-pad-left': 99999999999 is too big
+Error: 'str-pad-left' expects a String
+Error: 'str-pad-left': a number must be a whole number, not "3"
+"ababab" "" "" "xxx" "xx"
+3000 bcabc
+Error: 'str-repeat' count cannot be negative
+Error: 'str-repeat': a number must be a whole number, not 2.5
+Error: 'str-repeat': 99999999999 is too big
+Error: 'str-repeat' expects a String
+Error: 'str-repeat': a number must be a whole number, not "2"
+<function>(str-repeat "x")
+--- stderr
+
+--- exit 0

@@ -1,0 +1,56 @@
+; 26-print-text.dl - how characters and strings print: print and write show the text as it is (print with spaces
+; between and a newline, write with neither), repr as the REPL does (a string quoted and escaped, \0 \a \b \f \n \r
+; \t \v \e \\ \" and \xHH for other control characters, bytes past ASCII as they are; a character by its name, or
+; itself).  Every character's repr, and a string of every byte's; a list's items print in repr form
+
+; every character, by repr, sixteen to a line
+(dotimes {row 16}
+  (print (str-join (map (fn {c} {repr (code-char (+ (* row 16) c))}) (range 16)) " ")))
+
+; every byte in one string, repr'd, in pieces
+(def {all} (from-bytes (range 256)))
+(print (len all))
+(dotimes {k 8} (print (repr (substring all (* k 32) 32))))
+
+; character names read: case and - ignored
+(print (map repr {\space \SPACE \Space \sp \tab \newline \NewLine \lf \nl \return \cr \null \bell \escape \esc \delete}))
+(print (map repr {\backslash \bslash \quote \doublequote \tick \lparen \rparen \lbrace \rbrace \lbracket \rbracket}))
+(print (map repr {\vertical-tab \form-feed \back-space \exclamation-point \question-mark \under-score}))
+(print (map char-code {\a \A \0 \~ \( \) \{ \} \[ \] \" \\ \; \,}))
+
+; print, write, repr of characters
+(print \a \space \tab "|")
+(write \a \b \c "|\n")
+(print (repr \a) (repr \Z) (repr \7) (repr \space))
+(print (+ "" \a \b) (+ \a "bc") (+ \a 1) (str-join {\x \y \z}) (to-str \q) (repr (to-str \q)))
+
+; strings: print and write as they are, repr escaped
+(print "plain" "with spaces" "" "tab:\tend")
+(write "w1" "w2" "" "w3" "\n")
+(print (repr "") (repr "plain") (repr "q\"uote") (repr "back\\slash") (repr "a\nb\tc\rd"))
+(print (repr "\0\a\b\f\n\r\t\v\e") (repr "\x01\x02\x1f\x7f") (repr "\x41\x42"))
+(print (repr (repr "a\"b")) (repr (repr (repr "\n"))))
+(print (repr "caf\xC3\xA9") (len "caf\xC3\xA9") (len "é") (bytes "é") (repr (str-upper "é")))
+(print "caf\xC3\xA9" (str-upper "abc é") (reverse "ab\xC3\xA9"))
+
+; here strings: text as it is, quotes inside, a line's end LF
+(print """say "hi" """)
+(print (repr """a "quoted" word"""))
+(print (repr """""five quotes: """ inside"""""))
+(print (repr """line one
+line two"""))
+(print (len """x\ny"""))
+
+; strings in lists print in repr form; print of the list itself
+(print {"a" "b c" "d\ne" \f :g})
+(print (list "x" (+ "y" "z")) (str-chars "a\tb"))
+(write {"in" "a list"} "\n")
+(print (str-split "a,b,,c" ",") (str-split "  two  words ") (str-split "a-b_c" {"-" "_"}))
+
+; format: {} the next value as print shows it, {{ and }} braces
+(print (format "{} + {} = {}" 1 2 3) (format "{{literal}} {}" "x") (format "q: {}" "with \"quotes\"") (format ""))
+(print (repr (format "{}|{}" "a\tb" \c)))
+
+; padding, repeating, trimming: the text printed between bars
+(print (+ "|" (str-pad-left "ab" 5) "|" (str-pad-right "ab" 5 \.) "|" (str-pad-left "toolong" 3) "|"))
+(print (+ "|" (str-repeat "ab" 3) "|" (str-trim "  \t trimmed \n ") "|" (str-repeat "x" 0) "|"))

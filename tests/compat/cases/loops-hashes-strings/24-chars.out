@@ -1,0 +1,83 @@
+--- stdout
+\h \o \space \z \l
+195 169 \•
+Error: 'char-at': index 3 is outside the string
+Error: 'char-at': index -1 is outside the string
+Error: 'char-at': an index must be a whole number, not 1.5
+Error: 'char-at': index 0 is outside the string
+Error: 'char-at' expects a String
+Error: 'char-at': an index must be a whole number, not "0"
+97 97 32 0 127 255
+Error: 'char-code' expects one character
+Error: 'char-code' expects one character
+Error: 'char-code' expects a String
+\A \A \A :char
+Error: 'code-char': 256 isn't a character's code (0-255)
+Error: 'code-char': -1 isn't a character's code (0-255)
+Error: 'code-char': a number must be a whole number, not 1.5
+Error: 'code-char': a number must be a whole number, not "A"
+  0: \null \ \ \ \ \ \ \bell \backspace \tab \lf \vtab \ff \cr \ \
+ 16: \ \ \ \ \ \ \ \ \ \ \ \escape \ \ \ \
+ 32: \space \bang \quote \hash \dollar \percent \amp \tick \lparen \rparen \star \plus \comma \minus \dot \slash
+ 48: \0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \colon \semicolon \lt \= \gt \qmark
+ 64: \at \A \B \C \D \E \F \G \H \I \J \K \L \M \N \O
+ 80: \P \Q \R \S \T \U \V \W \X \Y \Z \lbracket \backslash \rbracket \caret \underbar
+ 96: \backtick \a \b \c \d \e \f \g \h \i \j \k \l \m \n \o
+112: \p \q \r \s \t \u \v \w \x \y \z \lcurly \pipe \rcurly \tilde \delete
+128: \Ä \Å \Ç \É \Ñ \Ö \Ü \á \à \â \ä \ã \å \ç \é \è
+144: \ê \ë \í \ì \î \ï \ñ \ó \ò \ô \ö \õ \ú \ù \û \ü
+160: \† \° \¢ \£ \§ \• \¶ \ß \® \© \™ \´ \¨ \≠ \Æ \Ø
+176: \∞ \± \≤ \≥ \¥ \µ \∂ \∑ \∏ \π \∫ \ª \º \Ω \æ \ø
+192: \¿ \¡ \¬ \√ \ƒ \≈ \∆ \« \» \… \  \À \Ã \Õ \Œ \œ
+208: \– \— \“ \” \‘ \’ \÷ \◊ \ÿ \Ÿ \⁄ \€ \‹ \› \ﬁ \ﬂ
+224: \‡ \· \‚ \„ \‰ \Â \Ê \Á \Ë \È \Í \Î \Ï \Ì \Ó \Ô
+240: \ \Ò \Ú \Û \Ù \ı \ˆ \˜ \¯ \˘ \˙ \˚ \¸ \˝ \˛ \ˇ
+T T T T T T
+\lparen \rcurly \star \amp \pipe \backslash \qmark \underbar \minus \percent
+\space \space \cr \A \lparen \rbracket
+\a 97 T NIL NIL NIL T
+\Z 90 T NIL NIL T NIL
+\m 109 T NIL NIL NIL T
+\0 48 NIL T NIL NIL NIL
+\9 57 NIL T NIL NIL NIL
+\space 32 NIL NIL T NIL NIL
+\tab 9 NIL NIL T NIL NIL
+\lf 10 NIL NIL T NIL NIL
+\cr 13 NIL NIL T NIL NIL
+\vtab 11 NIL NIL T NIL NIL
+\ff 12 NIL NIL T NIL NIL
+\null 0 NIL NIL NIL NIL NIL
+\underbar 95 NIL NIL NIL NIL NIL
+\minus 45 NIL NIL NIL NIL NIL
+\delete 127 NIL NIL NIL NIL NIL
+\escape 27 NIL NIL NIL NIL NIL
+\at 64 NIL NIL NIL NIL NIL
+\lbracket 91 NIL NIL NIL NIL NIL
+\backtick 96 NIL NIL NIL NIL NIL
+\lcurly 123 NIL NIL NIL NIL NIL
+NIL NIL NIL NIL NIL
+"" NIL NIL NIL NIL NIL
+"abc" T NIL NIL NIL T
+"aBc" T NIL NIL NIL NIL
+"ABC" T NIL NIL T NIL
+"123" NIL T NIL NIL NIL
+"12a" NIL NIL NIL NIL NIL
+" \t\n" NIL NIL T NIL NIL
+" x " NIL NIL NIL NIL NIL
+"√©" NIL NIL NIL NIL NIL
+"\r\n" NIL NIL T NIL NIL
+alpha? 52
+digit? 10
+space? 6
+upper? 26
+lower? 26
+T T 0 -1 1 NIL T T
+{\space \0 \M \a \z \tilde} a c
+"ab" "ab" "ab"
+Error: 'alpha?' expects a String
+Error: 'digit?' expects a String
+Error: 'space?' expects a String
+<function>(upper?)
+--- stderr
+
+--- exit 0

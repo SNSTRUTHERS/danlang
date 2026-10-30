@@ -1,0 +1,43 @@
+; 19-load-nested.dl - files loading files: each file's top level is the global scope (its definitions, and set at
+; its top level, are global), output comes as each runs; an error stops every load it's in, each adding its file's
+; name to the message; use loads a library once (not counted as loaded if it stopped with an error).  The last error
+; is made three files down, in a function called at the innermost file's top level, by a load in a function
+
+(write-file "level3.dl" "(print \"level3: start\")\n(def {l3-value} 3)\n=(l3-set :set-at-top)\n(fun {l3-fn x} {+ x (len x)})\n(print \"level3: end\")\n:level3-value\n")
+(write-file "level2.dl" "(print \"level2: start\")\n(def {l2-got} (load \"level3\"))\n(print \"level2: got\" l2-got)\n:level2-value\n")
+(write-file "level1.dl" "(print \"level1: start\")\n(print \"level1: got\" (load \"level2\"))\n(def {l1-done} T)\n:level1-value\n")
+(print (load "level1"))
+(print l3-value l3-set l2-got l1-done)
+(print (l3-fn "abc"))
+
+; loads in a function: the file's top level is still the global scope
+(fun {load-in-fn} {do =(local-x :local) (load "level3") (list local-x l3-value)})
+(print (load-in-fn))
+(write-file "sees.dl" "(print \"sees.dl:\" (defined? local-y) (defined? global-y))\n")
+(def {global-y} 1)
+(fun {load-sees} {do =(local-y 2) (load "sees")})
+(print (load-sees))
+
+; use: once
+(write-file "once.dl" "(print \"once.dl runs\")\n(def {once-count} (+ 1 (if (defined? once-count) once-count 0)))\n")
+(print (use "once") (use "once") once-count used)
+(print (load "once") once-count)
+(write-file "broken.dl" "(print \"broken.dl runs\")\n(error \"broken library\")\n")
+(print (use "broken"))
+(print (use "broken") used)
+(print (use "no-such-library-here"))
+
+; errors through the nest: each load adds its file's name
+(write-file "bad3.dl" "(print \"bad3: start\")\n(fun {bad3-fn} {* 2 (len 7)})\n(print \"bad3: calling\")\n(+ 1 (bad3-fn))\n(print \"bad3: not reached\")\n")
+(write-file "bad2.dl" "(print \"bad2: start\")\n(load \"bad3\")\n(print \"bad2: not reached\")\n")
+(write-file "bad1.dl" "(print \"bad1: start\")\n(fun {go2} {+ 0 (load \"bad2\")})\n(go2)\n(print \"bad1: not reached\")\n")
+(print (load "bad1"))
+(print (error-message (load "bad3")))
+(print (try (load "bad1") &err))
+(write-file "codes.dl" "(load \"coded2\")\n")
+(write-file "coded2.dl" "(error \"deep code\" :deep)\n")
+(print (load "codes") (error-code (load "codes")))
+
+(print "the last: the error three files down, by a load in a function")
+(fun {start} {do (print "start: loading") (+ 0 (load "bad1"))})
+(start)

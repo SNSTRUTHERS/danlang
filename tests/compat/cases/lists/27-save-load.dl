@@ -1,0 +1,61 @@
+; 27-save-load.dl - save and load of lists (files in the case's folder): save to stdout and to a file, the file's text
+; (read-file, read-lines), load giving the list back (NIL saved as {}, an empty S-expression as ()), equal to what was
+; saved but for complex numbers (saved as 1+2i, read back as a symbol) and functions (saved as they print, which
+; doesn't read back); :append and :overwrite, and the errors without them; a hash of lists (back as a hash), a list of
+; hashes (back as a list of hash-create calls, not run); code saved and loaded
+
+(def {data} [1 "two" \3 :four (fst {five}) {six (seven) {8}} NIL "q\"uote\n" \space 1/2 1.25 -7 {} {NIL} (fst {()})])
+(print data)
+(save data)
+(print (save data "data.dl"))
+(print (repr (read-file "data.dl")))
+(def {back} (load "data.dl"))
+(print back (eq back data) (map type-of back))
+(print (map (fn {p} {eq (fst p) (snd p)}) (zip data back)))
+
+; saving again needs :overwrite or :append
+(print (save data "data.dl"))
+(print (save {more} "data.dl" :append))
+(print (repr (read-lines "data.dl")))
+(print (load "data.dl"))
+(print (save {replaced} "data.dl" :overwrite))
+(print (read-lines "data.dl") (load "data.dl"))
+(print (save {1 2} "data.dl" :append :overwrite) (read-lines "data.dl"))
+(def {again} (fst (read (read-file "data.dl"))))
+(print again (type-of again))
+
+; complex numbers don't come back as numbers
+(save [(complex 1 2) (complex 0 1) 3] "complex.dl")
+(print (read-file "complex.dl"))
+(print (load "complex.dl") (map type-of (load "complex.dl")) (eq (load "complex.dl") [(complex 1 2) (complex 0 1) 3]))
+
+; functions are saved as they print, which can't be read back
+(save [(fn {x} {* x 2}) + (+ 1) (take 1)] "fns.dl")
+(print (read-file "fns.dl"))
+(print (load "fns.dl"))
+
+; empty and nested lists, a hash of lists, a list of hashes
+(save {} "empty.dl")
+(save {{} {{}} (())} "nested.dl")
+(print (repr (read-file "empty.dl")) (load "empty.dl") (repr (read-file "nested.dl")) (load "nested.dl"))
+(save (hash-create {{:l {1 2}} {:s "x"} {:n {}}}) "hash.dl")
+(print (repr (read-file "hash.dl")) (load "hash.dl") ((load "hash.dl") :l))
+(save [(hash-create {{:a {1}}}) (hash-create {{:b 2}})] "hashes.dl")
+(print (read-file "hashes.dl"))
+(print (load "hashes.dl"))
+
+; code saved: a Q-expression of code loads as that list; S-expressions saved alone run when loaded
+(save {(+ 1 2) {(* 2 3)}} "code.dl")
+(print (read-file "code.dl") (load "code.dl") (eval (load "code.dl")))
+(save (fst {(+ 40 2)}) "sexpr.dl")
+(print (read-file "sexpr.dl") (load "sexpr.dl"))
+(save (fst {(def {loaded-def} {made by load})}) "def.dl")
+(print (load "def.dl") loaded-def)
+
+; save's errors
+(print (save {1} "no-such-dir/x.dl"))
+(print (save {1} 5))
+(print (save {1} "x.dl" "notatom"))
+(print (save (error "not saved") "x.dl"))
+(print (exists? "x.dl") (load "x.dl"))
+(print (sort (filter (fn {f} {ends-with? f ".dl"}) (ls))))

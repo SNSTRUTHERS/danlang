@@ -1,0 +1,32 @@
+--- stdout
+{1 2 3} {2 3} {a b} {1 2} {1 2 3} {:list :tail :lit :made} {{1 2 3} {2 3} {a b} {1 2}}
+{1 2 3} {0 1 2 3} {1 2 3} T
+{:front 0 1 2 3} {0 1 2 3 0 1 2 3} {3 2 1 0} {0 1 2 3}
+{0 1 2 3 4} {1 2 3} {0 1 2 3} {1 2 3}
+{{:list {0 1 2 3 4}} {:tail {2 3}} {:lit {a b}} {:made {1 2}}}
+{{:list {0 1 2 3 4}} {:tail {2 3}} {:lit {a b}} {:made {1 2}}} T
+{a b} {changed} NIL
+{0 1 2 3 4} {1 2 3 4} {x y} NIL
+{<hash>{{:n 1}} <hash>{{:n 1}} <hash>{{:n 1}}} T
+{<hash>{{:n 2}} <hash>{{:n 2}} <hash>{{:n 1}}} NIL
+{<hash>{{:n 2}} <hash>{{:n 1}}} {<hash>{{:n 1}} <hash>{{:n 2}} <hash>{{:n 2}}} {:c <hash>{{:n 2}} <hash>{{:n 2}} <hash>{{:n 1}}}
+{2 2 1} {{1 2} {1 2} NIL} <hash>{{:n 2} {:m {1 2}}}
+{<hash>{{:m {1 2}}} <hash>{{:m {1 2}}} <hash>{{:n 1}}} 1 {1 1 1}
+{<hash>{{:k 1}} <hash>{{:k 2}} <hash>{{:k 3}}} {<hash>{{:k 3}} <hash>{{:k 1}} <hash>{{:k 2}}}
+<hash>{{:k 2}} T 2
+{<hash>{{:k 3}} <hash>{{:k 9}} <hash>{{:k 2}}} {<hash>{{:k 2}} <hash>{{:k 3}} <hash>{{:k 9}}}
+{:b :a "s"} {1 {2 3} "t"} 3 {:atom :atom :string}
+{1 "c" :a :b}
+{1 {2 3} "t"} {{:b 1} {:a {2 3}} {"s" "t"}}
+Error: Unsupported key type Q-Expression
+Error: Unsupported key type Q-Expression
+<hash>{{:k {1 2}} {:q {a b}}}
+{a b}
+Error: A hash's entry is {key value tag...}, not {a b}
+Error: First parameter to 'to#' must be a QExpr
+Error: A hash's entry is {key value tag...}, not {:b}
+<hash>{{:x {1 2}} {:y {3}}}
+{1 2 3}
+--- stderr
+
+--- exit 0

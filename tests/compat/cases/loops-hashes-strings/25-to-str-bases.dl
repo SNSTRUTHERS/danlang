@@ -1,0 +1,42 @@
+; 25-to-str-bases.dl - to-str: any value as print shows it; a number in a base ("x", "#x", "#16r", "b", the other
+; named bases, balanced and negative ones, least or most digit first, radixes 2 to 80): integers (negative, zero, past
+; a long), rationals (each part in the base), fixed decimals (as rationals); the base's letter's case kept; a complex
+; number has no form in a base; the errors
+
+(print (repr (to-str 42)) (repr (to-str -7)) (repr (to-str 1/3)) (repr (to-str 2.50)) (repr (to-str (complex 1 2))))
+(print (repr (to-str "s")) (repr (to-str \c)) (repr (to-str :a)) (repr (to-str {1 "a" \b})) (repr (to-str T)) (repr (to-str NIL)))
+(print (repr (to-str #({{:k "v"}}))) (repr (to-str print)) (repr (to-str (fn {x} {x}))) (repr (to-str "a\nb")))
+
+; the common bases, each a few ways
+(each {b {"x" "#x" "#16r" "X" "b" "#b" "#2r" "o" "#8r" "d" "#10r" "z" "#36r" "#7r" "#80r"}}
+  (print (str-pad-right b 5) (to-str 255 b) (to-str -255 b) (to-str 0 b) (to-str 1 b) (to-str 1/3 b) (to-str 2.5 b)))
+
+; the other named bases: balanced and least-digit-first ones, and the negative one
+(each {b {"c" "e" "g" "i" "j" "m" "t" "q" "v" "f" "s" "n" "k" "y"}}
+  (print (str-pad-right b 3) (to-str 255 b) (to-str -255 b) (to-str 0 b) (to-str 7 b) (to-str 1/2 b)))
+
+; with < > + - before the base: least or most digit first, positive, negative
+(each {b {"<x" ">x" "+x" "-x" "#-x" "#<16r" "#>16r" "#-10r" "#+10r" "-2"}}
+  (print (str-pad-right b 6) (to-str 255 b) (to-str -255 b) (to-str 10 b) (to-str 4660 b) (to-str 1/4660 b)))
+
+; big numbers, and every base 2-80 of one number
+(print (to-str 123456789012345678901234567890 "x") (to-str -9223372036854775809 "x") (to-str 18446744073709551616 "b"))
+(print (str-join (map (fn {r} {to-str 1000 (+ "#" r "r")}) (range 2 81)) " "))
+
+; a fraction in a base, a fixed decimal as a rational, a negative rational
+(print (to-str 3.14159 "x") (to-str -1/7 "b") (to-str 22/7 "#7r") (to-str 0.5 "c"))
+
+; the errors
+(print (to-str (complex 1 2) "x"))
+(print (to-str 255 "q?"))
+(print (to-str 255 ""))
+(print (to-str 255 "#1r"))
+(print (to-str 255 "#81r"))
+(print (to-str 255 "=x"))
+(print (to-str 255 "#[01]"))
+(print (to-str 255 :x))
+(print (to-str 255 16))
+(print (to-str "s" "x"))
+(print (to-str :a "x"))
+(print (to-str 1 "x" "y"))
+(print (to-str))

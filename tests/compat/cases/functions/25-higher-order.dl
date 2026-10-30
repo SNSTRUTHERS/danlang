@@ -1,0 +1,64 @@
+; 25-higher-order: functions as values: in lists (called from there, printed there), in hashes (a dispatch table:
+; looked up with hash-get, so not methods), returned by functions that return functions that return functions,
+; composed (comp, flip, ghost), applied to lists (unpack, apply, .(), pack, curry, uncurry, eval of a built list),
+; passed to themselves (recursion without a name), sort's less, map/filter/foldl/foldr/any?/all?/find/count.
+
+; functions returning functions returning functions
+(fun {f1 a} {fn {b} {fn {c} {list a b c}}})
+(print (f1 1))
+(print ((f1 1) 2))
+(print (((f1 1) 2) 3))
+(def {level2} ((f1 :x) :y))
+(print (level2 :z1) (level2 :z2))
+(fun {curry3 f} {fn {a} {fn {b} {fn {c} {f a b c}}}})
+(print ((((curry3 +) 1) 2) 3) ((((curry3 list) :p) :q) :r))
+(fun {twice f} {fn {x} {f (f x)}})
+(print ((twice (twice (fn {x} {* x 2}))) 1))
+(print (((twice twice) (fn {x} {+ x 1})) 0))
+
+; in lists
+(def {ops} [+ - * (fn {a b} {list a b}) (eq 1)])
+(print ops)
+(print (map (fn {f} {f 6 3}) (init ops)))
+(print ((fst ops) 1 2) ((last ops) 1) ((nth 3 ops) :l :r))
+(print (map (fn {f} {f 10}) [(fn {x} {+ x 1}) (fn {x} {* x x}) (substring "0123456789abc")]))
+(print [(fn {} {:in-a-list})] ((fst [(fn {} {:in-a-list})])))
+
+; in a hash, as a dispatch table (hash-get: plain functions, no &0)
+(def {table} (hash-create {{:add (fn {a b} {+ a b})} {:neg (fn {a} {- a})} {:show print}}))
+(fun {dispatch op args} {unpack (hash-get table op) args})
+(print (dispatch :add {2 3}) (dispatch :neg {4}))
+(dispatch :show {:shown :via :table})
+(print (try (dispatch :missing {1}) &err))
+(print (map (fn {k} {(hash-get table k) 7 8}) {:add}))
+
+; composition helpers from the library
+(print (comp (fn {x} {* x 10}) (fn {x} {+ x 1}) 4))
+(def {inc-then-double} (comp (fn {x} {* x 2}) (fn {x} {+ x 1})))
+(print inc-then-double (inc-then-double 5))
+(print (flip - 1 10) (flip list :a :b) ((flip cons) {2} 1))
+(print (ghost + 1 2 3) (ghost list))
+(print (unpack + {1 2 3}) (apply max {3 9 2}) .(list {:d :o :t}) (pack reverse 1 2 3) (curry * {2 3 4}) (uncurry len 1 2))
+
+; a call built as a list and evaluated
+(print (eval (list + 1 2)) (eval (cons max {4 8 6})) (eval (join (list list) {7 8})))
+
+; recursion without a name: a function given itself
+(def {fact-of} (fn {self n} {if (zero? n) 1 (* n (self self (- n 1)))}))
+(print (fact-of fact-of 10))
+(def {y-ish} (fn {f} {fn {n} {f f n}}))
+(print ((y-ish fact-of) 5))
+
+; the list built-ins, with functions made on the spot
+(print (sort {3 1 2} (fn {a b} {> a b})) (sort {"bb" "a" "ccc"} (fn {a b} {< (len a) (len b)})))
+(print (filter (fn {x} {odd? x}) (range 10)) (foldr (fn {x acc} {cons x acc}) {} {1 2 3}))
+(print (foldl (fn {acc f} {f acc}) 1 [(fn {x} {+ x 1}) (fn {x} {* x 10}) (fn {x} {- x 3})]))
+(print (any? (fn {f} {f 0}) [(fn {x} {> x 0}) zero?]) (all? function? [+ map (fn {} {})]) (find (fn {f} {f 3}) [odd? even?]))
+(print (count function? [+ 1 (fn {} {}) "s" (eq 1) {fn}]))
+
+; functions compared, printed in lists, given to type-of
+(print (map type-of [+ (fn {} {}) (eq 1) (fexpr {x} {x}) if]))
+(print (eq [+ (fn {x} {x})] [+ (fn {x} {x})]) (elem? + [- * +]) (index-of [+ - *] -))
+
+; the last: a function from a list, called with too many arguments, ends the program
+((nth 3 ops) 1 2 3)

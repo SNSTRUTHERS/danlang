@@ -1,0 +1,58 @@
+; flags: -w
+; 28-redefine-list-builtins: the library's list functions call the built-ins cons, fst and tail by name, so
+; redefining them (-w warns: a built-in replaced) changes zip, remove-all, remove-fst, flatten, distinct, repeat,
+; divmod, unpack (cons f l), cond and case (tail); a redefinition that prints shows each call, in order.  The
+; built-ins in the library's built-in functions (1+, last ...) are their own: unchanged.  Each is put back (def of
+; the saved built-in: no warning) before the next.  Ends with an error from zip through a broken tail.
+
+(print (zip {1 2} {3 4}) (remove-all 1 {1 2 1}) (flatten {1 {2}}) (distinct {1 1 2}) (repeat 2 {:r}) (cond {NIL 1} {T 2}) (case 2 {1 :a} {2 :b}))
+(def {orig-cons orig-fst orig-tail} cons fst tail)
+
+; cons that prints
+(fun {cons x l} {do (print "cons" x l) (orig-cons x l)})
+(print (zip {1 2} {3 4}))
+(print (remove-all 1 {1 2 1 3}))
+(print (flatten {1 {2}}))
+(print (repeat 2 {:r}))
+(print (divmod 7 2))
+(print (unpack + {1 2}))
+(print (?? NIL 5))
+(print (case 2 {1 :a} {2 :b}))
+(print (map 1+ {1 2}) (take 1 {1 2}) (last {1 2}))
+(def {cons} orig-cons)
+(print (zip {1 2} {3 4}))
+
+; fst that prints
+(def {fst} (fn {l} {do (print "fst of" l) (orig-fst l)}))
+(print (zip {1 2} {3 4}))
+(print (remove-fst 2 {1 2 3}))
+(print (?? NIL 5))
+(print (cond {NIL 1} {T 2}))
+(print (all-between? 1 5 {2 3}))
+(print (flatten {{1} 2}))
+(def {fst} orig-fst)
+
+; tail that drops two
+(fun {tail l} {orig-tail (orig-tail l)})
+(print (zip {1 2 3 4} {5 6 7 8}))
+(print (remove-all 0 {0 1 0 2 0 3}))
+(print (remove-fst 9 {1 2 3 4}))
+(print (flatten {1 2 3 4}))
+(print (cond {NIL 1} {NIL 2} {T 3}))
+(print (cond {NIL 1} {T 2} {T 3}))
+(print (case 2 {1 :a} {2 :b} {3 :c}))
+(print (case 1 {1 :a}))
+(def {tail} orig-tail)
+(print (zip {1 2 3 4} {5 6 7 8}) (cond {NIL 1} {NIL 2} {T 3}) (case 2 {1 :a} {2 :b} {3 :c}))
+
+; cons that makes vectors of two
+(fun {cons x l} {list x l})
+(print (zip {1 2 3} {4 5 6}))
+(print (repeat 3 {:r}))
+(print (unpack list {1 2}))
+(def {cons} orig-cons)
+
+; a tail that fails: zip passes its error up, and the program ends with it
+(fun {tail l} {error "tail is broken"})
+(fun {pairs a b} {list :pairs (zip a b)})
+(pairs {1 2} {3 4})

@@ -1,0 +1,53 @@
+; 21-format.dl - format and its ~ prefix: each {} the next value as print shows it; {{ and }} a brace; any other
+; brace as it is ({x}, { }, a lone { or }, }{); every kind of value; too few values or too many (the errors, even
+; when the values are fine), an error among the values; the values evaluated in order before format runs
+
+(print (repr (format "{} + {} = {}" 1 2 3)))
+(print (repr (format "none")) (repr (format "")) (repr (format "{}" "")) (repr (format "{}{}{}" 1 2 3)))
+(print (repr (format "{{}}")) (repr (format "{{{}}}" 7)) (repr (format "}}}")) (repr (format "{{{{")) (repr (format "}}{{")))
+(print (repr (format "{x} { } {  } {{x}}" )))
+(print (repr (format "lone { and lone } and }{")))
+(print (repr (format "{" )) (repr (format "}")) (repr (format "{}{" 1)) (repr (format "}{}" 2)) (repr (format "{{}" 3)))
+(print (repr (format "a{}b{}c" "s" \c)))
+(print (repr ~("{}-{}" :x :y)))
+(print (repr ~("prefix form")))
+
+; every kind of value, as print shows it
+(print (repr (format "str={} chr={} atom={} sym={}" "text" \c :atom (to-sym "sym"))))
+(print (repr (format "int={} neg={} big={} rat={} fix={} cx={}" 42 -7 123456789012345678901234567890 22/7 2.50 (complex 0 1))))
+(print (repr (format "list={} empty={} nested={}" {1 "two" \3} {} {{"a"} (b c)})))
+(print (repr (format "t={} nil={}" T NIL)))
+(print (repr (format "hash={} empty={}" #({{:k "v"} {"s" \c}}) #())))
+(print (repr (format "fn={} builtin={} partial={}" (fn {x} {format "{}" x}) format (str-pad-left "x"))))
+(print (format "{} {}"))
+(print (repr (format "controls: {}|{}|{}" "line\nbreak" "tab\there" (+ "" (code-char 1)))))
+(print (repr (format "utf-8: {} has {} bytes" "日本" (len "日本"))))
+(print (repr (format "{} {}" "{}" "{{")))
+
+; the text may be a character
+(print (repr (format \c)) (repr (format \{)))
+
+; too few values, too many, an error among them, text that isn't a string
+(print (format "{} {}" 1))
+(print (format "{}"))
+(print (format "x" 1))
+(print (format "{{}}" 1))
+(print (format "{}" 1 2))
+(print (format "{}" (error "value failed")))
+(print (format "{} {}" (error "first") (error "second")))
+(print (format "too many but an error" (error "the error first")))
+(print (format 5))
+(print (format :atom 1))
+(print (format {1}))
+(print (format (error "text failed") 1))
+(print (format))
+
+; the values are evaluated in order, before format runs (all of them, even when they're too many)
+(print (repr (format "{}<{}>" (do (write "[a]") :a) (do (write "[b]") :b))))
+(print (format "{}" (do (write "[1]") 1) (do (write "[2]") 2)))
+
+; format in a loop, and format building format text
+(dotimes {i 3} (print (format "row {}: {} {}" i (* i i) (str-repeat "*" i))))
+(def {fmt} (+ (str-repeat "{} " 3) "!"))
+(print (repr fmt) (repr (format fmt :a :b :c)))
+(print (repr (format (format "{{}} is {}" "a placeholder") "this")))

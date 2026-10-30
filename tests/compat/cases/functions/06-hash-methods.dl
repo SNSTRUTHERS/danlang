@@ -1,0 +1,89 @@
+; 06-hash-methods: functions as a hash's values: called through the hash they're methods, &0 the hash (its private
+; entries reachable through it); methods partially applied; a method whose body has no &0; &0 counting as an
+; extra's name; values that aren't functions given arguments; hash-call; methods calling methods through &0, and
+; how deep that goes (each call through &0 is through another proxy of the hash: the fourth level finds nothing)
+
+(def {acct} (hash-create {{:balance 10}
+  {:get (fn {} {&0 :balance})}
+  {:dep (fn {n} {do (hash-put &0 [:balance (+ (&0 :balance) n)]) (&0 :balance)})}
+  {:plain (fn {x} {* x 2})}
+  {:name "acct"}}))
+(print (acct :get))
+(print (acct :dep 5) (acct :get) (acct :balance))
+(print (acct :plain 21))
+(print (acct :name))
+(print (acct :missing))
+
+; a method given fewer arguments: partially applied, &0 kept
+(def {dep-later} (acct :dep))
+(print dep-later)
+(print (dep-later 100) (acct :get))
+(print ((acct :dep) 1))
+
+; a method's body names &0, so extras are allowed (and ignored); a plain function's aren't
+(print (acct :get :ignored :too))
+(print (acct :plain 1 2))
+
+; a value that isn't a function, given arguments
+(print (acct :name 1))
+(print (acct :missing 1))
+(print (acct :balance :x :y))
+
+; hash-call is the same call for a method (for a value that isn't a function, an error of its own)
+(print (hash-call acct :dep 1) (hash-call acct :get) (hash-call acct :name))
+(print (hash-call acct :plain 4))
+
+; taken out with hash-get, it isn't a method: &0 is unbound
+(print ((hash-get acct :plain) 4))
+(print ((hash-get acct :get)))
+(def {loose} (hash-get acct :get))
+(print (try (loose) &err))
+
+; the hash printed, its functions in it
+(print acct)
+
+; private entries: only methods reach them, through &0
+(def {vault} (hash-create {{:secret 42 :__private} {:peek (fn {} {&0 :secret})} {:bump (fn {} {do (hash-put &0 {:secret (+ (&0 :secret) 1)}) (&0 :secret)})}}))
+(print (vault :peek) (vault :bump) (vault :peek))
+(print (vault :secret))
+(print (hash-get vault :secret))
+
+; &0 is a stand-in for the hash: the same entries, changes go to the hash itself
+(def {me} (hash-create {{:v 7} {:self (fn {} {&0})} {:put (fn {k x} {hash-put &0 [k x]})}}))
+(def {p} (me :self))
+(print (type-of p) (hash-keys p) (p :v) (len p))
+(me :put :w 8)
+(print (me :w) (p :w) (hash-keys me))
+
+; methods calling methods through &0
+(def {cnt} (hash-create {{:n 0} {:inc (fn {} {do (hash-put &0 {:n (+ (&0 :n) 1)}) (&0 :n)})} {:twice (fn {} {do (&0 :inc) (&0 :inc)})}}))
+(print (cnt :inc) (cnt :inc) (cnt :twice) (cnt :n))
+
+; a method recursing through &0: three levels deep work, the fourth finds no :f
+(def {fact} (hash-create {{:f (fn {n} {if (zero? n) 1 (* n (&0 :f (- n 1)))})}}))
+(print (fact :f 0) (fact :f 1) (fact :f 2) (fact :f 3))
+(print (fact :f 4))
+(print (fact :f 10))
+; through the hash itself (its global name), recursion goes as deep as any
+(def {fact2} (hash-create {{:f (fn {n} {if (zero? n) 1 (* n (fact2 :f (- n 1)))})}}))
+(print (fact2 :f 10) (fact2 :f 20))
+
+; a method in tail position through &0 (a loop): the same proxy limit
+(def {looper} (hash-create {{:go (fn {n} {if (zero? n) :looped (&0 :go (- n 1))})}}))
+(print (looper :go 2) (looper :go 3) (looper :go 4))
+
+; built-ins as a hash's values: called as they are (no &0)
+(def {tools} (hash-create {{:len len} {:sub (substring "methods")} {:pr print}}))
+(print (tools :len {1 2 3}) (tools :sub 2) (tools :sub 0 3))
+(tools :pr :printed :by :a :hash)
+
+; a hash's method that returns a function, and one made by another function
+(fun {make-obj start} {hash-create [[:n start] [:adder (fn {k} {fn {x} {+ x k (&0 :n)}})]]})
+(def {o} (make-obj 100))
+(print o)
+(print (((o :adder) 5) 1))
+(print ((o :adder 5) 1))
+
+; the last: the stand-in's own stand-in has no entries to print, and printing it fails, ending the program
+(print (type-of (p :self)))
+(print (p :self))

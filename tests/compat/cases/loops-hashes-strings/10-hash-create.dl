@@ -1,0 +1,62 @@
+; 10-hash-create.dl - making hashes: hash-create and #(...), with entries {key value tag...} (each key as it's
+; written, each value evaluated, in order), the hash's own tags, S-expression entries (evaluated first, then the
+; value again), a key given twice (the last value, its first place), NIL values (no entry), to# and from#; how a
+; hash prints (print, repr, inside a list); the errors
+
+(print (hash-create))
+(print #())
+(print (eq (hash-create) #()) (type-of #()) (len #()))
+(print #({{:a 1} {"b" 2} {3 :three}}))
+(print (hash-create {{:a 1} {"b" 2} {3 :three}}))
+(print #({{:a 1 :t1 :t2} {:b 2} :htag :other}))
+(print (repr #({{:s "text\twith\"escapes"} {:c \c} {:sp \space}})))
+(print (list #({{:k 1}}) #()))
+(print #({{:in #({{:x 1} :itag})} {:l {1 (+ 1 1)}}}))
+
+; values are evaluated, in order, where hash-create is called; keys are as written
+(def {v} 10)
+(print #({{:a (do (write "[a]") (+ v 1))} {:b (do (write "[b]") (* v 2))} {:c v}}))
+(fun {mk n} {#({{:n n} {:sq (* n n)} {:self-n {n}}})})
+(print (mk 7))
+(print ((mk 7) :sq))
+
+; an S-expression entry ((list ...), [...]) is evaluated to an entry first; its value is then evaluated again
+(def {k} :computed)
+(print #({[k (+ 1 2)] (list "s" 5) {:plain 1}}))
+(def {target} :found-it)
+(print #({[:sym (to-sym "target")]}))
+
+; a key given twice: the last value, in the first one's place
+(print #({{:a 1} {:b 2} {:a 3}}))
+
+; NIL values make no entry; with a tag, an error (the entry isn't there to tag)
+(print #({{:a NIL} {:b 2} {:c (if NIL 1)}}))
+(print #({{:a NIL :tag}}))
+
+; to# and from#
+(print (to# {{:a 1} {:b (+ 1 1)} :t}))
+(print (from# #({{:a 1 :x} {"b" {1 2}} {3 #({{:i 1}})} :ht})))
+(print (from# (to# {{:z 26} {:y 25}})))
+(print (to# {}))
+(print (from# #()))
+
+; the errors: an entry that isn't one, a key that can't be one, a tag that isn't an atom
+(print #({5}))
+(print #({{:a}}))
+(print #({{}}))
+(print #({{1.5 1}}))
+(print #({{{1} 1}}))
+(print #({{\c 1}}))
+(print #({{:a 1 "tag"}}))
+(print #({{:a 1 5}}))
+(print #({"tag"}))
+(print #({{:a (error "value failed")} {:b 2}}))
+(print #({(error "entry failed")}))
+(print #({{:__locked 1}}))
+(print (hash-create 5))
+(print (hash-create "s"))
+(print (hash-create {{:a 1}} 2))
+(print (to# 5))
+(print (from# 5))
+(print (from# {}))
+(print (type-of hash-create) hash-create)

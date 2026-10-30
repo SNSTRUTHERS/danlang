@@ -1,0 +1,33 @@
+; 22-sexpr-values: S-expressions as values (an fexpr's arguments, read's items): printed, typed, compared (after the
+; Q-expressions in the order; never eq to one), evaluated again and again, kept in lists and hashes; every list
+; built-in refuses one (each message), and so do the library's list functions, whose native ways must give the same
+; error their code does (fst's, take's, cons's ...); the type tests, eq, cmp, sort and case take them as values.
+(def {q} (fexpr {x} {x}))
+(def {s} (q (+ 1 2 3)))
+(def {s2} (q (list :a (q b))))
+(def {r} (read "(* 2 3) x (a (b c)) {q (r)}"))
+(fun {err c} {try (eval c) (list :error &err)})
+(print "values" s s2 r (repr s) (type-of s) (map type-of r) (sexpr? s) (qexpr? s) (sexpr? (thd r)) (sexpr? (fst (nth 3 r))))
+(print "printed" (+ "s=" s) (format "{} {}" s s2) (str-join r "|") (to-str s) (list s {s}))
+(save s)
+(save r)
+(print "eval" (eval s) (eval s) (eval s2) (eval (fst r)) s s2)
+(print "compare" (eq s s) (eq s (q (+ 1 2 3))) (eq s {+ 1 2 3}) (cmp s {+ 1 2 3}) (cmp {+ 1 2 3} s) (cmp s (q (+ 1 2 4))) (< s T))
+(print "sorted" (sort (list s {+ 1 2 3} T (q (a)) {a} 1 "s" (q ()))))
+(print "min/max" (min s {z}) (max s T) (minimum (list s (q (a)))))
+(each {c {{tail s} {head s} {init s} {end s} {len s} {fst s} {snd s} {nth 1 s} {last s} {take 2 s} {drop 1 s} {reverse s}
+  {join s {4}} {join {0} s} {cons 0 s} {sort s} {map (fn {x} {x}) s} {filter (fn {x} {T}) s} {subset s 1} {item-at s 1}
+  {elem? 1 s} {in? 1 s} {index-of s 1} {foldl (fn {a x} {x}) NIL s} {foldr (fn {x a} {x}) NIL s} {str-join s}
+  {to# s} {count num? s} {any? num? s} {all? num? s} {find num? s} {sum s} {product s} {buffer s} {from-bytes s}
+  {each (fn {x} {x}) s} {str-chars s} {range s}}} (print "built-in" c (err c)))
+(each {c {{zip s s} {zip {1} s} {flatten s} {distinct s} {remove-all 1 s} {remove-fst 1 s} {has-element? s 1}
+  {avg s} {minimum s} {maximum s} {sort-desc s} {best-of 1 s} {split 1 s} {repeat 2 s} {starts-with? s "+"}
+  {contains? s 1} {ends-with? s "3"} {unpack list s} {apply + s} {first s} {second s} {all-between? 0 9 s}}}
+  (print "library" c (err c)))
+(print "case" (case s {(+ 1 2 3) :as-written} {6 :value}) (case (q (+ 1 2 3)) {s :same}) (between? s s s))
+(print "cond" (cond {s :true}) (cond {NIL 1} {T s}))
+(def {h} #({{:code s}}))
+(print "hash" h (h :code) (eval (h :code)) (hash-values h) (from# h))
+(fun {run-twice c} {list (eval c) (eval c)})
+(print "kept" (run-twice s) (run-twice (fst r)) (map (fn {x} {eval x}) (list s s2)) s)
+(print "fexpr items" (q (a b)) (q {a b}) (q ()) (q (())) (type-of (q ())) (eq (q ()) NIL) (nil? (q ())))

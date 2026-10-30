@@ -1,0 +1,48 @@
+--- stdout
+3 3 42 6 10
+{0 1 2} {1 2} {2} 9
+NIL NIL NIL 5 {1 2} {1 2} 5 s
+3 7 {1 2} 81
+13 10 3
+1 8 42
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: S-Expression starts with incorrect type. Got String, Expected Function.
+Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+Error: '+' adds numbers, or joins values to a string
+Error: Unbound Symbol 'x'
+Error: from a list made
+Error: 'nth': the list has no such item
+:yes 2 :more
+  run
+NIL
+  one
+  two
+3
+NIL 2
+42
+{2 3} {1 3 5} 6
+3 3 42 {1 2 3}
+  a
+  b
+  c
+{1 2 3}
+  x
+  y
+  x
+  y
+{NIL NIL} {NIL NIL}
+6 120 {1 2} {2 1} 8
+0 NIL {1 2} {3 4} 7
+Error: Unbound Symbol 'a'
+Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+Error: 'cons' expects a list second
+3 {3 2 1} NIL :a 6
+3 {1 2} 7
+3 {3 4} {3 7 0}
+{9 3 18} {9 3 18} {9 3 18}
+{9 3 18} {9 3 18}
+--- stderr
+
+--- exit 0

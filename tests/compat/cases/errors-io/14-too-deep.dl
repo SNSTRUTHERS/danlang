@@ -1,0 +1,48 @@
+; 14-too-deep.dl - "Too deep": calls not in tail position nest 10,000 deep at most (a call of a function, a method,
+; an fexpr, and one a built-in like map makes, each counts); the 10,001st is the error, made as it's called (so a
+; trace's "at" is the last call made before it, its argument's).  After it the program goes on, as deep as before.
+; The last error: a loop of three functions, each calling the next, too deep: the twelve innermost calls show in
+; its trace, the order they come in saying which of the three was called last
+
+; 10,000 calls nested: (counted 9999) makes them, the top level's call and 9,999 more
+(fun {counted n} {if (zero? n) 0 (+ 1 (counted (- n 1)))})
+(print (counted 9998) (counted 9999))
+(print (counted 10000))
+(print (try (counted 20000) (fn {m} {list :caught m})))
+
+; in tail position, as deep as it likes
+(fun {tail-count n acc} {if (zero? n) acc (tail-count (- n 1) (+ acc 1))})
+(print (tail-count 50000 0))
+
+; through a built-in's calls: map's function is a call too
+(fun {via-map n} {fst (map (fn {x} {via-map (+ x 1)}) (list n))})
+(print (via-map 0))
+; through an fexpr, a method
+(def {fx} (fexpr {x} {+ 1 (fx x)}))
+(print (fx 1))
+(def {h} #({{:r @({n} {+ 1 (h :r n)})}}))
+(print (h :r 1))
+
+; mutual recursion, two functions
+(fun {ping n} {+ 1 (pong n)})
+(fun {pong n} {* 1 (ping n)})
+(print (ping 1))
+
+; partial application's call counts too (it binds, then runs the body)
+(fun {add3 a b c} {+ a b c (add3 a b c)})
+(print ((add3 1 2) 3))
+
+; it stops what it reaches, as any error does; output before it stays
+(print (output-of (print "captured") (counted 20000)))
+(print (do (write "before; ") (counted 20000)))
+(print (list 1 (counted 20000) (print "not printed")))
+
+; after each, a normal call is as deep as ever
+(print (counted 9999) (counted 100))
+
+(print "the last: three functions in a loop, too deep")
+(fun {loop-a n} {+ 1 (loop-b (+ n 1))})
+(fun {loop-b n} {+ 1 (loop-c (* n 1))})
+(fun {loop-c n} {+ 1 (loop-a (- n 0))})
+(print (loop-a 0))
+(loop-a 0)

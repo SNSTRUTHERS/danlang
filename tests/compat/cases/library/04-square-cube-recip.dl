@@ -1,0 +1,55 @@
+; 04-square-cube-recip: square, cube, recip and its alias inverse, and trunc (the built-in truncate): integers whose
+; results cross 2^63 (3037000499/3037000500 squared, 2097151/2097152 cubed, -2097152 cubed is -2^63 exactly),
+; 2^32 squared, the small-integer range's edges, rationals, fixed decimals, complex numbers; wrong kinds (the
+; errors of * and /), division by zero, partial application, too many arguments, errors as arguments.
+; Ends with recip's division by zero inside a user function's map (the trace through lib\globals.dl).
+
+(print square cube recip inverse trunc)
+(def {xs} {0 1 -1 2 -2 255 256 65535 65536 -1024 -1025 46340 46341 2097151 2097152 -2097152 -2097153 3037000499 3037000500 -3037000500 4294967295 4294967296 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 7/2 -7/2 1/65536 2.5 -2.50 0.1 1.5 0.0})
+(print :square (map square xs))
+(print :cube (map cube xs))
+(print :recip (map recip (filter !=0 xs)))
+(print :inverse (map inverse {1/2 -1/2 0.25 -0.125 2/3 65536 9223372036854775808}))
+(print :trunc (map trunc xs))
+(print (map (fn {x} {type-of (square x)}) {2 1/2 0.5}) (map fixed? [(square 0.5) (cube 0.1) (recip 0.5) (recip 0.3) (recip 2.5)]))
+(print (map int? [(square 3037000500) (cube 2097152) (recip 1/9223372036854775808) (recip 0.5)]))
+
+; written directly at the edges
+(print (square 3037000499) (square 3037000500) (square -3037000500))
+(print (cube 2097151) (cube 2097152) (cube -2097152) (cube -2097153))
+(print (eq (cube -2097152) -9223372036854775808) (eq (square 3037000500) 9223372037000250000) (> (square 3037000500) 9223372036854775807))
+(print (square 65536) (square -1025) (cube 65536) (cube -1024) (recip -1024) (recip 65536))
+(print (square (+ 9223372036854775807 1)) (cube (- 0 9223372036854775808)) (recip (- 9223372036854775807)))
+
+; complex numbers
+(print (square (complex 1 2)) (square (complex 0 1)) (cube (complex 0 1)) (cube (complex 1 1)) (recip (complex 0 1)) (recip (complex 3 4)))
+(print (trunc (complex 1 2)))
+(print (trunc (complex 5 0)))
+
+; division by zero
+(print (recip 0))
+(print (recip 0.0))
+(print (inverse 0/7))
+
+; wrong kinds
+(print (square "ab") (square \a) (square {1 2}) (square NIL) (square T) (square :a) (square +) (square (hash-create)))
+(print (cube "a") (cube {2}) (cube NIL))
+(print (recip "a") (recip NIL) (recip {2}) (recip \2))
+(print (trunc "1.5") (trunc NIL) (trunc :a) (trunc {1.5}))
+
+; fewer arguments, more, and errors
+(print (square) (cube) (recip) (inverse))
+(print (trunc))
+(print (square 1 2))
+(print (recip 1 2))
+(print (trunc 1 2))
+(print (square (error "sq")) (cube (error "cu")) (recip (error "re")) (trunc (error "tr")))
+(print (square (square (square (square (square (square 2)))))))
+(print (cube (cube (cube 2))) (recip (recip (recip 7/3))))
+(print (square (- (cube 3) (square 5))) (recip (square (recip 3))))
+
+; recip's division by zero, from inside a map in a user function: the program ends with it
+(fun {reciprocals l} {map recip l})
+(print (reciprocals {1 2 4 -8 1/3}))
+(print (reciprocals {1 2 0 4}))
+(reciprocals {4 0})

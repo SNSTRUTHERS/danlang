@@ -1,0 +1,43 @@
+; 39-lib-examples.dl - the example libraries that run without dice: lib/cngh.dl (a game-hosting sketch: its hashes,
+; its debugging output, and its create-game, which gives hash-create a tag where an entry should be: an error kept),
+; lib/test-suite.dl (assert, whose ?{...} branches are data, so it never prints), and temp/temp.dl's hash (its tags,
+; :__readonly not one of the reserved ones)
+
+(print (load "cngh"))
+(print cngh.__games)
+(print cngh.__local)
+(print (cngh.get-local :name) (cngh.get-local :nothing) (cngh.get-local :nothing :a-default))
+(print (cngh.init "host-1") (cngh.get-local :name))
+(print (cngh.put-local :color :blue) (cngh.get-local :color) (cngh.del-local :color) (cngh.get-local :color))
+(print (cngh.new-server "srv"))
+(print (cngh.ensure-server) (cngh.get-local :server))
+(print (cngh.ensure-server))
+(print (cngh.next-game-id) (cngh.next-game-id) (cngh.get-local :next-game-id))
+(print (cngh.create-game "a game" T))
+(print (cngh.create-game "a game" NIL))
+(print (cngh.host-game "hosted" T))
+(print (cngh.__games :hosted))
+(print (cngh.output "debugging" 1 2) (cngh.output))
+(print (cngh.disconnect-game 7))
+(print (cngh.leave-game 7))
+(print (cngh.join-game "h" 1) (cngh.list-remote-games "h"))
+(print (cngh.list-games))
+(print (cngh.list-games "remote-host"))
+(print (cngh.stop-server) (cngh.get-local :server))
+(print cngh.__local)
+(print cngh.host-game)
+
+; test-suite.dl: assert's branches are Q-expressions, given back as data
+(print (load "test-suite"))
+(print (assert 1 1 "not printed") (assert 1 2 "not printed either"))
+(print (eval (assert 1 2 "printed when the branch is run")))
+(print (eval (assert 1 1 "x")))
+(print assert)
+
+; temp/temp.dl's hash
+(def {tt} #({{:a 1} {:b #({{:a "string"} {:b 2} :v2})} :v1 :x :__readonly}))
+(print tt)
+(print (tt :a) ((tt :b) :a) ((tt :b) :b) (hash-tag? tt :v1) (hash-tag? tt :__readonly) (hash-tag? (tt :b) :v2))
+(print (hash-const? tt) (hash-locked? tt) (hash-put tt {:c 3}) (tt :c))
+(print (hash-keys tt) (from# (tt :b)))
+(print (hash-make-const tt) (hash-const? tt) (hash-put tt {:d 4}) (tt :d))

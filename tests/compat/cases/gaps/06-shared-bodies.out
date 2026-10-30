@@ -1,0 +1,22 @@
+--- stdout
+once {1 2 :no-c} {2 1 :no-c} {1 2 3} {2 3 1} {3 1 2} {1 2 :no-c} {2 1 :no-c} {zz (+ 1 2) :no-c}
+printed <function>(fn {a b} {list a b (if (defined? c) c :no-c)}) <function>(fn {b a} {list a b (if (defined? c) c :no-c)}) <function>(fn {c a b} {list a b (if (defined? c) c :no-c)}) T NIL <function>(fn {b a} {list a b (if (defined? c) c :no-c)})
+round 0 {0 :x :no-c} {:x 0 :no-c} {0 :x :y} {:x :y 0} {:y 0 :x} {:x 0 :no-c}
+round 1 {1 :x :no-c} {:x 1 :no-c} {1 :x :y} {:x :y 1} {:y 1 :x} {:x 1 :no-c}
+round 2 {2 :x :no-c} {:x 2 :no-c} {2 :x :y} {:x :y 2} {:y 2 :x} {:x 2 :no-c}
+round 3 {3 :x :no-c} {:x 3 :no-c} {3 :x :y} {:x :y 3} {:y 3 :x} {:x 3 :no-c}
+mapped {{:p :q :r} {:q :r :p} {:r :p :q} {:q :r :p} {:p :q :r}} {{1 2 :no-c} {2 1 :no-c} {1 2 :no-c} {2 1 :no-c} {2 1 :no-c}}
+partial {2 1 :no-c} {2 3 1} {:a :b :c} {:a :b :c} {:again 1 :no-c} <function>(fn {b} {list a b (if (defined? c) c :no-c)}) <function>(fn {c a} {list a b (if (defined? c) c :no-c)})
+too many The function takes 2 arguments, not 3 The function takes 1 argument, not 2 The function takes 2 arguments, not 3
+formals 3 {2 1} 1/2 30 {:b :a} {:second :only} {x y}
+made {{1 2 3} {3 2 1} {3 1 2} {1 3 2}} {{1 2 3} {3 2 1} {3 1 2} {1 3 2}} {{:a :c :b} {:c :a :b} {:c :b :a} {:a :b :c}}
+made2 {{2 3 1} {2 1 3} {1 2 3} {3 2 1}}
+set {1 2 :no-w} {2 3 :w} {3 4 :w} {4 5 :no-w} {5 6 :no-w} {6 7 :w2} {7 8 :w3} {8 9 :no-w}
+recursion {:end {1 2 3}} {:end {1 2 :start}} {:end {1 2 :x}} {:end NIL}
+ping-pong {{:pang 1} {:ping 2} {:pang 3} {:ping 4}} {{:pang 1} {:ping 2} {:pang 3} {:ping 4} {:pang 5}}
+method {1 3} {2 3} {3 :no-self} {4 3} {5 :no-self}
+remembered Unbound Symbol 'hidden' {:formal :global-y} {:mk :global-y} Unbound Symbol 'hidden' {:again :global-y}
+eval {:ga :gb :no-c} {list a b (if (defined? c) c :no-c)} {:ga :gb :no-c} {:last :one :no-c}
+--- stderr
+
+--- exit 0

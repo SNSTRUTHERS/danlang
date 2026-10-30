@@ -1,0 +1,37 @@
+--- stdout
+1 after 1; 2 after 2; 3 Error: each stopped at 3
+abcdNIL
+12Error: fn stopped
+NIL
+Error: the list is an error
+q1;q2;NIL
+Error: in a q-expression
+012Error: dotimes stopped at 2
+012Error: fn at 3
+NIL
+Error: the count is an error
+NIL
+1234Error: while stopped at 4
+123Error: the test failed
+1233
+Error: in a q-expression body
+NIL
+12NIL :global-x
+NIL
+NIL NIL NIL NIL NIL NIL 
+{3 2 1} {2 1 0} {3 3 3}
+1 2
+0T 1T 0T 1T 
+10 11 12 20 21 Error: inner at 2,1
+10 11 caught 20 21 caught 30 31 caught NIL
+123Error: not a number: :four
+the last: an error in a dotimes, in a while, in an each, in a function
+row 1: 0 0 0 0 1 2 
+NIL
+row 1: 0 0 0 0 1 2 
+row 2: 0 0 0 0 2 4 
+--- stderr
+Error: 06-trace-loops.dl: Division by zero.
+  at 06-trace-loops.dl:66  (/ 1 0)
+  called at 06-trace-loops.dl:71  (grid {1 2 3})
+--- exit 1

@@ -1,0 +1,63 @@
+; 02-head-tail.dl - head, tail, init and end: a list of the first item, all but the first, all but the last, a list of
+; the last; on lists of one, two and many items, nested lists and NIL items; chained; walking a list down with tail
+; and init in a loop; errors for an empty list and for what isn't a list (their messages); partially applied; the
+; list given them unchanged
+
+(def {l} {1 {2 3} "four" \5 :six})
+(print "head" (head l) (head {x}) (head {{1 2} 3}) (head {NIL 1}) (head {(+ 1 2) 4}))
+(print "tail" (tail l) (tail {x}) (tail {1 2}) (tail {{1 2}}) (tail {NIL NIL}) (tail {1 (+ 2 3)}))
+(print "init" (init l) (init {x}) (init {1 2}) (init {1 NIL}) (init {{1} {2}}))
+(print "end" (end l) (end {x}) (end {1 2}) (end {1 NIL}) (end {{1} {2}}))
+(print "l" l)
+(print "repr" (repr (head {"s" 1})) (repr (end {1 \c})) (repr (tail {"a" "b"})) (repr (init {"a" \b \c})))
+(print "types" (type-of (head l)) (type-of (tail {x})) (type-of (fst (head {(+ 1 2)}))) (type-of (fst (end {1 {2}}))))
+
+; chained
+(print "tails" (tail (tail l)) (tail (tail (tail (tail l)))) (tail (tail (tail (tail (tail l))))))
+(print "inits" (init (init l)) (init (init (init (init l)))) (init (init (init (init (init l))))))
+(print "mixed" (head (tail l)) (end (init l)) (tail (init l)) (init (tail l)) (head (end l)) (end (head l)))
+(print "inner" (head (fst (tail l))) (end (snd l)) (tail (snd l)) (init (nth 1 l)))
+
+; walking a list down
+(def {walk} l)
+(while {walk} (print "  " (len walk) (head walk) (end walk) walk) (set! {walk} (tail walk)))
+(print "walked" walk l)
+(def {walk} l)
+(while {walk} (print "  " (len walk) (end walk) walk) (set! {walk} (init walk)))
+(print "walked" walk l)
+
+; a list of the first item is not the item
+(print (eq (head {5}) 5) (eq (head {5}) {5}) (eq (fst (head {5})) 5) (eq (end {1 2}) (tail {1 2})))
+
+; on a long list
+(def {r} (range 1000))
+(print (head r) (end r) (len (tail r)) (len (init r)) (head (tail r)) (end (init r)) (eq (init (tail r)) (range 1 999)))
+
+; errors: an empty list
+(print (head {}))
+(print (head NIL))
+(print (tail {}))
+(print (tail (tail {1})))
+(print (init (list)))
+(print (end []))
+(print (end (init {x})))
+
+; errors: not a list
+(print (head 5))
+(print (tail "abc"))
+(print (init :a))
+(print (end \c))
+(print (head (fst {(1 2)})))
+(print (tail (hash-create {{:a 1}})))
+(print (head (error "given an error")))
+
+; errors: too many
+(print (tail {1} {2}))
+(print (head {1} 2))
+
+; partially applied, and given by map
+(print (head) (tail) (init) (end) ((head) {9 8}) ((tail) {9 8}))
+(print (map head {{1 2} {3} {{4} 5}}) (map tail {{1 2} {3} {{4} 5}}) (map init {{1 2} {3}}) (map end {{1 2} {3}}))
+(print (map head {{1} {} {2}}))
+(print (map tail {{1} 5}))
+(print l)

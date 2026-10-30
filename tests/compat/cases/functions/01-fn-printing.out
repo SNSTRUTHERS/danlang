@@ -1,0 +1,54 @@
+--- stdout
+<function>(fn {x} {+ x 1})
+<function>(fn {x} {+ x 1})
+<function>(fn NIL NIL)
+<function>(fn {a b c} {list c b a})
+<function>(fn {s} {+ s "a \"quoted\" string\n"})
+<function>(fn {s} {+ s "tab\there"})
+<function>(fn {c} {list c \a \space \lparen})
+<function>(fn NIL {{nested {deeply {quoted}}} (inner (call 1 2))})
+<function>(fn NIL {(list 1 2 (+ 1 2))})
+<function>(fn {n} {if (zero? n) 1 0})
+<function>(fn {x} {do (set y x) (def z y) (format "{}" z) (hash-create {:k 1}) (fn {q} {q})})
+<function>(fn NIL {1.5 7/2 255 0 1000})
+<function>(fn NIL {:atom T NIL NIL exit})
+NIL
+<function>(fn {x} {* x 2})
+42
+<function>(fn {x} {* x 2})
+<function>(fn {x} {x})
+<function>(fn NIL {&_})
+<function>(+)
+<function>(fn) <function>(fun) <function>(fexpr) <function>(def) <function>(set) <function>(set!) <function>(let) <function>(do) <function>(if)
+<function>(print)
+:function :function :function :function
+T T NIL NIL
+T
+T
+NIL
+T
+T NIL T
+-1 1 -1
+Error: 'fn' expects a list of symbols first
+Error: 'fn' expects a list of symbols first
+Error: 'fn' expects a QExpr body
+Error: 'fn' expects a list of symbols first
+Error: 'fexpr' expects a list of symbols first
+Error: 'fexpr' expects a QExpr body
+Error: 'fun' expects {name formals...} first
+Error: 'fun' expects a QExpr body
+Error: 'fun' expects {name formals...} first
+Error: 'fun' expects {name formals...} first
+Error: 'fn' takes 2 arguments, not 3
+Error: 'fn' expects a QExpr body
+<function>(fn {x} {<function>(+) 10})
+<function>(fn {a} {a})
+81
+<function>(fn NIL {+ 1 2}) 3
+<function>(fn NIL {+ 1 2}) 3
+<function>(fn {x})
+<function>(fn {x} {* x 3})
+--- stderr
+Error: 01-fn-printing.dl: 'fun' expects a QExpr body
+  at 01-fn-printing.dl:77  (fun {f x} 1)
+--- exit 1

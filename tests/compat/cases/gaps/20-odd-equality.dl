@@ -1,0 +1,46 @@
+; 20-odd-equality: eq (and neq, ==, !=, cmp) where it's unusual: exit and streams aren't eq to themselves (cmp says 0),
+; a hash is eq to itself whatever it holds, functions are eq by formals and body (a lambda's partial applications
+; whatever they hold, a built-in's by the values given it), numbers by value across kinds, NIL however it's written,
+; Q- against S-expressions; and the functions that compare with eq, whose native ways must agree: distinct, remove-all,
+; remove-fst, has-element?, elem?, in?, index-of, last-index-of, case, count, find, plus sort and min/max on ties.
+(def {e} exit)
+(def {f} (fn {x} {x}))
+(def {h} #({{:k exit}}))
+(def {vals} (list e exit stdout stdin stderr f (fn {x} {x}) (fn {y} {x}) (fexpr {x} {x}) + (eq 1) (eq 2) (mod 7) (mod 8)
+  mod % h #({{:k exit}}) (hash-create) (hash-create) (buffer 1) (buffer 1) 1 1.0 2/2 (complex 1 0) 1/2 0.5 :a "a" \a
+  (to-sym "a") T NIL {} () (list) {1 {2}} (list 1 (list 2)) ((fexpr {x} {x}) (1 {2}))))
+(print "self" (map (fn {v} {eq v v}) vals))
+(print "cmp self" (map (fn {v} {cmp v v}) vals))
+(fun {pairs l} {if (snd l) (cons (list (eq (fst l) (snd l)) (neq (fst l) (snd l)) (== (fst l) (snd l)) (!= (fst l) (snd l))
+  (cmp (fst l) (snd l))) (pairs (tail l))) NIL})
+(print "next" (pairs vals))
+(print "kinds" (eq 1 1.0) (eq 1/2 0.5) (eq "a" \a) (eq :a "a") (eq (to-sym "a") :a) (eq T :t) (eq NIL {}) (eq {} ()) (eq {1} (list 1)))
+(print "fns" (eq (eq 1) (eq 1)) (eq (eq 1) (eq 2)) (eq (mod 7) (mod 8)) (eq mod %) (eq f (fn {x} {x})) (eq f (fexpr {x} {x})) (eq + -))
+(print "hashes" (eq h h) (eq h #({{:k exit}})) (eq (hash-create) (hash-create)) (eq #({{:a 1}}) #({{:a 1.0}})) (eq h (hash-clone h)))
+
+; the functions that compare with eq
+(print "distinct" (distinct (list e e 1 e)) (distinct (list stdout stdout stdin)) (distinct (list f f (fn {x} {x}) (fn {y} {y})))
+  (distinct (list (mod 7) (mod 8) mod %)) (distinct (list (eq 1) (eq 2) (eq 1))) (distinct (list h h (hash-create) (hash-create))))
+(print "distinct" (distinct (list 1 1.0 2/2 (complex 1 0) "1" :1 \1)) (distinct (list NIL {} () (list) {NIL})) (distinct (list 1/2 0.5 2/4)))
+(print "remove-all" (remove-all e (list e 1 e)) (remove-all stdout (list stdout 2)) (remove-all f (list f (fn {x} {x}) 3))
+  (remove-all (mod 1) (list (mod 7) mod)) (remove-all 1 (list 1.0 2/2 "1" (complex 1 0))) (remove-all h (list h #({{:k exit}}))))
+(print "remove-fst" (remove-fst e (list e 1)) (remove-fst stdout (list stdout)) (remove-fst (eq 1) (list (eq 2) (eq 1) (eq 1)))
+  (remove-fst 0.5 (list 1 1/2 0.5)) (remove-fst NIL (list 1 () {})))
+(print "has-element?" (has-element? (list e) e) (has-element? (list stdin) stdin) (has-element? (list (mod 7)) (mod 9))
+  (has-element? (list 1.0) 1) (has-element? (list {1 2}) (list 1 2)) (has-element? (list h) h))
+(print "elem?" (elem? e (list e)) (in? stdout (list stdout)) (elem? (eq 3) (list (eq 3))) (elem? "a" (list \a :a)))
+(print "index-of" (index-of (list e 1 e) e) (last-index-of (list stdout stdout) stdout) (index-of (list 1 2 1.0) 1.0)
+  (last-index-of (list 1 2 1.0) 1) (index-of (list f f) (fn {x} {x})) (index-of (list (mod 7)) (mod 8)))
+(print "case" (try (case e {exit 1}) &err) (try (case stdout {stdout :out}) &err) (case f {f :f}) (case (mod 7) {(mod 8) :m})
+  (case 1 {1.0 :one}) (case h {h :h}) (try (case (eq 1) {(eq 2) :q}) &err) (case NIL {() :empty}))
+(print "count" (count (fn {v} {eq v e}) (list e e)) (count (eq 1) (list 1 1.0 2/2 "1")) (find (eq stdout) (list stdout))
+  (filter (fn {v} {neq v e}) (list e 1)) (count (fn {v} {eq v f}) vals))
+(print "sort ties" (sort (list e 1 e "s" stdout f (mod 7) mod)) (map type-of (sort (list 1.0 1 2/2))) (fixed? (min 1 1.0)) (fixed? (max 1.0 1)))
+(print "min/max" (min e exit) (max stdout stdin) (minimum (list stdin stdout)) (maximum (list (mod 7) (mod 8))) (max h (hash-create)))
+(print "between" (between? e e e) (between? stdout stdout stdout) (between? 1 1.0 1) (all-between? 1 2 (list 1.0 3/2 2.0)))
+(print "xor" (xor e NIL) (xor e e) (xor stdout NIL))
+(print "keys" (hash-keys (to# (list {1 :int} (list 1.0 :fixed) (list 2/2 :rat) {"1" :str} {:1 :atom}))))
+(fun {err c} {try (eval c) (list :error &err)})
+(print "odd kinds to the library" (map err {{mod exit 2} {floor exit} {round stdout} {even? stdout} {square exit} {pow exit 0}
+  {between? exit 1 2} {xor exit NIL} {avg (list exit)} {?? NIL exit} {cond {exit 1}} {starts-with? exit "e"} {zip exit {1}}
+  {flatten (list exit {stdout})} {>=0 exit} {positive? stdin} {remove-fst stdin (list stdin)} {divmod stdout 2}}))

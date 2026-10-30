@@ -1,0 +1,91 @@
+--- stdout
+"(1 2"
+  read: Error: 'read': missing )
+  load: Error: r1.dl:1: missing )
+"{1 (2\n"
+  read: Error: 'read': missing })
+  load: Error: r2.dl:1: missing })
+"(1 2]"
+  read: Error: 'read': Closed a list without opening: )
+  load: Error: r3.dl:1: Closed a list without opening: )
+"1 2)"
+  read: Error: 'read': Closed a SExpr without opening: 
+  load: Error: r4.dl:1: Closed a SExpr without opening: 
+"}"
+  read: Error: 'read': Closed a QExpr without opening: 
+  load: Error: r5.dl:1: Closed a QExpr without opening: 
+"]"
+  read: Error: 'read': Closed a list without opening: 
+  load: Error: r6.dl:1: Closed a list without opening: 
+"[1 2"
+  read: Error: 'read': missing ]
+  load: Error: r7.dl:1: missing ]
+"\"abc"
+  read: Error: 'read': Incomplete string literal
+  load: Error: r8.dl:1: Incomplete string literal
+"\"\"\"abc\nmore"
+  read: Error: 'read': missing """
+  load: Error: r9.dl:1: missing """
+"\\nosuchname"
+  read: Error: 'read': Unknown character name \nosuchname
+  load: Error: r10.dl:1: Unknown character name \nosuchname
+"\"\\q\""
+  read: Error: 'read': Unknown escape sequence \q
+  load: Error: r11.dl:1: Unknown escape sequence \q
+"\"\\x\""
+  read: Error: 'read': \x needs a hex digit
+  load: Error: r12.dl:1: \x needs a hex digit
+"\"line\nbreak\""
+  read: Error: 'read': Newlines are not allowed in regular strings
+  load: Error: r13.dl:1: Newlines are not allowed in regular strings
+"f(x)"
+  read: Error: 'read': 'f' touches '(': put a space between them
+  load: Error: r14.dl:1: 'f' touches '(': put a space between them
+"x[1]"
+  read: Error: 'read': 'x' touches '[': put a space between them
+  load: Error: r15.dl:1: 'x' touches '[': put a space between them
+"<(h k)"
+  read: Error: 'read': '<' touches '(': put a space between them
+  load: Error: r16.dl:1: '<' touches '(': put a space between them
+"+#(a)"
+  read: Error: 'read': '+#' touches '(': put a space between them
+  load: Error: r17.dl:1: '+#' touches '(': put a space between them
+"1/0"
+  read: Error: 'read': Division by zero: 1/0
+  load: Error: r18.dl:1: Division by zero: 1/0
+"$(x)"
+  read: Error: 'read': '$(' isn't danlang: $name is the environment's variable
+  load: Error: r19.dl:1: '$(' isn't danlang: $name is the environment's variable
+"a\x01b"
+  read: Error: 'read': Control sequences not allowed
+  load: Error: r20.dl:1: Control sequences not allowed
+"café"
+  read: Error: 'read': Non-ASCII character outside of string literal
+  load: Error: r21.dl:1: Non-ASCII character outside of string literal
+"(print 1)\r\n(print 2)\r\n(print (3\r\n"
+  read: Error: 'read': missing ))
+  load: Error: r22.dl:3: missing ))
+"; just a comment"
+  read: NIL
+  load: NIL
+""
+  read: NIL
+  load: NIL
+"   \n\t\n"
+  read: NIL
+  load: NIL
+"(fine 1) {fine 2} [fine 3]"
+  read: {(fine 1) {fine 2} (list fine 3)}
+  load: Error: r26.dl: Unbound Symbol 'fine'
+"\"\"\"a here string\nover lines\"\"\" \\space"
+  read: {"a here string\nover lines" \space}
+  load:  
+{1+ 1/x 2x -a +b 1.2.3 #notabase}
+{:symbol :symbol :symbol :symbol :symbol :symbol}
+the last: a file that can't be read, loaded in a function
+loading config
+--- stderr
+Error: 20-reader-errors.dl: config.dl:4: Newlines are not allowed in regular strings
+  at 20-reader-errors.dl:49  (load "config")
+  called at 20-reader-errors.dl:50  (load-config)
+--- exit 1

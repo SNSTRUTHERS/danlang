@@ -1,0 +1,32 @@
+--- stdout
+{:global} {:in-mk-q} {:in-mk-q}
+{:in-mk-list} {:in-mk-list}
+{:global} {:in-run-it}
+{:in-mk-join} {:in-mk-join}
+{:global} {:in-run-it}
+Error: Unbound Symbol 'undefined-in-code'
+Error: Division by zero.
+ran first
+Error: then an error
+{+ 1 where} Error: '+' adds numbers, or joins values to a string
+{len 5} Error: 'len' requires parameter of type string, list, hash or buffer
+6 Error: '+' adds numbers, or joins values to a string
+{(+ 1 2) (len 5) (* 2 (/ 1 0))} :list {:sexpr :sexpr :sexpr}
+Error: 'eval' can't be applied to values: it's a special form
+3 Error: 'len' requires parameter of type string, list, hash or buffer Error: Division by zero.
+3; Error: 'len' requires parameter of type string, list, hash or buffer; Error: Division by zero.; NIL
+Error: 'read': missing ) Error: 'read': Unknown character name \nosuchcharacter NIL NIL
+5 s :a :global Error: Unbound Symbol 'undefined-sym'
+NIL 5 {1 2} Error: S-Expression starts with incorrect type. Got String, Expected Function.
+Error: 'len' requires parameter of type string, list, hash or buffer
+9
+{"eval'd error" :evalcode}
+the last: read's code, eval'd in an each in a function, its error on the text's fifth line
+program starts
+7
+--- stderr
+Error: 08-trace-eval.dl: 'len' requires parameter of type string, list, hash or buffer
+  at line 5  (len pv)
+  called at 08-trace-eval.dl:51  (run-program program)
+  called at 08-trace-eval.dl:52  (main)
+--- exit 1

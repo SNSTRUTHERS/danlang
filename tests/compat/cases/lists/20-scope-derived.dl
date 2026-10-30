@@ -1,0 +1,77 @@
+; 20-scope-derived.dl - the scope a list remembers, which eval runs it in, shown by a variable named who in every
+; scope: a Q-expression written in a function remembers that call's scope, and so do head, tail, init, end and reverse
+; of it; [..] and list remember the scope they were called in; join, the first that remembers one; cons, take, drop,
+; subset, sort, map, filter, range and read make lists that remember none (eval runs them where eval is called)
+
+(def {who} :global)
+(def {sym-who} (fst {who}))
+(fun {run-it c} {do =(who :in-run-it) (eval c)})
+
+(fun {mk-q} {do =(who :in-mk-q) {print who}})
+(fun {mk-tail} {do =(who :in-mk-tail) (tail {ignored print who})})
+(fun {mk-head} {do =(who :in-mk-head) (head {who 1 2})})
+(fun {mk-init} {do =(who :in-mk-init) (init {print who 9})})
+(fun {mk-end} {do =(who :in-mk-end) (end {1 2 who})})
+(fun {mk-rev} {do =(who :in-mk-rev) (reverse {who print})})
+(fun {mk-list} {do =(who :in-mk-list) [print sym-who]})
+(fun {mk-list2} {do =(who :in-mk-list2) (list print sym-who)})
+(fun {mk-join} {do =(who :in-mk-join) (join {print} {who})})
+(fun {mk-join-unscoped-first} {do =(who :in-mk-juf) (join (cons print NIL) {who})})
+(fun {mk-join-two} {do =(who :in-mk-join-two) (join (mk-q) {who})})
+(fun {mk-cons} {do =(who :in-mk-cons) (cons print {who})})
+(fun {mk-take} {do =(who :in-mk-take) (take 2 {print who 3})})
+(fun {mk-drop} {do =(who :in-mk-drop) (drop 1 {3 print who})})
+(fun {mk-sub} {do =(who :in-mk-sub) (subset {9 print who} 1)})
+(fun {mk-sort} {do =(who :in-mk-sort) (sort {who})})
+(fun {mk-map} {do =(who :in-mk-map) (map (fn {x} {x}) {print who})})
+(fun {mk-filter} {do =(who :in-mk-filter) (filter (fn {x} {T}) {print who})})
+(fun {mk-read} {do =(who :in-mk-read) (read "print who")})
+
+(print "q" (run-it (mk-q)))
+(print "tail" (run-it (mk-tail)))
+(print "head" (run-it (mk-head)))
+(print "init" (run-it (mk-init)))
+(print "end" (run-it (mk-end)))
+(print "reverse" (run-it (mk-rev)))
+(print "[..]" (run-it (mk-list)))
+(print "list" (run-it (mk-list2)))
+(print "join" (run-it (mk-join)))
+(print "join, its first remembering none" (run-it (mk-join-unscoped-first)))
+(print "join of two scopes" (run-it (mk-join-two)))
+(print "cons" (run-it (mk-cons)))
+(print "take" (run-it (mk-take)))
+(print "drop" (run-it (mk-drop)))
+(print "subset" (run-it (mk-sub)))
+(print "sort" (run-it (mk-sort)))
+(print "map" (run-it (mk-map)))
+(print "filter" (run-it (mk-filter)))
+(print "read" (run-it (mk-read)))
+
+; evaluated at the top level, the lists that remember none see the global who
+(print "top q" (eval (mk-q)))
+(print "top tail" (eval (mk-tail)))
+(print "top cons" (eval (mk-cons)))
+(print "top take" (eval (mk-take)))
+(print "top [..]" (eval [print sym-who]))
+
+; the lists themselves
+(print (mk-q) (mk-tail) (mk-head) (mk-list) (mk-cons) (mk-join-two))
+
+; a list kept in a variable keeps what it remembers
+(fun {keep} {do =(who :in-keep) =(c (cons print {who})) =(q {print who}) [c q]})
+(def {kept} (keep))
+(print "kept cons" (run-it (fst kept)))
+(print "kept q" (run-it (snd kept)))
+(fun {eval-here} {do =(who :in-eval-here) =(c (cons print {who})) (eval c)})
+(print "cons evaluated where it's made" (eval-here))
+
+; a tail of a tail of a list written in a function, many times over, still remembers the call's scope
+(fun {deep-tail} {do =(who :in-deep-tail) (tail (tail (tail {a b c print who})))})
+(print "tail of tail" (run-it (deep-tail)) (run-it (reverse (reverse (deep-tail)))) (run-it (init (join (deep-tail) {x}))))
+(print "a tail made into a new list" (run-it (cons print (tail (deep-tail)))) (run-it (take 2 (deep-tail))))
+
+; each call of the function: its own scope
+(fun {mk-n n} {do =(who n) (tail {_ print who})})
+(def {calls} (map mk-n {:first :second :third}))
+(print calls)
+(map run-it calls)

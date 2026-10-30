@@ -1,0 +1,39 @@
+--- stdout
+:a :abc :with-dash :two words :12 :a
+sym sym mixed g__1 x__2 sym
+NIL NIL NIL NIL NIL T T NIL T :list :list
+:abNILT
+{1 {2 {3 NIL}} "s" \c :a b} {NIL} {NIL NIL} {NIL NIL}
+{(+ 1 2) {q} (list l i) (a (b (c)))}
+{(set x 1) (if c a b) (def d 2) (hash-create e) (fn f g) (unpack h i) (format j k)}
+{{if c a b} {set y 2}}
+(nested (s expr)) :sexpr
+{:symbol :atom :string :char :number :sexpr :list :sexpr :t :list}
+<function>(fn {x} {* x 2}) <function>(fn NIL {:none}) <function>(fn {a b c} {list a b c})
+<function>(fn {x} {(set y x) (if y :yes :no) (list y)})
+<function>(fn {x} {fn {y} {+ x y}}) <function>(fn {y} {+ x y})
+<function>(fn {a b} {+ a b}) <function>(fn {b} {+ a b}) <function>(fn {a b} {+ a b})
+<function>(fn {a b} {list a b}) <function>(fn {b} {list a b})
+<function>(fn {x} {"a string body" \c 1.5})
+<function>(+) <function>(len) <function>(print) <function>(if) <function>(def) <function>(map) <function>(fst) <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})
+<function>(eq 1) <function>(cons 1) <function>(substring "abc") bcdef <function>(str-join) 0 <function>(join)
+<function>(eq "s") <function>(cons "s") <function>(eq \c) <function>(cons {1 2}) <function>(cons <function>(fn {x} {x}))
+<function>(eq "s") <function>(cons \c)
+<hash>NIL <hash>{{:a 1}} <hash>{{:a 1} {"s" "str"} {3 {x y}}}
+<hash>{{:a 1 :tag1 :tag2} {:b 2} :hash-tag :another}
+<hash>{{:p 9 :__private} {:m <function>(fn NIL {&0 :p})} :__locked}
+<hash>{{:inner {{:x 1} {:deep {{:y 2}}}}} {:list {1 2}}}
+<hash>{{"k" "v\n"} {:c \c}}
+<hash>{{:b 2} {:c 3}} {:b :c} {2 3} {{:b 2} {:c 3}}
+<buffer>{} <buffer>{0 0 0} <buffer>{255 255} <buffer>{65 90} <buffer>{1 2 3} <buffer>{120}
+<stream> <stream> <stream> :stream <stream>
+Error: e Error: with "quotes" Error: e Error: r
+exit exit
+{1 1.5 1/2 1i \c "s" :a b NIL T <function>(+) <function>(fn {x} {x}) <hash>{{:k 1}} <buffer>{0} <stream> exit}
+{1 1.5 1/2 1i \c "s" :a b NIL T <function>(+) <function>(fn {x} {x}) <hash>{{:k 1}} <buffer>{0} <stream> exit}
+{:number :number :number :number :char :string :atom :symbol :list :t :function :function :hash :buffer :stream :exit}
+{1 1.5 1/2 1i \c "s" :a b NIL T <function>(+) <function>(fn {x} {x}) <hash>{{:k 1}} <buffer>{0} <stream> exit}
+111 T
+--- stderr
+
+--- exit 0

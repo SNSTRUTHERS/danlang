@@ -1,0 +1,37 @@
+--- stdout
+:negative :zero :positive
+:positive
+:positive
+Error: Selection not found
+Error: Selection not found
+Error: 'head' passed an empty list
+Error: the first test
+:chosen
+Error: the chosen value
+test1 test2 value2 2
+a test that prints
+Error: Selection not found
+{"Selection not found" NIL}
+one two three three
+Error: Case not found
+Error: b's value
+Error: a key that's an error
+Error: the key itself
+Error: Case not found
+:string-key
+:list-key
+Case not found
+:big exactly 100 {:small 1}
+1 Error: Unbound Symbol 'undefined-in-case' Error: Case not found
+Error: 'truncate' expects a real number Error: 'truncate' expects a real number Error: '+' adds numbers, or joins values to a string
+the last: case's own error, made in the library, from two calls down
+{"Sun" "Mon" "Tue"}
+Error: Case not found
+{"Sun" "Mon" "Tue"}
+--- stderr
+Error: 11-trace-cond-case.dl: Case not found
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at 11-trace-cond-case.dl:43  (day-name d)
+  called at 11-trace-cond-case.dl:44  (week-of {5 6 7})
+  called at 11-trace-cond-case.dl:46  (calendar)
+--- exit 1

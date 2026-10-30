@@ -1,0 +1,48 @@
+; 08-range.dl - range: (range to), (range from to), (range from to step); up, down with a negative step, empty when
+; it goes the wrong way; integers, rationals, fixed decimals, big integers and complex numbers, and the kind of the
+; items made; a step of 0, a non-number, too many arguments, and 1,000,001 items as errors (their messages);
+; partially applied; its items used as numbers
+
+(print (range 5) (range 1) (range 0) (range -3))
+(print (range 2 5) (range 5 5) (range 5 2) (range -2 2) (range -5 -2))
+(print (range 0 10 2) (range 0 10 3) (range 1 10 4) (range 10 0 -1) (range 10 0 -3) (range 0 10 -1) (range 10 0 1))
+(print (range 0 1 1/4) (range 0 1 0.25) (range 1/2 3) (range 0.5 3) (range 1 0 -1/3) (range 1 0 -0.3))
+(print (range 0 1 1/3) (range 0 1 0.3) (range 0.1 0.5 0.1) (range 0 1/2 1/8) (range 0 0.001 0.0003))
+(print (range 2.0 5) (range 2 5.0) (range 1/2 5/2) (range -1/2 -5/2 -1/2))
+(print (map fixed? (range 2.0 5)) (map fixed? (range 2 5.0)) (map rational? (range 1/2 3)) (map int? (range 1/2 3 1/2)))
+(print (range 100000000000000000000 100000000000000000003))
+(print (range -100000000000000000002 -100000000000000000000))
+(print (range 0 100000000000000000000 30000000000000000000))
+(print (range 9223372036854775806 9223372036854775810))
+(print (range -9223372036854775807 -9223372036854775811 -1))
+(print (range 65534 65538) (range -1023 -1027 -1))
+(print (range 3 0.5 -1/2) (range 1 2 0.1))
+(print (range (complex 1 1) 4) (range 0 3 (complex 1 1)))
+
+; the end isn't included, however near it comes
+(print (range 0 1 0.5) (range 0 0.9 0.3) (range 0 1.0000001 0.5) (range 0 10 5) (range 0 11 5))
+
+; errors
+(print (range 0 5 0))
+(print (range 0 5 0.0))
+(print (range 0 5 0/7))
+(print (range 1 :a))
+(print (range "5"))
+(print (range {5}))
+(print (range 1 2 NIL))
+(print (range 1 2 3 4))
+(print (range (error "no end")))
+
+; partially applied: it needs one
+(print (range) ((range) 3) (map range {0 1 2 3}) (map (fn {n} {range n 0 -1}) {0 1 2 3}))
+
+; its items are numbers, used as any are
+(print (sum (range 101)) (product (range 1 11)) (map (fn {i} {* i i}) (range 6)) (filter (fn {i} {zero? (bit-and i 1)}) (range 10)))
+(print (range 3 (+ 3 3)) (range (- 3) 3 (+ 1 1)) (map (fn {i} {range i}) (range 4)))
+(print (eq (range 3) {0 1 2}) (eq (range 0 1 1/2) {0 1/2}) (eq (range 0 1 0.5) {0 1/2}) (eq (range 1 1) NIL))
+(print (len (range 1000)) (len (range 0 1000 7)) (last (range 0 1000 7)) (len (range 1000 0 -3)) (last (range 1000 0 -3)))
+(print (len (range 1/2 100)) (last (range 1/2 100)) (len (range 0 10 1/100)) (nth 333 (range 0 10 1/100)))
+(print (reverse (range 10)) (eq (reverse (range 10)) (range 9 -1 -1)))
+
+; at most 1,000,000 items: one more is an error
+(print (range 0 1000001))

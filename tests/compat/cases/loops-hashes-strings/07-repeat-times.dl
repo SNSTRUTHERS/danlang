@@ -1,0 +1,58 @@
+; 07-repeat-times.dl - the library's repeat and times: (repeat n code), a list of n runs' values, the code run (eval)
+; each time where it was written (a function's variables seen); side effects in order; counts 0, a whole number of
+; another kind; code that isn't a Q-expression (its value); counts that never reach 0 (negative: too deep), a
+; string; how the library functions print
+
+(print repeat)
+(print times)
+(print (eq repeat times))
+(print (repeat 3 {+ 1 2}))
+(print (repeat 0 {print "not run"}))
+(print (repeat 1 {:once}))
+(print (times 4 {:t}))
+(print (repeat 2.0 {:two-point-oh}))
+(print (repeat 4/2 {:four-halves}))
+
+; side effects: in order, once per run; the values are the code's (print's NIL)
+(def {runs} 0)
+(print (repeat 3 {do (set! {runs} (+ runs 1)) (write "run" runs " ") (* runs runs)}))
+(print (repeat 2 {print "side effect"}))
+
+; the code runs where it was written: a function's own variables
+(fun {counter n} {do =(acc 0) (repeat n {set! {acc} (+ acc 1)}) acc})
+(print (counter 5))
+(fun {labels n tag} {repeat n {+ tag "!"}})
+(print (labels 3 "go"))
+(fun {squares n} {do =(i 0) (repeat n {do (set! {i} (+ i 1)) (* i i)})})
+(print (squares 5))
+
+; nested repeats, and repeat in a loop
+(print (repeat 2 {repeat 3 {:in}}))
+(dotimes {i 3} (print i (repeat i {i})))
+
+; code that isn't a Q-expression: its value each time (a number, a function, a Q-expression's value)
+(print (repeat 2 5))
+(print (repeat 2 "s"))
+(print (repeat 2 print))
+(print (repeat 2 (fn {} {:fn})))
+(def {code} {* 6 7})
+(print (repeat 2 code))
+(print (repeat 2 {}))
+
+; a count that's an expression: evaluated once
+(print (repeat (do (print "count evaluated") 2) {:x}))
+
+; an error in the code: the error (the runs before it done)
+(def {k} 0)
+(print (repeat 5 {do (set! {k} (+ k 1)) (if (eq k 3) (error "third run failed") k)}) k)
+
+; counts that never reach 0: a string, a negative number (too deep)
+(print (repeat "x" {1}))
+(print (repeat :a {1}))
+(print (repeat -1 {1}))
+
+; partial application: a library function given fewer arguments
+(def {thrice} (repeat 3))
+(print thrice)
+(print (thrice {:p}))
+(print (repeat))

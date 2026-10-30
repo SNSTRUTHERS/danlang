@@ -1,0 +1,56 @@
+; 12-depth: calls not in tail position nest 10,000 deep at most.  A non-tail recursion of n levels is n+1 calls
+; nested (the call of 0 too): 9998 and 9999 levels work, 10000 and 10001 are the error "Too deep: more than 10000
+; calls nested".  A wrapper's call counts (one level fewer), a tail-call wrapper's doesn't; map's calls of a
+; function count as calls; two calls a level halve it.  try catches it; after it, the depth is back to nothing.
+
+(fun {deep n} ?{(zero? n) 0 (+ 1 (deep (- n 1)))})
+(print (deep 9998))
+(print (deep 9999))
+(print (deep 10000))
+(print (deep 10001))
+
+; a wrapper that isn't a tail call: one level fewer
+(fun {wrap n} {+ 0 (deep n)})
+(print (wrap 9998))
+(print (wrap 9999))
+
+; a wrapper whose call is a tail call: it takes the wrapper's place
+(fun {wrapt n} {deep n})
+(print (wrapt 9999))
+(print (wrapt 10000))
+
+; two wrappers, the inner a tail call, the outer not
+(fun {wrap2 n} {wrapt n})
+(fun {wrap3 n} {list (wrap2 n)})
+(print (wrap3 9998))
+(print (wrap3 9999))
+
+; through map: map's call of the function is a call, nesting as any does
+(fun {map-deep n} ?{(zero? n) 0 (+ 1 (fst (map map-deep [(- n 1)])))})
+(print (map-deep 9999))
+(print (map-deep 10000))
+
+; mutual recursion, not in tail position (the result unwrapped by a loop, not by recursion)
+(fun {ping n} ?{(zero? n) :ping-bottom (list (pong (- n 1)))})
+(fun {pong n} ?{(zero? n) :pong-bottom (list (ping (- n 1)))})
+(fun {unwrap l} {do =(k 0) (while (qexpr? l) =(l (fst l)) =(k (+ k 1))) (list k l)})
+(print (unwrap (ping 9999)))
+(print (ping 10000))
+
+; two calls nested a level: half as many levels
+(fun {two-step n} ?{(zero? n) 0 (+ 1 (helper n))})
+(fun {helper n} {+ 0 (two-step (- n 1))})
+(print (two-step 4999))
+(print (two-step 5000))
+
+; try catches it: the innermost try that's reached
+(print (try (deep 10000) (list :caught &err &code)))
+(fun {try-deep n} {try ?((zero? n) :bottom (try-deep (- n 1))) :caught-here})
+(print (try-deep 9999))
+(print (try-deep 10000))
+
+; after a Too deep error, nothing's left nested: the next recursion goes as deep
+(print (deep 9999))
+
+; the last: a recursion 10000 deep ends the program (its trace: twelve calls)
+(deep 10000)

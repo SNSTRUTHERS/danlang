@@ -1,0 +1,72 @@
+; 07-args-caller-scope: a call's arguments are evaluated in the caller's scope, before the callee's scope exists: a set
+; in an argument binds in the caller's scope (eval of set code too), a closure made in an argument closes over the
+; caller's, names in arguments are the caller's (its formals, its &1 and &_) even when the callee has the same names;
+; arguments that call the same function (nested, in every position), and a function redefined by its own arguments.
+; Then extras reached by names made at run time (to-sym, read) in bodies that name only some of them.
+(fun {pair a b} {list a b})
+(fun {caller x} {do
+  (pair (set {made-here} (+ x 1)) (eval {set {made-too} (* x 2)}))
+  (list x made-here made-too (pair (set {x} :changed) x) x)})
+(print "set in args" (caller 5) (try made-here &err) (try made-too &err))
+(fun {caller2 a b} {pair (do (set {b} :from-arg) a) b})
+(print "set formal" (caller2 1 2) (caller2 :x :y))
+(fun {caller3} {do (pair (def {glob-from-arg} :def-in-arg) 1) glob-from-arg})
+(print "def in args" (caller3) glob-from-arg)
+
+; closures made in arguments close over the caller's scope, not the callee's
+(fun {apply-it f a} {f a})
+(fun {mk n} {apply-it (fn {a} {list :inner a n}) (+ n 100)})
+(print "closures" (mk 1) (mk 2))
+(fun {mk2 a} {apply-it (fn {x} {list x a}) :arg})
+(print "closures" (mk2 :mine) (apply-it (fn {a} {list a}) 7))
+(fun {keep f} {f})
+(fun {mk3 n} {do (set {k} (keep (fn {} {list :kept n}))) (set {n} :rebound) (k)})
+(print "kept" (mk3 1))
+
+; names in arguments are the caller's: formals with the callee's names, and the caller's extras
+(fun {callee a b} {list :callee a b &_ (defined? &1)})
+(fun {caller4 b a} {callee b a (list a b)})
+(print "names" (caller4 1 2) (caller4 :x :y))
+(fun {caller5} {callee &1 &2 &_ (len &_)})
+(print "extras" (caller5 :p :q :r) (caller5 1 2))
+(fun {caller6 a} {callee (list a &_) &1})
+(print "extras" (caller6 :a :e1 :e2) (caller6 :a :e1))
+
+; the same function in its own arguments, nested in every position
+(fun {add3 a b c} {+ a b c})
+(print "nested" (add3 1 2 3) (add3 (add3 1 1 1) (add3 2 2 2) (add3 3 3 3)) (add3 (add3 (add3 1 1 1) 1 1) 1 (add3 1 1 (add3 1 1 1))))
+(fun {depth n} {if (zero? n) 0 (+ 1 (depth (- n 1)))})
+(print "nested" (depth (depth (depth 3))) (pair (pair (pair 1 2) (pair 3 4)) (pair (pair 5 6) (pair 7 8))))
+(fun {fib2 n} {if (< n 2) n (+ (fib2 (- n 1)) (fib2 (- n 2)))})
+(print "fib" (map fib2 (range 15)) (fib2 (fib2 7)))
+(def {p} (pair :first))
+(print "partial" (p (p :second)) (p (p (p :third))) ((pair (p 1)) (p 2)))
+(fun {self-arg f} {f f})
+(print "self" (self-arg (fn {g} {if (function? g) :called :not})))
+(fun {counting n} {if (zero? n) (list :done) (cons n (counting (pair (- n 1) :ignored)))})
+(print "error arg" (try (counting 3) &err))
+
+; a function redefined while its own arguments are evaluated: the call is the old function
+(fun {redef x} {list :old x})
+(print "redef" (redef (do (fun {redef x} {list :new x}) 1)) (redef 2))
+(fun {redef2 x} {list :first x})
+(print "redef2" (redef2 (redef2 (do (fun {redef2 x} {list :second x}) 0))) (redef2 3))
+(def {fns} (hash-create))
+(hash-put fns {:f (fn {x} {list :hash-old x})})
+(print "method" (fns :f (do (hash-put fns {:f (fn {x} {list :hash-new x})}) 1)) (fns :f 2))
+
+; extras reached by a name made at run time, in bodies that name some of them or none
+(fun {only1} {list &1 (eval (list (to-sym "&2"))) (eval (read "&_")) (eval (list (to-sym "&_")))})
+(print "dynamic" (only1 :a :b :c) (only1 :a :b) (try (only1 :a) &err))
+(fun {only-rest} {list (len &_) (eval (read "&1")) (eval (list (to-sym "&3")))})
+(print "dynamic" (only-rest 1 2 3) (try (only-rest 1 2) &err))
+(fun {names-none x} {list x (eval (read "&_")) (try (eval (read "&1")) &err) (eval (list defined? (to-sym "&1")))})
+(print "dynamic" (names-none 1) (try (names-none 1 2) &err))
+(fun {in-string} {list "&_ &1" (len "&1")})
+(print "in a string" (in-string) (try (in-string 1) &err))
+(fun {in-quote} {list {&1} (eval (head (tail {x &2})))})
+(print "in quoted data" (in-quote :a :b) (in-quote :a))
+(fun {late-name} {eval (list (to-sym (+ "&" (to-str (len &_)))))})
+(print "computed" (late-name :a) (late-name :a :b :c) (try (late-name) &err))
+(fun {via-defined} {list (defined? &1) (defined? &2) (eval (list defined? (to-sym "&2"))) &_})
+(print "defined" (via-defined) (via-defined 1) (via-defined 1 2))

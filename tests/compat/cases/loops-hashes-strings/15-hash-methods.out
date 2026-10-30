@@ -1,0 +1,37 @@
+--- stdout
+dan 100 dan has 100
+Error: hash-get error: cannot access private hash entry
+150 150
+0 6
+Error: Unbound Symbol '&1' {:a :b :c {:b :c}}
+42 4 2 T
+T :hash 12
+<function>(fn {amt} {do (hash-put &0 {:balance (+ amt (&0 :balance))}) (&0 :balance)})
+151 153 153
+{123 30} 123 30
+{118 35}
+one two
+one two
+Error: Unbound Symbol '&0'
+10 15 {14 21}
+2
+118 119 {1 2 3 {2 3}} 2
+<function>(fn {amt} {do (hash-put &0 {:balance (+ amt (&0 :balance))}) (&0 :balance)})
+Error: Second parameter to 'hash-call' must be a key to a member function
+Error: Second parameter to 'hash-call' must be a key to a member function
+Error: hash-get error: cannot access private hash entry
+Error: First parameter to 'hash-call' must be a hash
+<function>(hash-call <hash>{{:balance 119 :__private} {:owner "dan"} {:balance? <function>(fn NIL {&0 :balance})} {:deposit <function>(fn {amt} {do (hash-put &0 {:balance (+ amt (&0 :balance))}) (&0 :balance)})} {:transfer <function>(fn {amt to} {do (&0 :deposit (- amt)) (to :deposit amt) (list (&0 :balance) (to :balance?))})} {:describe <function>(fn NIL {format "{} has {}" (&0 :owner) (&0 :balance)})} {:sum-all <function>(fn NIL {foldl + 0 &_})} {:extras <function>(fn {a} {list a &1 &2 &_})} {:self <function>(fn NIL {&0})} {:no-self <function>(fn {x} {* x 2})} {:length <function>(len)} {:has-self? <function>(fn NIL {defined? &0})}})
+[key][arg]119
+[key]Error: :owner isn't a method: its value isn't a function
+Error: :owner isn't a method: its value isn't a function
+Error: :none isn't a method: its value isn't a function
+120
+Error: The function takes 1 argument, not 2
+Error: argument failed 120
+Error: key failed
+Error: A hash key must be an atom, a string or an integer, not 1.5
+Error: 'len' takes 1 argument, not 2
+--- stderr
+
+--- exit 0

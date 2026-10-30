@@ -1,0 +1,40 @@
+; 12-number-conv: rational.n, rational.d, to-rational, to-fixed (places, cutting short), truncate, complex, fib, val,
+; to-atom and to-sym of numbers, over integers small, long-sized and big (the edges of a long), fixed decimals,
+; rationals and complex numbers: each value with its kind, and each error's message and code; partial application,
+; too many arguments, errors as arguments.
+(fun {kind x} {if (int? x) :int (if (fixed? x) :fixed (if (rational? x) :rat (if (complex? x) :cplx (type-of x))))})
+(fun {err c} {try (eval c) (list &err &code)})
+(def {reals} {0 1 -1 7 9223372036854775807 -9223372036854775808 9223372036854775808 -9223372036854775809
+  18446744073709551617 1/2 -7/3 9223372036854775807/2 1/9223372036854775808 2.5 -0.125 3.000 0.1 -9223372036854775808.5})
+(each {x reals} (print x (kind x) (rational.n x) (rational.d x) (to-rational x) (kind (to-rational x)) (truncate x)
+  (kind (truncate x)) (to-fixed x) (to-fixed x 0) (to-fixed x 3)))
+(print "math" (to-rational 0.75) (to-rational math.gamma) (rational.d math.pi) (truncate math.e) (to-fixed math.pi 30))
+(print "places" (to-fixed 1/3 0) (to-fixed 1/3 1) (to-fixed 2/3 5) (to-fixed -2/3 5) (to-fixed 1/7 40) (to-fixed 5 2) (to-fixed 1.23456 2))
+(print "places" (len (to-str (to-fixed 1/3 10000))) (to-fixed 0.5 10000.0) (to-fixed 1 4/2) (kind (to-fixed 5 2)) (to-fixed 9223372036854775807 1))
+(print "whole" (to-fixed 2.0) (to-rational 2.0) (truncate 2.0) (kind (truncate 2.0)) (rational.n 2.0) (rational.d 4/2))
+(each {c {{rational.n (complex 1 2)} {rational.d "x"} {to-rational :a} {to-rational (complex 0 1)} {truncate (complex 1 1)}
+  {truncate "3"} {to-fixed (complex 1 1)} {to-fixed 1 -1} {to-fixed 1 10001} {to-fixed 1 1.5} {to-fixed "1"} {to-fixed 1 :p}
+  {complex 1 :i} {complex "1" 2} {complex (complex 1 1) 1} {fib -1} {fib 1.5} {fib :n} {val "x"} {val ""} {val "1 2"}
+  {val 5} {val "1/0"} {val "#q4"} {val "1.5e3"} {val "1."} {val ".5"} {to-atom (complex 1 2)} {to-sym 5} {to-sym 1.5}}} (print "error" c (err c)))
+
+; complex numbers: made, printed, their parts' kinds, arithmetic back to real
+(def {cs} (list (complex 1 2) (complex -1 -2) (complex 0 1) (complex 0 -1) (complex 1/2 1/3) (complex 1.5 -2.25)
+  (complex 9223372036854775807 9223372036854775808) (complex 2 0) (complex 0 0) (complex 0.0 1)))
+(print "complex" cs (map kind cs))
+(print "complex" (map (fn {z} {* z z}) cs))
+(print "complex" (+ (complex 1 2) (complex 1 -2)) (- (complex 1 2) (complex 1 2)) (/ (complex 1 2) (complex 1 2)) (/ (complex 0 2) 2))
+(print "complex" (* (complex 0 1) 1.5) (+ (complex 1 1) 1/2) (eq (complex 2 0) 2) (cmp (complex 1 2) (complex 1 3)) (sort (list (complex 1 1) 1 (complex 0 5))))
+
+; fib: long-sized, then big
+(print "fib" (map fib {0 1 2 3 10 50 90 91 92 93 94 95 100}) (fib 2.0) (fib 4/2) (kind (fib 92)) (kind (fib 93)))
+(print "fib" (fib 300) (len (to-str (fib 1000))))
+
+; val: every notation, spaces round it, and a word that's a symbol
+(print "val" (map val {"42" " -7 " "+5" "1/3" "-6/4" "2.50" "#xff" "-#x10" "#b101" "#16rFF" "1_000" "007" "0.0" "-0" "  12  "}) (try (val "#x-ff") &err))
+(print "val kinds" (map (fn {s} {kind (val s)}) {"42" "1/3" "4/2" "2.50" "2.0" "#x0.8" "99999999999999999999"}))
+(print "val edges" (val "9223372036854775807") (val "-9223372036854775808") (val "9223372036854775808") (+ (val "9223372036854775807") 1))
+
+; to-atom and to-sym of numbers: as they print
+(print "to-atom" (map to-atom {5 -5 1/2 2.50 9223372036854775808 2.0}) (to-atom "X") (eq (to-atom 5) :5) (to-sym "N1") (to-sym :k))
+(print "partial" (to-fixed 1/3) ((complex 1) 2) (complex 1) (try (to-fixed 1 2 3) &err) (try (fib 1 2) &err) (try (truncate) &err))
+(print "error args" (try (rational.n (error "e1")) &err) (try (complex 1 (error "e2")) &err) (try (to-fixed (error "e3") 2) &err))

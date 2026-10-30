@@ -1,0 +1,81 @@
+; 18-fexpr: an fexpr gets its arguments as they're written, each remembering the caller's scope: (eval x) evaluates
+; one there, even when the fexpr has a local of the same name (its formal x itself); how the arguments look (print,
+; type-of: an S-expression, a symbol, a number ...); errors come as values; evaluation only when (and as often as)
+; the fexpr says; an fexpr setting a variable in its caller's scope; partial application; extras; tail position.
+
+(def {show} (fexpr {x} {do (print :arg x (type-of x)) (eval x)}))
+(def {x} :global-x)
+(print (show (+ 1 2)))
+(print (show x))
+(print (show 5))
+(print (show "str"))
+(print (show :atom))
+(print (show {q expr}))
+(print (show (error "as-value")))
+(print (show [1 (+ 1 1)]))
+
+; the caller's scope, not the fexpr's own (whose formal is also named x)
+(fun {caller} {do =(x :caller-x) (show x)})
+(print (caller))
+(def {same-name} (fexpr {x} {list x (eval x)}))
+(fun {caller2} {do =(x :caller2-x) (same-name x)})
+(print (caller2) (same-name x))
+(fun {caller3 x} {same-name (list x x)})
+(print (caller3 :formal))
+(def {local-too} (fexpr {e} {do =(y :fexpr-local) (list (eval e) y)}))
+(fun {caller4} {do =(y :caller-y) (local-too y)})
+(print (caller4))
+
+; evaluated only when, and as often as, the fexpr says
+(def {my-if} (fexpr {c a b} {if (eval c) (eval a) (eval b)}))
+(print (my-if T (print :then) (print :else)))
+(print (my-if NIL (print :then) (print :else)))
+(def {thrice} (fexpr {e} {do (eval e) (eval e) (eval e)}))
+(thrice (print :again))
+(def {never} (fexpr {e} {:not-evaluated}))
+(print (never (print :should-not-print)))
+
+; setting a variable in the caller's scope: the expression was written there
+(def {setter} (fexpr {e} {eval e}))
+(fun {uses-setter} {do (setter =(set-here :by-fexpr)) set-here})
+(print (uses-setter) (try set-here &err))
+; but code the fexpr builds ([...] remembers the fexpr's own call) runs there: the caller's n isn't seen; with a
+; global n, set! changes that one, to the inner list (data: a Q-expression, not a call)
+(def {incr} (fexpr {name} {eval [set! name [+ name 1]]}))
+(fun {count-up} {do =(n 0) (incr n) (incr n) (incr n) n})
+(print (count-up))
+(def {n} 100)
+(print (count-up) n)
+(def {get-value} (fexpr {name} {eval name}))
+(fun {reads-caller} {do =(n 7) (get-value n)})
+(print (reads-caller))
+
+; errors are values to it
+(def {is-err} (fexpr {e} {error? (eval e)}))
+(print (is-err (error "x")) (is-err (/ 1 0)) (is-err (+ 1 2)) (is-err undefined-thing))
+
+; extras, partial application (the rest still unevaluated), the arguments' count
+(def {all-args} (fexpr {} {list (len &_) &_}))
+(print (all-args a (b c) "d" 5) (all-args))
+(def {two} (fexpr {a b} {list a b}))
+(print (two (+ 1 2)))
+(print ((two (+ 1 2)) (* 3 4)))
+(print (two 1 2 3))
+
+; the quoting fexpr: an argument as it is, compared with the same code from a Q-expression
+(def {my-quote} (fexpr {x} {x}))
+(print (my-quote (a b c)) (repr (my-quote "q")) (eq (my-quote (+ 1 2)) (fst {(+ 1 2)})))
+(print (type-of (my-quote {1 2})) (type-of (my-quote sym)) (type-of (my-quote (f))))
+
+; given to map, an fexpr gets the values as they are
+(print (map my-quote {(+ 1 2) x}))
+(print (map show {1 x}))
+
+; an fexpr's eval in tail position: a loop of 100000
+(def {my-eval} (fexpr {e} {eval e}))
+(fun {fe-loop n} ?{(zero? n) :fe-done (my-eval (fe-loop (- n 1)))})
+(print (fe-loop 100000))
+
+; the last: an fexpr that evaluates a failing argument, written in a function, ends the program
+(fun {calls-show} {show (+ 1 :no)})
+(calls-show)

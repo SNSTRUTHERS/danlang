@@ -1,0 +1,35 @@
+; 30-trace.dl - errors from list built-ins deep in a program's own functions: printed as values (their messages),
+; caught by try (&err, or a handler function), and, last, one that ends the program, its trace on stderr: where it was
+; made (a list built-in called in a lambda that map calls) and the calls of functions it was in (a call in tail
+; position takes its caller's place)
+
+(fun {second-items l} {map (fn {p} {snd p}) l})
+(fun {total l} {sum (second-items l)})
+(print (total {{a 1} {b 2}}))
+(print (total {{a 1} {b}}))
+(print (try (total {{a 1} {b}}) &err))
+(print (try (head {}) (fn {m} {+ "caught: " m})))
+(print (try (fst 5)) (try (tail {}) &code) (try (take -1 {1}) {+ "msg: " &err}))
+(print (error-message (tail {})) (error? (init {})) (type-of (end {})) (error-code (head {})))
+(print (map error? [(fst {1}) (len 1)]))
+(print (map (fn {l} {try (fst l) :none}) {{1} {} {2 3} 5}))
+
+(fun {deep n l} ?{(zero? n) (fst l) (+ 0 (deep (- n 1) l))})
+(print (deep 3 {7}))
+(print (deep 3 {}))
+(fun {pick l i} {nth i l})
+(fun {pick-all l is} {map (fn {i} {pick l i}) is})
+(print (pick-all {a b c} {0 2}))
+(print (pick-all {a b c} {0 5}))
+(print (filter (fn {l} {fst l}) {{1} {}}))
+(print (foldl (fn {acc l} {+ acc (fst l)}) 0 {{1} {2} {} {4}}))
+(print (sort {{1} {} {2}} (fn {a b} {< (fst a) (fst b)})))
+(print (eval (cons head {{}})))
+(print (let {{l {}}} (head l)))
+(print (do (print "  in do") (tail NIL) (print "  never")))
+(fun {chain l} {fst (head (tail (tail l)))})
+(print (chain {1 2 3}) (chain {1 2}))
+
+(fun {report l} {do (print "  reporting" l) (len (pick-all l {0 1 9}))})
+(fun {outer} {+ 1 (report {x y z})})
+(outer)

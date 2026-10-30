@@ -1,0 +1,51 @@
+; 27-utf8-bytes.dl - text is bytes: UTF-8 text is its bytes ("é" has len 2, "日本" 6), every string function works
+; on bytes (substring, char-at, reverse, index-of, str-pad, str-upper leave the bytes past ASCII alone), bytes and
+; from-bytes, a string of all 256 bytes, the bytes past ASCII printed as they are (repr too), written to a file and
+; read back the same
+
+(print (len "é") (len "日本") (len "aé日") (len "") (len "\x00") (len "\xff"))
+(print (bytes "é") (bytes "日本") (bytes "aé") (bytes ""))
+(print (repr (from-bytes {104 195 169 33})) (eq (from-bytes {195 169}) "é") (from-bytes {}))
+(print (eq (from-bytes (bytes "日本語")) "日本語") (len (from-bytes (range 256))))
+
+; each over a UTF-8 string: a byte at a time
+(each {c "né"} (write (repr c) "=" (char-code c) " "))
+(print)
+(print (map char-code (str-chars "日")) (len (str-chars "日本")))
+
+; substring and char-at by byte: part of a character is a byte of it
+(print (repr (substring "aé" 1)) (repr (substring "aé" 1 1)) (repr (substring "aéb" 3)) (map char-code (str-chars (substring "日本" 1 2))))
+(print (char-code (char-at "日" 0)) (char-code (char-at "日" 1)) (char-code (char-at "日" 2)))
+(print (repr (reverse "aé")) (bytes (reverse "aé")) (eq (reverse (reverse "日本")) "日本"))
+(print (index-of "日本" "本") (index-of "日本" (from-bytes {230 156})) (last-index-of "ééé" "é") (index-of "aéb" "b"))
+(print (repr (str-pad-left "é" 4 ".")) (repr (str-pad-right "日" 4 ".")) (len (str-pad-left "日本" 6)))
+(print (repr (str-upper "straße éè")) (repr (str-lower "ÉÈ")) (repr (str-replace "café café" "é" "e")))
+(print (repr (str-split "a·b·c" "·")) (repr (str-join {"日" "本"} "·")) (repr (format "{}={}" "ü" (len "ü"))))
+(print (alpha? "é") (alpha? (char-at "é" 0)) (< "é" "z") (< "z" "é") (cmp "é" "ê"))
+
+; a string of all 256 bytes
+(def {all} (from-bytes (range 256)))
+(print (len all) (char-code (char-at all 0)) (char-code (char-at all 255)) (eq (bytes all) (range 256)))
+(print (repr (substring all 0 32)))
+(print (repr (substring all 120 16)))
+(print (repr (substring all 240)))
+(print (map (fn {c} {char-code c}) (str-chars (substring all 250))))
+
+; bytes past ASCII, printed as they are by print, write and repr
+(print (from-bytes {200 201 202}))
+(write (from-bytes {228 189 160 229 165 189}) "\n")
+(print (repr (from-bytes {127 128 159 160 255})))
+
+; written to a file and read back: the same bytes
+(write-file "utf8.txt" "aé日\n" all)
+(def {back} (read-file "utf8.txt"))
+(print (len back) (eq back (+ "aé日\n" all)) (bytes (substring back 0 7)))
+(print (len (read-lines "utf8.txt")) (map len (read-lines "utf8.txt")))
+
+; numbers to and from text with bytes past ASCII around them
+(print (val " 42 ") (repr (+ "€" 5)) (len (+ "€" 5)))
+(print (val "4é"))
+(print (from-bytes {256}))
+(print (from-bytes {-1}))
+(print (from-bytes "s"))
+(print (bytes 5))

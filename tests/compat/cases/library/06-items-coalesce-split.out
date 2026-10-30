@@ -1,0 +1,73 @@
+--- stdout
+<function>(nth 0) <function>(nth 1) <function>(nth 2) <function>(nth 3) <function>(nth 4) <function>(nth 5) <function>(nth 6) <function>(nth 7) <function>(nth 8) <function>(nth 9)
+a (b c) {d} e f :g 7/2 -2.5 65536 9223372036854775808
+{:symbol :sexpr :list :string :char :atom :number :number :number :number}
+"e" \f :sexpr :list
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth' expects a list
+Error: 'nth' expects a list
+Error: 'nth' takes 2 arguments, not 3
+<function>(nth 0)
+Error: first's list
+{2 4 6}
+T NIL T
+<function>(fn {a} {if a a (if &_ (unpack ?? &_))})
+3 1 NIL NIL 0 5 "" 11
+<function>(fn {a} {if a a (if &_ (unpack ?? &_))})
+Error: late
+Error: late, but evaluated
+Error: early
+:a
+:b
+:d
+:c
+Error: Unbound Symbol 'x-unbound'
+{x-unbound}
+Error: Unbound Symbol 'x-unbound'
+3
+7
+{l}
+<function>(fn {a} {if a a (if &_ (unpack ?? &_))})
+NIL
+NIL
+(+ 5 6)
+Error: Unbound Symbol 'never-looked-at'
+Error: Division by zero.
+<function>(drop) <function>(fn {n l} {(list (take n l) (drop n l))}) <function>(fn {l x} {elem? x l})
+{2 3} {1} NIL {3} {3} NIL
+Error: 'drop': a count can't be negative
+Error: 'drop' expects a list
+{{1} {2 3}} {NIL {1 2}} {{1 2} NIL} {NIL NIL} {{a (b)} {{c} d}} {{1} {2}} {{1 2} {3}}
+Error: 'take': a count can't be negative
+Error: 'take': a count must be a whole number, not 1.5
+Error: 'take' expects a list
+<function>(fn {l} {(list (take n l) (drop n l))})
+{{:a} {:b}}
+Error: The function takes 2 arguments, not 3
+Error: split's n
+{{1 2} NIL} NIL
+T NIL NIL T T NIL
+T T NIL T NIL
+Error: 'elem?' expects a list
+<function>(fn {x} {elem? x l})
+T
+Error: The function takes 2 arguments, not 3
+Error: he
+Error: 'elem?' expects a list Error: 'take' expects a list Error: 'drop' expects a list Error: 'nth' expects a list <hash>NIL <function>(+)
+<function>(do) <function>(do)
+:x
+NIL 2 :y {+ 1 2} {+ 1 2}
+1
+Error: stops here
+Error: 'do' can't be applied to values: it's a special form
+:u1
+:u2
+5
+{:got 2}
+--- stderr
+Error: 06-items-coalesce-split.dl: 'nth': the list has no such item
+  at 06-items-coalesce-split.dl:78  (second p)
+  called at 06-items-coalesce-split.dl:80  (pair-second {1})
+--- exit 1

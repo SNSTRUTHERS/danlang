@@ -1,0 +1,74 @@
+; 17-hash-clone-nested.dl - hash-clone: a copy of its own (a hash in it copied too), each override put (a tag, an
+; entry {key value tag...} with its value as written, NIL taking an entry out, a list of them), then the hash's own
+; tags (so a locked hash's clone takes new entries from its overrides); nested hashes: shared when kept, how they
+; print (an inner hash as its entries); equality (the keys and values, not their order or tags), cmp; the errors
+
+(def {base} #({{:a 1} {:b 2} {:in #({{:x 1}})} :btag}))
+(def {c} (hash-clone base))
+(print c (eq c base))
+(hash-put c {:a 100})
+(hash-put (c :in) {:x 999})
+(print "base after changing the clone:" base)
+(print "clone:" c)
+
+; kept, not cloned: the same hash
+(def {same} base)
+(hash-put (same :in) {:x 2})
+(print "base after changing same's inner:" base)
+(def {holder} #({{:h base}}))
+(hash-put (holder :h) {:via-holder T})
+(print (base :via-holder) (eq (holder :h) base))
+
+; overrides
+(print (hash-clone base {:c 3}))
+(print (hash-clone base {:c (+ 1 2)} {:d undefined-name}))
+(print (hash-clone base {:a NIL}))
+(print (hash-clone base {:c 3 :t1 :t2}))
+(print (hash-clone base :newtag))
+(print (hash-clone base {:newtag}))
+(print (hash-clone base {{:c 3} {:d 4}} :tg {:e 5}))
+(print (hash-clone base {{:c 3} :tg}))
+(print (hash-clone base {{{:c 3}}}))
+(print (hash-clone base {"s" 1} {5 :five} {:a :override}))
+(print ((hash-clone base {:a :override}) :a) (base :a))
+
+; a locked hash's clone: the overrides first, then the lock; read-only the same
+(def {lk} #({{:a 1} :__locked}))
+(print (hash-clone lk {:b 2}))
+(print (hash-clone lk {:a NIL}))
+(print (hash-put (hash-clone lk) {:c 3}))
+(def {ro} #({{:a 1} :__read-only}))
+(print (hash-clone ro {:a 2}) (hash-put (hash-clone ro) {:a 3}))
+(def {pr} #({{:s 1 :__private}}))
+(print (hash-clone pr) ((hash-clone pr) :s))
+
+; nested hashes: access, print, repr
+(def {tree} #({{:name "root"} {:kids #({{:left #({{:name "l"}})} {:right #({{:name "r"} {:n 1/2}})}})}}))
+(print ((tree :kids) :left))
+(print (((tree :kids) :right) :name) (((tree :kids) :right) :n))
+(print tree)
+(print (repr tree))
+(print (from# tree))
+(print (list tree (tree :kids)))
+
+; equality: the same keys with equal values, whatever their order or tags; cmp of hashes
+(print (eq #({{:a 1} {:b 2}}) #({{:b 2} {:a 1}})))
+(print (eq #({{:a 1 :t}}) #({{:a 1}})) (eq #({{:a 1} :ht}) #({{:a 1}})))
+(print (eq #({{:a 1}}) #({{:a 1.0}})) (eq #({{:a 1}}) #({{"a" 1}})) (eq #({{1 :x}}) #({{1.0 :x}})))
+(print (eq #({{:in #({{:x 1}})}}) #({{:in #({{:x 1}})}})) (eq #({{:in #({{:x 1}})}}) #({{:in #({{:x 2}})}})))
+(print (eq #() #()) (eq #({{:a 1}}) #()) (neq #({{:a 1}}) #({{:a 2}})))
+(print (cmp #({{:a 1}}) #({{:a 1}})) (cmp #({{:a 1}}) #({{:a 2}})) (cmp #({{:a 2}}) #({{:a 1}})) (cmp #({{:b 1} {:a 1}}) #({{:a 1} {:b 1}})))
+(print (cmp #() 5) (cmp 5 #()) (cmp #() "s") (cmp #() (error "e")))
+(print (sort (list #({{:k 3}}) #({{:k 1}}) #({{:k 2}}))))
+
+; the errors
+(print (hash-clone base 5))
+(print (hash-clone base {}))
+(print (hash-clone base {5}))
+(print (hash-clone base {{5}}))
+(print (hash-clone base {1 2 3}))
+(print (hash-clone base {:d 1 2}))
+(print (hash-clone base {:c 1} 5))
+(print (hash-clone base "s"))
+(print (hash-clone 5))
+(print (hash-clone base {:__locked 1}))

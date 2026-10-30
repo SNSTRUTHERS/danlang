@@ -1,0 +1,57 @@
+--- stdout
+\null \ \ \ \ \ \ \bell \backspace \tab \lf \vtab \ff \cr \ \
+\ \ \ \ \ \ \ \ \ \ \ \escape \ \ \ \
+\space \bang \quote \hash \dollar \percent \amp \tick \lparen \rparen \star \plus \comma \minus \dot \slash
+\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \colon \semicolon \lt \= \gt \qmark
+\at \A \B \C \D \E \F \G \H \I \J \K \L \M \N \O
+\P \Q \R \S \T \U \V \W \X \Y \Z \lbracket \backslash \rbracket \caret \underbar
+\backtick \a \b \c \d \e \f \g \h \i \j \k \l \m \n \o
+\p \q \r \s \t \u \v \w \x \y \z \lcurly \pipe \rcurly \tilde \delete
+\€ \ \‚ \ƒ \„ \… \† \‡ \ˆ \‰ \Š \‹ \Œ \ \ \
+\ \‘ \’ \“ \” \• \– \— \˜ \™ \š \› \œ \ \ \Ÿ
+\  \¡ \¢ \£ \¤ \¥ \¦ \§ \¨ \© \ª \« \¬ \­ \® \¯
+\° \± \² \³ \´ \µ \¶ \· \¸ \¹ \º \» \¼ \½ \¾ \¿
+\À \Á \Â \Ã \Ä \Å \Æ \Ç \È \É \Ê \Ë \Ì \Í \Î \Ï
+\Ğ \Ñ \Ò \Ó \Ô \Õ \Ö \× \Ø \Ù \Ú \Û \Ü \İ \Ş \ß
+\à \á \â \ã \ä \å \æ \ç \è \é \ê \ë \ì \í \î \ï
+\ğ \ñ \ò \ó \ô \õ \ö \÷ \ø \ù \ú \û \ü \ı \ş \ÿ
+256
+"\0\x01\x02\x03\x04\x05\x06\a\b\t\n\v\f\r\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\e\x1C\x1D\x1E\x1F"
+" !\"#$%&'()*+,-./0123456789:;<=>?"
+"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+"`abcdefghijklmnopqrstuvwxyz{|}~\x7F"
+"€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ"
+" ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿"
+"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß"
+"àáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ"
+{"\\space" "\\space" "\\space" "\\space" "\\tab" "\\lf" "\\lf" "\\lf" "\\lf" "\\cr" "\\cr" "\\null" "\\bell" "\\escape" "\\escape" "\\delete"}
+{"\\backslash" "\\backslash" "\\quote" "\\quote" "\\tick" "\\lparen" "\\rparen" "\\lcurly" "\\rcurly" "\\lbracket" "\\rbracket"}
+{"\\vtab" "\\ff" "\\backspace" "\\bang" "\\qmark" "\\underbar"}
+{97 65 48 126 40 41 123 125 91 93 34 92 59 44}
+a   	 |
+abc|
+\a \Z \7 \space
+ab abc a1 xyz q "q"
+plain with spaces  tab:	end
+w1w2w3
+"" "plain" "q\"uote" "back\\slash" "a\nb\tc\rd"
+"\0\a\b\f\n\r\t\v\e" "\x01\x02\x1F\x7F" "AB"
+"\"a\\\"b\"" "\"\\\"\\\\n\\\"\""
+"cafÃ©" 5 2 {195 169} "Ã©"
+cafÃ© ABC Ã© ©Ãba
+say "hi" 
+"a \"quoted\" word"
+"five quotes: \"\"\" inside"
+"line one\nline two"
+4
+{"a" "b c" "d\ne" \f :g}
+{"x" "yz"} {\a \tab \b}
+{"in" "a list"}
+{"a" "b" "" "c"} {"" "" "two" "" "words" ""} {"a" "b" "c"}
+1 + 2 = 3 {literal} x q: with "quotes" 
+"a\tb|c"
+|   ab|ab...|toolong|
+|ababab|trimmed||
+--- stderr
+
+--- exit 0

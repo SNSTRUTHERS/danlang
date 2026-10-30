@@ -1,0 +1,37 @@
+--- stdout
+{:if :if-done}
+{:nested-if :nested-done}
+{:do :do-done}
+{:let :let-done}
+{:let-code :let-code-done}
+{:eval :eval-done}
+{:fexpr :fexpr-done}
+{:unpack :unpack-done}
+{:method :method-done}
+{:partial :too-deep}
+{:when :when-done}
+{:q-fn :q-done}
+{:mutual-even :even}
+{:mutual-odd :odd}
+{:or-1 :too-deep}
+{:or-0 :or-done}
+{:map :too-deep}
+{:arg-tail :too-deep}
+{:none :nothing}
+{:partial-done :or-done {:if-done} :atl-done}
+--- stderr
+Error: 14-depth-tail-forms.dl: Too deep: more than 10000 calls nested
+  at 14-depth-tail-forms.dl:46  (- d 1)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+  called at 14-depth-tail-forms.dl:46  (at-depth (- d 1) thunk)
+--- exit 1

@@ -1,0 +1,38 @@
+--- stdout
+at the top level: Unbound Symbol '&_'
+:first-clause-sees-conds-args
+{{l l}}
+Error: Selection not found
+:f-is-defined-in-unpack
+Error: Unbound Symbol '&_'
+:made-by-list
+:value-made-eagerly
+:literal-clause
+:made
+:lit
+:pos :neg :zero :pos :neg
+Error: Unbound Symbol 'x'
+7
+Error: Selection not found
+:no
+9223372036854775808 :small
+:hijacked
+:conds-args-are 3
+:three-clauses
+2
+Error: 'head' expects a QExpr
+:computed
+Error: Unbound Symbol 'k' Error: Unbound Symbol 'k' Error: Unbound Symbol 'k'
+:two :two
+2
+Error: Selection not found
+2 :default
+Error: Selection not found
+--- stderr
+Error: 20-cond-runtime-clauses.dl: Selection not found
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at 20-cond-runtime-clauses.dl:56  (countdown (1- n))
+  called at 20-cond-runtime-clauses.dl:56  (countdown (1- n))
+  called at 20-cond-runtime-clauses.dl:56  (countdown (1- n))
+  called at 20-cond-runtime-clauses.dl:58  (countdown 5)
+--- exit 1

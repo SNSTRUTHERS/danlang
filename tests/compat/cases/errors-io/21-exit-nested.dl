@@ -1,0 +1,39 @@
+; 21-exit-nested.dl - exit: the value exit (printed "exit", its type :exit), and (exit n), which ends the program at
+; once with status n, from however deep: try doesn't catch it, the calls waiting aren't finished, the output so far
+; stays (stdout's, a write with no newline too, and stderr's).  (exit x) of what isn't a number is an error, a value.
+; The last: (exit (+ 1 2)), four calls down, in a map's function, in a try
+
+(print exit (repr exit) (type-of exit) [exit] {exit})
+(print (eq exit exit) (eq exit 1) (function? exit) (error? exit))
+(print (exit "three") (exit :a) (exit {1}) (exit NIL))
+(print (exit (error "the code is an error")))
+(print (try (exit "x") (list :caught &err)))
+(def {my-exit} exit)
+(print my-exit (type-of my-exit))
+(fun {pass-it x} {list :passed x})
+(print (pass-it exit))
+(print #({{:e exit}}))
+(print (output-of (print exit)))
+(print (if exit :true :false) (and exit 1) (or NIL exit))
+
+; a function named like it: exit itself isn't changed
+(fun {leave code} {list :would-leave code})
+(print (leave 3))
+
+; what's printed before the exit stays
+(print "to stdout, with a newline")
+(print-to stderr "to stderr, before the exit")
+(def {log} {})
+(fun {note x} {def {log} (join log (list x))})
+
+(fun {stage4 x} {do (note (list :stage4 x)) (if (eq x 3) (do (write "exiting from stage4; ") (exit (+ 1 2))) (* x 10))})
+(fun {stage3 x} {do (note :stage3) =(r (try (stage4 x) :caught-not)) (note :stage3-after) r})
+(fun {stage2 l} {do (note :stage2) =(r (map stage3 l)) (note :stage2-after) r})
+(fun {stage1 l} {do (note :stage1) (+ 0 (len (stage2 l))) (print "stage1: finished (not when it exits)")})
+
+(print (stage1 {1 2}))
+(print log)
+(def {log} {})
+(print "the last: exit 3, four calls down, in a map's function, in a try")
+(print (stage1 {1 2 3 4}))
+(print "not reached")

@@ -1,0 +1,48 @@
+; 13-lists-deep-tails: long chains of tails and drops (each a view of the one before), some kept along the way; lists
+; built by cons over thousands of steps, forked at points; a list consed onto and tailed in turn while every list made
+; is kept (a cons onto (tail c) mustn't take the slot c's first item is in); the library's list functions over them.
+(def {n} 3000)
+(def {l} (range n))
+(fun {walk l k acc} ?{l (walk (tail l) (+ k 1) ?((zero? (mod k 500)) (cons l acc) acc)) (list k acc)})
+(def {w} (walk l 0 NIL))
+(def {kept} (snd w))
+(print "walk" (fst w) (map len kept) (map fst kept) (map last kept))
+(print "cons onto kept" (map (fn {v} {take 2 (cons :x v)}) kept) (map (fn {v} {len (cons :y (tail v))}) kept))
+(print "kept again" (map fst kept) (fst l) (last l) (len l))
+(fun {dwalk l k} ?{l (dwalk (drop 7 l) (+ k 1)) k})
+(fun {iwalk l k} ?{l (iwalk (init l) (+ k 1)) k})
+(print "drops" (dwalk l 0) (dwalk (tail l) 0) (iwalk (take 300 l) 0) (len (drop 2999 l)) (drop 3000 l) (drop 9999 l))
+
+; built by cons, forked
+(fun {build k acc} ?{(zero? k) acc (build (- k 1) (cons k acc))})
+(def {built} (build 2000 NIL))
+(def {fork1} (cons :a built))
+(def {fork2} (cons :b built))
+(def {fork3} (cons :c (tail built)))
+(def {fork4} (cons :d (tail fork1)))
+(print "built" (len built) (take 4 built) (take 3 fork1) (take 3 fork2) (take 3 fork3) (take 3 fork4) (last fork1))
+(print "built again" (take 4 built) (eq (tail fork1) built) (eq (tail fork3) (tail built)) (eq fork1 fork2))
+
+; consed onto and tailed in turn, every list kept
+(fun {churn k l keep} ?{(zero? k) (list l keep) (do =(c (cons k l)) (churn (- k 1) (tail (cons (- k) (tail c))) (cons c keep)))})
+(def {ch} (churn 1500 (range 3) NIL))
+(def {keep} (snd ch))
+(print "churn" (len (fst ch)) (take 5 (fst ch)) (len keep) (take 5 (map fst keep)) (take 5 (map snd keep)))
+(print "churn kept" (count (fn {x} {pos? (fst x)}) keep) (take 3 (map len keep)) (last (map len keep)) (take 4 (last keep)))
+
+; two lists that share a tail, each consed onto many times
+(def {shared} (drop 10 (range 20)))
+(fun {grow k l} ?{(zero? k) l (grow (- k 1) (cons k l))})
+(def {s1} (grow 1000 shared))
+(def {s2} (grow 1000 (tail shared)))
+(def {s3} (grow 500 (cons :mid shared)))
+(print "shared" (len s1) (len s2) (len s3) (drop 995 s1) (drop 995 s2) (drop 498 s3) shared)
+
+; the library's list functions over lists made so
+(def {small} (take 300 built))
+(print "zip" (len (zip small (tail small))) (take 3 (zip small (tail small))) (last (zip (drop 290 small) small)))
+(print "split" (map len (split 150 small)) (fst (snd (split 150 small))) (take 3 (fst (split 2 (tail small)))))
+(print "remove" (len (remove-all 5 small)) (take 6 (remove-fst 3 small)) (len (remove-fst 9999 small)))
+(print "distinct" (distinct (join (take 5 small) (take 5 (tail small)) (take 3 fork3))))
+(print "flatten" (len (flatten [small (tail small) [(drop 298 small)]])) (take 4 (flatten [(drop 297 small) {:x}])))
+(print "sort" (take 5 (sort-desc small)) (take 5 (sort (join (drop 295 small) (take 5 small)))) (best-of 3 small))

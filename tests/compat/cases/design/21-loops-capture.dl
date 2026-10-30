@@ -1,0 +1,59 @@
+; 21-loops-capture: each iteration of dotimes and each has a scope of its own: closures and Q-expressions made in the
+; body keep that iteration's variable (and what the body set there), when called after the loop; set! (or set) of the
+; variable changes only that iteration's, not the count; fun in a body makes a global whose closure is that iteration's
+; scope; while makes none (its closures share one); nested loops; the function forms (a call's scope each).
+(fun {call-all l} {map (fn {f} {f}) l})
+(def {i} :global-i)
+(def {fs} {})
+(dotimes {i 5} (set! {fs} (cons (fn {} {i}) fs)))
+(print "dotimes fns" (call-all fs) i)
+(def {qs} {})
+(dotimes {i 3} (set! {qs} (cons {list i (* i 10)} qs)))
+(fun {run q} {do =(i :run-i) (eval q)})
+(print "dotimes qs" (map (fn {q} {eval q}) qs) (map run qs) i)
+(def {gs} {})
+(dotimes {i 3} (do =(sq (* i i)) (set! {gs} (cons (fn {} {list i sq}) gs))))
+(print "set in body" (call-all gs) (try sq &err) (defined? sq))
+(def {hs} {})
+(dotimes {i 3} (do (set! {hs} (cons (fn {} {i}) hs)) (set! {i} (+ i 100))))
+(print "set! after" (call-all hs) i)
+(dotimes {i 5} (do (set! {i} (* i 10)) (write i " ")))
+(dotimes {i 3} (do =(i :replaced) (write i " ")))
+(each {x {1 2 3}} (do (set! {x} (list x)) (write x " ")))
+(print)
+(dotimes {i 3} (fun {get-i} {i}))
+(each {s {"a" "b"}} (fun {get-s} {s}))
+(print "fun in body" (get-i) (get-s) (defined? s))
+
+; each over lists and strings, with closures; a Q-expression item
+(def {es} {})
+(each {c "abc"} (set! {es} (cons (fn {} {c}) es)))
+(each {l {{1 2} {3} {}}} (set! {es} (cons (fn {} {len l}) es)))
+(each {q {{+ 1 2} {list 3}}} (set! {es} (cons (fn {} {eval q}) es)))
+(print "each" (call-all es))
+
+; nested loops: both variables kept
+(def {ps} {})
+(dotimes {a 3} (dotimes {b 2} (set! {ps} (cons (fn {} {list a b}) ps))))
+(each {a {:x :y}} (dotimes {b 2} (each {c "pq"} (set! {ps} (cons (fn {} {list a b c}) ps)))))
+(print "nested" (call-all ps))
+
+; while: no scope of its own; its closures share the one they're in
+(fun {while-closures} {do =(k 0) =(ws {}) (while (< k 3) (set! {ws} (cons (fn {} {k}) ws)) (set! {k} (+ k 1))) (call-all ws)})
+(fun {while-qs} {do =(k 0) =(ws {}) (while (< k 3) (set! {ws} (cons {k} ws)) (set! {k} (+ k 1))) (map (fn {q} {eval q}) ws)})
+(print "while" (while-closures) (while-qs))
+
+; the function forms: each call a scope of its own
+(def {f2} {})
+(dotimes 3 (fn {n} {set! {f2} (cons (fn {} {list :d n}) f2)}))
+(each (fn {x} {set! {f2} (cons (fn {} {list :e x}) f2)}) {:p :q})
+(print "fn forms" (call-all f2))
+
+; in a function: the loop's closures see the function's locals as they are when called
+(fun {in-fn} {do =(base 100) =(out {}) (dotimes {i 3} (set! {out} (cons (fn {} {+ base i}) out))) (set! {base} 200) (call-all out)})
+(print "in a function" (in-fn) (in-fn))
+
+; many: the values kept, summed
+(def {many} {})
+(dotimes {i 1500} (set! {many} (cons (fn {} {* i 2}) many)))
+(print "many" (len many) (sum (call-all many)) (take 3 (call-all many)) (last (call-all many)))

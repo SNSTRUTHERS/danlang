@@ -1,0 +1,37 @@
+--- stdout
+<function>(fn {n} {if (num? n) (=1 (mod n 2)) (error "Cannot perform 'odd?' on non-number")}) <function>(fn {n} {if (num? n) (=0 (mod n 2)) (error "Cannot perform 'even?' on non-number")})
+<function>(fn {a} {if (num? a) (pos? a) (error "Only numbers can be positive")}) <function>(fn {a} {if (num? a) (neg? a) (error "Only numbers can be negative")})
+<function>(fn {a} {if (num? a) (pos? a) (error "Only numbers can be positive")}) <function>(fn {a} {if (num? a) (neg? a) (error "Only numbers can be negative")}) T T
+{0 1 -1 2 -2 3 -3 65535 65536 -65535 -65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 18446744073709551617 7/2 -7/2 2 2.5 -2.5 0.1 3 -3 0 0 1}
+:odd {NIL T T NIL NIL T T T NIL T NIL NIL T T NIL NIL T T NIL NIL NIL NIL NIL NIL T T NIL NIL T}
+:even {T NIL NIL T T NIL NIL NIL T NIL T T NIL NIL T T NIL NIL NIL NIL T NIL NIL NIL NIL NIL T T NIL}
+:pos {NIL T NIL T NIL T NIL T T NIL NIL NIL NIL T T NIL NIL T T NIL T T NIL T T NIL NIL NIL T}
+:neg {NIL NIL T NIL T NIL T NIL NIL T T T T NIL NIL T T NIL NIL T NIL NIL T NIL NIL T NIL NIL NIL}
+:+? {NIL T NIL T NIL T NIL T T NIL NIL NIL NIL T T NIL NIL T T NIL T T NIL T T NIL NIL NIL T}
+:-? {NIL NIL T NIL T NIL T NIL NIL T T T T NIL NIL T T NIL NIL T NIL NIL T NIL NIL T NIL NIL NIL}
+:neither {7/2 -7/2 2.5 -2.5 0.1}
+:zero {0 0 0}
+T T T T T T T
+T T T T T
+T T T T
+T T T T
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+T
+T T T T NIL
+Error: Cannot perform 'odd?' on non-number Error: Cannot perform 'even?' on non-number Error: Only numbers can be positive Error: Only numbers can be negative
+Error: Cannot perform 'odd?' on non-number Error: Cannot perform 'even?' on non-number Error: Only numbers can be positive Error: Only numbers can be negative Error: Only numbers can be positive Error: Only numbers can be negative
+Error: Cannot perform 'odd?' on non-number Error: Cannot perform 'even?' on non-number Error: Only numbers can be positive
+<function>(fn {n} {if (num? n) (=1 (mod n 2)) (error "Cannot perform 'odd?' on non-number")}) <function>(fn {n} {if (num? n) (=0 (mod n 2)) (error "Cannot perform 'even?' on non-number")}) <function>(fn {a} {if (num? a) (pos? a) (error "Only numbers can be positive")}) <function>(fn {a} {if (num? a) (neg? a) (error "Only numbers can be negative")})
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+Error: odd's n Error: positive's a Error: -?'s a
+{NIL T NIL T NIL T NIL T NIL T} {NIL T NIL T NIL T NIL T NIL T} 50 51
+{1 2} {-2 -1} NIL T
+{:evens {0 2 4 6 8}}
+--- stderr
+Error: 12-parity-positive-negative.dl: Cannot perform 'even?' on non-number
+  at <BUNDLE>\lib\globals.dl:178  (error "Cannot perform 'even?' on non-number")
+  called at 12-parity-positive-negative.dl:50  (evens {2 4 "six" 8})
+--- exit 1

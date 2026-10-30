@@ -1,0 +1,53 @@
+; 23-str-functions.dl - str-upper and str-lower (ASCII's letters only; a character stays a character), str-trim
+; (ASCII's spaces at the ends), str-replace (every occurrence, left to right, not again), str-pad-left and
+; str-pad-right (to n with a character: a space, or a string of one; longer strings as they are), str-repeat; counts
+; as whole numbers of other kinds, too big, negative; the errors
+
+(print (repr (str-upper "hello, World 123")) (repr (str-lower "HELLO, World 123")) (repr (str-upper "")))
+(print (repr (str-upper "héllo wörld")) (repr (str-lower "HÉLLO")) (repr (str-upper "ß日本")))
+(print (repr (str-upper \a)) (repr (str-lower \A)) (repr (str-upper \1)) (repr (str-upper "a")) (type-of (str-upper \q)))
+(print (repr (str-upper "[`{@")) (repr (str-lower "[`{@")))
+(print (str-upper 5))
+(print (str-lower :atom))
+
+; str-trim: space, tab, LF, VT, FF, CR at both ends; inside kept
+(print (repr (str-trim "  x y  ")) (repr (str-trim "\t\n\v\f\r x \r\n")) (repr (str-trim "")) (repr (str-trim "   ")))
+(print (repr (str-trim \space)) (repr (str-trim \a)) (repr (str-trim (+ (code-char 0) "x" (code-char 0)))))
+(print (repr (str-trim (+ (code-char 160) "x"))))
+(print (str-trim 5))
+
+; str-replace
+(print (repr (str-replace "a-b-c" "-" "+")) (repr (str-replace "aaa" "a" "bb")) (repr (str-replace "aaaa" "aa" "a")))
+(print (repr (str-replace "abc" "b" "")) (repr (str-replace "abc" "z" "y")) (repr (str-replace "" "a" "b")))
+(print (repr (str-replace "a.b.c" \. \-)) (repr (str-replace "abab" "ab" "abab")) (repr (str-replace "x" "x" "")))
+(print (repr (str-replace "café" "é" "e")) (repr (str-replace "Hello" "h" "J")) (repr (str-replace "line1\nline2" "\n" "\\n")))
+(print (str-replace "abc" "" "x"))
+(print (str-replace 5 "a" "b"))
+(print (str-replace "abc" 5 "b"))
+(print (str-replace "abc" "a" 5))
+(print (str-replace "abc" "a"))
+
+; str-pad-left, str-pad-right
+(print (repr (str-pad-left "7" 3 "0")) (repr (str-pad-left "ab" 5 "*")) (repr (str-pad-right "ab" 5 "*")) (repr (str-pad-right "ab" 4 \.)))
+(print (repr (str-pad-left "1234" 3)) (repr (str-pad-left "abc" 3)) (repr (str-pad-left "" 3)) (repr (str-pad-right "" 0)))
+(print (repr (str-pad-left "ab" 4.0)) (repr (str-pad-left "ab" 8/2 "-")) (repr (str-pad-left \a 3)) (repr (str-pad-left "é" 3)))
+(dotimes {i 4} (print (str-pad-left (to-str (* i 37)) 5) (str-pad-right (str-repeat "#" i) 4 ".") "|"))
+(print (str-pad-left "ab" 5 "**"))
+(print (str-pad-left "ab" 5 ""))
+(print (str-pad-left "ab" 5 5))
+(print (str-pad-left "ab" 2.5))
+(print (str-pad-left "ab" -1))
+(print (str-pad-right "ab" -1))
+(print (str-pad-left "ab" 99999999999))
+(print (str-pad-left 5 3))
+(print (str-pad-left "ab" "3"))
+
+; str-repeat
+(print (repr (str-repeat "ab" 3)) (repr (str-repeat "ab" 0)) (repr (str-repeat "" 5)) (repr (str-repeat \x 3)) (repr (str-repeat "x" 2.0)))
+(print (len (str-repeat "abc" 1000)) (substring (str-repeat "abc" 1000) 2995))
+(print (str-repeat "x" -1))
+(print (str-repeat "x" 2.5))
+(print (str-repeat "ab" 99999999999))
+(print (str-repeat 5 2))
+(print (str-repeat "x" "2"))
+(print (str-repeat "x"))

@@ -1,0 +1,74 @@
+; 02-dotimes.dl - dotimes, both forms: (dotimes {i n} body...) and (dotimes n f); counts 0, 1, many, whole numbers
+; of other kinds (2.0, 4/2, a complex number with no imaginary part), past a long (stopped by an error), negative
+; (no runs); a count that isn't whole (5/2, 1.5, a string, an atom, a list, a complex number): the error; the count
+; evaluated once; the loop variable's values and kind; the form's errors
+
+(print "zero:" (dotimes {i 0} (print "not run")))
+(print "one:" (dotimes {i 1} (write "i=" i " ")))
+(print "five:" (dotimes {i 5} (write i)))
+(def {total} 0)
+(dotimes {i 10000} (set! {total} (+ total i)))
+(print "sum below 10000:" total)
+(dotimes {i 3} (print i (type-of i) (int? i) (repr i)))
+(dotimes {i 4} (write (+ i 9223372036854775805) " " (- -9223372036854775806 i) " " (* i 4611686018427387904) " "))
+(print)
+
+; whole numbers of other kinds count too; the loop variable is an integer
+(dotimes {i 2.0} (write "f" i " "))
+(dotimes {i 6/3} (write "r" i " "))
+(dotimes {i 3.000} (write "x" i " "))
+(dotimes {i (complex 2 0)} (write "c" i " "))
+(print)
+(print "negative:" (dotimes {i -1} (print "not run")) (dotimes {i -9223372036854775809} 1) (dotimes -5 print))
+
+; counts past a long's size: the loop starts (an error stops it)
+(print (dotimes {i 100000000000000000000000000000} (if (eq i 3) (error (+ "stopped at " i)) (write i " "))))
+(print (dotimes {i 9223372036854775807} (if (eq i 2) (error "stopped below 2^63") (write i " "))))
+(print (dotimes {i 9223372036854775808} (if (eq i 2) (error "stopped at 2^63") (write i " "))))
+(print (dotimes {i 18446744073709551617} (if (eq i 1) (error "stopped at 2^64+1") (write i " "))))
+(print (dotimes {i 4294967297} (if (eq i 1) (error "stopped at 2^32+1") (write i " "))))
+(print (dotimes 100000000000000000000 (fn {i} {if (eq i 2) (error "fn stopped") (write i " ")})))
+
+; counts that aren't whole numbers: the error
+(print (dotimes {i 5/2} 1))
+(print (dotimes {i 1.5} 1))
+(print (dotimes {i "3"} 1))
+(print (dotimes {i :three} 1))
+(print (dotimes {i {3}} 1))
+(print (dotimes {i (complex 2 1)} 1))
+(print (dotimes {i \a} 1))
+(print (dotimes 2.5 print))
+(print (dotimes "2" print))
+(print (dotimes {i (error "count failed")} 1))
+(print (dotimes (error "count failed too") print))
+
+; the count is evaluated once, before the first run
+(print (dotimes {i (do (print "count evaluated") 3)} (write i)))
+(def {limit} 3)
+(print (dotimes {i limit} (def {limit} 100) (write i)) limit)
+
+; the function form: a built-in, a function, a partial application, one of too many formals (partial: no error)
+(dotimes 3 print)
+(dotimes 2 (fn {k} {print "fn got" k}))
+(dotimes 2 (fn {k} {print "&_ is" &_ "k is" k}))
+(def {acc} {})
+(dotimes 3 (fn {k} {def {acc} (cons (* k k) acc)}))
+(print acc)
+(dotimes 2 (fn {a b} {print "never: partial" a b}))
+(print "partial application only:" (dotimes 2 (fn {a b} {print a b})))
+(print (dotimes 2 (fn {} {print "no formals"})))
+(print (dotimes 2 ((fn {tag k} {print tag k}) :tagged)))
+(print (dotimes 2 (print "evaluated once, then not a function")))
+
+; the form's errors
+(print (dotimes {i} 1))
+(print (dotimes {i 1 2} 1))
+(print (dotimes {5 1} 1))
+(print (dotimes {"i" 1} 1))
+(print (dotimes 2 5))
+(print (dotimes 2 :atom))
+(print (dotimes 2 print 3))
+(print (dotimes 3))
+(print (dotimes))
+(print (dotimes {i 2}))
+(print (type-of dotimes) dotimes)

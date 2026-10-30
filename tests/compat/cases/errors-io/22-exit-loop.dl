@@ -1,0 +1,46 @@
+; 22-exit-loop.dl - (exit n) from inside loops: each, dotimes and while bodies, a loop's function, nested in each
+; other, in a function; the loops stop at once, nothing after them runs.  An exit inside output-of: what it captured is
+; lost (it isn't printed).  A fraction's status is its integer part.  The last: (exit 4.9), in a dotimes, in a while,
+; in an each, in a function, inside output-of
+
+; loops that finish, as a control: their output
+(each {x {1 2}} (write "each " x "; "))
+(dotimes {i 2} (write "dotimes " i "; "))
+(do =(n 0) (while (< n 2) =(n (+ n 1)) (write "while " n "; ")))
+(print)
+
+; an error in the same place is a value: the program goes on
+(fun {scan rows} {
+  each {r rows}
+    =(n 0)
+    (while (< n 2)
+      (dotimes {i 3}
+        (write r n i " ")
+        (if (and (eq r :b) (eq n 1) (eq i 1)) (error "an error, not an exit")))
+      =(n (+ n 1)))
+})
+(print (scan {:a :b :c}))
+(print "after the error")
+
+(fun {scan-exit rows} {
+  each {r rows}
+    =(n 0)
+    (while (< n 2)
+      (dotimes {i 3}
+        (write r n i " ")
+        (if (and (eq r :b) (eq n 1) (eq i 1)) (do (print "exiting") (exit 4.9))))
+      =(n (+ n 1)))
+    (write "| ")
+})
+
+; through a loop's function, a map, a filter: the same, when it doesn't exit
+(print (map (fn {x} {if (eq x 99) (exit 99) (* x 2)}) {1 2 3}))
+(print (filter (fn {x} {if (eq x 99) (exit 99) (> x 1)}) {1 2 3}))
+(print (each (fn {x} {if (eq x 99) (exit 99) (write x)}) {1 2 3}))
+(print (dotimes 3 (fn {i} {if (eq i 99) (exit 99) (write i)})))
+(print (foldl (fn {a x} {if (eq x 99) (exit 99) (+ a x)}) 0 {1 2 3}))
+
+(print "the last: exit 4.9 from a dotimes, in a while, in an each, in a function, inside output-of")
+(print-to stderr "stderr: before the exit")
+(def {captured} (output-of (print "captured, then lost") (scan-exit {:a :b :c})))
+(print "not reached" captured)

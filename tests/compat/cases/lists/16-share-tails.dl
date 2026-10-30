@@ -1,0 +1,78 @@
+; 16-share-tails.dl - lists are values, never changed: the tail of a list taken many times, different items consed
+; onto the same list and onto its tails, tails of the same list joined, a tail sorted or reversed, the same list
+; rebound and kept in many variables, a list given to functions that build on it; the original printed after each
+
+(def {l} {1 2 3 4 5})
+(def {t1} (tail l))
+(def {t2} (tail t1))
+(def {t3} (tail t2))
+(def {t1b} (tail l))
+(print l t1 t2 t3 t1b (eq t1 t1b))
+
+; cons onto the same list and onto its tails
+(def {a} (cons :a t2))
+(def {b} (cons :b t2))
+(def {c} (cons :c l))
+(def {d} (cons :d t1))
+(def {e} (cons :e (cons :e2 t2)))
+(print a b c d e)
+(print l t1 t2 t3)
+
+; tails joined
+(def {j} (join t1 t2 t3 t1))
+(print j (len j) l t1)
+(def {j2} (join t3 t3))
+(print j2 t3 (join (tail j2) (init j2)))
+
+; a tail sorted, reversed, mapped and filtered: the original as it was
+(def {s} (sort t1 >))
+(def {r} (reverse t2))
+(def {m} (map (fn {x} {* x 100}) t1))
+(def {f} (filter (fn {x} {> x 3}) t1))
+(print s r m f)
+(print l t1 t2 t3)
+
+; the same tail taken again and again
+(def {walk} l)
+(def {seen} NIL)
+(dotimes {i 5} (do (set! {seen} (cons walk seen)) (set! {walk} (tail walk))))
+(print seen walk l)
+(print (map len seen) (map fst seen) (map (fn {x} {cons 0 x}) seen))
+(print seen)
+
+; a list rebound: those that had it keep it
+(def {x} {1 2})
+(def {y} x)
+(def {z} (list x x))
+(set! {x} (cons 0 x))
+(print x y z)
+(set! {x} (tail (tail x)))
+(print x y z)
+(fun {grow v} {do (set! {v} (join v v)) v})
+(print (grow y) y (grow (grow y)) y)
+
+; given to functions that build on it
+(fun {push-front v l} {cons v l})
+(fun {push-back l v} {join l [v]})
+(def {base} {m n})
+(print (push-front 1 base) (push-back base 2) (push-front 3 (push-back base 4)) base)
+(def {variants} (map (fn {v} {cons v base}) {p q r}))
+(print variants base)
+(def {deep} {{1 2} {3 4}})
+(def {inner} (fst deep))
+(def {deep2} (cons (cons 0 inner) (tail deep)))
+(print deep inner deep2 (eq (snd deep) (snd deep2)))
+
+; the items themselves are shared and unchanged too
+(def {ql} {(+ 1 2) {nested {list}}})
+(def {copy} (reverse (reverse ql)))
+(print (eval (fst ql)) (fst ql) (eq ql copy) ql copy)
+(print (tail (snd ql)) (snd ql) (cons :x (snd ql)) (snd ql))
+
+; a hundred tails of a long list, every one still right
+(def {long} (range 100))
+(def {tails} NIL)
+(def {cur} long)
+(while {cur} (do (set! {tails} (cons cur tails)) (set! {cur} (tail cur))))
+(print (len tails) (map len (take 5 tails)) (map fst (take 5 tails)) (len (fst (reverse tails))) (eq (last tails) long))
+(print (all? (fn {tl} {eq tl (drop (- 100 (len tl)) long)}) tails) (len long) (sum long))

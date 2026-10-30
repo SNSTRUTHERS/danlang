@@ -1,0 +1,43 @@
+--- stdout
+{4 3 2 1 0}
+{0 0 1 1 2 4 3 9 4 16}
+{a b c}
+{121 101 104}
+{3 2 1 0} 4
+{{:r} {:q} {:p}}
+{0 0 1 0 1 2}
+{{i} {i} {i}} {3 2 1}
+{{* i 10} {* i 10} {* i 10}} {20 10 0}
+{{w} {w} {w}} {3 3 3}
+{{2 {n}} {1 {n}} {0 {n}}} {2 1 0}
+{<function>(fn NIL {i}) <function>(fn NIL {i}) <function>(fn NIL {i})} {2 1 0}
+{{<function>(print) i} {<function>(print) i} {<function>(print) i}}
+2
+1
+0
+{NIL NIL NIL}
+{{i} {i} {i} {i}} {3 2 1 0}
+{0 1 4 9 16 25} NIL {{0} {0 1} {0 1 4}}
+{0 2 4 6 8 10} {0}
+  step 1
+  step 2
+  step 3
+{{:before 1} {:after 1} {:before 2} {:after 2} {:before 3} {:after 3}}
+a
+b
+ 012
+set! an error: NIL
+acc: Error: '+' adds numbers, or joins values to a string
+an error step: Error: '+' adds numbers, or joins values to a string
+acc: {:three 2 1}
+Error: at three
+{2 1 0}
+Error: 'each' expects a list or a String
+  char a
+  char b
+NIL
+NIL
+Error: 'dotimes': a count must be a whole number, not 2.5
+--- stderr
+
+--- exit 0

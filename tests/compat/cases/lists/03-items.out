@@ -1,0 +1,54 @@
+--- stdout
+a (b c) d T 10
+a (b c) "d" \e {g}
+{:symbol :sexpr :string :char :atom :list :number :number :list :t}
+a {g} T a {g} T
+a (b c) d e :f {g} 7 1/2 NIL T
+evaluated now
+(print "not evaluated") NIL
+{deep} deep {3 4} {2}
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'item-at': the list has no item 10
+Error: 'item-at': the list has no item -1
+Error: 'item-at': the list has no item 0
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+Error: 'item-at': the list has no item 100000000000000000000
+Error: 'fst' expects a list
+Error: 'snd' expects a list
+Error: 'thd' expects a list
+Error: 'last' expects a list
+Error: 'nth' expects a list
+Error: First 'item-at' parameter must be a QExpr
+Error: 'nth': an index must be a whole number, not 1.5
+Error: 'nth': an index must be a whole number, not :a
+Error: 'nth': an index must be a whole number, not "1"
+Error: 'nth': an index must be a whole number, not NIL
+Error: 'item-at': an index must be a whole number, not 1/2
+Error: 'item-at': an index must be a whole number, not {1}
+Error: 'nth': an index must be a whole number, not 1+1i
+Error: 'nth': an index must be a whole number, not {a (b c) "d" \e :f {g} 7 1/2 NIL T}
+Error: 'fst' takes 1 argument, not 2
+Error: 'nth' takes 2 arguments, not 3
+Error: 'item-at' takes 2 arguments, not 3
+(b c) d d d y y
+{2 4 6} {1 2} {1 3} {a 7 T}
+{2 4} {3 6} {x y} {3}
+Error: 'nth': the list has no such item
+Error: 'nth': the list has no such item
+(b c) (b c) a T d (b c)
+Error: 'nth': an index must be a whole number, not 1.5
+<function>(nth 1) <function>(item-at {a (b c) "d" \e :f {g} 7 1/2 NIL T}) <function>(fst) <function>(fst) d d q
+2 4 Error: 'nth': the list has no such item
+<function>(+) 3 -1 3
++ :symbol <function>(+) 7
+{a (b c) "d" \e :f {g} 7 1/2 NIL T}
+--- stderr
+
+--- exit 0

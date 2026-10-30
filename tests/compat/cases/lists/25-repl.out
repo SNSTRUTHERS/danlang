@@ -1,0 +1,59 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> {1 "two" \3 :four five (six) {7}}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {1 {2 {3 NIL}}}
+danlang>=> {"a\tb" "q\"uote" "back\\slash" "\x01\x7F" "\e"}
+danlang>=> {\space \tab \lf \cr \null \lparen \rparen \lcurly \rcurly \lbracket \rbracket \backslash \quote \tick \semicolon \a \Z \0}
+danlang>=> {\a \space \b \lf}
+danlang>=> {NIL}
+danlang>=> {1 2 3}
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: 'tail' expects a QExpr
+danlang>=> {2 3}
+danlang>=> <function>(map <function>(fn {x} {* x x}))
+danlang>=> <function>(take 2)
+danlang>=> <function>(nth 1)
+danlang>=> {<function>(+) 1 <function>(fn {x} {x}) <function>(fst) <function>(take 1)}
+danlang>=> NIL
+danlang>=> "{\"a\" \\b}"
+danlang>{"a" \b}
+=> NIL
+danlang>{"a" \b}cd=> NIL
+danlang>{1 "a" \b {c} :d}
+=> NIL
+danlang>{{} {} ()}
+=> NIL
+danlang>=> {1 (+ 2 3) {x}}
+danlang>=> {0 1 2 3 4 5 6 7 8 9}
+danlang>=> NIL
+danlang>=> {1 2 3}
+danlang>=> {2 3}
+danlang>=> {0 1 2 3}
+danlang>=> {1 2 3}
+danlang>=> {{1 2 3} {1 2 3}}
+danlang>=> {l l}
+danlang>=> <hash>{{:k {1 2}}}
+danlang>=> {<hash>{{:k {1 2}}} <buffer>{1 2}}
+danlang>	} <=> {1 2 3 4}
+danlang>	] <=> {3 7}
+danlang>	}} <=> {a {b {c}} d}
+danlang>=> {1 2 3}
+danlang>=> 3
+danlang>=> 3
+danlang>=> (+ 1 2)
+danlang>=> Error: inside a list
+danlang>=> Error: Invalid parameter passed to 'join'.  Expected QExpr.
+danlang>=> exit
+--- stderr
+  at line 1  (head NIL)
+  at line 1  (tail 5)
+  at line 1  (error "inside a list")
+  at line 1  (join {1} 2)
+--- exit 0

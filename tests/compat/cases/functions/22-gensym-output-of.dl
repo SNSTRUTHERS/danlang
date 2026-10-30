@@ -1,0 +1,60 @@
+; 22-gensym-output-of: gensym's counter (one for the whole program, from 1, every call counting, a failed call not),
+; its prefix (a string, made lower case; anything else an error); a gensym'd name defined and used.  output-of: what
+; the expressions printed to stdout (print, write, print-to stdout; not stderr), nested output-of (the inner's
+; text is its value, not printed), an error stopping it (what was printed is lost, stdout restored), output from
+; functions, loops and map inside it.
+
+(print (gensym) (gensym) (gensym "tmp") (gensym "") (gensym "MiXeD"))
+(print (type-of (gensym)) (symbol? (gensym)))
+(print (try (gensym :atom) &err))
+(print (try (gensym 5) &err))
+(print (try (gensym "a" "b") &err))
+(print (gensym))
+(def {g} (gensym "v"))
+(print g (eq g (to-sym "v__9")) (eq g (gensym "v")))
+(def (list g) 123)
+(print (eval (list g)) v__9 (try v__10 &err))
+(print (map (fn {x} {gensym}) {1 2 3}))
+(print (eq (gensym) (gensym)))
+(fun {fresh-name} {gensym "local"})
+(print (fresh-name) (fresh-name))
+(print (repeat 3 {gensym "r"}))
+(print (gensym (+ "built" "-" 1)))
+
+; output-of
+(print (repr (output-of (print 1) (print 2))))
+(print (repr (output-of (print 1) (write 2 3))))
+(print (repr (output-of)) (repr (output-of 5)) (repr (output-of :no-output)))
+(print (repr (output-of (print "a" "b") (output-of (print "inner")))))
+(print (repr (output-of (print :before) (print (output-of (print "inner"))))))
+(print (repr (output-of (write "no newline") (write \c) (write 1 2 3))))
+(print (repr (output-of (print-to stdout "to stdout") (write-to stdout "w"))))
+(print (repr (output-of (print-to stderr "to stderr: not captured"))))
+
+; an error stops it: its value is the error, the text so far lost, and stdout back as it was
+(print (try (output-of (print :lost) (error "oops") (print :never)) &err))
+(print (output-of (print :lost-too) (/ 1 0)))
+(print (repr (output-of (print :after-error))))
+(print :stdout-still-works)
+
+; output from functions, loops and map inside it
+(fun {chatty n} {do (print :chatty n) (* n 2)})
+(print (repr (output-of (chatty 1) (chatty 2))))
+(print (repr (output-of (map chatty {1 2}))))
+(print (repr (output-of (each print {:a :b}))))
+(print (repr (output-of (dotimes {i 3} (write i)))))
+(print (len (output-of (dotimes {i 100} (write "x")))))
+(fun {captured} {output-of (print :from-a-function)})
+(print (repr (captured)) (repr (captured)))
+(print (repr (output-of (print (repr (output-of (print :deep)))))))
+
+; output-of in a function given the expressions' errors as arguments
+(fun {show-out s} {list :out s})
+(print (show-out (output-of (print :ok))))
+(print (show-out (output-of (print :x) (error "inside"))))
+
+; what's printed by try's handler inside it
+(print (repr (output-of (try (error "e") (print :handler &err)))))
+
+; the last: an error inside output-of, at the top level, ends the program (its text lost)
+(output-of (print :lost-at-the-end) (chatty :not-a-number))

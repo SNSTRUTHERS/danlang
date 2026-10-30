@@ -1,0 +1,49 @@
+; 18-between: between? (><?), not-between? (!><?), all-between? (*><?), all-not-between? (*!><?), not-all-between?
+; (!*><?): functions of no formals, their arguments &1 &2 &3 (fewer: an unbound &N, not partial application; more:
+; ignored), the bounds either way round, by the order of every kind (numbers, characters, strings, atoms, lists, T
+; ...); edge numbers, rationals, fixed decimals, complex numbers; lists as written (an S-expression is after every
+; number); wrong kinds, errors, evaluation order.  Ends with all-between?'s error on a string, from a user function.
+
+(print between? not-between?)
+(print all-between? all-not-between? not-all-between?)
+(print (map (fn {p} {eq (fst p) (snd p)}) (zip [><? !><? *><? *!><? !*><?] [between? not-between? all-between? all-not-between? not-all-between?])))
+(print (eq ><? between?) (eq !*><? not-all-between?) (eq ><? !><?) (eq *><? *!><?))
+(print (between? 1 5 3) (between? 5 1 3) (between? 1 5 1) (between? 1 5 5) (between? 1 5 0) (between? 1 5 6) (between? 1 1 1) (between? 2 2 3))
+(print (between? 1/2 1 0.75) (between? -1025 -1024 -1024.5) (between? 65535 65536 65535.5) (between? 9223372036854775807 9223372036854775809 9223372036854775808))
+(print (between? -9223372036854775809 -9223372036854775808 -9223372036854775808.5) (between? 0 1/9223372036854775808 1/9223372036854775809) (between? 7/2 -7/2 0))
+(print (between? 2.5 2.50 5/2) (between? 0.1 0.2 0.15) (between? -2.50 -2.4 -2.45) (between? math.e math.pi 3) (between? math.gamma math.phi 1))
+(print (between? "a" "c" "b") (between? \a \z \m) (between? "a" "c" "d") (between? 1 "z" :x) (between? 1 "z" \c) (between? NIL T {1}) (between? :a :c :b))
+(print (between? (complex 0 1) (complex 0 3) (complex 0 2)) (between? (complex 1 -1) (complex 1 1) 1) (between? 0 1 (complex 1 1)))
+(print (between? 1 (hash-create) 5) (between? (hash-create) (hash-create) (hash-create)) (between? + - *))
+(print (between? 1 5 3 4) (between? 1 5 3 :ignored (error "an extra error")))
+
+; fewer than three: &3 (or &2, &1) unbound
+(print (between? 1 5))
+(print ((between? 1 5) 3))
+(print (between? 1))
+(print (between?))
+(print (not-between? 1 5))
+(print (between? (error "b1") 5 3))
+(print (between? 1 5 (error "b3")))
+(print (between? (do (print :lo) 1) (do (print :hi) 5) (do (print :x) 3)))
+
+; not-between?, and the list forms
+(print (not-between? 1 5 7) (not-between? 5 1 3) (!><? 1 5 0) (!><? 65536 65535 65535) (not-between? "a" "b" "c"))
+(print (all-between? 1 5 {2 3}) (all-between? 1 5 {2 7}) (all-between? 1 5 NIL) (all-between? 5 1 {1 5 3}) (*><? 1 5 {0}) (*><? -1025 65536 (range -1025 65537 1000)))
+(print (all-not-between? 1 5 {7 8}) (all-not-between? 1 5 {7 3}) (all-not-between? 1 5 NIL) (*!><? 1 5 {0 6}) (*!><? 0 1 {2 -1 1/2}))
+(print (not-all-between? 1 5 {2 7}) (not-all-between? 1 5 {2 3}) (not-all-between? 1 5 NIL) (!*><? 1 5 {9}))
+(print (all-between? 1 5 {2 (+ 1 1)}) (all-between? 1 5 [2 (+ 1 1)]) (all-between? 1 5 {two}) (all-between? "a" "z" {"b" \c}))
+(print (all-between? 1 5 {1 2} :extra) (all-not-between? 1 5 {9} (error "an extra argument, an error")))
+(print (all-between? 1 5 "abc"))
+(print (all-between? 1 5 "abc" "def"))
+(print (all-between? 1 5 7))
+(print (all-not-between? 1 5 7))
+(print (all-between? 1 5))
+(print (not-all-between? 1))
+(print (all-between? 1 5 (error "the list")))
+(print (map (fn {x} {between? 0 10 x}) (range -2 13 3)) (filter (fn {x} {not-between? 3 6 x}) (range 10)))
+
+; all-between? of a string, from a user function: the program ends with its trace
+(fun {in-range? lo hi l} {list :in-range (all-between? lo hi l)})
+(print (in-range? 1 9 {2 4 8}))
+(in-range? 1 9 "248")

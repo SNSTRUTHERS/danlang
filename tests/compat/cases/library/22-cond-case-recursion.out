@@ -1,0 +1,40 @@
+--- stdout
+:done :done :done
+:cd1-99 :done
+:cd1-100 Error: Too deep: more than 10000 calls nested
+100
+:cd2-99 99
+:cd2-100 Error: Too deep: more than 10000 calls nested
+:negative :done
+:cd3-99 :done
+:cd3-100 Error: Too deep: more than 10000 calls nested
+:loop-done
+:loop2-done
+:loop-done
+:done :done
+:cs1-99 :done
+:cs1-100 Error: Too deep: more than 10000 calls nested
+:one :two
+Error: Too deep: more than 10000 calls nested
+Error: Too deep: more than 10000 calls nested
+:ping-done :pong-done :pong-done
+:ping-99 :pong-done
+:ping-100 Error: Too deep: more than 10000 calls nested
+{0} {6 5 5 3 6} {9 2 2 3 3 7 2 0 3 6 8 5 4 7 7 5 8 0 8} {-1025}
+Error: Selection not found
+--- stderr
+Error: 22-cond-case-recursion.dl: Too deep: more than 10000 calls nested
+  at 22-cond-case-recursion.dl:31  (1- n)
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+  called at 22-cond-case-recursion.dl:31  (cs1 (1- n))
+--- exit 1

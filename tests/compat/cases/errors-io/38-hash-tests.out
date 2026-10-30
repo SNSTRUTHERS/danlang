@@ -1,0 +1,27 @@
+--- stdout
+Error: hash-get error: cannot access private hash entry
+Hello, World!
+Error: hash-get error: cannot access private hash entry
+100
+{Error: A hash's entry is {key value tag...}, not :a Error: A hash's entry is {key value tag...}, not 1000}
+100
+Error: hash-get error: cannot access private hash entry
+1000
+1000
+{print "Clone worked!"}
+Clone worked!
+Clone didn't corrupt the original!
+Child clone worked
+<hash>{{:a "Hello, World!" :__private} {:b 10} {:f <function>(fn NIL {&0 :a})}}
+<hash>{{:a "Hello, Clone World!" :__private} {:b 15} {:f <function>(fn NIL {&0 :a})} {:h {{:a 1000 :__private} {:a-get <function>(fn NIL {&0 :a})} {:a-put <function>(fn {v} {hash-put &0 {:a v}})}}}}
+<hash>{{:a "Hello, Clone World!" :__private} {:b 15} {:f <function>(fn NIL {&0 :a})} {:h {{:a 2000 :__private} {:a-get <function>(fn NIL {&0 :a})} {:a-put <function>(fn {v} {hash-put &0 {:a v}})}}}}
+{:a :b :f} {:a :b :f :h} T T NIL
+10 15 15 Hello, Clone World! Hello, Clone World!
+1000 2000 NIL
+10 Error: hash-get error: cannot access private hash entry NIL T NIL
+10 {:a :f} NIL
+NIL 11 12
+{{:a "Hello, Clone World!" :__private} {:b 15} {:f <function>(fn NIL {&0 :a})} {:h {{:a 2000 :__private} {:a-get <function>(fn NIL {&0 :a})} {:a-put <function>(fn {v} {hash-put &0 {:a v}})}}}}
+--- stderr
+
+--- exit 0

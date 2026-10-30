@@ -1,0 +1,84 @@
+; 04-loop-closures.dl - what a loop body makes and keeps: closures, Q-expressions and partial applications that
+; capture the loop variable (and variables set in the body), stored and used after the loop: each iteration has its
+; own scope, so each keeps its own values; while has none, so what its body makes shares one variable; the function
+; form's calls are each their own too
+
+(fun {call-all fs} {map (fn {f} {f}) fs})
+
+; each: closures over the item and a name set in the body
+(def {fs} {})
+(each {x {:a :b :c}} =(y (+ "y" x)) (def {fs} (cons (fn {} {list x y}) fs)))
+(print fs)
+(print (call-all fs))
+
+; dotimes: Q-expressions made in the body remember the iteration's scope; eval runs them there
+(def {qs} {})
+(dotimes {i 3} =(sq (* i i)) (def {qs} (cons {list i sq} qs)))
+(print qs)
+(print (map (fn {q} {eval q}) qs))
+
+; partial applications keep the values given them
+(def {ps} {})
+(dotimes {i 3} (def {ps} (cons (eq i) ps)))
+(print ps)
+(print (map (fn {p} {p 1}) ps))
+
+; closures that change their iteration's variable: each its own (two runs: 2 each, not 4)
+(def {incs} {})
+(def {gets} {})
+(dotimes {i 2} =(c 0) (def {incs} (cons (fn {} {set! {c} (+ c 1)}) incs)) (def {gets} (cons (fn {} {list i c}) gets)))
+(print (call-all incs) (call-all incs))
+(print (call-all gets))
+
+; nested loops: the inner closures see both variables, each pair its own
+(def {grid} {})
+(dotimes {r 2} (each {col {:x :y}} (def {grid} (cons (fn {} {list r col}) grid))))
+(print (call-all grid))
+
+; while has no scope of its own: every closure sees the one variable, at its last value
+(def {ws} {})
+(def {wn} 0)
+(while (< wn 3) (def {ws} (cons (fn {} {wn}) ws)) (set! {wn} (+ wn 1)))
+(print (call-all ws))
+(set! {wn} 99)
+(print (call-all ws))
+
+; a while inside a function: closures share the function's variable
+(fun {make-ws} {do
+  =(k 0)
+  =(out {})
+  (while (< k 3) =(out (cons (fn {} {k}) out)) =(k (+ k 1)))
+  out})
+(print (call-all (make-ws)))
+
+; a let inside each: a scope of its own per item too
+(def {ls} {})
+(each {x {1 2 3}} (let {{dbl (* x 2)}} (def {ls} (cons (fn {} {list x dbl}) ls))))
+(print (call-all ls))
+
+; the function form: each call is its own scope
+(def {ds} {})
+(dotimes 3 (fn {i} {def {ds} (cons (fn {} {* i 10}) ds)}))
+(print (call-all ds))
+(def {es} {})
+(each (fn {ch} {def {es} (cons {ch} es)}) "xyz")
+(print es (map (fn {q} {eval q}) es))
+
+; closures kept in a hash, made in a loop, called later through it
+(def {table} (hash-create))
+(each {name {"one" "two" "three"}} (hash-put table [name (fn {} {+ name "!"})]))
+(print (map (fn {k} {(table k)}) (hash-keys table)))
+
+; a loop variable captured by a closure that outlives the function that ran the loop (set! keeps them in the
+; function's out; set in the body would bind an out of the iteration's own, so the function's stays NIL)
+(fun {makers n} {do
+  =(out {})
+  (dotimes {i n} (set! {out} (cons (fn {x} {+ x i}) out)))
+  out})
+(print (map (fn {f} {f 100}) (makers 4)))
+(print (makers 2))
+(fun {makers-set n} {do
+  =(out {})
+  (dotimes {i n} =(out (cons (fn {x} {+ x i}) out)))
+  out})
+(print (makers-set 4))

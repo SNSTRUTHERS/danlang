@@ -1,0 +1,51 @@
+--- stdout
+<function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}})
+<function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {> (1+ tr)} {tr})}})
+<function>(fn {a} {(if (neg? a) (- (floor (- 1/2 a))) (floor (+ a 1/2)))})
+:floor {0 1 -1 65535 65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 18446744073709551616 3 -4 0 -1 1 -2 2 -3 0 -1 0 -1 2 -3 0 -1 2 -3 0 -1 1 -2 0 0 0 -1}
+:ceil {0 1 -1 65535 65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 18446744073709551616 4 -3 1 0 2 -1 3 -2 1 0 1 0 3 -2 1 0 3 -2 1 0 2 -1 0 0 1 0}
+:round {0 1 -1 65535 65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 18446744073709551616 4 -4 1 -1 2 -2 3 -3 0 0 1 -1 3 -3 0 0 2 -2 1 -1 2 -2 0 0 0 -1}
+:trunc {0 1 -1 65535 65536 -1024 -1025 9223372036854775807 9223372036854775808 -9223372036854775808 -9223372036854775809 18446744073709551616 3 -3 0 0 1 -1 2 -2 0 0 0 0 2 -2 0 0 2 -2 0 0 1 -1 0 0 0 0}
+{:number :number :number} {T T T T T}
+2 -3 3 3 -3 1
+65535 65536 65536 -65536 -1025 -1024 -1025 1025
+4611686018427387903 4611686018427387904 4611686018427387904
+-4611686018427387905 -4611686018427387904 -4611686018427387905
+9223372036854775807 9223372036854775808 -9223372036854775809
+65535 65536 65536 65535 -1025 -1024 -1025 -1024
+9223372036854775807 9223372036854775808 9223372036854775808 -9223372036854775809
+3 4 3 3 -2 0 -1
+3 -3 3 -3 1 0
+3074457345618258602 3074457345618258603 3074457345618258603
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+5
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+Error: 'truncate' expects a real number
+Error: '+' adds numbers, or joins values to a string
+Error: 'truncate' expects a real number
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: '+' adds numbers, or joins values to a string
+Error: 'truncate' expects a real number
+<function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}})
+<function>(fn {a} {(if (neg? a) (- (floor (- 1/2 a))) (floor (+ a 1/2)))})
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+Error: The function takes 1 argument, not 2
+Error: floor's a Error: ceil's a Error: round's a
+3 -3 -2
+{-3 -2 -2 -2 -2 -1 -1 -1 -1 0 0 0 1 1 1 1 2 2 2 2 3}
+{:nearest 2} {:nearest -4}
+--- stderr
+Error: 09-floor-ceil-round.dl: 'truncate' expects a real number
+  at <BUNDLE>\lib\globals.dl:121  (trunc a)
+  called at <BUNDLE>\lib\globals.dl:136  (floor (+ a 1/2))
+  called at 09-floor-ceil-round.dl:62  (round x)
+  called at 09-floor-ceil-round.dl:64  (nearest (complex 3 4))
+--- exit 1

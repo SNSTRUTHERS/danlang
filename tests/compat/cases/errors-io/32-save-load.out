@@ -1,0 +1,50 @@
+--- stdout
+42
+-9223372036854775809
+1.5
+7/3
+1/2-3i
+\a
+\space
+\lparen
+"a\tb\"c\\d\x01ÿ"
+:atom
+sym
+{}
+T
+{1 "two" \3 :four {five {}} (six)}
+{(+ 1 2) (list a b)}
+#({{:a 1} {"b" {2 3}} {4 :four :tag} {:p 5 :__private} :htag})
+#({{:inner #({{:x 1}})}})
+(buffer {65 66})
+(buffer {})
+<function>(fn {x} {* x 2})
+<function>(+)
+<function>(eq 1)
+<stream>
+exit
+Error: save of an error is the error
+{T "42\n"} {T "1.25\n"} {T "2/3\n"} Error: sv/v.txt: Unbound Symbol '1i'
+{T "717897987691852588770249\n"} {T "-0.001\n"} {T "\\tab\n"} {T "\\quote\n"}
+{T "\"plain\"\n"} {T "\"\\0\\n\\r\\e\\x7F\"\n"} {T "\"\"\n"} {T ":k\n"}
+{T "{1 {2 {3}}}\n"} {T "{}\n"} {T "T\n"} {T "{\"s\" \\c :a b}\n"}
+T T 256
+#({{:a 1} {"s" "t"} {3 {4}} {:p 9 :__private} :tagged})
+
+<hash>{{:a 1} {"s" "t"} {3 {4}} {:p 9 :__private} :tagged} 1 t {4} T T Error: hash-get error: cannot access private hash entry
+(buffer {1 2 255})
+ <buffer>{1 2 255} :buffer
+"1\n{2}\n\"three\"\n" three {"1" "{2}" "\"three\""}
+<function>(fn {x} {x})
+ Error: sv/f.txt:1: '<function>' touches '(': put a space between them
+<stream>
+ Error: sv/s.txt: Unbound Symbol '<stream>'
+Error: File exists but neither ':append' nor ':overwrite' were specified
+Error: Parameters 3+ for function 'save' must be atoms Error: File exists but neither ':append' nor ':overwrite' were specified
+Error: Second parameter to 'save' must be a string Error: Second parameter to 'save' must be a string Error: sv/no/such.txt: not found :noent
+Error: sv: not allowed
+<function>(save) Error: e
+NIL {"b.txt" "f.txt" "h.txt" "many.txt" "s.txt" "v.txt"}
+--- stderr
+
+--- exit 0

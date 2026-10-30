@@ -1,0 +1,53 @@
+; 33-redefine-midway: a library function's call of another is looked up at each call: after a thousand calls (to
+; warm whatever a call remembers), floor redefined (by fun, by set at the top level, by set! inside a function, by
+; def as a built-in, from inside a map's function half way through its list) changes mod's next result.  Local
+; bindings of the same names (formals, let, set inside a function) don't: the library sees the global ones
+; (lexical scope), even when the local one is passed in.  Ends with mod's error after floor became a string.
+
+(def {orig-floor} floor)
+(dotimes {i 1000} (mod i 7))
+(print (mod 7 2) (mod -7 2) (div 65536 3) (round 5/2))
+
+; a local named floor, trunc or mod isn't the library's
+(fun {f floor} {list floor (mod 7 2) (round 5/2) (div -7 2)})
+(print (f 100) (f (fn {x} {:local})))
+(print (let {{floor 5}} (list floor (mod 7 2))))
+(print (let {{trunc (fn {x} {:local-trunc})}} (list (floor 5/2) (ceil 5/2) (pow 2 3))))
+(fun {g mod} {list mod (divmod 7 2) (odd? 3)})
+(print (g :local-mod))
+(fun {h} {do =(floor :set-locally) (list floor (mod 7 2))})
+(print (h) (mod 7 2))
+(fun {k f l} {list (unpack f l) (zip l l)})
+(print (k + {1 2}))
+
+; redefined after many calls
+(fun {floor x} {100})
+(print (mod 7 2) (div 7 2))
+(set {floor} (fn {x} {200}))
+(print (mod 7 2) (div 7 2))
+(fun {swap-floor} {set! {floor} (fn {x} {300})})
+(swap-floor)
+(print (mod 7 2) (div 7 2))
+(def {floor} truncate)
+(print (mod -7 2) (div -7 2) (round -5/2) (floor -7/2))
+(def {floor} orig-floor)
+(print (mod -7 2) (div -7 2) (round -5/2) (floor -7/2))
+
+; redefined half way through a map, and through a loop
+(print (map (fn {x} {do (if (eq x 3) (fun {floor y} {100}) NIL) (mod 7 x)}) {1 2 3 4}))
+(def {floor} orig-floor)
+(def {results} NIL)
+(dotimes {i 6} (do (if (eq i 3) (def {floor} (fn {y} {0})) NIL) (set! {results} (cons (div 70 (1+ i)) results))))
+(print (reverse results))
+(def {floor} orig-floor)
+(print (div 70 4) (map (fn {i} {div 70 (1+ i)}) (range 6)))
+
+; redefined from inside the code cond runs
+(print (cond {(do (def {floor} (fn {y} {400})) T) (mod 7 2)}))
+(def {floor} orig-floor)
+(print (mod 7 2))
+
+; floor a string: mod fails, and the program ends with it
+(def {floor} "not a function")
+(fun {wrap h} {list :wrapped (mod h 12)})
+(wrap 15)

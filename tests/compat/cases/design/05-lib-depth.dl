@@ -1,0 +1,37 @@
+; 05-lib-depth: library functions called where only so many nested calls are left (10000 at most): with 0, 1, 2 ...
+; levels free, which work and which are "Too deep"; a recursive one (repeat, zip, distinct, remove-all ...) needs a
+; level for each step it doesn't take in tail position.  The levels are measured first: as deep as calls go from the
+; top level.  It ends with mod at no level free, uncaught: its trace.
+(def {maxd} 0)
+(fun {dp n} {do (set! {maxd} n) (or (dp (+ n 1)))})
+(print "probe" (try (dp 1) &err) maxd)
+
+; (down n th): th called in tail position (in down's place), n+1 calls deep (or is no tail position); (at-free k th):
+; th with k levels left
+(fun {down n th} ?{(zero? n) (th) (or (down (- n 1) th))})
+(fun {at-free free th} {down (- maxd free 1) th})
+
+; each call made directly where the levels are counted
+(def {row} (fn {} {list
+  (try (mod 7 2) &err) (try (div -7 2) &err) (try (even? 4) &err) (try (odd? 3) &err) (try (floor 7/2) &err)
+  (try (round 5/2) &err) (try (pow 2 3) &err) (try (square 5) &err) (try (cond {NIL 1} {T 2}) &err)
+  (try (case 2 {1 :a} {2 :b}) &err) (try (repeat 2 {:x}) &err) (try (zip {1 2} {3 4}) &err)
+  (try (distinct {1 1 2}) &err) (try (flatten {1 {2}}) &err) (try (remove-all 1 {1 2 1 3}) &err)
+  (try (between? 1 5 3) &err) (try (all-between? 1 5 {2 3}) &err) (try (?? NIL NIL 3) &err)
+  (try (unpack + {1 2}) &err) (try (abs -1) &err) (try (map 1+ {1 2}) &err) (try (map square {1 2}) &err)
+  (try (sort-desc {1 3 2}) &err) (try (divmod 7 2) &err) (try (fdiv 1 4) &err) (try (starts-with? "ab" "a") &err)}))
+(def {short} (fn {x} {?((eq x "Too deep: more than 10000 calls nested") :deep x)}))
+(each {k {0 1 2 3 4 6 50}} (print "free" k (map short (at-free k row))))
+
+; the recursive ones, by the length of the list, with 6 levels free (the map's function takes one of them)
+(def {grow} (fn {} {map (fn {n} {list n
+  (short (try (repeat n {:x}) &err)) (short (try (zip (range n) (range n)) &err))
+  (short (try (remove-fst 99 (range n)) &err)) (short (try (remove-all 99 (range n)) &err))
+  (short (try (remove-all 0 (map (fn {x} {0}) (range n))) &err)) (short (try (flatten (range n)) &err))
+  (short (try (distinct (range n)) &err)) (short (try (all-between? 0 100 (range n)) &err))
+  (short (try (pow 2 n) &err))}) (range 9)}))
+(each {r (at-free 6 grow)} (print "n" r))
+
+; tail calls take no level: a library function in tail position of what's called at the boundary
+(print "tail" (at-free 1 (fn {} {mod 7 2})) (at-free 1 (fn {} {even? 4})) (at-free 0 (fn {} {cond {T :c}})))
+(at-free 0 (fn {} {mod 7 2}))

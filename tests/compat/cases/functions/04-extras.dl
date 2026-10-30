@@ -1,0 +1,77 @@
+; 04-extras: the arguments past a function's formals: &1, &2 ... and &_ (a list of them, NIL for none); a function
+; whose body doesn't name them, given extras, is an error (its message counting the formals); &N past the extras
+; given is unbound; defined? says which were given; the library's functions that take extras (fdiv, ??, between?)
+
+(fun {rest-only} {&_})
+(print (rest-only) (rest-only 1) (rest-only 1 2 3))
+(fun {one-and-rest a} {list a &_})
+(print (one-and-rest 1) (one-and-rest 1 2) (one-and-rest 1 2 3))
+(fun {numbered a} {list a &1 &2 &3})
+(print (numbered 1 2 3 4))
+(print (numbered 1 2 3))
+(print (numbered 1 2))
+(print (numbered 1))
+(print (numbered 1 2 3 4 5))
+(fun {all-forms a b} {list a b &1 &2 (len &_) &_})
+(print (all-forms :a :b :c :d))
+(print (all-forms :a :b :c :d :e :f))
+
+; extras are values: evaluated left to right, as the formals are
+(fun {noisy x} {do (write x " ") x})
+(print (one-and-rest (noisy 1) (noisy 2) (noisy 3)))
+(print (one-and-rest (noisy 1) (error "an extra") (noisy 3)))
+
+; a function whose body names none of them: extras are an error
+(fun {none} {:none})
+(fun {one a} {list a})
+(fun {two a b} {list a b})
+(print (none) (one 1) (two 1 2))
+(print (none 1))
+(print (none 1 2))
+(print (one 1 2))
+(print (two 1 2 3))
+(print (two 1 2 3 4 5))
+(print ((fn {x} {x}) 1 2))
+(print ((fexpr {x} {x}) 1 2))
+(print ((fexpr {x} {list x &_}) 1 (+ 2 3)))
+
+; the error comes after the arguments are evaluated
+(print (one (noisy :a) (noisy :b)))
+
+; &_ and &1 in a let, an if, a do, a loop inside the function: still the call's
+(fun {deep-extras} {let {{n (len &_)}} (if (> n 0) (do (each {x &_} (write x)) (print) (list n &1)) :no-extras)})
+(print (deep-extras))
+(print (deep-extras :p :q))
+
+; defined?: which extras this call had
+(fun {opt a} ?{(defined? &1) (list :given &1) (list :default a)})
+(print (opt 1) (opt 1 2) (opt 1 NIL))
+(fun {count-given} {list (defined? &1) (defined? &2) (defined? &3) (defined? &_)})
+(print (count-given) (count-given 1) (count-given 1 2 3))
+
+; an extra that is NIL, a list, a function
+(print (rest-only NIL {} {1 2} + (fn {} {})))
+(print (numbered :a NIL {} NIL))
+
+; &_ is a list of the values as they are (Q-expressions as they were given)
+(print (rest-only {+ 1 2} (+ 1 2) "s" \c))
+(print (map (fn {f} {type-of f}) (rest-only 1 "s" \c :a {l} + (error "e"))))
+(print (map (fn {f} {type-of f}) (rest-only 1 "s" \c :a {l} +)))
+
+; extras given through unpack and the shorthand .()
+(print (unpack rest-only {1 2 3}))
+(print .(one-and-rest {:x :y :z}))
+(print (unpack two {1 2 3}))
+
+; the library's functions with extras
+(print (fdiv 1 3) (fdiv 1 3 4) (frecip 8) (frecip 3 2))
+(print (?? NIL NIL 3 4) (?? NIL) (?? 1))
+(print (between? 1 5 3) (between? 5 1 3) (between? 1 5 9))
+(print (minimum {3 1 2}) (maximum {3 1 2}))
+
+; extras given to a built-in: its own error
+(print (len {1} 2))
+(print (cons 1 {2} 3))
+
+; the last: a function that names no extras, given one, ends the program
+(two :x :y :z)

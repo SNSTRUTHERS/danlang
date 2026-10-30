@@ -1,0 +1,35 @@
+(fun {inner x} {/ 10 x})
+(fun {middle x} {+ 1 (inner x)})
+(fun {outer x} {* 2 (middle x)})
+(outer 5)
+(outer 0)
+undefined-name
+(undefined-function 1 2)
+(+ 1 "two")
+(len 1 2)
+(do (write "partial output, then ") (error "an error" :code))
+(try (outer 0) &err)
+(error-code (try (error "x" :c) (error (+ "again: " &err) :again)))
+\nosuchcharacter
+"a bad \q escape"
+"an unclosed string
+1/0
+f(x)
+)
+}
+(1 2]
+(fun {multi x}
+  {do
+    (print "multi got" x)
+    (+ x (len x))})
+(multi 5)
+(write-file "lib.dl" "; lib.dl\n(fun {lib-fn x} {\n  * x (len x)})\n")
+(load "lib")
+(lib-fn 3)
+(write-file "broken.dl" "(print \"broken.dl runs\")\n(lib-fn 4)\n")
+(load "broken")
+(map (fn {x} {inner x}) {1 0 2})
+(each {x {2 1 0}} (print (inner x)))
+(outer 2)
+(exit 3)
+(print "not reached")

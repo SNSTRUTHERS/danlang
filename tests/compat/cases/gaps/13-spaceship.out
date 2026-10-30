@@ -1,0 +1,38 @@
+--- stdout
+sign {:pos :neg :zero :pos :neg :zero :neg :pos :neg :pos :neg}
+tests NIL :z :ge :ge2 :le :le2
+tests 3 2 3 3
+:eq first true :c :eq :a
+none NIL NIL NIL
+1 :b order :b
+3 longer case 3 {b} 4
+values {q} 3 {1 2} :atom str NIL
+cmp :less :after :same
+  loop :zero
+  loop 1
+scope :gx {:neg -1} {0 :local} :gx :let-x NIL
+set in a value NIL Unbound Symbol 'made'
+try {<=> :a {> 1}} "First parameter to '<=>' must evaluate to a Number"
+try {<=> "s" {> 1}} "First parameter to '<=>' must evaluate to a Number"
+try {<=> NIL {> 1}} "First parameter to '<=>' must evaluate to a Number"
+try {<=> 1} "Too few parameters passed to '<=>' operator"
+try {<=> 1 5} "Operator '<=>' received one or more invalid case blocks (not QExpr)"
+try {<=> 1 NIL} "Unknown comparison test Invalid item number 0"
+try {<=> 1 {?? 1}} "Unknown comparison test ??"
+try {<=> 1 {1} {> 2}} "All but last body block of a '<=>' operator must have comparator"
+try {<=> 1 {= 1} {:a :b}} "Unknown comparison test a"
+try {<=> 1 {gt 1}} "Unknown comparison test gt"
+try {<=> 1 {< 1} NIL} "Unknown comparison test Invalid item number 0"
+try {<=> (error "e") {> 1}} "e"
+try {<=> 1 {> (error "v")}} "v"
+try {<=> 1 {> zz}} "Unbound Symbol 'zz'"
+try {<=> 1 {> 1} 2} "Operator '<=>' received one or more invalid case blocks (not QExpr)"
+try {<=> 1 {> 1} {:a}} 1
+as a value '<=>' can't be applied to values: it's a special form Too few parameters passed to '<=>' operator <function>(<=>) :function
+depth 100 9998 9999 Too deep: more than 10000 calls nested
+depth :bottom Too deep: more than 10000 calls nested
+depth :done Too deep: more than 10000 calls nested
+floor 2 -3 3 -2 4611686018427387903 -4611686018427387904
+--- stderr
+
+--- exit 0

@@ -1,0 +1,52 @@
+; 22-eval-lists.dl - lists as code: eval of lists built by cons, list, [..], join and read, with symbols or function
+; values first; a first item that's a list, a number, a string, a hash, a buffer; one item alone; special forms in
+; built lists (if, do, and, def); the items' S-expressions evaluated in order (shown by printing); unpack, apply,
+; pack, curry, uncurry and ghost; errors made by such code (as values)
+
+(print (eval (cons + {1 2})) (eval (list + 1 2)) (eval [* 6 7]) (eval (join {+} {1} {2 3})) (eval (cons + (range 5))))
+(print (eval (cons list (range 3))) (eval {list 1 (+ 1 1)}) (eval (list list (fst {(+ 1 1)}))) (eval (cons max {3 9 2})))
+(print (eval {}) (eval NIL) (eval (list)) (eval {5}) (eval {{1 2}}) (eval (list {1 2})) (eval (cons 5 NIL)) (eval ["s"]))
+(print (eval [+ 1 2]) (eval [(fn {a b} {- a b}) 10 3]) (eval [(take 2) {1 2 3}]) (eval (cons (fn {x} {* x x}) {9})))
+(print (eval {+ 1 (* 2 3) (- 10 (/ 8 2))}) (eval (list + (fst {(* 2 3)}) 4)) (eval (list len (list 1 2 3))))
+(print (eval (list (hash-create {{:a 1}}) :a)) (eval (list (buffer {7 8 9}) 1)) (eval [(hash-create {{:f (fn {x} {* x 2})}}) :f 21]))
+
+; a first item that can't be called
+(print (eval (cons {1 2} {3})))
+(print (eval {{1 2} 3}))
+(print (eval [5 6]))
+(print (eval ["s" 1]))
+(print (eval (cons :a {1})))
+(print (eval (list + {1} 2)))
+(print (eval (list list (fst {x}))))
+(print (eval (cons error {"from a list made"})))
+(print (eval (list fst NIL)))
+
+; special forms in lists made
+(print (eval (cons if {T :yes :no})) (eval (cons if [NIL 1 2])) (eval (list if (fst {(> 2 1)}) :more :less)))
+(print (eval (cons if [NIL (fst {(print "  not run")}) (fst {(print "  run")})])))
+(print (eval (list do (fst {(print "  one")}) (fst {(print "  two")}) 3)))
+(print (eval (list and 1 NIL (fst {(print "  never")}))) (eval (list or NIL 2 (fst {(print "  never")}))))
+(eval (list def (fst {{made-by-eval}}) 42))
+(print made-by-eval)
+(print (eval (join {map} [1+] {{1 2}})) (eval (join {filter} [odd?] [(range 6)])) (eval (cons foldl [+ 0 (range 4)])))
+(print (eval (read "(+ 1 2)")) (eval (read "+ 1 2")) (eval (fst (read "(* 6 7)"))) (map (fn {x} {eval x}) (read "1 (+ 1 1) {3}")))
+
+; the items' S-expressions run left to right, each once
+(print (eval (list list (fst {(do (print "  a") 1)}) (fst {(do (print "  b") 2)}) (fst {(do (print "  c") 3)}))))
+(def {code} {list (print "  x") (print "  y")})
+(print (eval code) (eval code))
+
+; unpack, apply, pack, curry, uncurry, ghost
+(print (unpack + {1 2 3}) (apply * (range 1 6)) (unpack cons {1 {2}}) (unpack (fn {a b} {list b a}) {1 2}) (curry max {4 8 1}))
+(print (unpack + NIL) (unpack list NIL) (unpack list {1 2}) (unpack list {(+ 1 2) 4}) (unpack + {(+ 1 2) 4}))
+(print (unpack list {a b}))
+(print (unpack 5 {1}))
+(print (unpack + 5))
+(print (pack len 1 2 3) (pack reverse 1 2 3) (pack (fn {l} {l})) (uncurry fst :a :b) (pack sum 1 2 3))
+(print (ghost + 1 2) (ghost list 1 2) (ghost max 3 7 5))
+(print .(+ {1 2}) .(list {3 4}) (map (fn {l} {unpack + l}) {{1 2} {3 4} NIL}))
+
+; a list of operators, applied
+(def {ops} {+ - *})
+(print (map (fn {op} {eval (list op 6 3)}) ops) (map (fn {op} {eval [op 6 3]}) ops) (map (fn {op} {(eval op) 6 3}) ops))
+(print (map (fn {op} {unpack (eval op) {6 3}}) ops) (map (fn {f} {f 6 3}) [+ - *]))

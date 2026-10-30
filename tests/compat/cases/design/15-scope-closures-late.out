@@ -1,0 +1,18 @@
+--- stdout
+outer {:global :outer-local :outer-local} {:global :outer-local :outer-local} :global
+make {:global :global-w} NIL {:global :changed-global-w} :changed-global-w
+make2 :own NIL :set :changed-global-w
+loop {{0 "Unbound Symbol 'sq'"} {0 0} {1 "Unbound Symbol 'sq'"} {1 1} {2 "Unbound Symbol 'sq'"} {2 4}}
+rec {{5 :global-e 5} {4 4 :global-o} {3 :global-e 3} {2 2 :global-o} {1 :global-e 1} {0 0 :global-o}}
+rec2 {:global 5 :global 3 :global 1 :global} :global
+let 20 {1 1} {2 7 7} :let-x :global
+let closures {:shadow :shadow} {:set-in-let :set-in-let} 1
+rare 200 :global-rare {:global-rare :global-rare}
+rare {:local-rare :global-rare {:global-rare :global-rare} :local-rare} :global-rare {:global-rare :global-rare} :global-rare
+rare {:formal-rare :global-rare} :global-rare {:fn-rare {:global-rare :global-rare}} :global-rare
+rare loop 0 :global-rare
+rare loop 1 :global-rare
+rare {:let-rare :global-rare} :global-rare :global-rare
+--- stderr
+
+--- exit 0

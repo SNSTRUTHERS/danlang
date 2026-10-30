@@ -1,0 +1,64 @@
+; 28-many-bindings: scopes of every size (a small one keeps its bindings in an array, a bigger one, past 8, in a
+; dictionary): functions of 0 to 12 formals, called, partially applied in steps (the bound ones carried each time),
+; with extras past the formals; 7, 8, 9 and 12 locals set in one call, then changed by set! and read again; lets
+; of 9 and 10 bindings, each seeing the ones before; closures over a big scope; loops whose bodies set many locals.
+
+(fun {f0} {:zero})
+(fun {f1 a} {list a})
+(fun {f7 a b c d e f g} {list a b c d e f g})
+(fun {f8 a b c d e f g h} {list a b c d e f g h})
+(fun {f9 a b c d e f g h i} {list a b c d e f g h i})
+(fun {f12 a b c d e f g h i j k l} {list a b c d e f g h i j k l})
+(print (f0) (f1 1) (f7 1 2 3 4 5 6 7))
+(print (f8 1 2 3 4 5 6 7 8) (f9 1 2 3 4 5 6 7 8 9))
+(print (f12 1 2 3 4 5 6 7 8 9 10 11 12))
+(print (try (f12 1 2 3 4 5 6 7 8 9 10 11 12 13) &err) (try (f8 1 2 3 4 5 6 7 8 9) &err))
+
+; partial application in steps, across the 8 boundary
+(print (f12 1 2 3 4 5 6 7 8 9))
+(print ((f12 1 2 3 4 5 6 7 8 9) 10 11 12))
+(print (((f12 1 2 3 4 5 6 7 8) 9) 10 11 12))
+(print ((((((f12 1 2 3) 4 5) 6) 7 8 9) 10) 11 12))
+(def {p10} (f12 :a :b :c :d :e :f :g :h :i :j))
+(print p10 (p10 :k :l) (p10 1 2) ((p10 :x) :y))
+(print (try (p10 1 2 3) &err))
+
+; extras past many formals
+(fun {f8x a b c d e f g h} {list a h &1 &2 (len &_) &_})
+(print (f8x 1 2 3 4 5 6 7 8 9 10 11))
+(fun {rest-many} {list (len &_) &9 &10 &12})
+(print (rest-many 1 2 3 4 5 6 7 8 9 10 11 12))
+
+; locals set in one call: 7, 8, 9, 12 of them
+(fun {set7} {do =(v1 1) =(v2 2) =(v3 3) =(v4 4) =(v5 5) =(v6 6) =(v7 7) (list v1 v7)})
+(fun {set8} {do =(v1 1) =(v2 2) =(v3 3) =(v4 4) =(v5 5) =(v6 6) =(v7 7) =(v8 8) (list v1 v8)})
+(fun {set9} {do =(v1 1) =(v2 2) =(v3 3) =(v4 4) =(v5 5) =(v6 6) =(v7 7) =(v8 8) =(v9 9) (list v1 v8 v9)})
+(print (set7) (set8) (set9))
+(fun {set12 a b} {do =(v1 1) =(v2 2) =(v3 3) =(v4 4) =(v5 5) =(v6 6) =(v7 7) =(v8 8) =(v9 9) =(v10 10)
+  (set! {v1} (+ v1 a)) (set! {a} :changed) (set! {v10} (* v10 b))
+  (list a b v1 v2 v9 v10)})
+(print (set12 100 3) (set12 200 4))
+
+; a set made before the scope grows is still found after
+(fun {grow} {do =(first-one :early) (f9 1 2 3 4 5 6 7 8 9) =(w1 1) =(w2 2) =(w3 3) =(w4 4) =(w5 5) =(w6 6) =(w7 7) =(w8 8) =(w9 9) (list first-one w9)})
+(print (grow))
+
+; lets of 9 and 10 bindings, each seeing the ones before
+(print (let {{a 1} {b (+ a 1)} {c (+ b 1)} {d (+ c 1)} {e (+ d 1)} {f (+ e 1)} {g (+ f 1)} {h (+ g 1)} {i (+ h 1)}} (list a e h i)))
+(print (let {{a 1} {b 2} {c 3} {d 4} {e 5} {f 6} {g 7} {h 8} {i 9} {j (+ a i)}} =(k (* j 2)) (list a j k)))
+
+; closures over a big scope: each keeps its own
+(fun {big-closure a b c d e f g h i j} {fn {} {list a e j}})
+(def {bc1 bc2} (big-closure 1 2 3 4 5 6 7 8 9 10) (big-closure :a :b :c :d :e :f :g :h :i :j))
+(print (bc1) (bc2) (bc1))
+(fun {big-counter} {do =(c1 0) =(c2 0) =(c3 0) =(c4 0) =(c5 0) =(c6 0) =(c7 0) =(c8 0) =(c9 0) (fn {} {do (set! {c9} (+ c9 1)) (set! {c1} (+ c1 10)) (list c1 c9)})})
+(def {bigc} (big-counter))
+(print (bigc) (bigc) (bigc))
+
+; a loop body setting many locals: each iteration its own scope
+(fun {loop-many} {do =(out {}) (each {x {1 2}} =(a x) =(b x) =(c x) =(d x) =(e x) =(f x) =(g x) =(h x) =(i (* x 10)) (set! {out} (join out [(list a i)]))) out})
+(print (loop-many))
+
+; the last: a 12-formal function given 13, inside a function, ends the program
+(fun {calls-f12} {list (f12 1 2 3 4 5 6 7 8 9 10 11 12 13)})
+(calls-f12)

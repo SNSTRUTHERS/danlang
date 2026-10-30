@@ -1,0 +1,40 @@
+--- stdout
+NIL NIL T T NIL
+NIL NIL NIL
+NIL
+"line one\n2 :three4 1/2\n" {"line one" "2 :three4 1/2"}
+NIL "line one\n2 :three4 1/2\nappended {list 1}" {"line one" "2 :three4 1/2" "appended {list 1}"}
+NIL append makes it
+NIL "" NIL
+{"one" "two" "" "four"} "one\r\ntwo\r\n\r\nfour"
+{"x" "y" ""}
+"cafÃ© ÿ\0end" 11
+crlf.txt 16 NIL {:name :length :mtime} :number
+fs 0 T {:name :length :dir :mtime}
+0 11
+{"a.txt" "b.dat" "bytes.txt" "crlf.txt" "made.txt" "sub" "trail.txt"} {"inner.txt"} {"a.txt"}
+{{"a.txt" 0 NIL} {"b.dat" 1 NIL} {"bytes.txt" 11 NIL} {"crlf.txt" 16 NIL} {"made.txt" 15 NIL} {"sub" 0 T} {"trail.txt" 5 NIL}}
+{"fs/a.txt" "fs/bytes.txt" "fs/crlf.txt" "fs/made.txt" "fs/trail.txt"} {"fs/a.txt" "fs/b.dat"} {"fs/a.txt" "fs/b.dat" "fs/bytes.txt"} {"fs/b.dat" "fs/bytes.txt" "fs/crlf.txt" "fs/made.txt" "fs/sub" "fs/trail.txt"} {"fs/sub/inner.txt"} NIL
+{"fs/a.txt" "fs/b.dat"} {"fs/sub"} {"fs"}
+NIL ""
+NIL NIL T
+NIL {"inner.txt"} NIL
+NIL NIL
+NIL {"inner.txt"} inner T
+NIL {"a.txt" "b.dat" "bytes.txt" "crlf.txt" "made.txt" "sub2" "trail.txt"}
+NIL T T
+T T NIL
+Error: fs/none.txt: not found :noent
+Error: fs: is a directory :isdir Error: fs/none.txt: not found
+Error: fs/no/such.txt: not found Error: fs/no/such.txt: not found
+Error: fs: already exists :exist Error: fs/no/deeper: not found :noent
+Error: fs/none: not found :noent Error: fs/sub2: directory not empty :notempty
+Error: fs/none: not found Error: fs/b.dat: already exists :exist
+Error: fs/none: not found NIL Error: fs/sub2: is a directory
+Error: fs/none: not found Error: fs/none: not found Error: fs/none: not found :noent
+Error: fs/none: not found :noent Error: fs/a.txt: not a directory :notdir
+Error: 'read-file' expects a path Error: 'write-file' expects a path Error: 'exists?' expects a path Error: 'mkdir' expects a path <function>(stat)
+NIL NIL
+--- stderr
+
+--- exit 0

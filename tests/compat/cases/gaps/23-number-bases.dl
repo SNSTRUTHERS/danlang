@@ -1,0 +1,21 @@
+; 23-number-bases: numbers written in every named base (balanced, least-digit-first and negative ones too), radixes
+; 2 to 80 (digits past 36 case-sensitive, then punctuation), digits of their own, the < > + - forms, fractions in a
+; base (rationals) and in base 10 (fixed); to-str's text read back by val and by read, for integers at the edges of
+; a long, rationals and fixed decimals; words that start like numbers and are symbols; reader errors as values.
+(print "named" #c+- #c+0- #e+# #g~* #iUO #jWM #mDa #kZ #yz #t12 #q33 #v44 #f55 #s66 #n88 #d99 #z10 #o17 #b101)
+(print "radix" #2r1111 #3r212 #36rZZ #37ra #37rA #62rz #63r- #80r| #80r10 #16rff #16rFF #7r66 #10r99)
+(print "own digits" #[01]101 #[ab]ba #[xyz]zyx #<[01]011 #>[01]011 #<x10 #>x10 #<16r01 #+x10 #-[01]11 #-2r11 #-10r19)
+(print "signs" -#x10 +#x10 -#b1 -#c+ -#36rz -#[01]10)
+(print "fractions" #x0.8 #b0.1 #b1.1 #o0.4 #x1/#x3 #b1/#b11 #x-1/#x2 0.5 1_000.000_1 #x1_0 #b1_0_1)
+(print "kinds" (map type-of (list #x0.8 #b1.0 #x1/#x3 1.50)) (int? #b1.0) (rational? #x0.8) (fixed? 1.50))
+(def {bases} {"c" "e" "g" "i" "j" "m" "t" "q" "v" "f" "s" "n" "k" "y" "x" "z" "b" "o" "d" "#3r" "#37r" "#80r" "#-2r"
+  "#-10r" "#<x" "#>x" "#<16r" "#+x" "#x" "X"})
+(def {ns} (list 0 1 -1 7 100 -100 255 65536 9223372036854775807 -9223372036854775808 9223372036854775808 1/3 -5/2 2.5))
+(each {b bases} (print b (map (fn {n} {to-str n b}) ns)))
+(fun {back b} {map (fn {n} {try (list (eq (val (to-str n b)) n) (eq (eval (fst (read (to-str n b)))) n)) &err}) ns})
+(each {b bases} (print "back" b (back b)))
+(print "1000" (map (fn {r} {to-str 1000 (+ "#" (to-str r) "r")}) (range 2 81 7)))
+(print "symbols" (map type-of (read "1+ 1/x 1- -x +y #q #xg 12ab 1.2.3 1/2/3 -#x #=3r1")) (repr (read "1+ 1/x 12ab")))
+(fun {err s} {try (read s) &err})
+(print "errors" (err "1/0") (err "#x1/0") (err "(1 2]") (err "$(") (err "f(x)") (err "1.5.") (err "#80r~"))
+(print "val" (val "#xff") (val "-#b11") (val "#c+-") (val "#[01]11") (val "  #z10  ") (try (val "#xg") &err) (try (val "#") &err))

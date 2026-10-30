@@ -1,0 +1,13 @@
+; closures.dl - closures, partial application, let, eval of Q-expressions, fexprs, and functions of any number
+(fun {make-adder n} {fn {x} {+ x n}})
+(fun {add a b} {+ a b})
+(fun {sum-all} {foldl + 0 &_})
+(def {twice} (fexpr {x} {do (eval x) (eval x)}))
+(def {acc} 0)
+(dotimes {i 100000} (set! {acc} ((make-adder i) acc)))
+(dotimes {i 100000} (set! {acc} ((add 1) acc)))
+(dotimes {i 50000} (set! {acc} (let {{a i} {b (+ i 1)}} (+ acc (- b a)))))
+(dotimes {i 50000} (set! {acc} (eval {+ acc 1})))
+(dotimes {i 30000} (twice (set! {acc} (+ acc 1))))
+(dotimes {i 30000} (set! {acc} (+ acc (sum-all 1 2 3 4))))
+(print acc)

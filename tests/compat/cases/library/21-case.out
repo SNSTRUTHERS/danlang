@@ -1,0 +1,58 @@
+--- stdout
+<function>(fn {x} {if &_ (if (eq x (eval (head (fst &_)))) (eval (head (tail (fst &_)))) (unpack case (cons x (tail &_)))) (error "Case not found")})
+:b 1 :str :chr :fixed :half
+:list :made :nil :empty :t :sexpr-nil
+:b :b :past
+:as-fixed :as-rational :one :sum
+25 {:b :found} :complex
+:x-evaluated
+:k1
+:k2
+:v2
+:nil-key
+:key1
+:key2
+:value2
+:two
+Error: Case not found
+Error: Case not found
+Error: Case not found
+<function>(fn {x} {if &_ (if (eq x (eval (head (fst &_)))) (eval (head (tail (fst &_)))) (unpack case (cons x (tail &_)))) (error "Case not found")})
+Error: Case not found
+Case not found
+Error: 'head' passed an empty list
+1
+Error: 'head' passed an empty list
+Error: 'head' expects a QExpr
+Error: 'head' expects a QExpr
+1
+Error: 'head' passed an empty list
+Error: Case not found
+:plus-gives-0
+0
+:same-function
+:list-gives-nil
+:same-hash :the-hashs-value :equal-empty-hashes
+:a-hash-is-true :made
+:three-second
+Error: Case not found
+:second
+Error: Unbound Symbol 'x-unbound'
+Error: Unbound Symbol 'x'
+:evaluated-again-for-clause-two
+:found-second
+Error: x
+Error: key
+Error: val
+:ok
+:ok
+Error: an argument
+{:one :two :three :four :itself}
+:cons-clause-runs-in-cases-scope
+Error: Unbound Symbol 'x'
+{:days {:sun :wed :sat}}
+--- stderr
+Error: 21-case.dl: Case not found
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at 21-case.dl:74  (week-of {1 2 7})
+--- exit 1

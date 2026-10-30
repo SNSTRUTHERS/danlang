@@ -1,0 +1,77 @@
+; 30-streams.dl - streams on files in this folder: open's modes (:read, the default; :write, made or emptied;
+; :append; :update, read and written in place), print-to and write-to, read-line (its LF, and a CR before it,
+; dropped; NIL at the end), read-byte, read-all, read-bytes, read-buffer, write-bytes, seek and tell, close; and
+; what can't be done: a closed stream, the wrong way, past the ends, a file that isn't there, a directory, a bad mode
+
+(mkdir "s")
+(def {w} (open "s/f.txt" :write))
+(print w (type-of w) (repr w))
+(print (print-to w "one" 2 :three) (write-to w "four" 5 "\r\n" "six\n\n" "eight"))
+(print (tell w))
+(print (read-line w))
+(print (close w) (close w))
+(print (print-to w "after close") (tell w))
+(print (repr (read-file "s/f.txt")))
+
+; reading: lines, bytes, the rest
+(def {r} (open "s/f.txt"))
+(print (repr (read-line r)) (tell r))
+(print (repr (read-line r)) (repr (read-line r)) (repr (read-line r)) (repr (read-line r)) (repr (read-line r)))
+(print (read-line r) (read-byte r) (repr (read-all r)) (read-bytes r 4))
+(print (seek r 0) (tell r) (read-byte r) (read-byte r) (tell r))
+(print (repr (read-all r)) (tell r))
+(print (seek r 4) (repr (read-line r)) (seek r 30) (read-byte r) (seek r 31))
+(print (seek r -1) (seek r :x) (seek r 1.5))
+(print (seek r 0) (read-bytes r 3) (read-bytes r 0) (repr (read-line r)))
+(print (write-to r "can't write") (print-to r "nor this"))
+(close r)
+(print (read-line r) (read-byte r) (read-all r) (seek r 0))
+
+; read-buffer: into a buffer, from a place, so many; NIL at the end
+(def {b} (buffer 6 46))
+(def {r} (open "s/f.txt"))
+(print (read-buffer r b) b)
+(print (read-buffer r b 2 3) b)
+(print (read-buffer r b 5) b)
+(seek r 30)
+(print (read-buffer r b) b (read-buffer r b))
+(close r)
+
+; appending: made if it isn't there, written at the end
+(def {a} (open "s/new.txt" :append))
+(write-to a "first")
+(close a)
+(def {a} (open "s/new.txt" :append))
+(print (tell a))
+(print-to a " second")
+(print (read-line a))
+(close a)
+(print (repr (read-file "s/new.txt")))
+
+; :write empties a file; :update keeps it, reads and writes in place
+(def {u} (open "s/f.txt" :update))
+(print (repr (read-line u)) (tell u))
+(write-to u "XYZ")
+(print (tell u) (seek u 0) (repr (read-line u)) (repr (read-line u)))
+(seek u 30)
+(write-to u "+tail")
+(close u)
+(print (repr (read-file "s/f.txt")))
+(close (open "s/f.txt" :write))
+(print (repr (read-file "s/f.txt")) (exists? "s/f.txt"))
+
+; bytes
+(def {w} (open "s/bytes.bin" :write))
+(print (write-bytes w {0 1 2 255}) (write-bytes w (buffer "abcdef") 2 3) (write-bytes w (buffer "gh")))
+(print (write-bytes w {256}) (write-bytes w {-1}) (write-bytes w "str"))
+(close w)
+(print (bytes (read-file "s/bytes.bin")))
+(def {r} (open "s/bytes.bin"))
+(print (read-bytes r 2) (read-byte r) (read-bytes r 100) (read-bytes r 1) (read-byte r))
+(close r)
+
+; what can't be opened
+(print (open "s/none.txt") (open "s/none.txt" :update) (error-code (open "s/none.txt" :update)))
+(print (open "s") (error-code (open "s")) (open "s" :write))
+(print (open "s/no/such/dir.txt" :write) (open "s/f.txt" :sideways) (open "s/f.txt" "read") (open 5) (open))
+(print (close 5) (read-line 5) (read-byte "s/f.txt") (tell :x))

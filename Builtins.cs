@@ -1051,15 +1051,15 @@ public partial class Builtins
     }
 
     // The loops' binding form, {name x} ({i 10}, {x list}): the name, and x evaluated; or an error
-    private static LVal LoopSpec(LEnv e, LVal spec, string fn, out string name) {
-        name = "";
+    private static LVal LoopSpec(LEnv e, LVal spec, string fn, out Name name) {
+        name = null!;
         if (spec.Count != 2 || !spec[0].IsSym) return LVal.Err($"'{fn}' expects {{name value}} or a function first");
-        name = spec[0].SymVal;
+        name = spec[0].SymName;
         return spec[1].Eval(e);
     }
 
     // The loops' body, run with name item, in a scope of its own; an error, if one comes
-    private static LVal LoopBody(LEnv e, LVal a, string name, LVal item) {
+    private static LVal LoopBody(LEnv e, LVal a, Name name, LVal item) {
         var intr = LVal.CheckInterrupt();
         if (intr != null) return intr;
         var scope = new LEnv(e);
@@ -1103,7 +1103,7 @@ public partial class Builtins
     // them; NIL (or the first error)
     private static LVal Dotimes(LEnv e, LVal a) {
         if (a.Count < 2) return LVal.Err("'dotimes' supplied too few parameters");
-        string? name = null;
+        Name? name = null;
         LVal n;
         LVal? f = null;
         if (a[0].IsQExpr) {
@@ -1120,10 +1120,17 @@ public partial class Builtins
         }
         n = Whole(n, "dotimes", "a count", out var count);
         if (n.IsErr) return n;
-        for (BigInteger i = 0; i < count; i++) {
-            var r = f != null ? Apply(e, f, LVal.Number(i)) : LoopBody(e, a, name!, LVal.Number(i));
-            if (r.IsErr) return r;
-        }
+        // (a count that fits a long counted in one: the same numbers)
+        if (count >= long.MinValue && count <= long.MaxValue)
+            for (long i = 0; i < (long)count; i++) {
+                var r = f != null ? Apply(e, f, LVal.Number(i)) : LoopBody(e, a, name!, LVal.Number(i));
+                if (r.IsErr) return r;
+            }
+        else
+            for (BigInteger i = 0; i < count; i++) {
+                var r = f != null ? Apply(e, f, LVal.Number(i)) : LoopBody(e, a, name!, LVal.Number(i));
+                if (r.IsErr) return r;
+            }
         return LVal.NIL();
     }
 

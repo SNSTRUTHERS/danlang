@@ -52,7 +52,7 @@ public class LEnv {
     // A function call's own scope: &_ is its, NIL when the call had no extra arguments
     public bool IsCall;
 
-    private const int Small = 8;
+    internal const int Small = 8;
     private struct Binding {
         public Name K;
         public LVal V;
@@ -136,6 +136,21 @@ public class LEnv {
         else if (_n == _b.Length) Array.Resize(ref _b, Small);
         _b[_n].K = k;
         _b[_n++].V = v;
+    }
+
+    // A new call scope's bindings of n names, all different (a function's formals), to the first n values, in turn:
+    // each value frozen, as Put does it, and each name Local, as SetLocal does it
+    internal void BindNew(Name[] names, List<LVal> vals, int n) {
+        if (n == 0) return;
+        _b = new Binding[n];
+        for (int i = 0; i < n; i++) {
+            var v = vals[i].Freeze();
+            var k = names[i];
+            if (!k.Local) k.MakeLocal();
+            _b[i].K = k;
+            _b[i].V = v;
+        }
+        _n = n;
     }
 
     // A big scope's slot for k, if it has one

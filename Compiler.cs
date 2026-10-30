@@ -19,6 +19,8 @@ public partial class LVal {
             return (File != null ? File + ":" + Line : Line > 0 ? "line " + Line : "(made, not read)") + "  " + code;
         }
         internal Uses? Uses;    // the names a function's body has (&_ or &1 ..., &0), anywhere in it
+        internal Name[]? Names; // a function's formals': their names, if all different (LVal.FormalNames)
+        internal bool NamesKnown;
         internal LVal? Test, Value;     // a clause's (cond's, case's): its first item and its second, each made a list
                                         //   (as head makes it), for eval to run (Natives.cs)
     }

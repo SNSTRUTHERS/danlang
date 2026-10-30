@@ -93,7 +93,7 @@ public partial class Builtins
         AddBuiltin(e, "map", (e, a) => {
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'map' expects a function and a list");
-            var q = LVal.Qexpr();
+            var q = LVal.Qexpr(new LList(items.Count));     // (as many as it has)
             foreach (var c in items) {
                 var r = Apply(e, a[0], c);
                 if (r.IsErr) return r;

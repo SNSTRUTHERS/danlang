@@ -9,4 +9,10 @@
     <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- the interpreter's code optimized as soon as it's called often, not after a tenth of a second with no new code
+         to compile: a program runs much of its first second in code compiled the quick way otherwise -->
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation.CallCountingDelayMs" Value="0" />
+  </ItemGroup>
+
 </Project>

@@ -81,6 +81,31 @@ public partial class LVal {
             return c;
         }
     }
+
+    // A function's formals' names, worked out once for their code (kept with it, as a body's Uses are, so closures
+    // made by the same code share them); none: two are one name, or there are more than a small scope holds
+    internal Name[]? FormalNames() {
+        if (_x is not CodeInfo info) {
+            Freeze();
+            _x = info = new CodeInfo();
+        }
+        if (info.NamesKnown) return info.Names;
+        info.NamesKnown = true;
+        if (Count > LEnv.Small) return null;
+        var names = new Name[Count];
+        for (int i = 0; i < names.Length; i++) {
+            names[i] = Cells![i].SymName;
+            for (int j = 0; j < i; j++) if (ReferenceEquals(names[j], names[i])) return null;
+        }
+        return info.Names = names;
+    }
+
+    // &1, &2 ...: each made once
+    private static Name[] _extras = new Name[8];
+    private static Name Extra(int n) {
+        if (n >= _extras.Length) Array.Resize(ref _extras, 2 * n);
+        return _extras[n] ??= Name.Of("&" + n);
+    }
     private FunInfo? Fn => _x as FunInfo;
     private FunInfo F => _x as FunInfo ?? (FunInfo)(_x = new FunInfo());
     public LEnv? Env { get => Fn?.Env; set => F.Env = value; }
@@ -966,17 +991,22 @@ public partial class LVal {
 
                 var formals = fi.Formals!.Cells!;
                 var scope = new LEnv(fi.Closure) { IsCall = true };
+                int k = 0;
                 if (fi.Env != null && fi.Env.Count > 0) scope.CopyFrom(fi.Env);
+                else if (fi.Formals!.FormalNames() is Name[] names) {
+                    // (the formals, all different, in a new scope: bound at once)
+                    k = Math.Min(vals.Count, names.Length);
+                    scope.BindNew(names, vals, k);
+                }
 
                 // (the arguments past the formals: &1, &2 ..., and &_ the list of them)
                 LVal? extras = null;
-                int k = 0;
-                for (int i = 0; i < vals.Count; i++) {
+                for (int i = k; i < vals.Count; i++) {
                     var val = vals[i];
                     if (k < formals.Count) scope.Put(formals[k++].SymName, val);
                     else {
                         (extras ??= Qexpr()).Add(val);
-                        scope.Put($"&{extras.Count}", val);
+                        scope.Put(Extra(extras.Count), val);
                     }
                 }
                 if (extras != null) scope.Put(Name.Rest, extras);     // (none: NIL, the call scope's own)

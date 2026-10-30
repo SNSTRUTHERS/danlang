@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 // (exit code): thrown to the top (Program), past every built-in
@@ -999,6 +1000,7 @@ public partial class LVal {
     }
 
     // Apply's calls, one after another while each comes back as a TAIL value (the depth already counted)
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]     // (compiled when it's first called, its loop optimized)
     private static LVal Calls(LVal f, List<LVal> vals, bool argsChecked) {
         Native? ran = null;     // (the native whose code ran instead, the way it went, and PlanEpoch at its start: the
                                 //   first's, so one called in its tail position needn't work its way out)

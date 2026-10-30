@@ -4,7 +4,7 @@
 # program (danlang name.dl, in a folder of its own, so its traces say name.dl), or <name>.repl, given to the REPL as
 # its input; a first line "; flags: -w" gives danlang those flags.  Its output is kept beside it, as <name>.out.
 #
-#   compat.sh bundle DIR               build Release, and copy it with lib/ beside it to DIR: a bundle (its danlang
+#   compat.sh bundle DIR               publish Release to DIR, with lib/ beside it: a bundle (its danlang
 #                                      loads that lib/globals.dl, from wherever it's run)
 #   compat.sh expect BUNDLE [CASE...]  each case's output from BUNDLE, kept as its .out
 #   compat.sh check BUNDLE [CASE...]   each case's output from BUNDLE against its .out: the differences, and a count
@@ -110,9 +110,8 @@ cmd=${1:-}; shift || true
 case $cmd in
     bundle)
         dest=$1
-        (cd "$root" && dotnet build -c Release -nologo -v q 2>&1 | grep -E "error|Warn|Error" | grep -v "0 Error" ; true)
+        (cd "$root" && dotnet publish -c Release -nologo -v q -o "$dest" 2>&1 | grep -E " error |warning" ; true)
         mkdir -p "$dest/lib"
-        cp -r "$root"/bin/Release/net6.0/* "$dest/"
         cp "$root"/lib/*.dl "$dest/lib/"
         echo "bundle: $dest" ;;
     expect) a=$1; shift; run_all expect "$a" - "$@" ;;

@@ -516,6 +516,7 @@ public partial class LVal {
         v.Cells = new LList();
         return v;
     }
+    public static LVal Sexpr(int capacity) => new LVal { ValType = LE.SEXPR, Cells = new LList(capacity) };      // (room for so many)
 
     public static LVal Qexpr() {
         LVal v = new LVal();
@@ -919,7 +920,7 @@ public partial class LVal {
     // application).  Values are shared: a built-in makes new ones, never changes those it's given.  OUT: the call's
     // value, if that's it (null: the call goes on, with a the values)
     private static LVal? ValueArgs(LVal f, List<LVal> vals, out LVal a) {
-        a = Sexpr();
+        a = Sexpr((f.Bound?.Count ?? 0) + vals.Count);
         if (f.Bound != null) a.Cells!.AddRange(f.Bound);
         foreach (var v in vals) {
             if (v.IsErr && !f.TakesErrors) return v;

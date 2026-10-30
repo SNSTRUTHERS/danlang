@@ -68,13 +68,16 @@ public sealed class LList : IList<LVal>, IReadOnlyList<LVal> {
         int end = _start + _count;
         if ((_c == null || end == _c.Hi) && end + n <= _a.Length) return;
         var a = new LVal[Math.Max(4, Math.Max(_count + n, 2 * _count))];
-        Array.Copy(_a, _start, a, 0, _count);
+        if (_count > 0) Array.Copy(_a, _start, a, 0, _count);
         (_a, _c, _start) = (a, null, 0);
     }
 
     public void Add(LVal x) {
-        Room(1);
         int end = _start + _count;
+        if (end == _a.Length || (_c != null && end != _c.Hi)) {
+            Room(1);
+            end = _start + _count;
+        }
         _a[end] = x;
         if (_c != null) _c.Hi = end + 1;
         _count++;

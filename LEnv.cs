@@ -142,7 +142,7 @@ public class LEnv {
     // each value frozen, as Put does it, and each name Local, as SetLocal does it
     internal void BindNew(Name[] names, List<LVal> vals, int n) {
         if (n == 0) return;
-        _b = new Binding[n];
+        _b = new Binding[n <= 4 ? 4 : Small];     // (as SetLocal grows one: room for a set or two)
         for (int i = 0; i < n; i++) {
             var v = vals[i].Freeze();
             var k = names[i];
@@ -155,7 +155,7 @@ public class LEnv {
     internal void BindNew(Name[] names, LVal[] vals) {
         int n = vals.Length;
         if (n == 0) return;
-        _b = new Binding[n];
+        _b = new Binding[n <= 4 ? 4 : Small];     // (as SetLocal grows one: room for a set or two)
         for (int i = 0; i < n; i++) {
             var v = vals[i].Freeze();
             var k = names[i];

@@ -1,0 +1,73 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Division by zero.
+danlang>=> Error: 'pow' takes a whole number as its power
+danlang>=> Error: 'truncate' expects a real number
+danlang>=> {"Division by zero." "'pow' takes a whole number as its power" "'truncate' expects a real number" "Division by zero." "'pow' takes a whole number as its power" "'truncate' expects a real number"}
+danlang>=> Error: Division by zero.
+danlang>=> Error: 'pow' takes a whole number as its power
+danlang>=> NIL
+danlang>=> Error: Division by zero.
+danlang>=> :divides
+danlang>=> Error: Case not found
+danlang>=> {:divides "Case not found" :divides "Case not found" "Case not found"}
+danlang>=> Error: Case not found
+danlang>=> Error: Cannot perform 'even?' on non-number
+danlang>=> 1
+danlang>=> Error: Case not found
+danlang>=> Error: 'cons' expects a list second
+danlang>=> NIL
+danlang>=> Error: Cannot perform 'divmod' on non-numbers
+danlang>=> {"Cannot perform 'divmod' on non-numbers" "Cannot perform 'divmod' on non-numbers" "Cannot perform 'divmod' on non-numbers"}
+danlang>=> Error: Cannot perform 'divmod' on non-numbers
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod x 0)
+  called at line 1  (f 2)
+  at <BUNDLE>\lib\globals.dl:189  (error "'pow' takes a whole number as its power")
+  called at line 1  (pow 2 1/2)
+  called at line 1  (f 7)
+  at <BUNDLE>\lib\globals.dl:121  (trunc a)
+  called at line 1  (floor (list x))
+  called at line 1  (f 3)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod x 0)
+  called at line 1  (f 2)
+  at <BUNDLE>\lib\globals.dl:189  (error "'pow' takes a whole number as its power")
+  called at line 1  (pow 2 1/2)
+  called at line 1  (f 7)
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at line 1  (mod 10 x)
+  called at line 1  (g 0)
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (g 3)
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (g 3)
+  at <BUNDLE>\lib\globals.dl:178  (error "Cannot perform 'even?' on non-number")
+  called at line 1  (even? {1 2})
+  called at line 1  (cond {(even? {1 2}) 1} {T 2})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case (minimum NIL) {1 1})
+  at <BUNDLE>\lib\globals.dl:42  (cons f l)
+  called at line 1  (maximum 5)
+  called at line 1  (cond {NIL 0} {T (maximum 5)})
+  at <BUNDLE>\lib\globals.dl:157  (error "Cannot perform 'divmod' on non-numbers")
+  called at line 1  (divmod x "two")
+  called at line 1  (h (- x 1))
+  called at line 1  (h (- x 1))
+  called at line 1  (h (- x 1))
+  called at line 1  (h 3)
+  at <BUNDLE>\lib\globals.dl:157  (error "Cannot perform 'divmod' on non-numbers")
+  called at line 1  (divmod x "two")
+  called at line 1  (h (- x 1))
+  called at line 1  (h 1)
+--- exit 0

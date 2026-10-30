@@ -1,0 +1,7 @@
+--- stdout
+
+--- stderr
+Error: 03-local-extras-coalesce.dl: Unbound Symbol '&1'
+  at 03-local-extras-coalesce.dl:6  (&2 (id 100) 1)
+  called at 03-local-extras-coalesce.dl:10  (g)
+--- exit 1

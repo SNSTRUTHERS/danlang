@@ -1,0 +1,12 @@
+; 03-replay-names-coalesce: (?? 5) binds no extra arguments; (?? 5 1 2 3 4 5 6), the same way (the first isn't NIL),
+; binds &1 ... &6.  The probe (&6 v (g)) is Op2's while &6 is no local's name, the general way after
+(def {&6} +)
+(fun {g} {+ 70000 70001})
+(fun {p a b} {+ a b})
+(fun {probe} {p v v (&6 v (g))})
+(def {v} 100003)
+(probe)
+(probe)
+(each {x (list {5} {5} {5} {5 1 2 3 4 5 6})} (apply ?? x))
+(probe)
+(probe)

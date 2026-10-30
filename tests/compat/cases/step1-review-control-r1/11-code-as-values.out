@@ -1,0 +1,72 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {:sexpr :sexpr NIL NIL}
+danlang>=> :sx-true
+danlang>ran
+=> Error: Selection not found
+danlang>=> {:name-test here}
+danlang>=> 3
+danlang>=> 42
+danlang>ran
+=> NIL
+danlang>=> :empty-was-nil
+danlang>=> NIL
+danlang>=> :three
+danlang>=> :here
+danlang>=> Error: Case not found
+danlang>=> :same-code
+danlang>=> :evaluated-again
+danlang>=> :name-again
+danlang>=> Error: Case not found
+danlang>=> :was-empty-sexpr
+danlang>x again
+=> Error: Case not found
+danlang>=> NIL
+danlang>=> {:one :two :three :three}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {3 42 1 (floor 7/2)}
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond (list NIL 0) (list sy :printed))
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case sx (list 3 :no) {T :default})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case empty {NIL :nil-key} {empty :never})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case (fst {(print "x again")}) {1 :a} {2 :b})
+  at (made, not read)  {:two}
+  called at line 1  (p 1 2 (cx 2))
+  at (made, not read)  {:three}
+  called at line 1  (p 1 2 (cx 3))
+  at (made, not read)  {:three}
+  called at line 1  (p 1 2 (cx sx))
+  at (made, not read)  {:three}
+  called at line 1  (p 1 2 (cx x))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (cs 2))
+  at line 1  (fst {(floor 7/2)})
+  called at line 1  (p 1 2 (cs 3))
+  at (made, not read)  {here}
+  called at line 1  (p 1 2 (cs 1))
+--- exit 0

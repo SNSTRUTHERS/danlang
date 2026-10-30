@@ -1,0 +1,46 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol '&1'
+danlang>=> {{:saw 7} {:saw {7 8}}}
+danlang>=> NIL
+danlang>=> {{:saw 1} {T NIL T} {:saw {3 NIL}}}
+danlang>=> :no-scope
+danlang>=> Error: Selection not found
+danlang>=> {:saw {{T (where l)}}}
+danlang>=> {:saw <function>(fn NIL {if &_ (if (eval (head (fst &_))) (eval (head (tail (fst &_)))) (unpack cond (tail &_))) (error "Selection not found")})}
+danlang>=> {NIL T}
+danlang>=> Error: Unbound Symbol '&_'
+danlang>=> NIL
+danlang>=> :inner-no-scope
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (eval x)
+  called at line 1  (where &1)
+  called at line 1  (f)
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 0} (cons (defined? l) (list (to-sym "l"))))
+  at line 1  (len &_)
+  called at line 1  (where (len &_))
+  called at line 1  (cond {(has unpack) (where (len &_))} {T 0})
+  at line 1  {list :saw (eval x)}
+  called at line 1  (p 1 2 (g 1))
+  at line 1  {list :saw (eval x)}
+  called at line 1  (p 1 2 (g 3))
+  at line 1  (list (where &1) (where &_))
+  called at line 1  (p 1 2 (f 7 8))
+--- exit 0

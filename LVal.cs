@@ -74,7 +74,12 @@ public partial class LVal {
         public Func<LVal, LVal, LVal?>? Fast2;      //   built-in itself does it): Compiler.cs
         public Func<LVal, LVal, LVal, LVal?>? Fast3;
         public Func<LVal[], LVal?>? FastN;          // (any number of them)
-        public FunInfo Clone() => (FunInfo)MemberwiseClone();
+        public Native? Native;                      // a library function's native way (Natives.cs): not a copy's
+        public FunInfo Clone() {
+            var c = (FunInfo)MemberwiseClone();
+            c.Native = null;
+            return c;
+        }
     }
     private FunInfo? Fn => _x as FunInfo;
     private FunInfo F => _x as FunInfo ?? (FunInfo)(_x = new FunInfo());
@@ -119,6 +124,7 @@ public partial class LVal {
     // A value is shared once it's code (the reader's), a variable's, a hash's or a partial application's: then it's
     // frozen, and its list can't be changed in place (a built-in makes a new value, never changes one it's given)
     public bool Frozen = false;
+    internal bool Used;     // (an integer a native's way will give a Num, when its value's used: Natives.cs)
 
     public LVal Freeze() {
         if (Frozen) return this;
@@ -789,6 +795,7 @@ public partial class LVal {
         Interrupted = false;
         var f = NoteFn;
         if (f == null) return Builtins.SysErr("intr");
+        PlanEpoch++;            // (what's running doesn't go as it went: its function runs in the middle of it)
         var args = new List<LVal> { Atom("interrupt") };
         var r = f.BuiltinVal != null ? ApplyBuiltin(NoteEnv!, f, args) : Apply(f, args);
         if (r.IsErr) return r;
@@ -894,11 +901,18 @@ public partial class LVal {
     // was made in: lexical scope), after those a partial application bound (its Env), the formals first, then &1, &2
     // ... and &_ for the rest; if it has all it needs, its body runs there; if not, it's a new function with those
     // bound (partial application).  The function isn't changed.  A call in the body's tail position comes back as a
-    // TAIL value and runs here, in its place
+    // TAIL value and runs here, in its place.  A library function with a native way (Natives.cs) has its value from
+    // that, when it's one the native is sure of; when its code runs instead, the Site it leaves is kept for the way it
+    // went, if no plan changed on the way and its value isn't an error
     public static LVal Apply(LVal f, List<LVal> vals, bool argsChecked = false) {
         if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
         ++_depth;
+        Native? ran = null;     // (the native whose code ran instead, the way it went, and PlanEpoch at its start: the
+                                //   first's, so one called in its tail position needn't work its way out)
+        int way = 0;
+        long epoch = 0;
         try {
+            LVal r;
             while (true) {
                 var intr = CheckInterrupt();
                 if (intr != null) return intr;
@@ -907,6 +921,21 @@ public partial class LVal {
                     for (int i = 0; i < vals.Count; i++) if (vals[i].IsErr) return vals[i];
                 }
                 argsChecked = false;
+
+                var nat = fi.Native;
+                if (nat != null) {
+                    var v = nat.Run(f, vals, MaxDepth - _depth, ran == null, out var w);
+                    if (v != null) {
+                        if (v.ValType != LE.TAIL) {
+                            r = v;
+                            break;
+                        }
+                        f = v.TailFn!;
+                        vals = v.TailArgs!;
+                        continue;
+                    }
+                    if (w >= 0 && ran == null) (ran, way, epoch) = (nat, w, PlanEpoch);
+                }
 
                 var formals = fi.Formals!.Cells!;
                 var scope = new LEnv(fi.Closure) { IsCall = true };
@@ -941,11 +970,13 @@ public partial class LVal {
                 }
 
                 if (!body.IsQExpr) return LVal.Err("A function's body must be a QExpr");
-                var r = body.CallOf().Tail(scope);
-                if (r.ValType != LE.TAIL) return r;
+                r = body.CallOf().Tail(scope);
+                if (r.ValType != LE.TAIL) break;
                 f = r.TailFn!;
                 vals = r.TailArgs!;
             }
+            if (ran != null && PlanEpoch == epoch && !r.IsErr) ran.Settled(way, epoch, Site);
+            return r;
         }
         finally {
             --_depth;

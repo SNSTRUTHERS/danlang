@@ -1,0 +1,4 @@
+; 16-ends-with-num-given-midway: as 15, print giving 5 a Num before the last call
+(fun {probe g args v bind} {do (print v) (if bind (set y 0) NIL) (list (unpack g args) y)})
+(fun {run g l} {map (fn {p} {probe g (fst p) (snd p) (thd p)}) l})
+(run ends-with? (list [{"abcd" "abcde"} "x" T] [{"abcd" "abcde"} "x" T] [{"abcd" "abcde"} "x" T] [{"abcd" "abcde"} 5 NIL]))

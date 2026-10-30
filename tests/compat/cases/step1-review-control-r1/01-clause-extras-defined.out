@@ -1,0 +1,49 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {:none NIL}
+danlang>=> {:one 7}
+danlang>=> {:two 7 8}
+danlang>=> {:two 7 8}
+danlang>=> NIL
+danlang>=> {:zero {:one 0} {:two {0 1}} {:many 2} {:many 4}}
+danlang>=> NIL
+danlang>=> :no-extras
+danlang>=> {:x :y}
+danlang>=> NIL
+danlang>=> {:empty 1 2 3 3}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {0 0 2 1 1 :five :five :five}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (list :two &1 &2)
+  called at line 1  (p 1 2 (firsts 1 2))
+  at line 1  (list :two &1 &2)
+  called at line 1  (p 1 2 (firsts 1 2))
+  at line 1  (list :many (last &_))
+  called at line 1  (p 1 2 (kind 1 2 3))
+  at line 1  (list :many (last &_))
+  called at line 1  (p 1 2 (kind 1 2 3))
+  at (made, not read)  {{1}}
+  called at line 1  (p 1 2 (via 1))
+  at (made, not read)  {&3}
+  called at line 1  (p 1 2 (deep 1 2 3))
+  at (made, not read)  {:five}
+  called at line 1  (p 1 2 (unpack ext-test (range n)))
+  at (made, not read)  {:five}
+  called at line 1  (p 1 2 (unpack ext-test (range (+ n 1))))
+--- exit 0

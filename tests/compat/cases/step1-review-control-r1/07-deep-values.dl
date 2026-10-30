@@ -1,0 +1,16 @@
+; 07-deep-values: recursion through a clause's value that isn't in tail position (each level one call more), to the
+; level where the call the bottom clause makes is the one too deep (10000 nest at most): the bottom's value a
+; library function (its native's room, and the code's own calls) or minimum's (no calls of its own); through cond,
+; case and minimum's list; caught at the last depth that works and the first that doesn't, and at the end one not
+; caught, its trace
+(fun {down n} {cond {(zero? n) (mod 7 2)} {T (list (down (- n 1)))}})
+(fun {down2 n} {case n {0 (even? 7)} {n (fst (list (down2 (- n 1))))}})
+(fun {down3 n} {cond {(zero? n) (minimum {3 1 2})} {T (minimum (list (down3 (- n 1))))}})
+(fun {depth-of v} {if (and (qexpr? v) v) (+ 1 (depth-of (fst v))) 0})
+(fun {bottom v} {if (and (qexpr? v) v) (bottom (fst v)) v})
+(fun {try-at f n} {let {{r (try (f n) (+ "E:" &err))}} (if (string? r) r (list (depth-of r) (bottom r)))})
+(print 9996 (try-at down 9996) 9997 (try-at down 9997))
+(print 9995 (try-at down2 9995) 9996 (try-at down2 9996))
+(print 9997 (try-at down3 9997) 9998 (try-at down3 9998))
+(print "the last: one level too deep, not caught")
+(down 9998)

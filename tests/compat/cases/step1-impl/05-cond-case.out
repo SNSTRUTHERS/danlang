@@ -1,0 +1,35 @@
+--- stdout
+2 {1 2 :v2}
+:two {1 2 :v2}
+2 1 :yes 3
+Selection not found Selection not found Case not found Case not found
+Error: in test Error: in value Error: x
+Error: in key Error: in case value
+'head' passed an empty list 'head' passed an empty list 1 3
+'head' expects a QExpr 'head' expects a QExpr 'head' passed an empty list 'head' passed an empty list
+2 2 2 2
+:b :b 3
+2 :b 2
+7 1 {1 2} 2 7
+:done Too deep: more than 10000 calls nested
+3000
+:zero
+3 0 6 :big
+5 5 6
+Unbound Symbol 'zz' Case not found
+'head' expects a QExpr 'head' passed an empty list
+:b :yes :int :c
+2 Selection not found
+3
+NIL
+:unpacked
+The function takes 0 arguments, not 1
+:three
+2 :ok {1 2 :v2}
+Unbound Symbol 'zz' Case not found Unbound Symbol 'zz' Error: Case not found
+the last: none of the clauses
+--- stderr
+Error: 05-cond-case.dl: Selection not found
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at 05-cond-case.dl:55  (cond {NIL 1} {(> 1 2) 2})
+--- exit 1

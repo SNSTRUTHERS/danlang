@@ -1,0 +1,55 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+danlang>=> Error: Unbound Symbol '&3'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (list (list pf mod 7 2 f3) (list pf mod 7 2 f3) (lis...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (list (list pp mod 7 2 f3) (list pp mod 7 2 f3) (lis...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (list (list pf mod 7 2 f3) (list pp mod 7 2 f3) (lis...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run (list (list pf div -7 2 f3) (list pf div -7 2 f3) (l...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (run (list (list pf zip {1 2} {3 4} f3) (list pf zip {1 2...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (run (list (list pf zip {1 2} {3 4} f3) (list pf zip {1 2...
+  at <BUNDLE>\lib\globals.dl:241  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (run (list (list pf remove-all 1 {1 2 1} f3) (list pf rem...
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run (list (list pf starts-with? "abc" "c" f3) (list pf s...
+  at <BUNDLE>\lib\globals.dl:207  (>= (len s) (len sub))
+  called at line 1  (run (list (list pf ends-with? "a" "abc" f3) (list pf end...
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (run (list (list pf pow 2 3 f3) (list pf pow 2 3 f3) (lis...
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  (run (list (list pf xor T NIL f3) (list pf xor T NIL f3) ...
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (run (list (list pf ?? NIL 2 f3) (list pf ?? NIL 2 f3) (l...
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at line 1  (g x y)
+  called at line 1  (run (list (list pf between? 1 10 f3) (list pf between? 1...
+--- exit 0

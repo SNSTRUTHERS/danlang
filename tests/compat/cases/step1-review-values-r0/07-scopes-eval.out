@@ -1,0 +1,20 @@
+--- stdout
+{{{a b x} {b x} :global-x} {{a b x} {b x} :global-x} {{a b x} {b x} :global-x} {{a b x} {b x} :global-x}}
+{{{a b x} {b x} :global-x} {{a b x} {b x} :global-x} {{a b x} {b x} :global-x} {{a b x} {b x} :global-x}}
+{{{a} {b} {x}} {{a} {b} {x}} {{a} {b} {x}} {{a} {b} {x}}}
+{{{{a} {b} {x}} {2 3} :global-x} {{{a} {b} {x}} {2 3} :global-x} {{{a} {b} {x}} {2 3} :global-x} {{{a} {b} {x}} {2 3} :global-x}}
+{{:set-in-pair :set-in-pair} {:set-in-pair :set-in-pair} {:set-in-pair :set-in-pair} {:set-in-pair :set-in-pair}}
+{{{:set!-in-pair :global-a} {:set!-in-pair :global-a}} {{:set!-in-pair :global-a} {:set!-in-pair :global-a}} {{:set!-in-pair :global-a} {:set!-in-pair :global-a}} {{:set!-in-pair :global-a} {:set!-in-pair :global-a}}}
+{{{{(fn NIL {list a b x}) (fn NIL {list a b x}) (fn NIL {list a b x})} {1 2 3} :global-x} {{(fn NIL {list a b x}) (fn NIL {list a b x})} {2 3} :global-x} {{(fn NIL {list a b x})} {3} :global-x}} {{{(fn NIL {list a b x}) (fn NIL {list a b x}) (fn NIL {list a b x})} {1 2 3} :global-x} {{(fn NIL {list a b x}) (fn NIL {list a b x})} {2 3} :global-x} {{(fn NIL {list a b x})} {3} :global-x}} {{{(fn NIL {list a b x}) (fn NIL {list a b x}) (fn NIL {list a b x})} {1 2 3} :global-x} {{(fn NIL {list a b x}) (fn NIL {list a b x})} {2 3} :global-x} {{(fn NIL {list a b x})} {3} :global-x}} {{{(fn NIL {list a b x}) (fn NIL {list a b x}) (fn NIL {list a b x})} {1 2 3} :global-x} {{(fn NIL {list a b x}) (fn NIL {list a b x})} {2 3} :global-x} {{(fn NIL {list a b x})} {3} :global-x}}}
+{{{:written-x :written-a} :written-x :written-x} {{:written-x :written-a} :written-x :written-x} {{:written-x :written-a} :written-x :written-x} {{:written-x :written-a} :written-x :written-x}}
+{{{:global-x :global-a} :global-x} {{:global-x :global-a} :global-x} {{:global-x :global-a} :global-x} {{:global-x :global-a} :global-x}}
+{:global-x :global-x :global-x :global-x} {:written-x :written-x :written-x :written-x}
+{:probe-x :probe-x :probe-x :probe-x} {:probe-x :probe-x :probe-x :probe-x}
+{:probe-x :probe-x :probe-x :probe-x} {:probe-x :probe-x :probe-x :probe-x}
+{:probe-x :probe-x :probe-x :probe-x} {:probe-x :probe-x :probe-x :probe-x}
+{:probe-x :probe-x :probe-x :probe-x} {:global-x :global-x :global-x :global-x}
+{:written-x :written-x :written-x :written-x} {:written-x :written-x :written-x :written-x}
+{:written-x :written-x :written-x :written-x} {:written-x :written-x :written-x :written-x}
+--- stderr
+
+--- exit 0

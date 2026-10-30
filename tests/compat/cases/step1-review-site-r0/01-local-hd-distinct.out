@@ -1,0 +1,7 @@
+--- stdout
+
+--- stderr
+Error: 01-local-hd-distinct.dl: Unbound Symbol '&1'
+  at 01-local-hd-distinct.dl:8  (hd (id 100) 1)
+  called at 01-local-hd-distinct.dl:12  (g)
+--- exit 1

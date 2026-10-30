@@ -1,0 +1,22 @@
+; 02-error-items: lists that hold errors as items (hash-put gives one: each entry's value, or the error it made) given
+; to cond and case as clauses (no scope; with one, through join), as an item of a clause, as case's key (apply), and
+; to minimum, maximum and the list functions: what stops at the error (a call given it as an argument, cons, eq ...)
+; and what doesn't; each value or error, and at the end one not caught, its trace
+(def {h} (hash-create))
+(def {errs} (hash-put h {:a (error "first")} {:b 2} {:c (error "third")}))
+(print (len errs) (map error? errs) (map (fn {x} {try x (+ "caught " &err)}) errs))
+(def {scoped} (join (list T) errs))
+(def {scoped2} (join (list NIL) errs))
+(print (len scoped) (try (cond scoped) &err) (try (cond scoped2 {T :after}) &err))
+(print (try (cond {NIL 1} scoped) &err) (try (case 1 {2 0} scoped {1 :one}) &err))
+(print (try (cond errs) &err) (try (cond {NIL 1} errs {T :t}) &err) (try (apply cond errs) &err))
+(print (try (apply case errs) &err) (try (apply case (join (list 1) errs)) &err))
+(print (try (minimum errs) &err) (try (maximum (join (list 5) errs)) &err) (try (minimum (tail errs)) &err))
+(print (try (zip errs {1 2 3}) &err) (try (zip {1 2 3} errs) &err) (try (flatten errs) &err) (try (flatten (list errs)) &err))
+(print (try (distinct errs) &err) (try (remove-all 2 errs) &err) (try (remove-fst 2 errs) &err) (try (remove-fst 9 (tail errs)) &err))
+(print (try (has-element? errs 2) &err) (try (avg errs) &err) (try (avg (tail errs)) &err))
+(fun {loop n} {each {i (range n)} (do (cond scoped2 {T (remove-all 2 (list 1 2 3))}) (zip {1 2} {3 4}) (flatten (list {1} {2 {3}})))})
+(loop 4)
+(print (try (cond {(fst errs) 1}) &err) (try (cond {T (snd errs)}) (+ "value: " &err)) (try (case 2 {(snd errs) :two}) &err))
+(print "the last: zip of a list holding an error, not caught")
+(zip {1 2 3} errs)

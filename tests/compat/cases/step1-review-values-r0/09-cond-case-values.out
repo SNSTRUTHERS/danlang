@@ -1,0 +1,12 @@
+--- stdout
+{{:hash :hash :hash :hash} {"Case not found" "Case not found" "Case not found" "Case not found"} {:buf :buf :buf :buf} {:list :list :list :list} {:big :big :big :big} {:rat :rat :rat :rat} {:str :str :str :str} {:chr :chr :chr :chr} {:atom :atom :atom :atom} {:t :t :t :t} {:nil :nil :nil :nil} {:one :one :one :one} {:fn :fn :fn :fn}}
+{{:called :seven :hash :buf :plus-of-none} {:called :seven :hash :buf :plus-of-none} {:called :seven :hash :buf :plus-of-none} {:called :seven :hash :buf :plus-of-none}}
+{{:big 0 :b} {:big 0 :b} {:big 0 :b} {:big 0 :b}}
+{6 6 6 6}
+{:let-y :let-y :let-y :let-y} {3 3 3 3}
+{{:minus-one :minus-two :zero :zero :minus-two :minus-one :zero :zero :zero} {:minus-one :minus-two :zero :zero :minus-two :minus-one :zero :zero :zero} {:minus-one :minus-two :zero :zero :minus-two :minus-one :zero :zero :zero} {:minus-one :minus-two :zero :zero :minus-two :minus-one :zero :zero :zero}}
+{1000000 1000000 1000000 1000000}
+{{0 3 5} {0 3 5} {0 3 5} {0 3 5}} Selection not found
+--- stderr
+
+--- exit 0

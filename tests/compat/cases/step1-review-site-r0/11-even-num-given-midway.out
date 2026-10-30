@@ -1,0 +1,11 @@
+--- stdout
+x
+x
+x
+x
+1
+--- stderr
+Error: 11-even-num-given-midway.dl: Unbound Symbol 'y'
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at 11-even-num-given-midway.dl:5  (run even? (list (list {-3} "x" T) (list {-3} "x" T) (lis...
+--- exit 1

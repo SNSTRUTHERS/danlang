@@ -1,0 +1,5 @@
+; 13-starts-with-fast-way: starts-with?'s (=0 (index-of s sub)), done in the call for an index kept in its value: 0,
+; with no Num, the place index-of's call left
+(fun {probe g args v bind} {do (print v) (if bind (set y 0) NIL) (list (unpack g args) y)})
+(fun {run g l} {map (fn {p} {probe g (fst p) (snd p) (thd p)}) l})
+(run starts-with? (list [{"abc" "a"} "x" T] [{"abc" "a"} "x" T] [{"abc" "a"} "x" T] [{"abc" "a"} "x" NIL]))

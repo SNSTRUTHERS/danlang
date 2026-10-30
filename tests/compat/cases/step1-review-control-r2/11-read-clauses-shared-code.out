@@ -1,0 +1,15 @@
+--- stdout
+{{:small 0} 0 {:big 3} {:big 4}}
+{:big 7} {:small 3}
+{:bottom 0} {:up 3}
+{{{:odd 1 1} {:even 2 1} {:odd 1 1}} {{:even 2 1} {:odd 3 3} {:even 2 1}} {{:odd 3 3} {:even 4 2} {:odd 3 3}}}
+{{:one 3} {:n 2 T} {:n 3 NIL}}
+'+' adds numbers, or joins values to a string 'truncate' expects a real number
+The function takes 2 arguments, not 3 The function takes 2 arguments, not 3
+the last: an error inside a read clause's value, not caught
+--- stderr
+Error: 11-read-clauses-shared-code.dl: 'truncate' expects a real number
+  at <BUNDLE>\lib\globals.dl:121  (trunc a)
+  called at line 1  (floor "s")
+  called at 11-read-clauses-shared-code.dl:26  (fails 0)
+--- exit 1

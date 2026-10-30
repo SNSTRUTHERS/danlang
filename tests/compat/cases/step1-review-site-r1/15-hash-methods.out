@@ -1,0 +1,45 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  at <BUNDLE>\lib\globals.dl:206  (index-of s sub)
+  at <BUNDLE>\lib\globals.dl:206  (index-of s sub)
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+--- exit 0

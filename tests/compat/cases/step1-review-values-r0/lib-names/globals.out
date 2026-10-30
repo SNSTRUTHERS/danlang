@@ -1,0 +1,8 @@
+--- stdout
+even? {NIL NIL NIL NIL T T T} odd? {T T T T NIL NIL NIL}
+cube {18 18 18 18}
+starts-with? {NIL NIL NIL NIL}
+contains? {T T T T} {NIL NIL NIL}
+--- stderr
+
+--- exit 0

@@ -1,0 +1,166 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>100003 100004 7/2
+=> NIL
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> NIL
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: Unbound Symbol '&3'
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via floor (list (list 7/2 two) (list 7/2 two) (list 9/2 ...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via floor (list (list 7/2 two) (list 7/2 two) (list 9/2 ...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via floor (list (list 7 two) (list 8 two) (list 9 two) (...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via floor (list (list m two) (list m two) (list m two) (...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via ceil (list (list 7/2 two) (list 7/2 two) (list 9/2 t...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via round (list (list 5/2 two) (list 7/2 two) (list 9/2 ...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via round (list (list -5/2 two) (list -7/2 two) (list -9...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via even? (list (list 4 two) (list 6 two) (list 8 two) (...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via even? (list (list m2 two) (list m2 two) (list m2 two...
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via odd? (list (list 5 two) (list 7 two) (list 9 two) (l...
+  at <BUNDLE>\lib\globals.dl:35  {* n (square n)}
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via cube (list (list 5 two) (list 7 two) (list 9 two) (l...
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via square (list (list 5 two) (list 7 two) (list 9 two) ...
+  at <BUNDLE>\lib\globals.dl:30  {> n 0}
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via >0 (list (list 5 two) (list 7 two) (list 9 two) (lis...
+  at <BUNDLE>\lib\globals.dl:32  (zero? n)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via !=0 (list (list 5 two) (list 7 two) (list 9 two) (li...
+  at <BUNDLE>\lib\globals.dl:181  (pos? a)
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via positive? (list (list 5 two) (list 7 two) (list 9 tw...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  ((snd p) 1 (case 1 {0 0} {1 (f (fst p) 3)}))
+  called at line 1  (via2 mod (list (list 7 two) (list 8 two) (list 10 two) (...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  ((snd p) 1 (case 1 {0 0} {1 (f (fst p) 3)}))
+  called at line 1  (via2 mod (list (list m two) (list m two) (list m two) (l...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  ((snd p) 1 (case 1 {0 0} {1 (f (fst p) 3)}))
+  called at line 1  (via2 div (list (list 7 two) (list 8 two) (list 10 two) (...
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  ((snd p) 1 (case 1 {0 0} {1 (f (fst p) 3)}))
+  called at line 1  (via2 pow (list (list 2 two) (list 2 two) (list 2 two) (l...
+  at <BUNDLE>\lib\globals.dl:156  (cons (div a b) (list (mod a b)))
+  called at line 1  ((snd p) 1 (case 1 {0 0} {1 (f (fst p) 3)}))
+  called at line 1  (via2 divmod (list (list 7 two) (list 8 two) (list 10 two...
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b starts-with? (list (list "abc" "a" two) (list "abd...
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b starts-with? (list (list "abc" "b" two) (list "abd...
+  at <BUNDLE>\lib\globals.dl:207  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b ends-with? (list (list "abc" "c" two) (list "abd" ...
+  at <BUNDLE>\lib\globals.dl:207  (>= (len s) (len sub))
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b ends-with? (list (list "a" "abc" two) (list "a" "a...
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b contains? (list (list "abc" "b" two) (list "abd" "...
+  at <BUNDLE>\lib\globals.dl:25  (and a b)
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b xor (list (list T NIL two) (list T NIL two) (list ...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b zip (list (list {1 2} {3 4} two) (list {1 2} {3 4}...
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b remove-fst (list (list 3 {1 3} two) (list 3 {2 3} ...
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b remove-all (list (list 3 {1 3} two) (list 3 {2 3} ...
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b has-element? (list (list {1 3} 3 two) (list {2 3} ...
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at line 1  (f (fst p) (snd p))
+  called at line 1  (cond {NIL 0} {T (f (fst p) (snd p))})
+  called at line 1  (via-b between? (list (list 1 5 two) (list 1 5 two) (list...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  ((thd p) 1 (cond {NIL 0} {T (f (fst p) (snd p))}))
+  called at line 1  (via-b ?? (list (list NIL 5 two) (list NIL 6 two) (list N...
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via flatten (list (list {1 {2}} two) (list {3 {4}} two) ...
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via distinct (list (list {1 2 1} two) (list {3 4 3} two)...
+  at (made, not read)  {<function>(min) 9 7 8}
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via minimum (list (list {3 1 2} two) (list {3 1 2} two) ...
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  ((snd p) 1 (cond {NIL 0} {T (f (fst p))}))
+  called at line 1  (via avg (list (list {1 2 3} two) (list {4 5 6} two) (lis...
+--- exit 0

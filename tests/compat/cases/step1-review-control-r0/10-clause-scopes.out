@@ -1,0 +1,22 @@
+--- stdout
+{:neg :zero :pos :neg :zero :pos}
+{5 4 3 2 1} NIL
+3628800 1 1
+610
+{9 :big} {2 :small} :global-seen :global-r
+{:matched :a} :no {:matched :z}
+:many :some :few
+:under :over :under :over
+{{:even 4} {:odd 3} {:even 2} {:odd 1} {:even 0}}
+0 :zero
+1 :one
+2 :two
+3 :zero
+{:not-yet 1} {:not-yet 2} {:done 3} {:done 4}
+{:four 3} {:nine 4} {:other 25 6}
+:shadowed-name :not
+:bottom
+{:y-positive 7} {:y-positive 7} {:y-positive 7}
+--- stderr
+
+--- exit 0

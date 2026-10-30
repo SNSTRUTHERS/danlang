@@ -1,0 +1,11 @@
+--- stdout
+x
+x
+x
+x
+x
+--- stderr
+Error: 10-even-fast-way.dl: Unbound Symbol 'y'
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at 10-even-fast-way.dl:7  (run even? (list (list {-3} "x" T) (list {-3} "x" T) (lis...
+--- exit 1

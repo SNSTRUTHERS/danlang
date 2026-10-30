@@ -1,0 +1,10 @@
+; 03-local-extras-coalesce: as 01, with &2, which ??'s code binds when it's given three arguments or more: (?? NIL NIL
+; 5) goes the same way as (?? NIL 5), whose code binds only &1 (each called through unpack, one call for any number
+; of arguments, so no plan changes between them)
+(def {&2} +)
+(fun {id v} {do v})
+(fun {g} {list (&2 (id 100) 1) &1})
+(g 0)
+(g 0)
+(map (fn {args} {unpack ?? args}) (list [NIL 5] [NIL 5] [NIL 5] [NIL 5] [NIL NIL 5]))
+(g)

@@ -1,0 +1,74 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {:zero NIL T 1 2 2 2 3 0}
+danlang>=> {{{0 1}} 0 4 {3} 2 25 {{6 1}} 3 64}
+danlang>=> {T T T T}
+danlang>=> NIL
+danlang>=> {{"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Atom, Expected Function." "Unbound Symbol 'unbound-b'" "'buffer-get': an index must be a whole number, not :zero"} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Q-Expression, Expected Function." "Unbound Symbol 'unbound-b'" "'buffer-get': an index must be a whole number, not NIL"} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got T, Expected Function." "Unbound Symbol 'unbound-b'" "'buffer-get': an index must be a whole number, not T"} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Number, Expected Function." "Unbound Symbol 'unbound-b'" 66} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Number, Expected Function." "Unbound Symbol 'unbound-b'" "'buffer-get': index 2 is outside the buffer"} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Number, Expected Function." "Unbound Symbol 'unbound-b'" "'buffer-get': index 2 is outside the buffer"} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Number, Expected Function." "Unbound Symbol 'unbound-b'" "'buffer-get': index 2 is outside the buffer"} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Number, Expected Function." "Unbound Symbol 'unbound-b'" "'buffer-get': index 3 is outside the buffer"} {"Unbound Symbol 'unbound-a'" "The function takes 2 arguments, not 3" "S-Expression starts with incorrect type. Got Number, Expected Function." "Unbound Symbol 'unbound-b'" 65}}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'unbound-a'
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: Unbound Symbol 'unbound-b'
+danlang>=> Error: 'buffer-get': an index must be a whole number, not :zero
+danlang>=> Error: Unbound Symbol 'unbound-a'
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: S-Expression starts with incorrect type. Got Number, Expected Function.
+danlang>=> Error: Unbound Symbol 'unbound-b'
+danlang>=> Error: 'buffer-get': index 3 is outside the buffer
+danlang>=> Error: Unbound Symbol 'unbound-a'
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: S-Expression starts with incorrect type. Got T, Expected Function.
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'unbound-a'
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: S-Expression starts with incorrect type. Got Q-Expression, Expected Function.
+danlang>=> Error: Unbound Symbol 'unbound-b'
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: 'buffer-get': an index must be a whole number, not T
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (v1 7))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  at (made, not read)  {:zero}
+  at (made, not read)  {{3}}
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (p 1 2 (v2 4))
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  at <BUNDLE>\lib\globals.dl:207  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (p 1 2 (v3 1))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (v1 x))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  at (made, not read)  {{3}}
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (p 1 2 (v2 x))
+  at <BUNDLE>\lib\globals.dl:207  (eq (substring s (- (len s) (len sub))) sub)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (try (cond {NIL 1}) (mod 7 2)))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (try (case 1 {2 3}) (cond {T (floor 9/2)})))
+--- exit 0

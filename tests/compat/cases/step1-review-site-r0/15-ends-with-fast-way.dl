@@ -1,0 +1,5 @@
+; 15-ends-with-fast-way: ends-with?'s (>= (len s) (len sub)), Op2's, done in the call for lengths kept in their values
+; (4 and 5, no Nums): NIL, with the place (len sub)'s call left
+(fun {probe g args v bind} {do (print v) (if bind (set y 0) NIL) (list (unpack g args) y)})
+(fun {run g l} {map (fn {p} {probe g (fst p) (snd p) (thd p)}) l})
+(run ends-with? (list [{"abcd" "abcde"} "x" T] [{"abcd" "abcde"} "x" T] [{"abcd" "abcde"} "x" T] [{"abcd" "abcde"} "x" NIL]))

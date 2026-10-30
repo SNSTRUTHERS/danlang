@@ -1,0 +1,23 @@
+--- stdout
+9995 :yes 9996 E:Too deep: more than 10000 calls nested
+9996 3 9997 E:Too deep: more than 10000 calls nested
+9997 T 9998 E:Too deep: more than 10000 calls nested
+9990 1024 9995 E:Too deep: more than 10000 calls nested
+:yes 3 T 1024
+the last: a test too deep, not caught
+--- stderr
+Error: 20-deep-tests.dl: Too deep: more than 10000 calls nested
+  at 20-deep-tests.dl:7  (mod 7 4)
+  called at 20-deep-tests.dl:7  (mod 7 4)
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+  called at 20-deep-tests.dl:7  (kd (- n 1))
+--- exit 1

@@ -38,12 +38,15 @@ public class Program {
         Console.SetError(new StreamWriter(Console.OpenStandardError(), Encoding.Latin1) { AutoFlush = true });
     }
 
-    // An environment with the built-ins and the standard library (lib/globals.dl)
+    // An environment with the built-ins and the standard library (lib/globals.dl), its functions given their native
+    // ways (Natives.cs: those as the natives were written for, calling the built-ins as they were made)
     public static LEnv NewEnv() {
         LEnv e = new LEnv { IsGlobal = true };
         Builtins.AddBuiltins(e);
+        var builtins = new Dictionary<Name, LVal>(e.Entries);
         var g = Builtins.Load(e, LVal.Sexpr().Add(LVal.Str("globals")));
         if (g.IsErr) Console.Error.WriteLine(g.ToStr());
+        Builtins.AddNatives(e, builtins);
         return e;
     }
 

@@ -1,0 +1,20 @@
+; 05-try-in-and-around: try around cond and case and inside their tests and values, its handler cond or case (on
+; &err and &code, the handler's own names, in the clauses written there), a handler that's a function given the
+; message; "Too deep" made inside a test and caught there (cond goes on to the next clause) or not (the test's
+; value, so cond's); an error caught in the value in tail position; each value, then errors made right after one
+(fun {p a b} {+ a b})
+(fun {sink n} {if (zero? n) 0 (+ 1 (sink (- n 1)))})
+(fun {classify thunk} {try (thunk) (cond {(eq &code :mine) (list :mine &err)} {(eq &err "Division by zero.") :div0} {&code (list :coded &code)} {T (case &err {"x" :plain-x} {&err (list :other &err)})})})
+(print (classify (fn {} {error "m" :mine})) (classify (fn {} {mod 1 0})) (classify (fn {} {error "x"})) (classify (fn {} {error "y"})))
+(print (classify (fn {} {open "no/such/file/here"})) (classify (fn {} {+ 1 "a"})))
+(print (cond {(try (sink 20000) NIL) :deep-ok} {(try (sink 50) NIL) (list :shallow (sink 50))}))
+(print (try (cond {(sink 20000) :never} {T :never2}) (list :caught &err)))
+(print (case 3 {(try (error "k") 3) (try (floor "s") (list :floor-failed &err))}))
+(print (try (case 1 {2 0}) (fn {m} {cond {(eq m "Case not found") :handled-by-fn} {T m}})))
+(print (try (cond {NIL 1}) case) (try (error "e") (fn {m} {list :fn m})))
+(fun {f n} {try (cond {(even? n) (error "even")} {(eq n 3) (mod n 0)} {T (list :odd n)}) (case &err {"even" (list :was-even n)} {&err (list :err &err)})})
+(print (map f (range 5)))
+(each {i (range 4)} (f i))
+(print (try (p 1 2 (f 1)) &err) (try (p 1 2 (classify (fn {} {error "m" :mine}))) &err))
+(print "the last: an error made right after a handler's case, not caught")
+(p 1 2 (f 2))

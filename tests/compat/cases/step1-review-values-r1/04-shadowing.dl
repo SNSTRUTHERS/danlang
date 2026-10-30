@@ -1,0 +1,21 @@
+; 04-shadowing: the library's names bound in other scopes (a function's formals, let, set, set!) while the natived
+; functions run: their code's scope is lexical, the global one, so it calls the global floor, trunc, cons, eq ...
+; whatever the caller's are; each call four times over (from the third it can be a native way's value)
+(fun {four g} {let {{r (map (fn {i} {try (repr (g)) (+ "E:" &err)}) {1 2 3 4})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(fun {with-formals floor trunc cons eq mod} {list (four (fn {} {list (div 7 2) (round 5/2) (ceil 1/2) (even? 7) (zip {1} {2}) (remove-all 1 {1 2})}))
+  (four (fn {} {list (floor 7/2) (trunc 2) (eq 1 1)})) (try (mod 7 2) &err)})
+(print (with-formals ceil abs (fn {x l} {:c}) (fn {a b} {:e}) (fn {a b} {:m})))
+(print (let {{floor ceil} {trunc abs} {- +} {cons list} {elem? not} {index-of len}}
+  (list (four (fn {} {list (mod 7 2) (div -7 2) (divmod 9 4) (has-element? {1 2} 2) (starts-with? "abc" "a") (contains? "abc" "x")}))
+        (four (fn {} {list (floor 7/2) (- 5 1) (cons 1 {2})})))))
+(fun {with-set} {do (set {floor} ceil) (set {even?} odd?) (set {zip} list) (set {??} (fn {a} {:q}))
+  (list (four (fn {} {list (floor 7/2) (even? 2) (zip 1 2) (?? NIL 1)})) (four (fn {} {list (mod 7 2) (pow 2 3) (round 5/2) (distinct {1 1})})))})
+(print (with-set))
+(fun {with-set! x} {do (set! {x} (fn {a b} {:not-mod})) (list (x 7 2) (four (fn {} {mod 7 2})) (four (fn {} {% -7 2})))})
+(print (with-set! 0))
+(def {n} 0)
+(print (map (fn {i} {do (if (== i 2) (let {{tr 5} {hd 6} {tl 7} {f 8} {l 9} {a 10} {b 11} {x 12} {&1 13}} 0))
+  (list (floor 7/2) (remove-all 1 {1 2 1}) (remove-fst 2 {1 2}) (distinct {2 2 3}) (zip {1} {2}) (?? NIL NIL 4)
+        (cond {NIL 1} {T 2}) (case 3 {1 :a} {3 :c}) (minimum {3 1}) (between? 1 9 5) (pow 2 5))}) (range 5)))
+(def {tr hd tl} :global-tr :global-hd :global-tl)
+(print (four (fn {} {list (floor 7/2) (ceil 7/2) (remove-all 1 {1 2 1}) (remove-fst 2 {1 2 3}) (distinct {1 2 1}) tr hd tl})))

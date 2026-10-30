@@ -1,0 +1,17 @@
+; 01-equal-big-items: has-element?, contains? and starts-with? of a list, and between? of lists, whose items are many
+; integers outside the shared ones (-1024 to 65535), each made on its own (each its own value, none given a Num yet)
+; and all equal, with what's looked for not there: each call compares x with every item, once each; and avg of a
+; list whose sum goes back to such an integer at every other item.  From a loop's third or fourth step a native way
+; can give the value (its code has run settled).  A list for each, as comparing them gives their items a Num
+(def {n} 20000)
+(fun {items} {map (fn {i} {+ 100000 0}) (range n)})
+(def {small} {1 2 3})
+(def {l1 l2 l3 l4 l5} (items) (items) (items) (items) (items))
+(def {halves} (cons 100000 (map (fn {i} {if (even? i) 1/2 -1/2}) (range (* 3 n)))))
+(print (len l1) (len l5) (len halves))
+(print "has-element?" (map (fn {i} {has-element? (if (== i 5) l1 small) 7}) (range 6)))
+(print "contains?" (map (fn {i} {contains? (if (== i 5) l2 small) 7}) (range 6)))
+(print "starts-with?" (map (fn {i} {starts-with? (if (== i 5) l3 small) 7}) (range 6)))
+(print "between?" (map (fn {i} {if (== i 5) (between? l4 l5 l4) (between? small small small)}) (range 6)))
+(print "avg" (map (fn {i} {avg (if (== i 5) halves small)}) (range 6)))
+(print (fst l1) (eq l1 l5))

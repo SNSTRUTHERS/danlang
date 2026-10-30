@@ -1,0 +1,15 @@
+; flags: -w
+; 21-warnings-place: danlang -w says where a def that changes a global's kind is made: where evaluation is (Site),
+; which for (def {v} (f x)) is where f's code left it.  Here v is a function and a value in turn, in a loop, f the
+; library's functions whose ways end on different lines (round's own, or floor's; pow's four; zip's, flatten's,
+; remove-fst's, cond's made lists)
+(fun {id v} {do v})
+(fun {flip-flop f l} {each {x l} (do (def {v} id) (def {v} (f x)))})
+(flip-flop round {5/2 5/2 5/2 -5/2 -5/2 -5/2 5/2 3 -1/3 -1/3})
+(flip-flop (fn {b} {pow 2 b}) {3 3 3 4 4 0 0 -2 -2 3 0})
+(flip-flop (fn {l} {zip l {1 2}}) {{1} {1} {1} NIL NIL {1} NIL})
+(flip-flop flatten {{1 {2}} {1 {2}} {1 {2}} {{1} 2} {{1} 2} NIL NIL {1}})
+(flip-flop (fn {l} {remove-fst 1 l}) {{1 2} {1 2} {1 2} {2 1} {2 1} NIL NIL {1}})
+(flip-flop (fn {x} {cond {(> x 0) x} {T (- x)}}) {1 1 1 -1 -1 1})
+(flip-flop (fn {x} {case x {1 :one} {x :other}}) {1 1 1 2 2 1})
+(flip-flop (fn {x} {ends-with? "abc" x}) {"c" "c" "c" "abcd" "abcd" "x" "c"})

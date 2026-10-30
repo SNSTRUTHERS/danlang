@@ -1,0 +1,37 @@
+--- stdout
+  fst 3
+  fst 2
+  eq 1 2
+  fst 1
+  fst 1
+  fst 3
+  fst 2
+  eq 2 2
+  fst 2
+{:other :two}
+  fst 2
+  eq 1 1
+  fst 2
+  fst 2
+  eq 2 1
+  fst 1
+  eq 2 2
+  fst 1
+  fst 2
+  eq 2 1
+  fst 1
+  eq 2 2
+  fst 1
+{:one :two :two}
+  min {3 1 2}
+  min {6 4 5}
+  max {3 1 2}
+  max {6 4 5}
+{1 4} {3 6}
+  fst 1
+  fst 1
+  eq 9 1
+Selection not found Case not found
+--- stderr
+
+--- exit 0

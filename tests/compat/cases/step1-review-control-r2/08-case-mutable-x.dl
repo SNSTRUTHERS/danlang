@@ -1,0 +1,25 @@
+; 08-case-mutable-x: case's x a hash or a buffer (changed in place, so one value wherever it's been given), changed
+; by a key's own evaluation: each key compared with x as it is when the key's been evaluated (eq: entries, bytes),
+; at the first clause, later ones and after a hand-over (a clause cons made); minimum and maximum of hashes and
+; buffers that change between calls; each value, then an error made right after
+(fun {p a b} {+ a b})
+(def {h} (hash-create))
+(hash-put h (list :n 1))
+(def {h2} (hash-create))
+(hash-put h2 (list :n 2))
+(print (case h {(do (hash-put h (list :n 2)) h2) :matched-after-change} {T :no}))
+(print (case h {(do (hash-put h (list :n 3)) h2) :no} {(do (hash-put h2 (list :n 3)) h2) :second-matched} {T :no}))
+(print (case h {(do (hash-put h (list :n 4)) NIL) 0} (cons (do (hash-put h2 (list :n 4)) h2) {:cons-clause}) {T :no}))
+(def {b} (buffer "ab"))
+(print (case b {(do (buffer-put b 0 \x) (buffer "xb")) :buffer-changed} {T :no}) b)
+(print (case b {(buffer "xb") (do (buffer-put b 1 \y) (case b {(buffer "xy") :inner} {T :inner-no}))} {T :no}))
+(def {hs} (list h h2))
+(print (minimum (list (buffer "b") b (buffer "a"))) (maximum (list (buffer "b") b (buffer "a"))))
+(buffer-put b 0 \a)
+(print (minimum (list (buffer "b") b (buffer "ab"))) (maximum (list b (buffer "a"))))
+(fun {k x} {case x {h :is-h} {h2 :is-h2} {x :other}})
+(print (k h) (k h2) (map k (list h h2 b)))
+(hash-put h2 (list :n 5))
+(print (k h) (k h2))
+(print "the last: an error made right after case of a hash, not caught")
+(p 1 2 (k h))

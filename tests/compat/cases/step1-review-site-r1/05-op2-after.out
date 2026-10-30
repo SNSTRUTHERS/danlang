@@ -1,0 +1,126 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv floor (list (list 7/2 f3 70001) (list 7/2 f3 70001...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d1 pv floor (list (list -7/2 f3 70001) (list -7/2 f3 700...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv floor (list (list 3 f3 70001) (list 3 f3 70001) (l...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (d1 pv floor (list (list -7/2 f3 70001) (list -7/2 f3 700...
+  at line 1  (+ (id x) k)
+  called at line 1  (d1 pa floor (list (list 3 f3 70001) (list 3 f3 70001) (l...
+  at line 1  (+ (id x) k)
+  called at line 1  (d1 pa floor (list (list 70000 f3 70001) (list 70000 f3 7...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv ceil (list (list -7/2 f3 70001) (list -7/2 f3 7000...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (d1 pv ceil (list (list 7/2 f3 70001) (list 7/2 f3 70001)...
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (d1 pv ceil (list (list 140001/2 f3 70001) (list 140001/2...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv round (list (list -5/2 f3 70001) (list -5/2 f3 700...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv round (list (list 5/2 f3 70001) (list 5/2 f3 70001...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (d1 pv round (list (list -140001/2 f3 70001) (list -14000...
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (d1 pv square (list (list 5 f3 70001) (list 5 f3 70001) (...
+  at line 1  (+ (id x) k)
+  called at line 1  (d1 pa square (list (list 5 f3 70001) (list 5 f3 70001) (...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv square (list (list 100000 f3 70001) (list 100000 f...
+  at <BUNDLE>\lib\globals.dl:35  {* n (square n)}
+  called at line 1  (d1 pv cube (list (list 3 f3 70001) (list 3 f3 70001) (li...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv avg (list (list {1 2 3} f3 70001) (list {1 2 3} f3...
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (d1 pv avg (list (list {70000 70002} f3 70001) (list {700...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv minimum (list (list {3 1 2} f3 70001) (list {3 1 2...
+  at line 1  (+ (g x) k)
+  called at line 1  (d1 pv maximum (list (list {3 1 2} f3 70001) (list {3 1 2...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (d1 pv ?? (list (list 5 f3 70001) (list 5 f3 70001) (list...
+  at line 1  (+ (g x y) k)
+  called at line 1  (d2 pv2 mod (list (list 7 2 f3 70001) (list 7 2 f3 70001)...
+  at line 1  (+ (g x y) k)
+  called at line 1  (d2 pv2 mod (list (list -7 2 f3 70001) (list -7 2 f3 7000...
+  at line 1  (+ (id x) k)
+  called at line 1  (d2 pa2 mod (list (list 7 2 f3 70001) (list 7 2 f3 70001)...
+  at line 1  (+ (id y) k)
+  called at line 1  (d2 pb2 mod (list (list 7 2 f3 70001) (list 7 2 f3 70001)...
+  at line 1  (+ (id y) k)
+  called at line 1  (d2 pb2 mod (list (list 7 3 f3 70001) (list 7 3 f3 70001)...
+  at line 1  (+ (g x y) k)
+  called at line 1  (d2 pv2 div (list (list 7 2 f3 70001) (list 7 2 f3 70001)...
+  at line 1  (+ (g x y) k)
+  called at line 1  (d2 pv2 div (list (list -7 2 f3 70001) (list -7 2 f3 7000...
+  at line 1  (+ (g x y) k)
+  called at line 1  (d2 pv2 div (list (list 280000 2 f3 70001) (list 280000 2...
+  at line 1  (+ (id x) k)
+  called at line 1  (d2 pa2 div (list (list 8 2 f3 70001) (list 8 2 f3 70001)...
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (d2 pv2 pow (list (list 2 3 f3 70001) (list 2 3 f3 70001)...
+  at <BUNDLE>\lib\globals.dl:195  (* (pow a (/ b 2)) (pow a (/ b 2)))
+  called at line 1  (d2 pv2 pow (list (list 2 20 f3 70001) (list 2 20 f3 7000...
+  at line 1  (+ (g x y) k)
+  called at line 1  (d2 pv2 pow (list (list 2 -1 f3 70001) (list 2 -1 f3 7000...
+  at line 1  (+ (id y) k)
+  called at line 1  (d2 pb2 pow (list (list 2 3 f3 70001) (list 2 3 f3 70001)...
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (d2 pv2 ?? (list (list NIL 2 f3 70001) (list NIL 2 f3 700...
+--- exit 0

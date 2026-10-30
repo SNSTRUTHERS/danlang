@@ -1,0 +1,10 @@
+--- stdout
+x
+x
+x
+x
+--- stderr
+Error: 13-starts-with-fast-way.dl: Unbound Symbol 'y'
+  at <BUNDLE>\lib\globals.dl:206  (index-of s sub)
+  called at 13-starts-with-fast-way.dl:5  (run starts-with? (list (list {"abc" "a"} "x" T) (list {"...
+--- exit 1

@@ -1,0 +1,80 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> :second
+danlang>=> NIL
+danlang>=> :third
+danlang>=> NIL
+danlang>=> Error: my fst
+danlang>=> NIL
+danlang>=> {T :from-my-tail}
+danlang>=> NIL
+danlang>=> Error: my head
+danlang>=> NIL
+danlang>=> {:my-eval {:a}}
+danlang>=> NIL
+danlang>=> {:my-eval {<function>(fn NIL {if &_ (if (eval (head (fst &_))) (eval (head (tail (fst &_)))) (unpack cond (tail &_))) (error "Selection not found")}) {T :b}}}
+danlang>=> NIL
+danlang>=> Error: my cons
+danlang>=> NIL
+danlang>=> Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+danlang>=> NIL
+danlang>=> {:my-error "Selection not found"}
+danlang>=> NIL
+danlang>=> {:my-error "Case not found"}
+danlang>=> NIL
+danlang>=> Error: 'nth': the list has no such item
+danlang>=> NIL
+danlang>=> :restored-in-test
+danlang>=> :c
+danlang>=> NIL
+danlang>=> {:new-cond {{T :b} {T :c}}}
+danlang>=> NIL
+danlang>=> :then-still-old
+danlang>=> NIL
+danlang>=> :three
+danlang>=> NIL
+danlang>=> :one
+danlang>=> NIL
+danlang>=> Error: The function takes 1 argument, not 2
+danlang>=> NIL
+danlang>=> Error: my unpack
+danlang>=> NIL
+danlang>=> 2
+danlang>=> :b
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  {error "my fst"}
+  called at <BUNDLE>\lib\globals.dl:100  (fst &_)
+  called at line 1  (cond {NIL 0} {(do (def {fst} (fn {l} {error "my fst"})) ...
+  at line 1  {error "my head"}
+  called at <BUNDLE>\lib\globals.dl:101  (head (tail (fst &_)))
+  called at line 1  (cond {(do (def {head} (fn {l} {error "my head"})) T) :a})
+  at line 1  {error "my cons"}
+  called at <BUNDLE>\lib\globals.dl:42  (cons f l)
+  called at line 1  (cond {(do (def {cons} (fn {x l} {error "my cons"})) NIL)...
+  at (made, not read)  {:my-cons <function>(fn {x} {if &_ (if (eq x (eval (head ...
+  called at line 1  (case 2 {(do (def {cons} (fn {x l} {list :my-cons x})) 1)...
+  at <BUNDLE>\lib\globals.dl:100  (fst &_)
+  called at <BUNDLE>\lib\globals.dl:102  (unpack cond (tail &_))
+  called at line 1  (cond {(do (def {if} (fn {a b c} {:my-if})) NIL) :a} {T :b})
+  at (made, not read)  {<function>(fn {x} {error "my case"}) 5 {5 :b}}
+  called at line 1  (case 5 {(do (def {case} (fn {x} {error "my case"})) 1) :...
+  at line 1  {error "my unpack"}
+  called at line 1  (case 5 {1 :a} {(do (def {unpack} (fn {f l} {error "my un...
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {(do (def {fst} fst0) NIL) 1} {T 2}))
+  at line 1  (+ 1 2)
+  called at line 1  (f 1 2 (cond {(do (def {fst} snd) (def {fst} fst0) NIL) 1...
+  at (made, not read)  {:b}
+  called at line 1  (f 1 2 (case 3 {(do (def {eq} eq0) 1) :a} {3 :b}))
+--- exit 0

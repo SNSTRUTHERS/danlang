@@ -1,0 +1,67 @@
+; 13-lib-unbound: a library of its own (danlang loads the globals.dl in the folder it runs in before lib/'s; run as
+; the program too, it's the program once args is there) whose functions are lib/globals.dl's, but there's no trunc
+; (floor's and ceil's code call a name bound nowhere: an error, made again each time), no unpack (the error of cond,
+; case and ?? when they go on to the next clause or argument, and of minimum and maximum) and no remove-all (distinct's
+; error for a list of more than one item); the names the code binds itself (tr, hd, tl) aren't globals either
+(if (defined? args)
+  (do
+    (print "floor" (map (fn {x} {try (floor x) &err}) {7/2 7/2 7/2 7/2}))
+    (print "ceil" (map (fn {x} {try (ceil x) &err}) {7/2 7/2 7/2 7/2}))
+    (print "mod" (map (fn {x} {try (mod x 3) &err}) {7 7 7 7}))
+    (print "cond" (map (fn {x} {try (cond {(eq x 1) :one} {T :other}) &err}) {1 1 2 2 2 1}))
+    (print "case" (map (fn {x} {try (case x {1 :one} {2 :two}) &err}) {1 1 2 2 2 1}))
+    (print "??" (map (fn {x} {try (?? x 5) &err}) {1 1 NIL NIL NIL 1}))
+    (print "minimum" (map (fn {x} {try (minimum x) &err}) {{3 1 2} {3 1 2} {3 1 2} {3 1 2}}))
+    (print "maximum" (map (fn {x} {try (maximum x) &err}) {{3 1 2} {3 1 2} {3 1 2} {3 1 2}}))
+    (print "distinct" (map (fn {x} {try (distinct x) &err}) {{1} {1} {1} {1} {1 2} {1 2} {1 2}}))
+    (print "remove-fst" (map (fn {x} {remove-fst 1 x}) {{1 2} {1 2} {1 2} {2 1} {2 1} {2 1}})))
+  (do
+    (fun {floor a} {
+      let {
+        do
+          =(tr (trunc a))
+          (<=> (cmp a tr) {< (1- tr)} {tr})
+      }
+    })
+    (fun {ceil a} {
+      let {
+        do
+         =(tr (trunc a))
+         (<=> (cmp a tr) {> (1+ tr)} {tr})
+      }
+    })
+    (fun {mod a b} ?{
+      (and (num? a) (num? b))
+      (- a (* b (floor (/ a b))))
+      (error "Cannot perform 'mod' on non-numbers")
+    })
+    (fun {?? a} ?{a a ?(&_ .(?? &_))})
+    (fun {cond} ?{
+      &_
+      ?((eval (head (fst &_)))
+        (eval (head (tail (fst &_))))
+        .(cond (tail &_)))
+      (error "Selection not found")
+    })
+    (fun {case x} ?{
+      &_
+      ?((eq x (eval (head (fst &_))))
+        (eval (head (tail (fst &_))))
+        .(case (cons x (tail &_))))
+      (error "Case not found")
+    })
+    (fun {minimum} .{min &1})
+    (fun {maximum} .{max &1})
+    (fun {distinct l} ?{l (cons (fst l) (distinct (remove-all (fst l) (tail l)))) NIL})
+    (fun {remove-fst f l} ?{
+      l
+      (do
+        =(hd (fst l))
+        =(tl (tail l))
+        ?(
+          (eq f hd)
+          tl
+          (cons hd (remove-fst f tl))
+        )
+      )
+    })))

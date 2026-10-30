@@ -1,0 +1,11 @@
+; 08-result-kinds: the kind of each number the natived functions give (an integer kept in a long or not, a fixed
+; decimal with places or none, a rational, a complex number), for arguments of each kind, the same call four times
+; (from the third it can be a native way's value): i integer, f fixed, r rational, c complex; MISMATCH if they differ
+(fun {kind x} {?((int? x) "i" ?((fixed? x) "f" ?((rational? x) "r" ?((complex? x) "c" (repr (type-of x))))))})
+(fun {four g} {let {{r (map (fn {i} {try (let {{v (g)}} (if (num? v) (+ (repr v) (kind v)) (repr v))) (+ "E:" &err)}) {1 2 3 4})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(def {xs} [6 -6 4611686018427387904 (* 4611686018427387904 4) 9/2 -9/2 4.5 -4.5 6.0 -6.0 0.0 (complex 3 4) (complex 1/2 -1) (complex 2.5 0.5)])
+(each {x xs} (print (four (fn {} {x})) "|" (four (fn {} {floor x})) (four (fn {} {ceil x})) (four (fn {} {round x})) (four (fn {} {mod x 4}))
+  (four (fn {} {mod x 2.5})) (four (fn {} {mod x 3/2})) (four (fn {} {div x 4})) (four (fn {} {div x 0.5})) (four (fn {} {divmod x 4}))
+  (four (fn {} {square x})) (four (fn {} {cube x})) (four (fn {} {pow x 2})) (four (fn {} {pow x -1})) (four (fn {} {pow x 0}))
+  (four (fn {} {pow x 3})) (four (fn {} {avg (list x 1)})) (four (fn {} {avg (list x x)})) (four (fn {} {?? NIL x}))
+  (four (fn {} {minimum (list x 5)})) (four (fn {} {maximum (list x 5)}))))

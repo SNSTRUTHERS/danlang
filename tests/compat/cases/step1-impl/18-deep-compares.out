@@ -1,0 +1,12 @@
+--- stdout
+has-element? {T T T T} {NIL NIL NIL NIL} {NIL NIL NIL NIL} {T T T T}
+remove-all {3 3 3 3} {1 1 1 1}
+remove-fst {3 3 3 3} {2 2 2 2}
+distinct {4 4 4 4}
+starts-with? {T T T T} {NIL NIL NIL NIL} {T T T T}
+contains? {T T T T} {T T T T}
+between? {T T T T} {T T T T} {T T T T} {T T T T} {T T T T}
+--- stderr
+Error: 18-deep-compares.dl: The function takes 2 arguments, not 3
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+--- exit 1

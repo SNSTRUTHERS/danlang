@@ -1,0 +1,97 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: Selection not found
+danlang>=> 1
+danlang>=> 1
+danlang>=> 2
+danlang>=> 2
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> 2
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> 4
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: Case not found
+danlang>=> :a
+danlang>=> :a
+danlang>=> :a
+danlang>=> :c
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> NIL
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond 5)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond "s" {T 1})
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} 5 {T 2})
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} {NIL 2} "s")
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} five)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} NIL)
+  at <BUNDLE>\lib\globals.dl:101  (head (tail (fst &_)))
+  called at line 1  (cond {NIL 1} {T})
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1} {NIL})
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} (cons NIL {2}) 7)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} :atom)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} \c)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} cond)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} (hash-create))
+  at <BUNDLE>\lib\globals.dl:110  (head (fst &_))
+  called at line 1  (case 1 5)
+  at <BUNDLE>\lib\globals.dl:110  (head (fst &_))
+  called at line 1  (case 1 {2 :b} 5)
+  at <BUNDLE>\lib\globals.dl:110  (head (fst &_))
+  called at line 1  (case 1 {2 :b} NIL)
+  at <BUNDLE>\lib\globals.dl:111  (head (tail (fst &_)))
+  called at line 1  (case 1 {2 :b} {1})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case 1 {2 :b} {2})
+  at <BUNDLE>\lib\globals.dl:110  (head (fst &_))
+  called at line 1  (case 1 {2 :b} :x)
+  at <BUNDLE>\lib\globals.dl:110  (head (fst &_))
+  called at line 1  (case 1 {2 :b} case)
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} 5)
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {NIL 1} {T 2} 5))
+  at (made, not read)  {:a}
+  called at line 1  (f 1 2 (case 1 {2 :b} {1 :a} NIL))
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {NIL 1} (cons T {2})))
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (case 1 {2 :b} (cons 1 {2})))
+--- exit 0

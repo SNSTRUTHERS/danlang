@@ -1,0 +1,12 @@
+--- stdout
+3 1 3 {NIL T}
+{3 4 4} 9
+{T NIL T T}
+{{<function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {> (1+ tr)} {tr})}}) <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a b} {if (and a b) (cons (list (fst a) (fst b)) (zip (tail a) (tail b))) NIL}) <function>(fn {a} {if a a (if &_ (unpack ?? &_))}) <function>(+) <function>(-)} {<function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}}) <function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {> (1+ tr)} {tr})}}) <function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a b} {if (and a b) (cons (list (fst a) (fst b)) (zip (tail a) (tail b))) NIL}) <function>(fn {a} {if a a (if &_ (unpack ?? &_))}) <function>(+) <function>(-)} T T T T}
+{{<function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}}) <function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {> (1+ tr)} {tr})}})} {<function>(+) <function>(-)} {1}}
+{<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {> (1+ tr)} {tr})}}) <function>(*) <function>(fn {b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")})}
+{T 0 T -1 {<function>(fn {a b} {if (and (num? a) (num? b)) (- a (* b (floor (/ a b)))) (error "Cannot perform 'mod' on non-numbers")}) <function>(fn {a b} {if (and a b) (cons (list (fst a) (fst b)) (zip (tail a) (tail b))) NIL}) <function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}}) <function>(fn {a} {let {do (set tr (trunc a)) (<=> (cmp a tr) {> (1+ tr)} {tr})}})}}
+{3 -4 3 1}
+--- stderr
+
+--- exit 0

@@ -1,0 +1,16 @@
+--- stdout
+:matched-after-change
+:second-matched
+:cons-clause
+:buffer-changed <buffer>{120 98}
+:inner
+<buffer>{97} <buffer>{120 121}
+<buffer>{97 98} <buffer>{97 121}
+:is-h :is-h {:is-h :is-h :other}
+:is-h :is-h2
+the last: an error made right after case of a hash, not caught
+--- stderr
+Error: 08-case-mutable-x.dl: The function takes 2 arguments, not 3
+  at (made, not read)  {:is-h}
+  called at 08-case-mutable-x.dl:25  (p 1 2 (k h))
+--- exit 1

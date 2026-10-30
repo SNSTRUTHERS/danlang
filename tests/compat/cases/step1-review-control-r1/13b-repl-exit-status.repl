@@ -1,0 +1,8 @@
+; 13b-repl-exit-status: at the REPL, (exit n) inside a case's value, reached after other clauses and a hand-over (a
+; clause cons made, evaluated again): the REPL ends at once with status n, what was printed before staying printed
+(fun {leave n} {case n {0 :zero} (cons 1 {(do (print "one") 1)}) {n (do (print "leaving with" n) (exit n))}})
+(leave 0)
+(leave 1)
+(output-of (leave 1))
+(leave 7)
+(print "never printed")

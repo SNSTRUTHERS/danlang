@@ -1,0 +1,24 @@
+; 02-other-kinds: between? (and ><?), xor, ??, the string functions and the list functions over every kind of value:
+; numbers, strings, characters, atoms, symbols, lists, T, NIL, functions, hashes; errors as their messages
+(fun {sk x} {repr x})
+(fun {show2 f x y} {try (sk (f x y)) (+ "E:" &err)})
+(fun {show3 f x y z} {try (sk (f x y z)) (+ "E:" &err)})
+(def {big} 9223372036854775807)
+(def {vals} [0 1 -1 5 -5 big (+ big 1) 2.5 1/2 (complex 1 1) "a" "b" "" \a \b :a :b (to-sym "s") {} {1 2} {1 3} {a b}
+  T NIL (fn {x} {x}) + #({{:k 1}}) (buffer 2)])
+(each {a vals} (print (map (fn {b} {show3 between? a b 2}) vals)))
+(each {a [1 "b" :b {1 2} \b]} (print (map (fn {b} {show3 ><? a b "a"}) vals) (map (fn {b} {show3 between? b 1 a}) vals)))
+(print (map (fn {a} {map (fn {b} {xor a b}) vals}) vals))
+(print (?? NIL) (?? 1) (?? NIL 2) (?? NIL NIL 3) (?? NIL NIL NIL) (?? {} {} {1}) (?? NIL () 5) (?? NIL :a :b)
+  (?? NIL "s") (?? 0) (?? NIL NIL (+ 1 2)) (?? NIL {} 4 5) (?? T NIL) (?? NIL (list 1 2)) (?? NIL (cons 1 NIL)))
+(def {strs} ["" "a" "ab" "abc" "hello world" "hello" "world" "o" "lo" \o \h "HELLO" "héllo" "é"])
+(each {s strs} (print (map (fn {u} {list (show2 starts-with? s u) (show2 ends-with? s u) (show2 contains? s u)}) strs)))
+(each {s [5 :a {"a" "b"} {1 2 3} NIL T]} (print (map (fn {u} {list (show2 starts-with? s u) (show2 ends-with? s u) (show2 contains? s u)}) ["a" 1 {1} \a 2 :a NIL])))
+(def {lists} [NIL {} {1} {1 2 3} {3 2 1 2 3} {1 1 1} {a b a} {"x" "y" "x"} {1 1.0 2/2 (+ 0 1)} {{1 2} {1 2} {3}} {1 {2 {3 {4}}} 5 {} {{}}}
+  {{} {} {}} {T NIL T} 5 "str" :at])
+(each {l lists} (print (repr l) "zip" (show2 zip l l) (show2 zip l {7 8}) (show2 zip {7 8} l) "flatten" (try (sk (flatten l)) (+ "E:" &err))
+  "distinct" (try (sk (distinct l)) (+ "E:" &err)) "rm-all" (show2 remove-all 1 l) (show2 remove-all {1 2} l)
+  "rm-fst" (show2 remove-fst 1 l) (show2 remove-fst 2 l) (show2 remove-fst {1 2} l) "has" (show2 has-element? l 1) (show2 has-element? l {1 2})
+  "min" (try (sk (minimum l)) (+ "E:" &err)) "max" (try (sk (maximum l)) (+ "E:" &err))))
+(print (remove-all 1.0 {1 2 1/1 1.0 (+ 0.5 0.5)}) (remove-fst 2.0 {1 2 3}) (has-element? {1 2.0} 2) (distinct {2 2.0 4/2 3}))
+(print (remove-all + {+ - +}) (has-element? {+ -} +) (distinct {+ + -}) (remove-fst #({{:k 1}}) {1 #({{:k 1}}) 2}))

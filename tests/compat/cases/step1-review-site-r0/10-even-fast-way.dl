@@ -1,0 +1,7 @@
+; 10-even-fast-way: even?'s (=0 (mod n 2)) is Op1's, done in the call when mod's value is an integer kept in its
+; value: then it doesn't say where it is, and an error made right after even? (y, unbound) says it was where mod's
+; code left evaluation.  (even? -3)'s mod is 1, which nothing here has given a Num: the native's value, the third
+; call on, with that place
+(fun {probe g args v bind} {do (print v) (if bind (set y 0) NIL) (list (unpack g args) y)})
+(fun {run g l} {map (fn {p} {probe g (fst p) (snd p) (thd p)}) l})
+(run even? (list [{-3} "x" T] [{-3} "x" T] [{-3} "x" T] [{-3} "x" T] [{-3} "x" NIL]))

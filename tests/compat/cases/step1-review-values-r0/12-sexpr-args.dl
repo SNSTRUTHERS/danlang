@@ -1,0 +1,13 @@
+; 12-sexpr-args: the library's functions given S-expressions (read's items): the empty one, (), is NIL as a test
+; but isn't a Q-expression; a list of items as written, not evaluated; each call four times over
+(fun {four g} {let {{r (map (fn {i} {try (repr (g)) (+ "E:" &err)}) {1 2 3 4})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(def {e} (fst (read "()")))
+(def {s} (fst (read "(1 2 1)")))
+(def {q} (fst (read "{1 2 1}")))
+(print (type-of e) (type-of s) (type-of q))
+(each {x [e s q]} (print (repr x) (four (fn {} {zip x {1 2}})) (four (fn {} {zip {1 2} x})) (four (fn {} {flatten x})) (four (fn {} {distinct x}))
+  (four (fn {} {remove-all 1 x})) (four (fn {} {remove-fst 1 x})) (four (fn {} {has-element? x 1})) (four (fn {} {minimum x}))
+  (four (fn {} {avg x})) (four (fn {} {?? x 5})) (four (fn {} {?? NIL x})) (four (fn {} {xor x NIL})) (four (fn {} {xor x T}))
+  (four (fn {} {flatten (list x x)})) (four (fn {} {distinct (list x x e)})) (four (fn {} {remove-all x (list x 1 e)}))
+  (four (fn {} {has-element? (list e s) x})) (four (fn {} {case x {NIL :nil} {T :t}})) (four (fn {} {cond {x :yes} {T :no}}))
+  (four (fn {} {between? x x x})) (four (fn {} {starts-with? x 1})) (four (fn {} {contains? x 2}))))

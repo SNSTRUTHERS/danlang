@@ -1,0 +1,60 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {NIL NIL NIL}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{:got (+ n 1) 1} 41 {:method 2 3} 66 3 NIL "E:'buffer-get': index 9 is outside the buffer" "E:The function takes 2 arguments, not 3" "E::k isn't a method: its value isn't a function"}
+danlang>=> NIL
+danlang>=> Error: 'buffer-get': index 9 is outside the buffer
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: :k isn't a method: its value isn't a function
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> {{:got n 0} {:method 4 3} 66 NIL 41}
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> exit
+--- stderr
+  at line 1  (b 9)
+  called at line 1  (pick 6)
+  at line 1  (two n n n)
+  called at line 1  (two n n n)
+  called at line 1  (pick 7)
+  at line 1  (h :k 1)
+  called at line 1  (pick 8)
+  at line 1  {list :got x (eval x)}
+  called at line 1  (p 1 2 (pick 0))
+  at line 1  (h :k)
+  called at line 1  (p 1 2 (pick 1))
+  at line 1  {list :method n (len (hash-keys &0))}
+  called at line 1  (p 1 2 (pick 2))
+  at line 1  (b 1)
+  called at line 1  (p 1 2 (pick 3))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (pick 4))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (p 1 2 (pick 4))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (p 1 2 (kpick 2))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (p 1 2 (kpick n))
+--- exit 0

@@ -1,0 +1,7 @@
+; 07-exit-in-value: exit in the value of the clause that's true: the program ends there with its status (what was
+; printed before it stays printed; the clauses after it never run)
+(fun {pick n} {cond {(eq n 1) (print "one")} {(eq n 2) (do (print "two, exiting") (exit (+ n 1)))} {T (print "other")}})
+(pick 1)
+(print (output-of (pick 1)))
+(print (try (pick 2) :never))
+(print "never printed")

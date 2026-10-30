@@ -1,0 +1,9 @@
+; 26-local-extras-coalesce-first: as 03, with &1, which (?? 5 6)'s code binds and (?? 5)'s doesn't (both values the
+; first: the same way); w unbound when c is NIL, the error made right after (&1 (id 100) 1)
+(def {&1} +)
+(fun {id v} {do v})
+(fun {g c} {do (if c (set w 0) NIL) (list (&1 (id 100) 1) w)})
+(g T)
+(g T)
+(map (fn {args} {unpack ?? args}) (list [5] [5] [5] [5] [5 6]))
+(g NIL)

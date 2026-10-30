@@ -19,6 +19,8 @@ public partial class LVal {
             return (File != null ? File + ":" + Line : Line > 0 ? "line " + Line : "(made, not read)") + "  " + code;
         }
         internal Uses? Uses;    // the names a function's body has (&_ or &1 ..., &0), anywhere in it
+        internal LVal? Test, Value;     // a clause's (cond's, case's): its first item and its second, each made a list
+                                        //   (as head makes it), for eval to run (Natives.cs)
     }
 
     // What a function's body names, anywhere in it: its extra arguments (&_, &1 ...), the hash it's a method of (&0)
@@ -59,6 +61,11 @@ public partial class LVal {
     // Where evaluation is: the call being made (an error made now was made there), and the calls of functions it's in
     // (a stack, the outermost first), for an error's trace
     internal static CodeInfo? Site;
+
+    // The plans' count of changes: one more whenever a call's plan changes (Learn) or a name becomes a local one
+    // (Name.Local), so code run twice with no change between goes the same way, and leaves the same Site (Natives.cs);
+    // and when on-note's function is given Ctrl-C's note, in the middle of what's running
+    internal static long PlanEpoch;
     private static readonly CodeInfo?[] _calls = new CodeInfo?[MaxDepth + 2];
     private static int _ncalls;
     // (the profiler's look: the call being made, and the innermost function's call)
@@ -223,12 +230,22 @@ public partial class LVal {
             return Err($"S-Expression starts with incorrect type. Got {LEName(g.ValType)}, Expected {LEName(LE.FUN)}.");
         }
 
-        // The plan for the first item's value f (none: its name isn't a global's, or bound in another scope too)
+        // The plan for the first item's value f (none: its name isn't a global's, or bound in another scope too); a
+        // plan other than the one it had is a change (PlanEpoch)
         private void Learn(LEnv e, LVal f) {
+            var had = _plan;
             _plan = Plan.None;
-            if (_nodes[0] is not SymNode s || !s.Global(e, out var root, out var slot) || !ReferenceEquals(slot.Value, f)) return;
+            if (_nodes[0] is not SymNode s || !s.Global(e, out var root, out var slot) || !ReferenceEquals(slot.Value, f)) {
+                if (had != Plan.None) PlanEpoch++;
+                return;
+            }
             var p = PlanFor(f);
-            if (p == Plan.None) return;
+            if (p == Plan.None) {
+                if (had != Plan.None) PlanEpoch++;
+                return;
+            }
+            if (p != had || !ReferenceEquals(f, _hval) || !ReferenceEquals(slot, _hslot) || !ReferenceEquals(root, _hroot)
+                || !ReferenceEquals(s.Name, _hname)) PlanEpoch++;
             (_hname, _hroot, _hslot, _hval, _plan) = (s.Name, root, slot, f, p);
         }
 

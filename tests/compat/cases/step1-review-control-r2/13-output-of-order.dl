@@ -1,0 +1,20 @@
+; 13-output-of-order: what tests and values print, captured by output-of around cond and case and inside their
+; tests and values (nested), in the order they run: each test once, up to the true one; a hand-over (a clause cons
+; made: unpack evaluates the clauses left again, a call among them printing as it's made again); a test that
+; redefines what cond's code calls (its code from there on); no clause true; an error stopping output-of
+(fun {say x} {do (write x " ") x})
+(print (repr (output-of (cond {(say NIL) 1} {(say NIL) 2} {(say T) (say :v3)} {(say T) :never}))))
+(print (repr (output-of (case (say 2) {(say 1) :a} {(say 2) (say :b)} {(say 2) :never}))))
+(print (repr (output-of (cond {(say NIL) 1} (cons (say NIL) {2}) (list (say T) (say :made)) {(say T) :never}))))
+(print (repr (output-of (cond {(say NIL) 1} {NIL 0} (fst {(say {T :evaluated-again})}) {T :never}))))
+(print (repr (output-of (cond {(output-of (say :inner)) (say (output-of (say :in-value)))} {T :never}))))
+(def {fst0} fst)
+(print (repr (output-of (cond {(do (say :redefining) (def {fst} (fn {l} {do (say :my-fst) (fst0 l)})) NIL) 1} {(say T) (say :after)}))))
+(def {fst} fst0)
+(print (repr (output-of (print (try (cond {(say NIL) 1} {(say NIL) 2}) &err)))))
+(print (repr (output-of (case 9 {(say 1) 1} {(say 2) 2}))))
+(print (repr (output-of (say :before) (cond {(say T) (error "stops")}) (say :never))))
+(fun {f n} {output-of (cond {(say (> n 1)) (say (list :big n))} {(say T) (say (floor (/ n 2)))})})
+(print (map f {1 2 3}))
+(print "the last: output-of stopped by a test's error, not caught")
+(output-of (say :first) (cond {(say NIL) 0} {(+ 1 "a") 1}))

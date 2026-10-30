@@ -1,0 +1,89 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (t-flatten {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (t-flatten {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (t-flatten m {5 6})
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (t-flatten m {5 6})
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (t-flatten {{5} 6} {{5} 6})
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (t-flatten {{5} 6} {{5} 6})
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (t-flatten (list m) {{5} 6})
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (t-zip {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (t-zip {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (t-zip e2 {5 6})
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (t-zip e2 {5 6})
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (t-remove-all {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (t-remove-all {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (t-remove-all m {5 6})
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (t-remove-all m {5 6})
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  (t-remove-fst {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  (t-remove-fst {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  (t-remove-fst m {5 6})
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  (t-remove-fst m {5 6})
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (t-distinct {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (t-distinct {5 6} {5 6})
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (t-distinct m {5 6})
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (t-distinct m {5 6})
+--- exit 0

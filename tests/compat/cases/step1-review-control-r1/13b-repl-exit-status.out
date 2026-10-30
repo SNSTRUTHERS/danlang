@@ -1,0 +1,15 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> :zero
+danlang>one
+=> 1
+danlang>=> "one\n"
+danlang>leaving with 7
+--- stderr
+
+--- exit 7

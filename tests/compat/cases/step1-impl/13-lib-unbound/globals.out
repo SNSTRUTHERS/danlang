@@ -1,0 +1,14 @@
+--- stdout
+floor {"Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'"}
+ceil {"Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'"}
+mod {"Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'" "Unbound Symbol 'trunc'"}
+cond {:one :one "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" :one}
+case {:one :one "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" :one}
+?? {1 1 "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" 1}
+minimum {"Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'"}
+maximum {"Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'" "Unbound Symbol 'unpack'"}
+distinct {"Unbound Symbol 'remove-all'" "Unbound Symbol 'remove-all'" "Unbound Symbol 'remove-all'" "Unbound Symbol 'remove-all'" "Unbound Symbol 'remove-all'" "Unbound Symbol 'remove-all'" "Unbound Symbol 'remove-all'"}
+remove-fst {{2} {2} {2} {2} {2} {2}}
+--- stderr
+
+--- exit 0

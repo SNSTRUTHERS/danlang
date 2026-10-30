@@ -1,0 +1,33 @@
+; lib-helpers: a library of its own (danlang loads the globals.dl in the folder it runs in before lib/'s; run as the
+; program too, it's the program once args is there): cond, case, minimum and maximum are as lib/globals.dl has them,
+; but the fst and eq their code calls, and the min and max, are functions that say when they're called (max the last
+; of the most); each called in a loop, so a native's value would be used
+(if (defined? args)
+  (do
+    (print (map (fn {i} {cond {NIL 1} {(eq i 2) :two} {T :other}}) {1 2}))
+    (print (map (fn {i} {case i {1 :one} {2 :two}}) {1 2 2}))
+    (print (map minimum (list {3 1 2} {6 4 5})) (map maximum (list {3 1 2} {6 4 5})))
+    (print (try (cond {NIL 1}) &err) (try (case 9 {1 2}) &err)))
+  (do
+    (fun {unpack f l}  {eval (cons f l)})
+    (def {fst0 eq0 min0 max0} fst eq min max)
+    (fun {fst l} {do (print "  fst" (len l)) (fst0 l)})
+    (fun {eq a b} {do (print "  eq" a b) (eq0 a b)})
+    (fun {min} {do (print "  min" &_) (unpack min0 &_)})
+    (fun {max} {do (print "  max" &_) (unpack max0 &_)})
+    (fun {cond} ?{
+      &_
+      ?((eval (head (fst &_)))
+        (eval (head (tail (fst &_))))
+        .(cond (tail &_)))
+      (error "Selection not found")
+    })
+    (fun {case x} ?{
+      &_
+      ?((eq x (eval (head (fst &_))))
+        (eval (head (tail (fst &_))))
+        .(case (cons x (tail &_))))
+      (error "Case not found")
+    })
+    (fun {minimum} .{min &1})
+    (fun {maximum} .{max &1})))

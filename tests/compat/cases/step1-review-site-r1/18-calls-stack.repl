@@ -1,0 +1,21 @@
+; 18-calls-stack: an error made right after a library function's call (its value had natively once a run of its code
+; has been seen) inside calls of functions nested 3 and 20 deep, and inside cond's and case's tests and values: the
+; calls its trace says it was made in (the innermost first, 12 at most), and where
+(fun {f2 a b} {+ a b})
+(fun {f3 a b c} {+ a b})
+(fun {p1 g x h} {h 1 2 (g x)})
+(fun {run g l} {map (fn {q} {p1 g (fst q) (snd q)}) l})
+(fun {nest n thunk} {if (zero? n) (thunk) (fst (list (nest (- n 1) thunk)))})
+(nest 3 (fn {} {run floor (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (list 9/2 f2))}))
+(nest 20 (fn {} {run floor (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (list 9/2 f2))}))
+(nest 20 (fn {} {run even? (list (list -3 f3) (list -3 f3) (list -3 f3) (list -5 f2))}))
+(nest 11 (fn {} {run zip (list (list {1} f3) (list {1} f3) (list {1} f3) (list NIL f2))}))
+(fun {ct q} {cond {(p1 floor (fst q) (snd q)) :yes} {T :no}})
+(fun {cv q} {cond {(> (fst q) 9) :big} {T (p1 floor (fst q) (snd q))}})
+(map ct (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (list 9/2 f2)))
+(map cv (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (list 9/2 f2)))
+(nest 5 (fn {} {map ct (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (list -9/2 f2))}))
+(nest 5 (fn {} {map cv (list (list -7/2 f3) (list -7/2 f3) (list -7/2 f3) (list -9/2 f2))}))
+(fun {kt q} {case 3 {(p1 floor (fst q) (snd q)) :three} {T :other}})
+(map kt (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (list 9/2 f2)))
+(nest 4 (fn {} {map kt (list (list 7/2 f3) (list 7/2 f3) (list 7/2 f3) (list 9/2 f2))}))

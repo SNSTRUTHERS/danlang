@@ -1,0 +1,8 @@
+; 07-exit-deep-inside: exit called from a clause's value inside the argument of a library function (mod, inside
+; minimum's list, inside map's function), inside try and output-of, several calls deep: the program ends there with
+; its status; what was printed before it stays printed, what output-of had captured is lost, nothing after it runs
+(fun {f n} {cond {(< n 3) (list :small n)} {(eq n 3) (mod (case n {3 (do (print "exiting from case in mod's argument") (exit (+ n 4)))}) 2)} {T :big}})
+(print (map f {0 1 2}))
+(print (zip {1 2} (map f {1 2})) (minimum (list 5 (f 4))))
+(print (try (output-of (print "captured, then lost") (minimum (map f {0 4 1 2 3}))) (list :never-caught &err)))
+(print "never printed")

@@ -1,0 +1,78 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> :here-value
+danlang>=> :here-value
+danlang>=> Error: Unbound Symbol 'l'
+danlang>=> Error: 'head' expects a QExpr
+danlang>=> Error: 'head' passed an empty list
+danlang>=> Error: Unbound Symbol 'nowhere'
+danlang>=> :made
+danlang>=> :made
+danlang>=> Error: evaluated again
+danlang>=> :l-was-true
+danlang>=> Error: Selection not found
+danlang>=> :item
+danlang>in unpack's scope
+=> Error: Selection not found
+danlang>first
+=> :third
+danlang>=> Error: Case not found
+danlang>=> Error: Unbound Symbol 'x'
+danlang>=> :b
+danlang>=> Error: Case not found
+danlang>=> :b
+danlang>=> Error: Case not found
+danlang>=> :c
+danlang>=> Error: Unbound Symbol 'x'
+danlang>=> NIL
+danlang>=> :one
+danlang>=> :two
+danlang>=> :three
+danlang>=> Error: Case not found
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at (made, not read)  {l}
+  called at line 1  (cond {NIL 1} (to-sym "l"))
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} (to-sym "f"))
+  at <BUNDLE>\lib\globals.dl:100  (head (fst &_))
+  called at line 1  (cond {NIL 1} (to-sym "&_"))
+  at (made, not read)  {<function>(fn NIL {if &_ (if (eval (head (fst &_))) (eva...
+  called at line 1  (cond {NIL 1} (to-sym "nowhere"))
+  at line 1  (error "evaluated again")
+  called at line 1  (cond {NIL 1} (fst {(error "evaluated again")}))
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at (made, not read)  {f}
+  called at line 1  (cond {NIL 1} (cons NIL {2}) (cons (to-sym "f") {:f-true}))
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1} (fst {{(print "in unpack's scope") :printed...
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case 2 {1 :a} (to-sym "here"))
+  at (made, not read)  {<function>(fn {x} {if &_ (if (eq x (eval (head (fst &_))...
+  called at line 1  (case (to-sym "x") {1 :a} {2 :b})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case (fst {(+ 1 1)}) {2 :first-match})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case (to-sym "l") {1 :a} {{{1 :a} {(to-sym "l") :c}} :b})
+  at (made, not read)  {x}
+  called at line 1  (case 5 {1 :a} (cons (to-sym "x") {:x-was-5}))
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (k 4)
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {NIL 1} (cons T {2})))
+  at line 1  (+ 1 2)
+  called at line 1  (f 1 2 (cond {NIL 1} (cons T {(+ 1 2)})))
+  at line 1  (+ 2 2)
+  called at line 1  (f 1 2 (case 2 {1 :a} (cons 2 {(+ 2 2)})))
+--- exit 0

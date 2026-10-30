@@ -1,0 +1,24 @@
+--- stdout
+8 {0 1 1 1 2 1 3 3}
+{0 2 4 8 16 32 36} {0}
+{NIL :odd :even}
+{:neg :zero {2 1}}
+{0 1 :two 3 2 1 3 3}
+{{0 0 :small} {3 :three :small} {2 1 :small} {9 4 :big} {4 2 :small}}
+e 0
+one
+e 2
+{0 1 2 0}
+{:caught-small :caught-small :caught-two 1}
+T
+NIL
+NIL
+T
+T
+T
+the last: an error made right after one, in a while loop's body, not caught
+--- stderr
+Error: 19-in-special-forms.dl: The function takes 2 arguments, not 3
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at 19-in-special-forms.dl:22  (p 1 2 (cond {(odd? i) (mod i 3)} {T (floor (/ i 3))}))
+--- exit 1

@@ -1,0 +1,21 @@
+; 06-repl-line-calls: at the REPL a line is a call of its first expression's value when there's more on the line: a
+; function cond, case or minimum gives (a value that's a function given nothing is itself, partially applied) called
+; with what follows, exit as the head with a status after it (the REPL ends with it), a value that's no function
+; with more after it (an error); then errors made right after, and a line whose head is cond itself
+(fun {p a b} {+ a b})
+(cond {T (fn {x} {list :called-with x})}) 5
+(case 2 {2 (fn {a b} {+ a b})}) 3 4
+(cond {NIL 0} {T floor}) 7/2
+(cond {T (fn {x} {mod x 4})}) 11
+(cond {T (fn {x} {mod x 4})}) 11
+(cond {T (fn {x} {mod x 4})}) 11
+(minimum (list 3 1 2)) 5
+(cond {T 1}) 2
+(case 1 {1 (fn {x} {p 1 2 x})}) (floor 9/2)
+cond {NIL 1} {T :bare}
+case 3 {3 :bare-case}
+minimum {4 2 6}
+p 1 2 (cond {T (mod 7 2)})
+p 1 2 (case 4 {4 (floor 9/2)})
+(cond {NIL 0} {T exit}) (+ 2 3)
+(print "never printed")

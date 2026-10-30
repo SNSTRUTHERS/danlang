@@ -1,0 +1,26 @@
+; 12-runtime-clauses: clauses made as the program runs: list and [..] (items evaluated when it's made, the scope it
+; was made in remembered), cons (no scope: evaluated again, by unpack, from the next clause on), join, head, tail,
+; init, map's, apply's and unpack's, read's; items that are values of every kind (a symbol a name looked up where
+; the clause was made, a function called, a Q-expression with or without its scope); each test and value run once
+(fun {say x} {do (print "say" x) x})
+(print (cond (list (say NIL) (say 1)) [(say T) (say 2)] (list (say T) (say 3))))
+(print (cond (list NIL 1) (cons T {2})) (cond (cons NIL {1}) (cons T {2})) (cond (join {NIL} {1}) (join {T} {2})))
+(print (cond (head {{NIL 1}}) (tail {0 {T 2}})) (cond (init {NIL 1 2}) (init {T 3 4})) (case 2 (list 1 :a) (join {2} {:b})))
+(fun {sym-clause v} {list (to-sym "v") :was-v})
+(print (cond (sym-clause NIL) {T :no}) (cond (sym-clause 5) {T :no}))
+(def {v} :global-v)
+(print (cond {NIL 1} (sym-clause 5)) (cond {NIL 1} (list (to-sym "v") 2)))
+(fun {fn-clause} {list (fn {} {say :called}) :fn-test})
+(print (cond (fn-clause)) (cond {NIL 1} (list T (fn {} {say :value-called}))))
+(print (cond (list {} 1) (list {1} 2)) (cond (list (list) 1) (list (list 1) 2)) (cond (list NIL 1) (list T {a b})))
+(print (map (fn {c} {cond c {T :default}}) [{NIL 1} {T 2} (list NIL 3) (list T 4)]))
+(print (apply cond {{NIL 1} {T 2}}) (unpack cond (list {NIL 1} {T 2})) (apply case {2 {1 :a} {2 :b}}))
+(print (apply cond (map (fn {i} {list (eq i 3) i}) (range 6))))
+(def {rd} (read "{(> 2 1) :read-clause}"))
+(print rd (cond rd) (cond (fst (read "{NIL 1} {T 2}"))))
+(print (cond (eval {list NIL 1}) (eval {list T 2})) (cond (eval (list list NIL 1)) {T :x}))
+(def {made} (map (fn {k} {list (fn {x} {eq x k}) k}) {1 2 3}))
+(fun {lookup x} {cond {((fst (fst made)) x) (snd (fst made))} {((fst (snd made)) x) (snd (snd made))} {T :none}})
+(print (lookup 1) (lookup 2) (lookup 3))
+(print (case (list 1 2) (list (list 1 2) :lists-equal)) (case {1 2} (cons {1 2} {:q})) (case 3 (cons (+ 1 2) {:sum})))
+(print (cond (list (say NIL) (say :v)) (cons (say T) {:w})) (cond (cons (say NIL) {:v}) (list (say T) :w)))

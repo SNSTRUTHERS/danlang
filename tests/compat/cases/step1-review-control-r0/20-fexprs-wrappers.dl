@@ -1,0 +1,22 @@
+; 20-fexprs-wrappers: cond and case reached through fexprs (their arguments as written, remembering the caller's
+; scope: a clause made of them, run there) and the library's own wrappers (flip, comp, ghost, pack, curry, apply):
+; the clauses' tests and values run once each, where they were written
+(def {when} (fexpr {c body} {cond {(eval c) (eval body)} {T :skipped}}))
+(fun {use-when x} {list (when (> x 0) (* x 10)) (when (< x 0) (print "negative"))})
+(print (use-when 5) (use-when -5))
+(def {switch} (fexpr {k} {case (eval k) {1 :one} {2 :two} {(eval k) :itself}}))
+(def {kk} 2)
+(print (switch kk) (switch (+ kk 1)) (switch 1))
+(def {my-cond} (fexpr {} {apply cond (map (fn {c} {list (eval (fst c)) (snd c)}) &_)}))
+(print (my-cond {NIL :a} {(> 2 1) :b}) (my-cond {(< 2 1) :a} {T :c}))
+(fun {say x} {do (print "say" x) x})
+(print (flip case {(say 1) :a} (say 1)) (comp (fn {x} {list :got x}) cond {(say T) :clause}))
+(print (ghost cond {NIL 1} {T (say :ghost)}) (ghost case 2 {(say 2) :two}))
+(print (pack cond {NIL 1} {T :packed}) ((curry case) {3 {3 :curried}}) (apply case (list 4 {4 :applied})))
+(def {cm} (case 1))
+(print (cm) (try ((case) 2 {2 :partial-case}) &err) (try (cm {1 :a}) &err))
+(fun {mk-clause tst v} {[tst v]})
+(print (cond (mk-clause NIL 1) (mk-clause (say T) (say :made))))
+(def {tbl} (hash-create))
+(hash-put tbl (list :pick (fn {x} {cond {(eq x 1) [:method-one &0]} {T :method-other}})))
+(print (len (tbl :pick 1)) (tbl :pick 2) (hash-call tbl :pick 3))

@@ -1,0 +1,28 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{1} {2} {3} {4 5} {6 7}}
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at line 1  (tl v (g))
+  called at line 1  (probe)
+  at line 1  (tl v (g))
+  called at line 1  (probe)
+  at line 1  (tl v (g))
+  called at line 1  (probe)
+--- exit 0

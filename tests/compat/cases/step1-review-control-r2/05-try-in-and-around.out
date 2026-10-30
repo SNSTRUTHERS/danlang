@@ -1,0 +1,16 @@
+--- stdout
+{:mine "m"} :div0 :plain-x {:other "y"}
+{:coded :noent} {:other "'+' adds numbers, or joins values to a string"}
+{:shallow 50}
+{:caught "Too deep: more than 10000 calls nested"}
+{:floor-failed "'truncate' expects a real number"}
+:handled-by-fn
+Error: Case not found {:fn "e"}
+{{:was-even 0} {:odd 1} {:was-even 2} {:err "Division by zero."} {:was-even 4}}
+The function takes 2 arguments, not 3 The function takes 2 arguments, not 3
+the last: an error made right after a handler's case, not caught
+--- stderr
+Error: 05-try-in-and-around.dl: The function takes 2 arguments, not 3
+  at 05-try-in-and-around.dl:15  (list :was-even n)
+  called at 05-try-in-and-around.dl:20  (p 1 2 (f 2))
+--- exit 1

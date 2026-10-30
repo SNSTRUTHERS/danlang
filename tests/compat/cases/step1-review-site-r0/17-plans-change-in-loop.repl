@@ -1,0 +1,27 @@
+; 17-plans-change-in-loop: as 05-replay-numbers, with something done before each call (act) that changes what the
+; code does: a dependency redefined and put back (floor for mod; - for div and round), a name the code's calls start
+; with made a local one (by let, a function's formals, set), all in the loop, between calls whose values the native
+; would give
+(fun {probe g args act bind} {do (act) (if bind (set y 0) NIL) (list (unpack g args) y)})
+(fun {run g l} {map (fn {p} {probe g (fst p) (snd p) (thd p)}) l})
+(def {floor0} floor)
+(def {minus} -)
+(fun {nop} {do NIL})
+(fun {redef} {def {floor} (fn {a} {trunc a})})
+(fun {restore} {def {floor} floor0})
+(fun {redef-} {def {-} +})
+(fun {restore-} {def {-} minus})
+(fun {loc-trunc} {let {{trunc 1}} 0})
+(fun {loc-cmp} {(fn {cmp} {cmp}) 1})
+(fun {loc-1-} {do (set 1- 5) 1-})
+(run mod (list [{7 2} nop T] [{7 2} nop T] [{7 2} nop T] [{7 2} redef T] [{7 2} restore T] [{7 2} nop NIL]))
+(run mod (list [{7 2} nop T] [{7 2} nop T] [{7 2} redef T] [{7 2} restore NIL]))
+(run mod (list [{7 2} nop T] [{7 2} nop T] [{7 2} nop T] [{7 2} redef NIL]))
+(restore)
+(run div (list [{-7 2} nop T] [{-7 2} nop T] [{-7 2} nop T] [{-7 2} redef- T] [{-7 2} restore- T] [{-7 2} nop T] [{-7 2} nop NIL]))
+(run round (list [{-5/2} nop T] [{-5/2} nop T] [{-5/2} nop T] [{-5/2} redef- T] [{-5/2} restore- NIL]))
+(run floor (list [{-7/2} nop T] [{-7/2} nop T] [{-7/2} nop T] [{-7/2} loc-trunc T] [{-7/2} nop T] [{-7/2} nop NIL]))
+(run floor (list [{-7/2} nop T] [{-7/2} nop T] [{-7/2} nop T] [{-7/2} loc-cmp NIL]))
+(run floor (list [{-7/2} nop T] [{-7/2} nop T] [{-7/2} nop T] [{-7/2} loc-1- T] [{-7/2} nop T] [{-7/2} nop NIL]))
+(run floor (list [{7/2} nop T] [{7/2} nop T] [{7/2} nop T] [{-7/2} nop T] [{3} nop T] [{7/2} nop NIL]))
+(run ceil (list [{7/2} nop T] [{-7/2} nop T] [{7/2} nop T] [{-7/2} nop T] [{7/2} nop T] [{-7/2} nop NIL]))

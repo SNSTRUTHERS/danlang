@@ -1,0 +1,10 @@
+--- stdout
+x
+x
+x
+0
+--- stderr
+Error: 14-starts-with-num-given-midway.dl: Unbound Symbol 'y'
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at 14-starts-with-num-given-midway.dl:4  (run starts-with? (list (list {"abc" "a"} "x" T) (list {"...
+--- exit 1

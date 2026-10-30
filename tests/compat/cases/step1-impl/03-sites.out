@@ -1,0 +1,442 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>13 -2
+=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> 0
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 0
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> 0
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (% -7 2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (div 7 2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (div 7 2))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (div -7 2))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (div -7 2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (div 8 2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (floor 7/2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (floor 7/2))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (floor -7/2))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (floor -7/2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (floor 3))
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (f 1 2 (ceil 7/2))
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (f 1 2 (ceil 7/2))
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (f 1 2 (ceil -7/2))
+  at <BUNDLE>\lib\globals.dl:130  (cmp a tr)
+  called at line 1  (f 1 2 (ceil -7/2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (round 5/2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (round 5/2))
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (f 1 2 (round -5/2))
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (f 1 2 (round -5/2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (round 2.4))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (even? 4))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (even? 4))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (even? -3))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (even? 100001))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (even? 2))
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (f 1 2 (odd? 4))
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (f 1 2 (odd? 3))
+  at <BUNDLE>\lib\globals.dl:195  (* (pow a (/ b 2)) (pow a (/ b 2)))
+  called at line 1  (f 1 2 (pow 2 10))
+  at <BUNDLE>\lib\globals.dl:195  (* (pow a (/ b 2)) (pow a (/ b 2)))
+  called at line 1  (f 1 2 (pow 2 10))
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (f 1 2 (pow 2 9))
+  at <BUNDLE>\lib\globals.dl:192  (zero? b)
+  called at line 1  (f 1 2 (pow 2 0))
+  at <BUNDLE>\lib\globals.dl:191  (/ 1 (pow a (- b)))
+  called at line 1  (f 1 2 (pow 2 -3))
+  at <BUNDLE>\lib\globals.dl:191  (/ 1 (pow a (- b)))
+  called at line 1  (f 1 2 (pow 2 -3))
+  at <BUNDLE>\lib\globals.dl:34  {* n n}
+  called at line 1  (f 1 2 (square 5))
+  at <BUNDLE>\lib\globals.dl:35  {* n (square n)}
+  called at line 1  (f 1 2 (cube 5))
+  at <BUNDLE>\lib\globals.dl:35  {* n (square n)}
+  called at line 1  (f 1 2 (cube 5))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (f 1 2 (>=0 5))
+  at <BUNDLE>\lib\globals.dl:29  {<= n 0}
+  called at line 1  (f 1 2 (<=0 5))
+  at <BUNDLE>\lib\globals.dl:30  {> n 0}
+  called at line 1  (f 1 2 (>0 5))
+  at <BUNDLE>\lib\globals.dl:31  {< n 0}
+  called at line 1  (f 1 2 (<0 5))
+  at <BUNDLE>\lib\globals.dl:32  {not (zero? n)}
+  called at line 1  (f 1 2 (!=0 5))
+  at <BUNDLE>\lib\globals.dl:32  (zero? n)
+  called at line 1  (f 1 2 (!=0 5))
+  at <BUNDLE>\lib\globals.dl:33  {not (one? n)}
+  called at line 1  (f 1 2 (!=1 5))
+  at <BUNDLE>\lib\globals.dl:181  (pos? a)
+  called at line 1  (f 1 2 (positive? 5))
+  at <BUNDLE>\lib\globals.dl:182  (neg? a)
+  called at line 1  (f 1 2 (negative? 5))
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (f 1 2 (between? 1 10 5))
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (f 1 2 (between? 1 10 5))
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at line 1  (f 1 2 (between? 1 10 0))
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (f 1 2 (between? 10 1 5))
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (f 1 2 (between? 10 1 5))
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at line 1  (f 1 2 (between? 10 1 0))
+  at <BUNDLE>\lib\globals.dl:25  (not (and a b))
+  called at line 1  (f 1 2 (xor T NIL))
+  at <BUNDLE>\lib\globals.dl:25  (or a b)
+  called at line 1  (f 1 2 (xor NIL NIL))
+  at <BUNDLE>\lib\globals.dl:25  (or a b)
+  called at line 1  (f 1 2 (xor NIL NIL))
+  at <BUNDLE>\lib\globals.dl:156  (cons (div a b) (list (mod a b)))
+  called at line 1  (f 1 2 (divmod 7 2))
+  at <BUNDLE>\lib\globals.dl:156  (cons (div a b) (list (mod a b)))
+  called at line 1  (f 1 2 (divmod 7 2))
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (f 1 2 (avg {1 2 3}))
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (f 1 2 (avg {1 2 3}))
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (f 1 2 (?? 1))
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (f 1 2 (?? NIL))
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (f 1 2 (?? NIL 2))
+  at <BUNDLE>\lib\globals.dl:53  {if a a (if &_ (unpack ?? &_))}
+  called at line 1  (f 1 2 (?? NIL 2))
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (f 1 2 (?? NIL NIL))
+  at <BUNDLE>\lib\globals.dl:53  (if &_ (unpack ?? &_))
+  called at line 1  (f 1 2 (?? NIL NIL))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (f 1 2 (starts-with? "abc" "a"))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (f 1 2 (starts-with? "abc" "a"))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (f 1 2 (starts-with? "abc" "c"))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (f 1 2 (starts-with? "abc" "x"))
+  at <BUNDLE>\lib\globals.dl:207  (eq (substring s (- (len s) (len sub))) sub)
+  called at line 1  (f 1 2 (ends-with? "abc" "bc"))
+  at <BUNDLE>\lib\globals.dl:207  (>= (len s) (len sub))
+  called at line 1  (f 1 2 (ends-with? "abc" "abcd"))
+  at <BUNDLE>\lib\globals.dl:207  (>= (len s) (len sub))
+  called at line 1  (f 1 2 (ends-with? "abc" "abcd"))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (f 1 2 (contains? "abc" "b"))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (f 1 2 (contains? "abc" "b"))
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (f 1 2 (zip {1 2} {3 4}))
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (f 1 2 (zip {1 2} {3 4}))
+  at <BUNDLE>\lib\globals.dl:74  (and a b)
+  called at line 1  (f 1 2 (zip NIL {3 4}))
+  at <BUNDLE>\lib\globals.dl:86  (cons (fst l) (flatten (tail l)))
+  called at line 1  (f 1 2 (flatten {1 {2}}))
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (f 1 2 (flatten {{1} 2}))
+  at <BUNDLE>\lib\globals.dl:85  (join (flatten (fst l)) (flatten (tail l)))
+  called at line 1  (f 1 2 (flatten {{1} 2}))
+  at <BUNDLE>\lib\globals.dl:82  {if l (if (qexpr? (fst l)) (join (flatten (fst l)) (flatt...
+  called at line 1  (f 1 2 (flatten NIL))
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (f 1 2 (distinct {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:91  (cons (fst l) (distinct (remove-all (fst l) (tail l))))
+  called at line 1  (f 1 2 (distinct {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:91  {if l (cons (fst l) (distinct (remove-all (fst l) (tail l...
+  called at line 1  (f 1 2 (distinct NIL))
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (f 1 2 (remove-all 1 {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (f 1 2 (remove-all 1 {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:241  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (f 1 2 (remove-all 1 {1 1}))
+  at <BUNDLE>\lib\globals.dl:231  (eq f hd)
+  called at line 1  (f 1 2 (remove-fst 1 {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:231  (eq f hd)
+  called at line 1  (f 1 2 (remove-fst 1 {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  (f 1 2 (remove-fst 2 {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  (f 1 2 (remove-fst 2 {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  (f 1 2 (has-element? {1 2} 2))
+  at (made, not read)  {<function>(min) 3 1 2}
+  called at line 1  (f 1 2 (minimum {3 1 2}))
+  at (made, not read)  {<function>(max) 3 1 2}
+  called at line 1  (f 1 2 (maximum {3 1 2}))
+  at (made, not read)  {2}
+  called at line 1  (f 1 2 (cond {NIL 1} {T 2}))
+  at line 1  (+ 2 3)
+  called at line 1  (f 1 2 (cond {NIL 1} {(> 2 1) (+ 2 3)}))
+  at (made, not read)  {4}
+  called at line 1  (f 1 2 (case 3 {1 2} {3 4}))
+  at line 1  (* 2 2)
+  called at line 1  (f 1 2 (case 3 {1 2} {3 (* 2 2)}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (floor -7/2))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (floor -7/2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (f 1 2 (round -5/2))
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (f 1 2 (round -5/2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (f 1 2 (floor -7/2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (div 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (even? 4))
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (f 1 2 (even? 4))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (f 1 2 (>=0 4))
+  at <BUNDLE>\lib\globals.dl:32  {not (zero? n)}
+  called at line 1  (f 1 2 (!=0 4))
+  at <BUNDLE>\lib\globals.dl:32  {not (zero? n)}
+  called at line 1  (f 1 2 (!=0 4))
+  at <BUNDLE>\lib\globals.dl:25  (not (and a b))
+  called at line 1  (f 1 2 (xor T NIL))
+  at <BUNDLE>\lib\globals.dl:25  (not (and a b))
+  called at line 1  (f 1 2 (xor T NIL))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (f 1 2 (starts-with? "abc" "a"))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (f 1 2 (starts-with? "abc" "a"))
+  at <BUNDLE>\lib\globals.dl:207  (>= (len s) (len sub))
+  called at line 1  (f 1 2 (ends-with? "abc" "abcd"))
+  at <BUNDLE>\lib\globals.dl:207  (>= (len s) (len sub))
+  called at line 1  (f 1 2 (ends-with? "abc" "abcd"))
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (f 1 2 (round -5/2))
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (f 1 2 (round 5/2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (f 1 2 (mod 7 2))
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (f 1 2 (zip {1 2} {3 4}))
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (f 1 2 (zip {1 2} {3 4}))
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (f 1 2 (remove-all 1 {1 2 1}))
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (f 1 2 (remove-all 1 {1 2 1}))
+  at (made, not read)  {4}
+  called at line 1  (f 1 2 (case 3 {1 2} {3 4}))
+  at (made, not read)  {4}
+  called at line 1  (f 1 2 (case 3 {1 2} {3 4}))
+--- exit 0

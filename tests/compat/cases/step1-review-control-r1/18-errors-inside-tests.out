@@ -1,0 +1,70 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {NIL NIL}
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {:first :first "'buffer-get': index 2 is outside the buffer" :first}
+danlang>=> {:second :second :second "2 isn't a method: its value isn't a function"}
+danlang>=> {:x :x "'buffer-get': index 2 is outside the buffer"}
+danlang>=> {:t :t "2 isn't a method: its value isn't a function"}
+danlang>=> {:after-handover "'buffer-get': index 3 is outside the buffer"}
+danlang>=> {:hashed :hashed "2 isn't a method: its value isn't a function"}
+danlang>=> Error: 'buffer-get': index 2 is outside the buffer
+danlang>=> Error: 2 isn't a method: its value isn't a function
+danlang>=> Error: 'buffer-get': index 2 is outside the buffer
+danlang>=> Error: 2 isn't a method: its value isn't a function
+danlang>=> Error: 'buffer-get': index 3 is outside the buffer
+danlang>=> Error: 2 isn't a method: its value isn't a function
+danlang>=> Error: 'buffer-get': index 2 is outside the buffer
+danlang>=> Error: 2 isn't a method: its value isn't a function
+danlang>=> Error: 'buffer-get': index 2 is outside the buffer
+danlang>=> Error: 2 isn't a method: its value isn't a function
+danlang>=> Error: 'buffer-get': index 3 is outside the buffer
+danlang>=> Error: 2 isn't a method: its value isn't a function
+danlang>=> Error: 'buffer-get': index 2 is outside the buffer
+danlang>=> Error: 2 isn't a method: its value isn't a function
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (t1 2)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (t2 4)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (t3 6)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (t4 9)
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (t5 9)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (t6 2)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (t1 x)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (t2 x)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (t3 x)
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (t4 x)
+  at <BUNDLE>\lib\globals.dl:130  (1+ tr)
+  called at line 1  (t5 x)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (t6 x)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (t1 x)
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (t6 x)
+--- exit 0

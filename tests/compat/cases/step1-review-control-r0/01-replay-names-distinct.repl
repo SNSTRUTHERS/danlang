@@ -1,0 +1,14 @@
+; 01-replay-names-distinct: distinct of one item doesn't bind remove-all's hd and tl, of more items it does (a name
+; bound in a call is a local's from then on, and a call named by it takes its general way, which leaves the Site
+; there).  The probe (hd v (g)): Op2's fast way (the Site (g)'s code left) while hd is no local's name; then the
+; general way's (the call itself).  One call of distinct runs four times, so its code's Site is kept and replayed
+(def {hd} +)
+(fun {g} {+ 70000 70001})
+(fun {p a b} {+ a b})
+(fun {probe} {p v v (hd v (g))})
+(def {v} 100003)
+(probe)
+(probe)
+(each {x (list {1} {1} {1} {1 2 3})} (distinct x))
+(probe)
+(probe)

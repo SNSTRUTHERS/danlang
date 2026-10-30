@@ -1,0 +1,15 @@
+; 05-functions-as-items: the library's functions as values given to the natived ones: returned by ?? (and called),
+; zipped, flattened, compared by between? and xor, items of remove-all, remove-fst, has-element?, starts-with? and
+; distinct (eq of functions: their formals and code), minimum and maximum (cmp of functions: as they print); each
+; call four times over
+(fun {four g} {let {{r (map (fn {i} {try (repr (g)) (+ "E:" &err)}) {1 2 3 4})}} (if (all? (fn {y} {eq y (fst r)}) r) (fst r) (+ "MISMATCH " (repr r)))})
+(def {fs} (list floor ceil mod % zip ?? + -))
+(def {copy-floor} (fn {a} {let {do =(tr (trunc a)) (<=> (cmp a tr) {< (1- tr)} {tr})}}))
+(print (four (fn {} {(?? NIL floor) 7/2})) (four (fn {} {(?? NIL NIL mod) 7 2})) (four (fn {} {((?? (mod 7)) 4)})) (four (fn {} {map (?? NIL even?) {1 2}})))
+(print (four (fn {} {map (fn {p} {(fst p) (snd p)}) (zip (list floor ceil round) {7/2 7/2 7/2})})) (four (fn {} {len (flatten (list fs {fs}))})))
+(print (four (fn {} {list (xor floor NIL) (xor floor ceil) (between? floor floor floor) (between? + - +)})))
+(print (four (fn {} {list (remove-all floor fs) (remove-fst % fs) (has-element? fs mod) (has-element? fs copy-floor) (starts-with? fs floor) (contains? fs zip)})))
+(print (four (fn {} {list (distinct (list floor copy-floor ceil floor)) (distinct (list + + -)) (remove-all copy-floor (list floor 1))})))
+(print (four (fn {} {list (minimum (list floor ceil mod)) (maximum (list floor ceil mod)) (minimum (list + - *)) (maximum (list mod (mod 7) floor))})))
+(print (four (fn {} {list (eq floor copy-floor) (cmp floor copy-floor) (eq mod %) (cmp zip floor) (sort (list zip floor mod ceil))})))
+(print (four (fn {} {list (copy-floor 7/2) (copy-floor -7/2) ((fst (list floor)) 7/2) ((eval (head (list mod))) 7 3)})))

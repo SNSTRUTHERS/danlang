@@ -1,0 +1,20 @@
+; 04-depth: the library's functions called with only so many levels of calls left (10000 nest at most): their code
+; nests its own calls (mod calls floor, even? calls mod, zip a call for each pair ...), so near the limit the value is
+; the error "Too deep" (the code's, from where it was), and a little further from it, the value
+(fun {deep n f} {if (zero? n) (f) (fst (list (deep (- n 1) f)))})
+; f called with k levels free (its call's Apply the k-th from the limit)
+(fun {at k f} {try (deep (- 9999 k) f) (+ "E:" &err)})
+(def {l50} (range 50))
+(def {l120} (range 120))
+(def {tests} [
+  (fn {} {list (mod 7 2)}) (fn {} {list (div 7 2)}) (fn {} {list (floor 7/2)}) (fn {} {list (round -5/2)})
+  (fn {} {list (even? 7)}) (fn {} {list (odd? 7)}) (fn {} {list (pow 3 13)}) (fn {} {list (pow 2 -5)})
+  (fn {} {list (divmod 7 2)}) (fn {} {list (cube 3)}) (fn {} {list (between? 9 1 5)}) (fn {} {list (?? NIL NIL 3)})
+  (fn {} {list (contains? "abc" "c")}) (fn {} {list (cond {NIL 1} {T 2})}) (fn {} {list (case 2 {1 :a} {2 :b})})
+  (fn {} {list (len (zip l50 l50))}) (fn {} {list (len (zip l120 l120))}) (fn {} {list (len (flatten l50))})
+  (fn {} {list (flatten {1 {2 {3 {4 {5 {6}}}}}})}) (fn {} {list (len (distinct l50))}) (fn {} {list (len (remove-all 3 l50))})
+  (fn {} {list (len (remove-fst 40 l50))}) (fn {} {list (len (remove-fst 99 l50))}) (fn {} {list (minimum l50)})])
+(each {k [1 2 3 4 50 52 100 102 104 150 230]}
+  (print k (map (fn {g} {at k g}) tests)))
+(print "the last: too deep, at the top level")
+(deep 9997 (fn {} {list (even? 7)}))

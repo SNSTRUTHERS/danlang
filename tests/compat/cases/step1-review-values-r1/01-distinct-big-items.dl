@@ -1,0 +1,12 @@
+; 01-distinct-big-items: distinct of a few items, one of them big (a long list, a deep one, a wide tree) that differs
+; from the rest at once, as eq sees it (a list and a number, lists whose first items differ): its code compares
+; them in a step each; each call many times over (from the third it can be a native way's value)
+(def {long} (range 30000))
+(def {deep} (foldl (fn {d i} {list i d}) {} (range 2000)))
+(def {wide} (map (fn {i} {range 100}) (range 300)))
+(fun {times k g} {foldl (fn {acc i} {g}) NIL (range k)})
+(print (len (times 40 (fn {} {distinct (list long 1 2 3 {4 5})}))))
+(print (map (fn {x} {if (qexpr? x) (len x) x}) (times 40 (fn {} {distinct (list deep wide 7 deep {8} wide 7)}))))
+(print (map (fn {x} {if (qexpr? x) (len x) x}) (times 40 (fn {} {distinct (list 1 long {1 2} long 2 {0} 1)}))))
+(print (len (times 40 (fn {} {distinct (list (list + 1) long)}))) (len (times 40 (fn {} {distinct (list long (list 1 #({{:k 1}})))}))))
+(print (times 5 (fn {} {distinct (list {1 2} {1 2.0} {1 {2}} {1 {2.0}} {1 (2)} {1 {} } {1 NIL} {1 ()})})))

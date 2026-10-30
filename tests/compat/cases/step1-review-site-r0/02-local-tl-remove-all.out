@@ -1,0 +1,7 @@
+--- stdout
+
+--- stderr
+Error: 02-local-tl-remove-all.dl: Unbound Symbol '&1'
+  at 02-local-tl-remove-all.dl:5  (tl (id 100) 1)
+  called at 02-local-tl-remove-all.dl:9  (g)
+--- exit 1

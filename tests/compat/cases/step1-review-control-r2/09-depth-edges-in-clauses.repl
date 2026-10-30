@@ -1,0 +1,30 @@
+; 09-depth-edges-in-clauses: the library's functions called in a clause's value with just enough levels left for
+; their code (zip, remove-all: each item one level more; mod, even?: their own calls) and one too few ("Too deep",
+; its trace), minimum's list at the limit; and with as many levels left as a native needs to be used, and one fewer
+; (its code runs): called four times, the last given to a function of two (the error says where the last call left
+; evaluation: the same either way), for cond, case and minimum
+(fun {p a b} {+ a b})
+(fun {deep n f} {if (zero? n) (f) (fst (list (deep (- n 1) f)))})
+(fun {probe g} {do (g) (g) (g) (p 1 2 (g))})
+(deep 9902 (fn {} {cond {T (len (zip (range 96) (range 96)))}}))
+(deep 9903 (fn {} {cond {T (len (zip (range 96) (range 96)))}}))
+(deep 9902 (fn {} {case 1 {1 (len (remove-all 0 (range 97)))}}))
+(deep 9903 (fn {} {case 1 {1 (len (remove-all 0 (range 97)))}}))
+(deep 9997 (fn {} {cond {NIL 0} {T (mod 7 2)}}))
+(deep 9998 (fn {} {cond {NIL 0} {T (mod 7 2)}}))
+(deep 9996 (fn {} {case 1 {1 (even? 7)}}))
+(deep 9997 (fn {} {case 1 {1 (even? 7)}}))
+(deep 9999 (fn {} {minimum (list 3 1)}))
+(deep 9999 (fn {} {cond {T (minimum (list 3 1))}}))
+(deep 9845 (fn {} {probe (fn {} {cond {T (zip (range 48) (range 48))}})}))
+(deep 9845 (fn {} {probe (fn {} {cond {T (zip (range 49) (range 49))}})}))
+(deep 9845 (fn {} {probe (fn {} {case 2 {1 0} {2 (remove-all 1 (range 50))}})}))
+(deep 9845 (fn {} {probe (fn {} {case 2 {1 0} {2 (remove-all 1 (range 51))}})}))
+(deep 9845 (fn {} {probe (fn {} {cond {(even? 3) 0} {T (flatten (list (range 47) 1))}})}))
+(deep 9845 (fn {} {probe (fn {} {cond {(even? 3) 0} {T (flatten (list (range 48) 1))}})}))
+(deep 9893 (fn {} {probe (fn {} {cond {T (even? 7)}})}))
+(deep 9894 (fn {} {probe (fn {} {cond {T (even? 7)}})}))
+(deep 9895 (fn {} {probe (fn {} {case 7 {7 (divmod 7 2)}})}))
+(deep 9896 (fn {} {probe (fn {} {case 7 {7 (divmod 7 2)}})}))
+(deep 9897 (fn {} {probe (fn {} {minimum (list 2 (floor 7/2))})}))
+(deep 9898 (fn {} {probe (fn {} {minimum (list 2 (floor 7/2))})}))

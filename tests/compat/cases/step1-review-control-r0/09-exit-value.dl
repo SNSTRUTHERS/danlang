@@ -1,0 +1,8 @@
+; 09-exit-value: exit itself (not called) as a clause's test and value: a value like any other in a test (not NIL),
+; given back by cond; printed, compared, and at a program's top level it ends the program with status 0
+(print (cond {exit :test-was-exit}) (case 1 {1 exit}) (eq exit (cond {T exit})) (type-of (cond {NIL 1} {T exit})))
+(print (cond {NIL 1} {T exit}))
+(fun {f} {cond {NIL 1} {T exit}})
+(print (list (f)) (repr (f)))
+(cond {NIL 1} {T exit})
+(print "never printed")

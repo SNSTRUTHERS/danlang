@@ -1,0 +1,103 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  (run 1 (fn NIL {has-element? big -1}))
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  (run 2 (fn NIL {has-element? big -1}))
+  at <BUNDLE>\lib\globals.dl:64  {elem? x l}
+  called at line 1  (run 1000 (fn NIL {has-element? big -1}))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (run 1 (fn NIL {contains? big 5}))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (run 2 (fn NIL {contains? "abcdef" "e"}))
+  at <BUNDLE>\lib\globals.dl:28  {>= n 0}
+  called at line 1  (run 1000 (fn NIL {contains? big 5}))
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (run 1 (fn NIL {avg big}))
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (run 2 (fn NIL {avg {1 2 3 4}}))
+  at <BUNDLE>\lib\globals.dl:94  {/ (sum s) (len s)}
+  called at line 1  (run 1000 (fn NIL {avg big}))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run 1 (fn NIL {starts-with? big -1}))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run 2 (fn NIL {starts-with? big -1}))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run 3 (fn NIL {starts-with? big 0}))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run 1000 (fn NIL {starts-with? big -1}))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run 1000 (fn NIL {starts-with? "abcdef" "ab"}))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run 1000 (fn NIL {starts-with? "abcdef" "b"}))
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run 1 (fn NIL {starts-with? "abcdef" "cd"}))
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (run 1 (fn NIL {remove-all 7 {7 7 7 1 2 7}}))
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (run 2 (fn NIL {remove-all 7 {7 7 7 1 2 7}}))
+  at <BUNDLE>\lib\globals.dl:249  (cons hd (remove-all f tl))
+  called at line 1  (run 1000 (fn NIL {remove-all 7 {7 7 7 1 2 7}}))
+  at <BUNDLE>\lib\globals.dl:241  {if l (do (set hd (fst l)) (set tl (tail l)) (if (eq f hd...
+  called at line 1  (run 1000 (fn NIL {remove-all 7 {7 7 7}}))
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (run 1 (fn NIL {between? 9 1 5}))
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (run 1000 (fn NIL {between? 9 1 5}))
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (run 1000 (fn NIL {between? 9 1 50}))
+  at <BUNDLE>\lib\globals.dl:233  (cons hd (remove-fst f tl))
+  called at line 1  (run 1000 (fn NIL {remove-fst 7 {1 7 2}}))
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (run 1 (fn NIL {zip {1 2 3} {4 5}}))
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (run 1000 (fn NIL {zip {1 2 3} {4 5}}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run 1000 (fn NIL {mod 17 5}))
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run 1 (fn NIL {mod 17 5}))
+--- exit 0

@@ -1,0 +1,20 @@
+; 16-lib-empty-list: a library of its own (danlang loads the globals.dl in the folder it runs in before lib/'s; run as
+; the program too, it's the program once args is there) whose zip is lib/globals.dl's but for its last item, {} (a
+; list the reader made) where lib/globals.dl's has NIL (NIL itself): it prints the same, but it's another value, with
+; a place of its own, so eval of what zip gives (its code: the call it makes) leaves another Site, and an error made
+; right after says it was made there.  The calls are the same code each time (a function's argument the one that
+; takes the wrong number of arguments, the last time)
+(if (defined? args)
+  (do
+    (fun {f2 a b} {+ a b})
+    (fun {f3 a b c} {+ a b})
+    (fun {probe a b g} {g 1 2 (eval (zip a b))})
+    (print (map (fn {x} {zip x {1 2}}) {{} {} {} {} {3} {3} {3}}))
+    (print (map (fn {g} {try (probe {} {} g) &err}) (list f2 f2 f2 f2)))
+    (map (fn {g} {probe {} {} g}) (list f3 f3 f3 f3 f2)))
+  (do
+    (fun {zip a b} ?{
+      (and a b)
+      (cons [(fst a) (fst b)] (zip (tail a) (tail b)))
+      {}
+    })))

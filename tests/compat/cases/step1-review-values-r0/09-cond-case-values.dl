@@ -1,0 +1,25 @@
+; 09-cond-case-values: cond and case over values of every kind: case's x a hash, a function, a buffer, a list, a big
+; integer, a rational, a string, a character; clause tests whose values are functions (called), hashes, buffers;
+; clauses made by list (their scope list's call's); clause values that bind (set, set!) in their clause's scope, that
+; are data (a Q-expression keeps its scope), that are cond and case again; each four times over
+(fun {four g} {map (fn {i} {g}) {1 2 3 4}})
+(def {big} 9223372036854775808)
+(def {h} #({{:k 1}}))
+(def {bf} (buffer "ab"))
+(fun {seven} {7})
+(def {xs} [h + bf {1 2} big 7/2 "s" \c :a T NIL 1.0 (fn {x} {x})])
+(print (map (fn {x} {four (fn {} {try (case x {big :big} {7/2 :rat} {3.5 :fix} {"s" :str} {\c :chr} {:a :atom} {T :t} {{1 2} :list}
+  {NIL :nil} {1 :one} {h :hash} {+ :plus} {bf :buf} {(fn {x} {x}) :fn} {x :itself}) &err})}) xs))
+(print (four (fn {} {list (cond {seven :called} {T :no}) (case 7 {seven :seven}) (cond {h :hash}) (cond {bf :buf}) (cond {+ :plus-of-none})})))
+(fun {mk n} {list (list (> n 1) :big) (list T n)})
+(print (four (fn {} {list (unpack cond (mk 5)) (unpack cond (mk 0)) (apply case (cons 2 (list (list 1 :a) (list 2 :b))))})))
+(fun {binds} {let {{zz 0}} (do (cond {NIL 1} {T (set {zz} 5)}) (case 1 {1 (set! {zz} (+ zz 1))}) zz)})
+(print (four binds))
+(fun {data} {let {{y :let-y}} (cond {NIL 1} {T {y}})})
+(print (map (fn {q} {eval q}) (four data)) (four (fn {} {eval (case 2 {2 {+ 1 2}})})))
+(fun {nested n} {cond {(< n 0) (case n {-1 :minus-one} {-2 (cond {T :minus-two}) })} {(== n 0) :zero} {T (nested (- n 3))}})
+(print (four (fn {} {map nested {-1 -2 0 3 4 5 6 9 3000}})))
+(fun {acc n s} {cond {(zero? n) s} {(even? n) (acc (1- n) (+ s n))} {T (acc (1- n) (- s 1))}})
+(print (four (fn {} {acc 2000 0})))
+(fun {clauses n} {map (fn {i} {list (== i n) i}) (range 6)})
+(print (four (fn {} {map (fn {n} {unpack cond (clauses n)}) {0 3 5}})) (try (unpack cond (clauses 9)) &err))

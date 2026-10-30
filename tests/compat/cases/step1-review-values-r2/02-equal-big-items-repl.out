@@ -1,0 +1,25 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {NIL NIL NIL NIL NIL NIL}
+danlang>=> {NIL NIL NIL NIL NIL NIL}
+danlang>=> {NIL NIL NIL NIL NIL NIL}
+danlang>=> {T T T T T T}
+danlang>=> {100000 30000 T}
+danlang>=> exit
+--- stderr
+
+--- exit 0

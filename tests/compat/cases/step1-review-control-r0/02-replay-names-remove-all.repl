@@ -1,0 +1,12 @@
+; 02-replay-names-remove-all: remove-all of NIL binds nothing; of {1 1 1}, with every item removed (the same NIL
+; value), it binds hd and tl.  The probe (tl v (g)) is Op2's while tl is no local's name, the general way after
+(def {tl} +)
+(fun {g} {+ 70000 70001})
+(fun {p a b} {+ a b})
+(fun {probe} {p v v (tl v (g))})
+(def {v} 100003)
+(probe)
+(probe)
+(each {x (list NIL NIL NIL {1 1 1})} (remove-all 1 x))
+(probe)
+(probe)

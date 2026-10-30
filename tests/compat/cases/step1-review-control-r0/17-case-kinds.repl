@@ -1,0 +1,27 @@
+; 17-case-kinds: case's key against clause keys of every kind, compared as eq compares (integers that fit as they
+; are, anything else by value: 1 and 1.0 and 2/2 the same number, a string not a character, an atom not a symbol, a
+; list item by item, with or without its scope); and the integers a comparison gives a Num to (Equals does, for a
+; key that isn't an integer kept in its value: the shared 77 here), seen by the probe (+ w (g)), w 77: Op2's fast
+; way while 77 has none (the Site (g)'s code left), the general way after
+(fun {g} {+ 70000 70001})
+(fun {p a b} {+ a b})
+(def {w} 77)
+(fun {probe} {p 1 1 (+ w (g))})
+(probe)
+(probe)
+(print (case 1 {1 :int}) (case 100000 {100000 :big}) (case 123456789012345678901234567890 {123456789012345678901234567890 :huge}))
+(probe)
+(print (case 7/2 {3.5 :fixed-equal}) (case 2/2 {2 :no} {1 :rat-is-1}) (case (complex 1 2) {(complex 1 2) :complex}))
+(print (case "a" {\a :char} {"a" :string}) (case \a {"a" :string} {\a :char}) (case :a {(to-sym "a") :sym} {:a :atom}))
+(print (case {1 2} {{1 2} :list}) (case (list 1 2) {{1 2} :list2}) (case NIL {{} :empty} {T :t}) (case T {NIL :nil} {T :t}))
+(print (case (cons 1 {2}) {(list 1 2) :scoped-equal}) (case "" {NIL :nil} {"" :empty-string}))
+(probe)
+(print (case 77 {77.0 :point-zero}))
+(probe)
+(probe)
+(print (case 2 {(+ 1 1) :two} {2.0 :never}))
+(print (case 3 {1 :a} {3.0 :three-fixed}))
+(def {b1} (buffer "ab"))
+(print (case b1 {(buffer "ab") :same-bytes}) (case print {print :same-builtin}) (case (fn {x} {x}) {(fn {x} {x}) :same-lambda}))
+(def {h1} (hash-create))
+(print (case h1 {h1 :same-hash}) (case h1 {(hash-create) :equal-empty-hash} {T :t}))

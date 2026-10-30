@@ -1,0 +1,41 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Selection not found
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: Unbound Symbol 'zz'
+danlang>=> Error: Case not found
+danlang>=> :v
+danlang>=> exit
+--- stderr
+  at line 1  (l v (g))
+  called at line 1  (probe)
+  at line 1  {+ 70000 70001}
+  called at line 1  (probe)
+  at <BUNDLE>\lib\globals.dl:103  (error "Selection not found")
+  called at line 1  (cond {NIL 1})
+  at line 1  (l v (g))
+  called at line 1  (probe)
+  at line 1  (l v (g))
+  called at line 1  (probe)
+  at (made, not read)  {<function>(fn {x} {if &_ (if (eq x (eval (head (fst &_))...
+  called at line 1  (case (to-sym "zz") {1 2})
+  at <BUNDLE>\lib\globals.dl:113  (error "Case not found")
+  called at line 1  (case (to-sym "f") {1 2})
+--- exit 0

@@ -8,6 +8,13 @@ public sealed class Name {
     // anywhere is its global one (Compiler.cs)
     public bool Local;
 
+    // It's bound in a scope that isn't a global one: Local from now on (a change to the calls' plans, if it wasn't)
+    public void MakeLocal() {
+        if (Local) return;
+        Local = true;
+        LVal.PlanEpoch++;
+    }
+
     private static readonly Dictionary<string, Name> _table = new(StringComparer.Ordinal);
     public static Name Of(string s) {
         if (_table.TryGetValue(s, out var n)) return n;
@@ -106,7 +113,7 @@ public class LEnv {
 
     // A binding here, as it is (the value already shared)
     public void SetLocal(Name k, LVal v) {
-        if (!IsGlobal) k.Local = true;
+        if (!IsGlobal && !k.Local) k.MakeLocal();
         if (_map != null) {
             if (_map.TryGetValue(k, out var slot)) slot.Value = v;
             else _map[k] = new Slot { Value = v };

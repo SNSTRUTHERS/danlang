@@ -1,0 +1,5 @@
+; 12-even-num-given-then-replayed: as 11, with calls after 1 is given its Num: the native's value again, for the
+; other way, from the second of them on
+(fun {probe g args v bind} {do (print v) (if bind (set y 0) NIL) (list (unpack g args) y)})
+(fun {run g l} {map (fn {p} {probe g (fst p) (snd p) (thd p)}) l})
+(run even? (list [{-3} "x" T] [{-3} "x" T] [{-3} "x" T] [{-3} 1 T] [{-3} "x" T] [{-3} "x" T] [{-3} "x" NIL]))

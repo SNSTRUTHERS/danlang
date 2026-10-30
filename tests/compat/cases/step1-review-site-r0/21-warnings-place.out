@@ -1,0 +1,129 @@
+--- stdout
+
+--- stderr
+<BUNDLE>\lib\globals.dl:122: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:122: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:122: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:136: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:136: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:136: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:122: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:122: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:136: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:136: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:196: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:196: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:196: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:195: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:195: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:192: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:192: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:191: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:191: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:196: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:192: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+<BUNDLE>\lib\globals.dl:75: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:75: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:75: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:74: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:74: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:75: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:74: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:86: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:86: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:86: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:85: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:85: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:82: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:82: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:86: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:231: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:231: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:231: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:233: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:233: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:225: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:225: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:231: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+line 0: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+line 0: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+line 0: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+21-warnings-place.dl:13: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+21-warnings-place.dl:13: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+line 0: warning: def replaces a function, v, with a number
+21-warnings-place.dl:7: warning: def replaces a number, v, with a function
+line 0: warning: def replaces a function, v, with a atom
+21-warnings-place.dl:7: warning: def replaces a atom, v, with a function
+line 0: warning: def replaces a function, v, with a atom
+21-warnings-place.dl:7: warning: def replaces a atom, v, with a function
+line 0: warning: def replaces a function, v, with a atom
+21-warnings-place.dl:7: warning: def replaces a atom, v, with a function
+line 0: warning: def replaces a function, v, with a atom
+21-warnings-place.dl:7: warning: def replaces a atom, v, with a function
+line 0: warning: def replaces a function, v, with a atom
+21-warnings-place.dl:7: warning: def replaces a atom, v, with a function
+line 0: warning: def replaces a function, v, with a atom
+21-warnings-place.dl:7: warning: def replaces a atom, v, with a function
+<BUNDLE>\lib\globals.dl:207: warning: def replaces a function, v, with a t
+21-warnings-place.dl:7: warning: def replaces a t, v, with a function
+<BUNDLE>\lib\globals.dl:207: warning: def replaces a function, v, with a t
+21-warnings-place.dl:7: warning: def replaces a t, v, with a function
+<BUNDLE>\lib\globals.dl:207: warning: def replaces a function, v, with a t
+21-warnings-place.dl:7: warning: def replaces a t, v, with a function
+<BUNDLE>\lib\globals.dl:207: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:207: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:207: warning: def replaces a function, v, with a q-expression
+21-warnings-place.dl:7: warning: def replaces a q-expression, v, with a function
+<BUNDLE>\lib\globals.dl:207: warning: def replaces a function, v, with a t
+--- exit 0

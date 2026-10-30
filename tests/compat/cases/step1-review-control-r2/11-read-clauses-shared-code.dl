@@ -1,0 +1,26 @@
+; 11-read-clauses-shared-code: clauses read from text at run time (read's lists: their places the text's lines) and
+; given a scope by running a call of list made of them (eval), kept in variables and given to cond and case again
+; and again, from different calls and scopes; one clause's code shared by every call of a function, run in
+; recursion inside itself (its test calling the function again before it's done), and by two functions; each value,
+; errors inside them and their traces, and at the end one not caught
+(fun {p a b} {+ a b})
+(def {src} (read "{{(> n 2) (list :big n)} {(eq n 2) (mod n 2)} {T (list :small (floor (/ n 2)))}}"))
+(fun {pick n} {apply cond (eval (cons list (fst src)))})
+(print (map pick {1 2 3 4}))
+(def {clauses} (let {{n 7}} (eval (cons list (fst src)))))
+(print (apply cond clauses) (apply cond (reverse clauses)))
+(fun {walk n} {cond {(if (> n 0) (walk (- n 1)) NIL) (list :up n)} {(zero? n) (list :bottom n)} {T (list :back n)}})
+(print (walk 0) (walk 3))
+(fun {shared n} {cond {(even? n) (list :even n (div n 2))} {T (list :odd n (mod n 4))}})
+(fun {twice n} {list (shared n) (shared (+ n 1)) (shared n)})
+(print (map twice {1 2 3}))
+(def {ksrc} (read "{{1 (list :one (floor 7/2))} {n (list :n n (zero? (mod n 2)))}}"))
+(fun {kpick n} {apply case (cons n (eval (cons list (fst ksrc))))})
+(print (map kpick {1 2 3}))
+(each {i (range 6)} (kpick i))
+(def {bad} (read "{{(> n 0) (+ n \"a\")} {T (floor \"s\")}}"))
+(fun {fails n} {apply cond (eval (cons list (fst bad)))})
+(print (try (fails 1) &err) (try (fails 0) &err))
+(print (try (p 1 2 (pick 2)) &err) (try (p 1 2 (kpick 1)) &err))
+(print "the last: an error inside a read clause's value, not caught")
+(fails 0)

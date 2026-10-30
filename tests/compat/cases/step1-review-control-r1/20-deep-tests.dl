@@ -1,0 +1,17 @@
+; 20-deep-tests: recursion through a clause's test and case's key (not in tail position: each level one call more)
+; to the level where a call in a test is too deep (10000 nest at most): the error is the test's value, so cond's (and
+; each one's above it); a library function in the bottom test (its native's room, its code's calls), a plain one;
+; caught at the last depth that works and the first that doesn't, and at the end one not caught, its trace (12 calls
+; shown)
+(fun {td n} {cond {(if (zero? n) (odd? 7) (td (- n 1))) :yes} {T :no}})
+(fun {kd n} {case (if (zero? n) (mod 7 4) (kd (- n 1))) {3 3} {T :t}})
+(fun {cd n} {cond {(zero? n) (between? 1 9 5)} {(cd (- n 1)) T} {T NIL}})
+(fun {pd n} {cond {(zero? n) (pow 2 10)} {(pd (- n 1)) 1024} {T NIL}})
+(fun {try-at f n} {try (f n) (+ "E:" &err)})
+(print 9995 (try-at td 9995) 9996 (try-at td 9996))
+(print 9996 (try-at kd 9996) 9997 (try-at kd 9997))
+(print 9997 (try-at cd 9997) 9998 (try-at cd 9998))
+(print 9990 (try-at pd 9990) 9995 (try-at pd 9995))
+(print (try-at td 50) (try-at kd 50) (try-at cd 50) (try-at pd 50))
+(print "the last: a test too deep, not caught")
+(kd 9999)

@@ -1,0 +1,17 @@
+--- stdout
+"NIL NIL T :v3 "
+"2 1 2 :b "
+"NIL T :made NIL "
+"NIL {T :evaluated-again} "
+":in-value  "
+":redefining :my-fst T :my-fst :after "
+"NIL NIL Selection not found\n"
+Error: Case not found
+Error: stops
+{"NIL T 0 " "T {:big 2} " "T {:big 3} "}
+the last: output-of stopped by a test's error, not caught
+--- stderr
+Error: 13-output-of-order.dl: '+' adds numbers, or joins values to a string
+  at 13-output-of-order.dl:20  (+ 1 "a")
+  called at 13-output-of-order.dl:20  (cond {(say NIL) 0} {(+ 1 "a") 1})
+--- exit 1

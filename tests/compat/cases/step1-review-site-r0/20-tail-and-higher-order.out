@@ -1,0 +1,77 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> Error: Unbound Symbol 'y'
+danlang>=> exit
+--- stderr
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run tc (list (list 7/2 T) (list 7/2 T) (list 7/2 T) (lis...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run tc (list (list 7/2 T) (list -7/2 T) (list 7/2 T) (li...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (fn {x} {tc2 x 3}) (list (list 7 T) (list 7 T) (list...
+  at <BUNDLE>\lib\globals.dl:136  (- (floor (- 1/2 a)))
+  called at line 1  (run tc3 (list (list 4 T) (list -5/2 T) (list 4 T) (list ...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (run tc3 (list (list 4 T) (list -5/2 T) (list 4 T) (list ...
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (run (fn {x} {between? x 1 5}) (list (list 9 T) (list 9 T...
+  at <BUNDLE>\lib\globals.dl:122  (cmp a tr)
+  called at line 1  (run (fn {x} {map floor x}) (list (list {7/2 -7/2} T) (li...
+  at <BUNDLE>\lib\globals.dl:177  (=0 (mod n 2))
+  called at line 1  (run (fn {x} {filter even? x}) (list (list {1 2 3} T) (li...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (fn {x} {foldl mod 1000 x}) (list (list {7 5 3} T) (...
+  at <BUNDLE>\lib\globals.dl:196  (* a (pow a (1- b)))
+  called at line 1  (run (fn {x} {foldl (fn {a b} {pow b a}) 1 x}) (list (lis...
+  at <BUNDLE>\lib\globals.dl:25  (or a b)
+  called at line 1  (run (fn {x} {sort x xor}) (list (list {3 NIL 2} T) (list...
+  at <BUNDLE>\lib\globals.dl:171  (=1 (mod n 2))
+  called at line 1  (run (fn {x} {count odd? x}) (list (list {1 2 3} T) (list...
+  at <BUNDLE>\lib\globals.dl:206  {=0 (index-of s sub)}
+  called at line 1  (run (fn {x} {find (fn {s} {starts-with? s "b"}) x}) (lis...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run (fn {x} {h :f x}) (list (list 7/2 T) (list 7/2 T) (l...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (fn {x} {h :m x 3}) (list (list 7 T) (list 7 T) (lis...
+  at <BUNDLE>\lib\globals.dl:262  (<= &3 &2)
+  called at line 1  (run (fn {x} {h :b 5 1 x}) (list (list 3 T) (list 3 T) (l...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (fn {x} {(mod x) 3}) (list (list 7 T) (list 7 T) (li...
+  at <BUNDLE>\lib\globals.dl:75  (cons (list (fst a) (fst b)) (zip (tail a) (tail b)))
+  called at line 1  (run (fn {x} {(zip x) {1 2}}) (list (list {3 4} T) (list ...
+  at <BUNDLE>\lib\globals.dl:122  (1- tr)
+  called at line 1  (run fl (list (list 7/2 T) (list 7/2 T) (list 7/2 T) (lis...
+  at <BUNDLE>\lib\globals.dl:148  (- a (* b (floor (/ a b))))
+  called at line 1  (run (fn {x} {% x 3}) (list (list 7 T) (list 7 T) (list 7...
+--- exit 0

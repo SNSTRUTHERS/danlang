@@ -1,0 +1,11 @@
+--- stdout
+20000 20000 60001
+has-element? {NIL NIL NIL NIL NIL NIL}
+contains? {NIL NIL NIL NIL NIL NIL}
+starts-with? {NIL NIL NIL NIL NIL NIL}
+between? {T T T T T T}
+avg {2 2 2 2 2 100000/60001}
+100000 T
+--- stderr
+
+--- exit 0

@@ -1,0 +1,7 @@
+--- stdout
+:test-was-exit exit NIL :exit
+exit
+{exit} exit
+--- stderr
+
+--- exit 0

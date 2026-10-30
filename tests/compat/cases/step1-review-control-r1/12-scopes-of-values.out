@@ -1,0 +1,47 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> {{:big 20 1} {:code 5 2} {:made -3 -2} {:code 7 1}}
+danlang>=> NIL
+danlang>=> Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+danlang>=> Error: 'eval' can't be applied to values: it's a special form
+danlang>=> NIL
+danlang>=> {{:after 100} {:after 100} {:after 1}}
+danlang>=> NIL
+danlang>=> {:acc {:t2 9}}
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> exit
+--- stderr
+  at (made, not read)  {:let 0 0}
+  at line 1  {map eval (mk2 x)}
+  at line 1  {list :code x (mod x 3)}
+  called at line 1  (p 1 2 (eval (mk 5)))
+  at (made, not read)  {<function>(list) :made -5 -3}
+  called at line 1  (p 1 2 (eval (mk -5)))
+  at (made, not read)  {<function>(list) 1}
+  called at line 1  (p 1 2 (eval (fst (mk2 1))))
+  at (made, not read)  {:let 6 3}
+  at line 1  {list :code x (mod x 3)}
+  called at line 1  (p 1 2 (eval (mk x)))
+  at (made, not read)  {<function>(list) 7}
+  called at line 1  (p 1 2 (eval (fst (mk2 x))))
+  at (made, not read)  {<function>(list) :made -6 -3}
+  called at line 1  (p 1 2 (eval (mk x)))
+--- exit 0

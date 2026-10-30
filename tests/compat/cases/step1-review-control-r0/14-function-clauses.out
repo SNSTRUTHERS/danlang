@@ -1,0 +1,93 @@
+--- stdout
+DanLang Version 0.2
+Type 'exit' to Exit
+
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 1
+danlang>=> :none-called
+danlang>=> :needs-is-true
+danlang>=> <function>(fn {x} {x})
+danlang>=> :fexpr-was-true
+danlang>=> :fexpr-called
+danlang>=> NIL
+danlang>=> :list-was-nil
+danlang>=> <function>(cons)
+danlang>=> <function>(cons 1)
+danlang>=> NIL
+danlang>=> T
+danlang>=> Error: 'if' supplied too few parameters
+danlang>=> Error: 'if' supplied too few parameters
+danlang>=> <hash>NIL
+danlang>=> :hash-true
+danlang>=> Error: bad inside
+danlang>=> Error: bad inside
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> Error: '+' adds numbers, or joins values to a string
+danlang>=> :matched-none
+danlang>=> Error: bad inside
+danlang>=> Error: bad inside
+danlang>=> NIL
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> Error: The function takes 2 arguments, not 3
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 12000
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> 12000
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: stopped
+danlang>=> NIL
+danlang>=> NIL
+danlang>=> Error: stopped in tail
+danlang>=> exit
+--- stderr
+  at (made, not read)  {if}
+  called at line 1  (cond {NIL 1} {T if})
+  at (made, not read)  {if}
+  called at line 1  (cond {if 1})
+  at line 1  {error "bad inside"}
+  called at (made, not read)  {bad}
+  called at line 1  (cond {bad 1})
+  at line 1  {error "bad inside"}
+  called at line 1  (cond {NIL 1} {T bad})
+  at line 1  {+ 1 "a"}
+  called at (made, not read)  {bad2}
+  called at line 1  (cond {NIL 1} {bad2 2})
+  at line 1  {+ 1 "a"}
+  called at line 1  (cond {NIL 1} {T bad2})
+  at line 1  {error "bad inside"}
+  called at line 1  (case 3 {1 :a} {3 bad})
+  at line 1  {error "bad inside"}
+  called at (made, not read)  {bad}
+  called at line 1  (case 3 {bad 1})
+  at line 1  {:none-called}
+  called at line 1  (f 1 2 (cond {NIL 1} {T none}))
+  at (made, not read)  {1}
+  called at line 1  (f 1 2 (cond {none 1}))
+  at (made, not read)  {list}
+  called at line 1  (f 1 2 (cond {NIL 1} {T list}))
+  at (made, not read)  {needs}
+  called at line 1  (f 1 2 (cond {NIL 1} {T needs}))
+  at line 1  (error "stopped")
+  called at line 1  (err-at m)
+  called at line 1  (err-at m)
+  called at line 1  (err-at m)
+  called at line 1  (err-at m)
+  called at line 1  (err-at 5)
+  at line 1  (error "stopped in tail")
+  called at line 1  (err-tail)
+--- exit 0

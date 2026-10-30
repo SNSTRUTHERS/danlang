@@ -1,0 +1,17 @@
+; 02-equal-big-items-repl: 01-equal-big-items at the REPL, where an expression that takes more than a second says so
+; ("(Nms)=>"): has-element?, contains?, starts-with? of a list, and between? of lists, whose items are many integers
+; outside the shared ones, each made on its own and all equal, what's looked for not there; each line well under a
+; second's work (a few hundred thousand comparisons at most)
+(def {n} 30000)
+(fun {items} {map (fn {i} {+ 100000 0}) (range n)})
+(def {small} {1 2 3})
+(def {l1} (items))
+(def {l2} (items))
+(def {l3} (items))
+(def {l4} (items))
+(def {l5} (items))
+(map (fn {i} {has-element? (if (== i 5) l1 small) 7}) (range 6))
+(map (fn {i} {contains? (if (== i 5) l2 small) 7}) (range 6))
+(map (fn {i} {starts-with? (if (== i 5) l3 small) 7}) (range 6))
+(map (fn {i} {if (== i 5) (between? l4 l5 l4) (between? small small small)}) (range 6))
+(list (fst l1) (len l1) (eq l1 l5))

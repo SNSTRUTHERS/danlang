@@ -1,0 +1,21 @@
+--- stdout
+9996 {9996 1} 9997 E:Too deep: more than 10000 calls nested
+9995 {0 NIL} 9996 E:Too deep: more than 10000 calls nested
+9997 {0 1} 9998 E:Too deep: more than 10000 calls nested
+the last: one level too deep, not caught
+--- stderr
+Error: 07-deep-values.dl: Too deep: more than 10000 calls nested
+  at <BUNDLE>\lib\globals.dl:148  (/ a b)
+  called at <BUNDLE>\lib\globals.dl:148  (floor (/ a b))
+  called at 07-deep-values.dl:6  (mod 7 2)
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+  called at 07-deep-values.dl:6  (down (- n 1))
+--- exit 1

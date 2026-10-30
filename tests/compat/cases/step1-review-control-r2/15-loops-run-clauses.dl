@@ -1,0 +1,26 @@
+; 15-loops-run-clauses: while whose test is a Q-expression running cond (run as code where it was written) and whose
+; body is case; each's and dotimes's bodies as Q-expressions running cond with clauses that use the loop's name;
+; a loop inside a clause's value and test (its own scope); a loop's body making the clauses it gives cond (list's:
+; each remembering the loop's scope, the name's value that time); each value, the order things print in, and at the
+; end an error made right after one, not caught, its trace
+(fun {p a b} {+ a b})
+(def {i} 0)
+(def {seen} {})
+(while {cond {(> i 6) NIL} {T (do (def {i} (+ i 1)) T)}} {case (mod i 3) {0 (def {seen} (cons (list :zero i) seen))} {1 (def {seen} (cons (floor (/ i 2)) seen))} {2 NIL}})
+(print i (reverse seen))
+(def {acc} {})
+(each {x (range 6)} {def {acc} (cons (cond {(even? x) (list :e x)} {(eq x 3) (mod x 2)} {T (case x {1 :one} {x (pow 2 x)})}) acc)})
+(print (reverse acc))
+(def {acc} {})
+(dotimes {k 5} {def {acc} (cons (case k {0 (minimum (list 4 k))} {k (cond {(odd? k) (maximum (list k 1))} {T (div k 2)})}) acc)})
+(print (reverse acc))
+(fun {inside n} {cond {(do (set c 0) (dotimes {j n} (set! {c} (+ c j))) (> c 5)) (list :sum c)} {T (do (set d {}) (each {y (range n)} (set! {d} (cons y d))) (list :items d))}})
+(print (inside 2) (inside 5))
+(def {cls} {})
+(each {x (range 4)} (def {cls} (cons (list (eq x 2) (list :made-at x)) cls)))
+(print (apply cond cls) (apply cond (reverse cls)))
+(def {n} 0)
+(while (case n {5 NIL} {n T}) (def {n} (+ n 1)))
+(print n)
+(print "the last: an error made right after cond in a loop's body, not caught")
+(each {x (range 3)} (if (eq x 2) (p 1 2 (cond {(eq x 2) (mod x 3)})) (cond {T (mod x 3)})))

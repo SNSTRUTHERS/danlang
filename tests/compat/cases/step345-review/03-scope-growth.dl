@@ -1,0 +1,33 @@
+; 03-scope-growth: a call's scope of n formals (1 to 9), then more bindings in it: set (=) of new names, of the
+; formals again, the extras' &1 ... and &_, so the scope grows past what it was made with (small, then big); the
+; values read back, set! from closures made in it, defined?, and partial applications of each at every count
+(fun {grow n} {fn (take n {a b c d e f g h i}) {do
+  =(x1 1) =(x2 2) =(x3 3) =(x4 4) =(x5 5) =(x6 6) =(x7 7) =(x8 8) =(x9 9)
+  =(a :a2)
+  (list a x1 x5 x9 (if (defined? i) i :no-i) (if (defined? h) h :no-h) &_)}})
+(def {gs} (map grow (range 1 10)))
+(each {k (range 9)} (do
+  =(g (nth k gs))
+  (print "grow" (+ k 1) (unpack g (range 100 (+ 101 k))) (unpack g (range 100 (+ 104 k))))))
+(fun {growset n} {fn (take n {a b c d e f g h i}) {do
+  =(get (fn {} {a}))
+  =(put (fn {v} {set! {a} v}))
+  (put :put1)
+  =(y1 1) =(y2 2) =(y3 3) =(y4 4) =(y5 5) =(y6 6) =(y7 7) =(y8 8)
+  (put :put2)
+  (list (get) a y8)}})
+(each {n (range 1 10)} (print "growset" n (unpack (growset n) (range n)) (repr (unpack (growset n) (range (- n 1))))))
+; set over a formal and over an extra's name, at each size
+(fun {over n} {fn (take n {a b c d e f g h}) {do =(&1 :set-1) =(&_ :set-rest) =(a :set-a) (list a &1 &_ &2)}})
+(each {n (range 1 9)} (print "over" n (unpack (over n) (range (+ n 3)))))
+; the exact sizes: 8 formals with 0, 1, 2 extras; 7 with 1, 2; each extra bound as a ninth, tenth binding
+(def {f8} (fn {a b c d e f g h} {list a h &1 &2 &_ (do =(z :z) z)}))
+(def {f7} (fn {a b c d e f g} {list a g &1 &2 &_ (do =(z :z) =(zz :zz) (list z zz))}))
+(print "f8" (f8 1 2 3 4 5 6 7 8) (f8 1 2 3 4 5 6 7 8 9) (f8 1 2 3 4 5 6 7 8 9 10))
+(print "f7" (f7 1 2 3 4 5 6 7) (f7 1 2 3 4 5 6 7 8) (f7 1 2 3 4 5 6 7 8 9) (f7 1 2 3 4 5 6 7 8 9 10 11 12))
+(print "f8 partial" (repr (f8 1 2 3 4)) ((f8 1 2 3 4) 5 6 7 8 9) (((f8 1) 2 3 4 5 6 7) 8 9 10))
+; a 9-formal function (more than a small scope holds), given all, fewer, more
+(def {f9} (fn {a b c d e f g h i} {list a i &_ (do =(w :w) w)}))
+(print "f9" (f9 1 2 3 4 5 6 7 8 9) (f9 1 2 3 4 5 6 7 8 9 10) ((f9 1 2 3 4 5 6 7 8) 9) (repr (f9 1)))
+; the last: a name set in a small scope that grew, read outside it
+(do ((nth 7 gs) 1 2 3 4 5 6 7 8) x9)

@@ -1,0 +1,26 @@
+; 13-map-kinds: map over NIL, (), {}, a list of one, views; with built-ins (partial ones too), functions with extras,
+; with too many formals (each item a partial application), fexprs, methods; an error midway (its value, the items
+; before it not kept), an error as an item; map's list used as code, as formals, as a hash's entries
+(print "empty" (map + nil) (map + ()) (map + {}) (map + []) (type-of (map + {})) (eq (map + {}) nil))
+(print "one" (map (fn {x} {x}) {a}) (map + {1}) (map (+ 10) {1 2 3}) (map (eq 2) {1 2 3}))
+(print "extras" (map (fn {} {list &1 &_}) {1 2}) (map (fn {x} {list x &_}) {1 2}))
+(print "partials" (map (fn {a b} {list a b}) {1 2}) (map (fn {f} {f :b}) (map (fn {a b} {list a b}) {1 2})))
+(print "fexpr" (map (fexpr {x} {list x (type-of x)}) {(+ 1 2) y "s"}))
+(def {o} #({{:m (fn {x} {list x (len (hash-keys &0))})}}))
+(print "method" (map (o :m) {1 2}) (map (hash-call o :m) {:a}))
+(def {log} {})
+(print "error midway" (try (map (fn {x} {do (set! {log} (cons x log)) (if (eq x 3) (error "three") x)}) {1 2 3 4 5}) &err) log)
+(print "error item" (try (map (fn {x} {x}) (list 1 (error "item") 3)) &err))
+(print "error value" (map error? (map (fn {x} {try (if (eq x 2) (error "two") x) &err}) {1 2 3})))
+(print "bad" (try (map 1 {1}) &err) (try (map + 5) &err) (try (map + "abc") &err) (try (map {1} {1}) &err))
+(def {code} (map (fn {x} {x}) {+ 1 2}))
+(print "as code" code (eval code) (eval (map (fn {x} {x}) {list 1 2})))
+(def {formals} (map to-sym {"p" "q"}))
+(print "as formals" ((fn formals {list p q}) 1 2) ((fn formals {list q p}) 1 2) formals)
+(def {h} (hash-create (map (fn {k} {list k (* k k)}) {1 2 3})))
+(print "as entries" (hash-keys h) (hash-values h) (h 2))
+(print "many" (len (map (fn {x} {x}) (range 100000))) (sum (map (fn {x} {* x 2}) (range 1000))))
+; the last: an error from the function map calls, inside calls
+(fun {mapper l} {map (fn {x} {if (eq x 2) (error "map stops at 2") x}) l})
+(fun {calls-mapper} {list (mapper {1 2 3})})
+(calls-mapper)

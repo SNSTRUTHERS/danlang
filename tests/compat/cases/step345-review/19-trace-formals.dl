@@ -1,0 +1,15 @@
+; 19-trace-formals: errors that end a program, made inside calls whose formals were bound at once, where the error
+; starts no call of its own: its trace's 'at' the last call made (a library function's code's, warm or not), the
+; 'called at' lines each non-tail call of a function, here through a partial application, a method, a fexpr and
+; dotimes's and map's function
+(fun {lib-warm n} {if (zero? n) :ok (do (mod n 7) (round n) (lib-warm (- n 1)))})
+(print (lib-warm 3000))
+(fun {inner a b c d e f g h} {do (mod a b) (round c) (list a b c d e f g h) missing-at-end})
+(def {pinner} (inner 1 2 3 4))
+(def {o} #({{:m (fn {x} {list (pinner x 6 7 8) &0})}}))
+(def {fx} (fexpr {code} {list (eval code)}))
+(fun {via-map x} {map (fn {y} {o :m y}) {x}})
+(fun {via-dotimes} {dotimes 1 (fn {i} {fx (via-map i)})})
+(fun {top} {list (via-dotimes) :never})
+(print "caught" (try (top) &err))
+(top)

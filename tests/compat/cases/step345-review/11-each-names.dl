@@ -1,0 +1,31 @@
+; 11-each-names: each's name (had once from the symbol): in upper case, as a built-in's or the shorthand's name, &1,
+; &_, &0, a name used nowhere else; over lists (items as written), strings (characters), views (tail, drop),
+; map's lists of every size; each's function form with a function of no formals (extras), of two (partial: an
+; error?), a partial application, a method; errors in the body
+(each {X {1 2}} (write x X " "))
+(print)
+(each {list {1 2}} (write list " " [3 4] " "))
+(print)
+(each {if {T NIL}} (write (try ?(if :y :n) &err) " "))
+(print)
+(each {&1 {:a :b}} (write &1 " "))
+(each {&_ {:c :d}} (write &_ " "))
+(each {&0 {:e}} (write &0 " "))
+(print)
+(fun {in-call x} {do (each {&1 {:i1 :i2}} (write &1 " ")) (list &1 &_)})
+(print "in call" (in-call :x :extra1 :extra2))
+(each {qqeachname (tail {0 1 2})} (write qqeachname))
+(each {qqeachname (substring "abc" 1)} (write qqeachname))
+(each {qqeachname (drop 1 {7 8 9})} (write qqeachname))
+(each {c "xyz"} (write (char-code c) " "))
+(print)
+(each {k (range 12)} (do =(m (map (fn {x} {* x x}) (range k))) (each {v m} (write v ",")) (write "|")))
+(print)
+(print "fn form" (each (fn {} {write &1 " "}) {1 2}) (each ((fn {a b} {write a b " "}) :p) {1 2}))
+(print "fn form" (try (each (fn {a b} {list a b}) {1 2}) &err) (try (each (fn {} {:none}) {1}) &err))
+(def {o} #({{:m (fn {x} {write x (len (hash-keys &0)) " "})}}))
+(print "method" (each (o :m) {1 2}) (each (hash-call o :m) "ab"))
+(print "errors" (try (each {x {1 2 3}} (if (eq x 2) (error "two"))) &err) (try (each {x {1 (error "in list")}} x) &err))
+(print "bad" (try (each {1 {2}} 3) &err) (try (each {x} 1) &err) (try (each {x 1 2} 1) &err) (try (each {x 5} 1) &err))
+; the last: an error in each's body
+(each {qqlast {1 2 3}} (if (eq qqlast 3) (error "each ends it")))

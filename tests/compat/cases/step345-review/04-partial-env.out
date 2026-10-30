@@ -1,0 +1,20 @@
+--- stdout
+p <function>(fn {a b c} {list a b c &_}) <function>(fn {a b c} {list a b c &_}) <function>(fn {b c} {list a b c &_}) <function>(fn {b c} {list a b c &_}) <function>(fn {c} {list a b c &_})
+p call {1 2 3 NIL} {1 2 3 {4}} {1 2 3 NIL} {1 2 3 {4}} {1 2 3 NIL} {1 2 3 {4 5}} {1 2 3 NIL} {1 2 3 NIL}
+p eq T T T T T T
+p err The function takes 3 arguments, not 4 The function takes 3 arguments, not 4 The function takes 2 arguments, not 3 The function takes 1 argument, not 2
+p err The function takes 3 arguments, not 4 The function takes 2 arguments, not 3 The function takes 1 argument, not 2
+parts {<function>(fn {a b c} {list a b c}) <function>(fn {b c} {list a b c}) <function>(fn {c} {list a b c})} NIL
+part <function>(fn {a b c} {list a b c}) {:x :y :z} <function>(fn {c} {list a b c})
+part <function>(fn {b c} {list a b c}) The function takes 2 arguments, not 3 {0 :x :y}
+part <function>(fn {c} {list a b c}) The function takes 1 argument, not 3 The function takes 1 argument, not 2
+d {2 3} {2 3} {2 3} {2 3}
+e8 {1 8 {9}} {1 8 {9 10}} {1 9 {10}} {1 9 NIL}
+redef {:old 1 2} {:old 1 2} {:new 1 2} {:new 1 2}
+closure {:one :two :three} {:x :y :z} {:p :q :r}
+fexpr partial {(+ 1 2) (* 3 4) 3} {(+ 1 1) whatever 2}
+--- stderr
+Error: 04-partial-env.dl: The function takes 3 arguments, not 5
+  at 04-partial-env.dl:40  (g3)
+  called at 04-partial-env.dl:40  ((g3) 1 2 3 4 5)
+--- exit 1

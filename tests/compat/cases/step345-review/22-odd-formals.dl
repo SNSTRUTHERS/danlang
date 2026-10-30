@@ -1,0 +1,28 @@
+; 22-odd-formals: formals that aren't symbols (an error as the function's made), names made by to-sym (in upper
+; case, empty), 8 formals the last of which is &_ or &1 (then extras: a ninth binding, the scope made big), a
+; method whose formals are &0 twice; functions of every such shape given to the built-ins that call them (sort's
+; less, foldl, foldr, filter, any?, find, count, each, dotimes)
+(print "not symbols" (try (fn {nil} {1}) &err) (try (fn {t} {1}) &err) (try (fn {exit} {1}) &err) (try (fn {1 a} {1}) &err)
+  (try (fn {"s"} {1}) &err) (try (fn {{a}} {1}) &err) (try (fn {:a} {1}) &err) (try (fn 5 {1}) &err) (try (fun {f 1} {1}) &err))
+(print "8th &_" ((fn {a b c d e f g &_} {list a g &_ &1}) 1 2 3 4 5 6 7 8 9 10) ((fn {a b c d e f g &_} {list a g &_}) 1 2 3 4 5 6 7 8))
+(print "8th &1" ((fn {a b c d e f g &1} {list a g &1 &_}) 1 2 3 4 5 6 7 8 9) ((fn {a b c d e f g &1} {list &1}) 1 2 3 4 5 6 7 8))
+(def {p} ((fn {a b c d e f g h} {list a b c d e f g h}) 1 2 3 4 5 6 7))
+(print "8 partial" p (p 8) (try (p 8 9) &err))
+(print "to-sym" ((fn (list (to-sym "a") (to-sym "A")) {a}) 1 2) ((fn (list (to-sym "") (to-sym "b")) {b}) 1 2)
+  ((fn (map to-sym {"x" "Y" "z"}) {list z y x}) 1 2 3) (repr (fn (list (to-sym "Q")) {q})))
+(def {o} #({{:m (fn {&0 &0} {&0})} {:n (fn {&0 x &0} {list &0 x})}}))
+(print "&0 twice" (o :m 5 6) (repr (o :m 5)) (o :n 1 2 3) ((o :n 1) 2 3))
+; shapes given to the built-ins that call functions
+(def {less-dup} (fn {a a} {< a 5}))
+(def {less-part} ((fn {k a b} {< (* k a) (* k b)}) -1))
+(def {less-8} ((fn {a b c d e f g h} {< g h}) 1 2 3 4 5 6))
+(def {less-ex} (fn {a} {< a &1}))
+(print "sort" (sort {3 1 2} less-dup) (sort {3 1 2} less-part) (sort {3 1 2} less-8) (sort {3 1 2} less-ex))
+(print "foldl" (foldl (fn {a a} {a}) 0 {1 2 3}) (foldl ((fn {k a b} {+ a (* k b)}) 10) 0 {1 2 3}) (foldl (fn {a} {list a &1}) 0 {1 2}))
+(print "foldr" (foldr (fn {a b} {cons a b}) {} {1 2 3}) (foldr ((fn {a b c d e f g h} {list g h}) 1 2 3 4 5 6) :z {1 2}))
+(print "filter" (filter (fn {x x} {x}) {1 2}) (filter ((fn {k x} {> x k}) 1) {0 1 2 3}) (filter (fn {} {> &1 1}) {0 1 2 3}))
+(print "any find count" (any? (fn {x} {eq x 2}) {1 2}) (find ((fn {k x} {> x k}) 1) {0 1 2 3}) (count (fn {} {&1}) {1 NIL 2}))
+(print "each dotimes" (each (fn {x x} {write x}) {1 2}) (dotimes 3 ((fn {a b c d e f g h} {write h}) 1 2 3 4 5 6 7)))
+(print "errors" (try (sort {3 1 2} (fn {a} {< a 1})) &err) (try (foldl (fn {a b c} {a}) 0 {1 2}) &err) (try (filter (fn {} {T}) {1}) &err))
+; the last: the 8-formal partial application given two
+(p 8 9)

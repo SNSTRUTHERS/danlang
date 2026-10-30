@@ -1,0 +1,23 @@
+; 06-fexpr: fexprs' formals bound to their arguments as written (each remembering the caller's scope): a repeated
+; formal, formals named &1 and &_, extras, partial application, eval of each in turn, errors as values; an fexpr's
+; call stopping an argument that's an error (it doesn't), and a body that names no extras given some
+(def {q} (fexpr {a b} {list a b (eval a) (eval b)}))
+(print "q" (q (+ 1 2) (* 2 3)) ((q (+ 1 1)) (- 5 1)) (try (q 1 2 3) &err))
+(def {qd} (fexpr {a a} {list a (eval a)}))
+(print "qd" (qd (+ 1 2) (* 2 3)) ((qd (+ 1 1)) (- 9 1)))
+(def {qx} (fexpr {a} {list a &_ (map (fn {c} {eval c}) &_)}))
+(print "qx" (qx (+ 1 2)) (qx (+ 1 2) (* 3 3) (- 1 2)) (qx x y z))
+(def {q1} (fexpr {&1} {list &1 &_}))
+(print "q1" (q1 (+ 1 2)) (q1 (+ 1 2) (+ 3 4)))
+(def {qe} (fexpr {a b} {list (type-of a) (type-of b) (try (eval b) &err)}))
+(print "qe" (qe (error "not stopped") (error "evaluated later")) (qe 1 undefined-name))
+(fun {caller v} {q v (+ v 1)})
+(print "scope" (caller 10) (let {{v 5}} (q v v)))
+(def {qn} (fexpr {a} {a}))
+(print "qn" (qn (+ 1 2)) (repr (qn (+ 1 2))) (repr (qn sym)) (repr (qn {1 2})) (repr (qn "s")))
+(def {q8} (fexpr {a b c d e f g h} {map (fn {c} {eval c}) [a b c d e f g h]}))
+(print "q8" (q8 1 2 3 (+ 1 3) 5 6 7 8) ((q8 1 2 3 4) 5 6 7 (* 2 4)))
+(def {q9} (fexpr {a b c d e f g h i} {list (eval a) (eval i) &_}))
+(print "q9" (q9 1 2 3 4 5 6 7 8 (+ 4 5)) (try (q9 1 2 3 4 5 6 7 8 9 10) &err))
+; the last: an fexpr given an extra it doesn't name
+(q 1 2 3)

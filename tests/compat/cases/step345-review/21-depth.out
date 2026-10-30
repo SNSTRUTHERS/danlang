@@ -1,0 +1,22 @@
+--- stdout
+ok 9990 9991 9997 9998
+too deep Too deep: more than 10000 calls nested Too deep: more than 10000 calls nested Too deep: more than 10000 calls nested Too deep: more than 10000 calls nested
+extras 3002 Too deep: more than 10000 calls nested
+depths 9998 9998
+partial 107 Too deep: more than 10000 calls nested
+--- stderr
+Error: 21-depth.dl: Too deep: more than 10000 calls nested
+  at 21-depth.dl:6  (- n 1)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+  called at 21-depth.dl:6  (d8 (- n 1) a b c d e f g)
+--- exit 1

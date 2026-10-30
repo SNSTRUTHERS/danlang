@@ -1,0 +1,15 @@
+--- stdout
+adders {100 101 102 103 104 105 106 107 108 109} T {"<function>(fn {x} {+ x n})" "<function>(fn {x} {+ x n})"}
+made 0 {{1 2 {3}} {2 1 {3}} {2 :no-b {3}} {:no-a :no-b NIL} {:no-a :no-b {1 2 3}} {1 2 {3}} {2 1 {3}} {2 :no-b {3}} {:no-a :no-b NIL} {:no-a :no-b {1 2 3}}}
+made 1 {{1 2 {3}} {2 1 {3}} {2 :no-b {3}} {:no-a :no-b NIL} {:no-a :no-b {1 2 3}} {1 2 {3}} {2 1 {3}} {2 :no-b {3}} {:no-a :no-b NIL} {:no-a :no-b {1 2 3}}}
+made 2 {{1 2 {3}} {2 1 {3}} {2 :no-b {3}} {:no-a :no-b NIL} {:no-a :no-b {1 2 3}} {1 2 {3}} {2 1 {3}} {2 :no-b {3}} {:no-a :no-b NIL} {:no-a :no-b {1 2 3}}}
+made partial {"<function>(fn {b} {list (if (defined? a) a :no-a) (if (defined? b) b :no-b) &_})" "<function>(fn {a} {list (if (defined? a) a :no-a) (if (defined? b) b :no-b) &_})" "<function>(fn {a} {list (if (defined? a) a :no-a) (if (defined? b) b :no-b) &_})" "<function>(fn {y z} {list (if (defined? a) a :no-a) (if (defined? b) b :no-b) &_})" "{:no-a :no-b {1}}"} {{1 2 {3}} {2 1 {3}} {2 :no-b {3}} {:no-a :no-b NIL} "S-Expression starts with incorrect type. Got Q-Expression, Expected Function."}
+made eq T NIL T
+js 250 {{49 {2} 1} {1 {2} :no-q} {49 NIL 1} {49 {2} 1} {49 {1 2} :no-q} {48 {2} 1} {1 {2} :no-q} {48 NIL 1} {48 {2} 1} {48 {1 2} :no-q}} {{0 {2} 1} {1 {2} :no-q} {0 NIL 1} {0 {2} 1} {0 {1 2} :no-q}}
+counters 1 2 1 3 2 3 4
+shadow {4 3} {4 3}
+--- stderr
+Error: 16-closures-same-code.dl: The function takes 1 argument, not 2
+  at 16-closures-same-code.dl:27  (nth 3 adders)
+  called at 16-closures-same-code.dl:27  ((nth 3 adders) 1 2)
+--- exit 1

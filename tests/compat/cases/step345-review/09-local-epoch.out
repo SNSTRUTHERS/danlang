@@ -1,0 +1,17 @@
+--- stdout
+:warm
+a Unbound Symbol 'never-bound-1' Unbound Symbol 'never-bound-1'
+b {7 2} Unbound Symbol 'never-bound-1'
+c {3 4 :t :c} -4 Unbound Symbol 'never-bound-1' :warm
+d {0 -3 :m :n} Unbound Symbol 'never-bound-1' :warm
+e {32 :sq :cu :x} {32 :sq :cu :y} Unbound Symbol 'never-bound-1'
+f {11 11} Unbound Symbol 'never-bound-1' :warm
+g Unbound Symbol 'never-bound-1' :warm
+h 73926
+i 12 Unbound Symbol 'never-bound-1'
+--- stderr
+Error: 09-local-epoch.dl: Unbound Symbol 'unbound-at-the-end'
+  at <BUNDLE>\lib\globals.dl:262  (>= &3 &1)
+  called at 09-local-epoch.dl:36  (inner2 a b 3)
+  called at 09-local-epoch.dl:37  (outer2 7 9)
+--- exit 1

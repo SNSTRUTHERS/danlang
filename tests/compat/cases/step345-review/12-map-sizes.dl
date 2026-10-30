@@ -1,0 +1,38 @@
+; 12-map-sizes: map's lists of every size 0 to 40, then taken apart and built on as lists are (tail, drop, take,
+; init, cons, join, reverse, subset), many from one, so that lists sharing one's items (a view's) never see another's
+; changes: each result printed whole, and each map's list again after
+(fun {sq x} {* x x})
+(fun {show-ops m} {list
+  (len m) (if m (tail m) :empty) (drop 3 m) (take 3 m) (take 30 m) (drop 30 m) (if m (init m) :empty)
+  (cons :c1 m) (cons :c2 m) (join m {:j1}) (join m {:j2}) (join (drop 2 m) {:j3}) (join (drop 2 m) {:j4})
+  (cons :c3 (tail (if m m {0}))) (cons :c4 (tail (if m m {0}))) (reverse m) (subset m 0 (len m))})
+(each {k (range 41)} (do
+  =(m (map sq (range k)))
+  =(r (show-ops m))
+  (print k r)
+  (print k "again" m (eq m (map sq (range k))))))
+; a map's list built on in steps: joined, consed, joined again, each step kept
+(def {m5} (map sq (range 5)))
+(def {a1} (join m5 {:x}))
+(def {a2} (join m5 {:y}))
+(def {a3} (join a1 {:z}))
+(def {a4} (join a2 {:w}))
+(def {t1} (tail m5))
+(def {t2} (join t1 {:t}))
+(def {t3} (join t1 {:u}))
+(def {c1} (cons :c m5))
+(def {c2} (cons :d m5))
+(print "steps" m5 a1 a2 a3 a4 t1 t2 t3 c1 c2)
+(def {m9} (map sq (range 9)))
+(def {d5} (drop 4 m9))
+(def {d5a} (join d5 {:a}))
+(def {d5b} (join d5 {:b}))
+(def {k4} (take 4 m9))
+(def {k4a} (join k4 {:a}))
+(def {k4b} (join k4 {:b}))
+(print "m9" m9 d5 d5a d5b k4 k4a k4b (cons :x d5) (cons :y k4))
+; nested maps, maps of maps' lists, maps over views of maps' lists
+(print "nested" (map (fn {k} {map sq (range k)}) (range 6)) (map len (map (fn {k} {range k}) (range 8))))
+(print "views" (map sq (tail (map sq (range 6)))) (map sq (drop 3 (map sq (range 9)))) (map (fn {x} {cons x {}}) (take 2 (range 5))))
+; the last: map's list's item past its end
+(nth 40 (map sq (range 40)))

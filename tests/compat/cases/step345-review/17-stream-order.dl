@@ -1,0 +1,12 @@
+; 17-stream-order: streams are ordered as their objects' hashes are (cmp, <, sort): the console's and files opened
+; for writing, compared and sorted, after calls of every shape have run (which make no hash)
+(fun {f3 a b c} {list a b c})
+(dotimes {i 200} (do (f3 i i i) ((f3 i) i i) ((fn {x x} {x}) i i) (map (fn {y} {y}) {1 2 3})))
+(def {ss} (join [stdin stdout stderr] (map (fn {i} {open (+ "s" i ".txt") :write}) (range 8))))
+(print "ranks" (map (fn {s} {len (filter (fn {t2} {< t2 s}) ss)}) ss))
+(print "cmp" (cmp stdin stdout) (cmp stdout stderr) (cmp stdin stderr) (map (fn {s} {cmp s stdout}) ss))
+(dotimes {i 100} (do (f3 i i i) ((f3 i) i i)))
+(def {more} (map (fn {i} {open (+ "t" i ".txt") :write}) (range 4)))
+(print "more" (map (fn {s} {len (filter (fn {t2} {< t2 s}) (join ss more))}) more))
+(each {s (join (drop 3 ss) more)} (close s))
+(print "kinds" (sort (list 1 "s" stdout :a stderr {l} T)))

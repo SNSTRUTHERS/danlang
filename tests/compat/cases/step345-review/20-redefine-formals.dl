@@ -1,0 +1,29 @@
+; 20-redefine-formals: a function redefined (fun, def) with other formals while partial applications and closures of
+; the old one are kept; a global list of formals redefined after functions were made from it; functions printed and
+; compared; the library's functions redefined with formals that repeat or with more of them, then called by the
+; library's own code (floor by round, mod by odd?)
+(fun {rf a b} {list :v1 a b})
+(def {keep1} (rf :k))
+(def {keep0} (rf))
+(fun {rf a a b} {list :v2 a b})
+(print "fun redef" (rf 1 2 3) ((rf 1) 2 3) (keep1 :x) (keep0 :p :q) rf (repr keep1))
+(def {rf} (fn {z} {list :v3 z}))
+(print "def redef" (rf 1) (try (rf 1 2) &err) (keep1 :y) (repr keep0))
+(def {fl} {m n})
+(def {fm} (fn fl {list m n}))
+(def {fl} {n m o})
+(def {fm2} (fn fl {list m n o}))
+(print "formals var" (fm 1 2) (fm2 1 2 3) ((fm2 1) 2 3) fl (eq fm fm2) (repr fm) (repr fm2))
+(def {saved-floor} floor)
+(def {saved-mod} mod)
+(fun {floor a a} {list :my-floor a})
+(print "lib redef" (try (round 5/2) &err) (floor 1 2) (try (floor 1) &err) (repr ((floor) 3)))
+(fun {mod a b c} {list :my-mod a b c})
+(print "lib redef" (try (odd? 3) &err) (try (even? 4) &err) (mod 1 2 3) (repr (mod 1)))
+(def {floor} saved-floor)
+(def {mod} saved-mod)
+(print "lib back" (round 5/2) (odd? 3) (even? 4) (mod 7 3) (floor -7/2))
+; a library function's formals given extras through its partial application
+(print "lib partial" ((mod 7) 3) (try ((mod 7) 3 4) &err) ((between? 1) 9 5) (try ((xor 1) NIL 3) &err))
+; the last: the redefined function called with the old function's count
+(rf 1 2)

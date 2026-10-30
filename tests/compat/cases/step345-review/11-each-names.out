@@ -1,0 +1,17 @@
+--- stdout
+11 22 
+1 Error: S-Expression starts with incorrect type. Got Number, Expected Function. 2 Error: S-Expression starts with incorrect type. Got Number, Expected Function. 
+S-Expression starts with incorrect type. Got T, Expected Function. S-Expression starts with incorrect type. Got Q-Expression, Expected Function. 
+:a :b :c :d :e 
+:i1 :i2 in call {:extra1 {:extra1 :extra2}}
+12bc89120 121 122 
+|0,|0,1,|0,1,4,|0,1,4,9,|0,1,4,9,16,|0,1,4,9,16,25,|0,1,4,9,16,25,36,|0,1,4,9,16,25,36,49,|0,1,4,9,16,25,36,49,64,|0,1,4,9,16,25,36,49,64,81,|0,1,4,9,16,25,36,49,64,81,100,|
+1 2 :p1 :p2 fn form NIL NIL
+fn form NIL The function takes 0 arguments, not 1
+11 21 a1 b1 method NIL NIL
+errors two NIL
+bad 'each' expects {name value} or a function first 'each' expects {name value} or a function first 'each' expects {name value} or a function first 'each' expects a list or a String
+--- stderr
+Error: 11-each-names.dl: each ends it
+  at 11-each-names.dl:31  (error "each ends it")
+--- exit 1

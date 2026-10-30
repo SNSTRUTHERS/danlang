@@ -1,0 +1,17 @@
+; 14-arity-traces: the error of a call with too many arguments, of every shape: formals 0 to 9, bound at once, with a
+; repeat, partially applied, a method, a fexpr; each message, then one uncaught, deep in non-tail calls, for its trace
+(def {fs} (map (fn {k} {fn (take k {a b c d e f g h i}) {:ok}}) (range 10)))
+(each {k (range 10)} (print "arity" k (try (unpack (nth k fs) (range (+ k 1))) &err) (try (unpack (nth k fs) (range (+ k 2))) &err)))
+(each {k (range 1 10)} (print "partial" k (try (unpack (unpack (nth k fs) (range 1)) (range k)) &err)))
+(print "dup" (try ((fn {x x} {:ok}) 1 2 3) &err) (try ((fn {x y x} {:ok}) 1 2 3 4) &err))
+(def {o} #({{:m (fn {x} {list x &0})} {:n (fn {x} {x})}}))
+(print "method" (try (o :m 1 2) &err) (try (o :n 1 2) &err) (try ((o :m 1)) &err))
+(print "fexpr" (try ((fexpr {x} {x}) 1 2) &err) (try ((fexpr {} {:z}) 1) &err))
+(print "builtin" (try (len 1 2) &err) (try (cons 1 {} 2) &err) (try ((+) 1 2) &err))
+(fun {two a b} {list a b})
+(print "fun" (try (two 1 2 3) &err) (try ((two 1) 2 3) &err) (try (((two)) 1 2 3) &err))
+; the last: uncaught, in non-tail calls
+(fun {level3 x} {list (two x x x)})
+(fun {level2 x} {list (level3 x) :after})
+(fun {level1 x} {+ 1 (len (level2 x))})
+(level1 5)

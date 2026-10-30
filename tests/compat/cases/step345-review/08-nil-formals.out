@@ -1,0 +1,23 @@
+--- stdout
+nil <function>(fn NIL {list :n1 &_}) {:n1 NIL} {:n1 {1}} {:n1 {1 2 3}} T
+nil <function>(fn NIL {list :n2 &_}) {:n2 NIL} {:n2 {1}} {:n2 {1 2 3}} NIL
+nil <function>(fn NIL {list :n3 &_}) {:n3 NIL} {:n3 {1}} {:n3 {1 2 3}} NIL
+nil <function>(fn NIL {list :n4 &_}) {:n4 NIL} {:n4 {1}} {:n4 {1 2 3}} NIL
+nil <function>(fn NIL {list :n5 &_}) {:n5 NIL} {:n5 {1}} {:n5 {1 2 3}} NIL
+nil <function>(fn NIL {list :n6 &_}) {:n6 NIL} {:n6 {1}} {:n6 {1 2 3}} NIL
+nil <function>(fn NIL {list :n7 &_}) {:n7 NIL} {:n7 {1}} {:n7 {1 2 3}} NIL
+nil err The function takes 0 arguments, not 1 The function takes 0 arguments, not 2 :none <function>(fn NIL {:none})
+nil use NIL NIL NIL NIL 0 {1} {1} :list
+nil body NIL NIL <function>(fn {x} NIL) <function>(fn NIL NIL) The function takes 0 arguments, not 1
+nil both NIL <function>(fn NIL NIL) The function takes 0 arguments, not 1 T T
+nil fexpr {(+ 1 2) x} {(+ 1 1)}
+again 0 {:n1 {0}} :none NIL NIL The function takes 0 arguments, not 1
+again 1 {:n1 {1}} :none NIL NIL The function takes 0 arguments, not 1
+again 2 {:n1 {2}} :none NIL NIL The function takes 0 arguments, not 1
+fun {:nfun NIL} {:nfun {1 2}} <function>(fn NIL {list :nfun &_})
+--- stderr
+Error: 08-nil-formals.dl: The function takes 0 arguments, not 1
+  at 08-nil-formals.dl:24  (m1 :one)
+  called at 08-nil-formals.dl:24  (m1 :one)
+  called at 08-nil-formals.dl:25  (outer)
+--- exit 1

@@ -1,0 +1,59 @@
+--- stdout
+big 9223372036854775807 :int {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775806 :int {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775808 :int {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775809 :int {"enough" {0 1 2} {:int :int :int}}
+big 18446744073709551614 :int {"enough" {0 1 2} {:int :int :int}}
+big 85070591730234615847396907784232501249 :int {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775807 :fixed {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775808 :int {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775807 :int {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775808 :int {"enough" {0 1 2} {:int :int :int}}
+big 9223372036854775809 :int {"enough" {0 1 2} {:int :int :int}}
+small -9223372036854775808 {NIL NIL NIL}
+small -9223372036854775807 {NIL NIL NIL}
+small -9223372036854775809 {NIL NIL NIL}
+small -18446744073709551616 {NIL NIL NIL}
+small -1 {NIL NIL NIL}
+small 0 {NIL NIL NIL}
+small 1 {NIL {0} {:int}}
+small 2 {NIL {0 1} {:int :int}}
+small 3 {NIL {0 1 2} {:int :int :int}}
+whole 2 {NIL {0 1} {:int :int}}
+whole 3 {NIL {0 1 2} {:int :int :int}}
+whole 2 {NIL {0 1} {:int :int}}
+whole 2 {NIL {0 1} {:int :int}}
+whole 3 {NIL {0 1 2} {:int :int :int}}
+whole 3 {NIL {0 1 2} {:int :int :int}}
+whole 3 {NIL {0 1 2} {:int :int :int}}
+whole 3 {NIL {0 1 2} {:int :int :int}}
+whole 2 {NIL {0 1} {:int :int}}
+whole 1 {NIL {0} {:int}}
+whole 0 {NIL NIL NIL}
+whole 0 {NIL NIL NIL}
+whole -2 {NIL NIL NIL}
+not 2.5 'dotimes': a count must be a whole number, not 2.5 'dotimes': a count must be a whole number, not 2.5
+not 1/2 'dotimes': a count must be a whole number, not 1/2 'dotimes': a count must be a whole number, not 1/2
+not -1/2 'dotimes': a count must be a whole number, not -1/2 'dotimes': a count must be a whole number, not -1/2
+not 2+1i 'dotimes': a count must be a whole number, not 2+1i 'dotimes': a count must be a whole number, not 2+1i
+not 0.1 'dotimes': a count must be a whole number, not 0.1 'dotimes': a count must be a whole number, not 0.1
+not 18446744073709551615/2 'dotimes': a count must be a whole number, not 18446744073709551615/2 'dotimes': a count must be a whole number, not 18446744073709551615/2
+not -18446744073709551617/2 'dotimes': a count must be a whole number, not -18446744073709551617/2 'dotimes': a count must be a whole number, not -18446744073709551617/2
+not :a 'dotimes': a count must be a whole number, not :a 'dotimes': a count must be a whole number, not :a
+not "3" 'dotimes': a count must be a whole number, not "3" 'dotimes': a count must be a whole number, not "3"
+not {3} 'dotimes': a count must be a whole number, not {3} 'dotimes': a count must be a whole number, not {3}
+not \3 'dotimes': a count must be a whole number, not \3 'dotimes': a count must be a whole number, not \3
+not NIL 'dotimes': a count must be a whole number, not NIL 'dotimes': a count must be a whole number, not NIL
+0:int 1:int 2:int 0 1 2 fn form NIL NIL NIL
+fn form big fn big stop fn lmax stop
+:p0 :p1 fn partial NIL NIL
+0{0} 1{1} 2{2} fn extras NIL The function takes 0 arguments, not 1
+set i {100 3 100 2 100 1 100 0}
+012|0|012|1|
+0120011
+0 1 0 1 0 1 1 1 012:formal
+values NIL NIL one
+--- stderr
+Error: 10-dotimes-counts.dl: past a long, at 3
+  at 10-dotimes-counts.dl:38  (error (+ "past a long, at " i))
+--- exit 1

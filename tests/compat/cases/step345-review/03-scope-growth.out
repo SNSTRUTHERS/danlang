@@ -1,0 +1,35 @@
+--- stdout
+grow 1 {:a2 1 5 9 :no-i :no-h NIL} {:a2 1 5 9 :no-i :no-h {101 102 103}}
+grow 2 {:a2 1 5 9 :no-i :no-h NIL} {:a2 1 5 9 :no-i :no-h {102 103 104}}
+grow 3 {:a2 1 5 9 :no-i :no-h NIL} {:a2 1 5 9 :no-i :no-h {103 104 105}}
+grow 4 {:a2 1 5 9 :no-i :no-h NIL} {:a2 1 5 9 :no-i :no-h {104 105 106}}
+grow 5 {:a2 1 5 9 :no-i :no-h NIL} {:a2 1 5 9 :no-i :no-h {105 106 107}}
+grow 6 {:a2 1 5 9 :no-i :no-h NIL} {:a2 1 5 9 :no-i :no-h {106 107 108}}
+grow 7 {:a2 1 5 9 :no-i :no-h NIL} {:a2 1 5 9 :no-i :no-h {107 108 109}}
+grow 8 {:a2 1 5 9 :no-i 107 NIL} {:a2 1 5 9 :no-i 107 {108 109 110}}
+grow 9 {:a2 1 5 9 108 107 NIL} {:a2 1 5 9 108 107 {109 110 111}}
+growset 1 {:put2 :put2 8} <function>(fn {a} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 2 {:put2 :put2 8} <function>(fn {b} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 3 {:put2 :put2 8} <function>(fn {c} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 4 {:put2 :put2 8} <function>(fn {d} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 5 {:put2 :put2 8} <function>(fn {e} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 6 {:put2 :put2 8} <function>(fn {f} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 7 {:put2 :put2 8} <function>(fn {g} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 8 {:put2 :put2 8} <function>(fn {h} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+growset 9 {:put2 :put2 8} <function>(fn {i} {do (set get (fn NIL {a})) (set put (fn {v} {set! {a} v})) (put :put1) (set y1 1) (set y2 2) (set y3 3) (set y4 4) (set y5 5) (set y6 6) (set y7 7) (set y8 8) (put :put2) (list (get) a y8)})
+over 1 {:set-a :set-1 :set-rest 2}
+over 2 {:set-a :set-1 :set-rest 3}
+over 3 {:set-a :set-1 :set-rest 4}
+over 4 {:set-a :set-1 :set-rest 5}
+over 5 {:set-a :set-1 :set-rest 6}
+over 6 {:set-a :set-1 :set-rest 7}
+over 7 {:set-a :set-1 :set-rest 8}
+over 8 {:set-a :set-1 :set-rest 9}
+f8 Error: Unbound Symbol '&1' Error: Unbound Symbol '&2' {1 8 9 10 {9 10} :z}
+f7 Error: Unbound Symbol '&1' Error: Unbound Symbol '&2' {1 7 8 9 {8 9} {:z :zz}} {1 7 8 9 {8 9 10 11 12} {:z :zz}}
+f8 partial <function>(fn {e f g h} {list a h &1 &2 &_ (do (set z :z) z)}) Error: Unbound Symbol '&2' {1 8 9 10 {9 10} :z}
+f9 {1 9 NIL :w} {1 9 {10} :w} {1 9 NIL :w} <function>(fn {b c d e f g h i} {list a i &_ (do (set w :w) w)})
+--- stderr
+Error: 03-scope-growth.dl: Unbound Symbol 'x9'
+  at 03-scope-growth.dl:7  (list a x1 x5 x9 (if (defined? i) i :no-i) (if (defined? ...
+--- exit 1

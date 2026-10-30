@@ -1,0 +1,38 @@
+--- stdout
+count 0 {0 :none :none}
+count 1 {1 0 0}
+count 2 {2 0 1}
+count 7 {7 0 6}
+count 8 {8 0 7}
+count 9 {9 0 8}
+count 15 {15 0 14}
+count 16 {16 0 15}
+count 17 {17 0 16}
+count 31 {31 0 30}
+count 32 {32 0 31}
+count 33 {33 0 32}
+count 63 {63 0 62}
+count 64 {64 0 63}
+count 65 {65 0 64}
+count 70 {70 0 69}
+names {100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139}
+names {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69}
+at {:a 1} {5 5} {20 21}
+past Unbound Symbol '&3' Unbound Symbol '&70'
+defined {NIL NIL NIL NIL NIL NIL} {T T NIL NIL NIL NIL} {T T T NIL NIL NIL} {T T T T T NIL} {T T T T T T}
+formals 0 {20 0 1 8 :no-h}
+formals 1 {19 1 2 9 :no-h}
+formals 2 {18 2 3 10 :no-h}
+formals 3 {17 3 4 11 :no-h}
+formals 4 {16 4 5 12 :no-h}
+formals 5 {15 5 6 13 :no-h}
+formals 6 {14 6 7 14 :no-h}
+formals 7 {13 7 8 15 :no-h}
+formals 8 {12 8 9 16 7}
+direct {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16} {100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116} Unbound Symbol '&17'
+nested {:o1 {:i1 :i2} :o2 2} {:o1 {:i1 :i2} :o2 3}
+--- stderr
+Error: 15-extras-many.dl: Unbound Symbol '&4'
+  at 15-extras-many.dl:19  {list &1 &2 &3 &4 &5 &6 &7 &8 &9 &10 &11 &12 &13 &14 &15 ...
+  called at 15-extras-many.dl:25  (direct 1 2 3)
+--- exit 1

@@ -1,0 +1,13 @@
+--- stdout
+fun redef {:v2 2 3} {:v2 2 3} {:v1 :k :x} {:v1 :p :q} <function>(fn {a a b} {list :v2 a b}) <function>(fn {b} {list :v1 a b})
+def redef {:v3 1} The function takes 1 argument, not 2 {:v1 :k :y} <function>(fn {a b} {list :v1 a b})
+formals var {1 2} {2 1 3} {2 1 3} {n m o} NIL <function>(fn {m n} {list m n}) <function>(fn {n m o} {list m n o})
+lib redef <function>(fn {a} {list :my-floor a}) {:my-floor 2} <function>(fn {a} {list :my-floor a}) <function>(fn {a} {list :my-floor a})
+lib redef NIL NIL {:my-mod 1 2 3} <function>(fn {b c} {list :my-mod a b c})
+lib back 3 T T 1 -4
+lib partial 1 The function takes 1 argument, not 2 Error: Unbound Symbol '&2' The function takes 1 argument, not 2
+--- stderr
+Error: 20-redefine-formals.dl: The function takes 1 argument, not 2
+  at 20-redefine-formals.dl:29  (rf 1 2)
+  called at 20-redefine-formals.dl:29  (rf 1 2)
+--- exit 1

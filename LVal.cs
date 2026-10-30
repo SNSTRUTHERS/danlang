@@ -969,12 +969,13 @@ public partial class LVal {
 
     // A call of a function with no native way, no values bound already, and formals all different, as many as the
     // values (none an error: CallNode's): as Apply does it, the values bound in the call's new scope as they are
-    internal static LVal ApplyNew(FunInfo fi, Name[] names, LVal[] vals) {
+    internal static LVal ApplyNew(FunInfo fi, Name[] names, LVal[] vals, bool argsChecked = true) {
         if (_depth >= MaxDepth) return LVal.Err($"Too deep: more than {MaxDepth} calls nested");
         ++_depth;
         try {
             var intr = CheckInterrupt();
             if (intr != null) return intr;
+            if (!argsChecked) foreach (var v in vals) if (v.IsErr) return v;
             var scope = new LEnv(fi.Closure) { IsCall = true };
             scope.BindNew(names, vals);
             var body = fi.Body!;
@@ -985,6 +986,15 @@ public partial class LVal {
         finally {
             --_depth;
         }
+    }
+
+    // A function (not a built-in) applied to values, as Apply does it (by ApplyNew, for one it can do)
+    internal static LVal Apply(LVal f, LVal[] vals) {
+        var fi = f.Fn!;
+        if (!fi.IsFexpr && fi.Native == null && (fi.Env == null || fi.Env.Count == 0)
+            && fi.Formals!.FormalNames() is Name[] names && names.Length == vals.Length)
+            return ApplyNew(fi, names, vals, false);
+        return Apply(f, vals.ToList());
     }
 
     // Apply's calls, one after another while each comes back as a TAIL value (the depth already counted)

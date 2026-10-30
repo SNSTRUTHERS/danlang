@@ -106,7 +106,12 @@ public partial class Builtins
         Fast(e, "char-code", x => (x.IsStr || x.IsChar) && x.StrVal.Length == 1 ? LVal.Number(x.StrVal[0]) : null);
         Fast(e, "code-char", x => x.IsPlainInt(out var n) && n >= 0 && n <= 255 ? LVal.Char((char)(int)n) : null);
 
-        // lists and hashes
+        // lists and hashes (a list's run of another's, or one more in front: the built-ins' own way, Sublist's, cons's)
+        Fast(e, "cons", null, (x, l) => l.IsNIL ? LVal.Qexpr(new LList().Prepend(x)) : l.IsQExpr ? LVal.Qexpr(l.Cells!.Prepend(x)) : null);
+        Fast(e, "tail", x => x.IsQExpr && x.Count > 0 ? Sublist(x, 1, x.Count - 1) : null);
+        Fast(e, "head", x => x.IsQExpr && x.Count > 0 ? Sublist(x, 0, 1) : null);
+        Fast(e, "init", x => x.IsQExpr && x.Count > 0 ? Sublist(x, 0, x.Count - 1) : null);
+        Fast(e, "end", x => x.IsQExpr && x.Count > 0 ? Sublist(x, x.Count - 1, 1) : null);
         Fast(e, "len", x => x.ValType switch {
             LVal.LE.QEXPR => LVal.Number(x.Count),
             LVal.LE.STR   => LVal.Number(x.StrVal.Length),

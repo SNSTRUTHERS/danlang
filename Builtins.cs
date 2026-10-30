@@ -970,7 +970,7 @@ public partial class Builtins
     // f called with values as they are, not evaluated again; anything but a function is the evaluator's error
     public static LVal Apply(LEnv e, LVal f, params LVal[] args) {
         if (!f.IsFun) return LVal.Err($"S-Expression starts with incorrect type. Got {LVal.LEName(f.ValType)}, Expected {LVal.LEName(LVal.LE.FUN)}.");
-        if (f.BuiltinVal == null) return LVal.Apply(f, args.ToList());
+        if (f.BuiltinVal == null) return LVal.Apply(f, args);
         return LVal.ApplyBuiltin(e, f, args.ToList());
     }
 

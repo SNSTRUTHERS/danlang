@@ -716,7 +716,7 @@ public partial class Builtins
         Binds(F, L);
         if (l.Count > 1) Binds(Hd, Tl);
         var r = LVal.Qexpr();
-        var items = l.Cells!;
+        IReadOnlyList<LVal> items = l.Cells!;
         while (items.Count > 0) {
             if (LVal.Interrupted) return null;      // (Ctrl-C: the code runs, and sees it)
             var x = items[0];

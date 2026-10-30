@@ -1,0 +1,39 @@
+; 12-extras-each-strings.dl - &_ (a call's extra arguments, a list of the call's own), its views and conses; each and
+; dotimes over views (each item bound in turn, so frozen while its list isn't); each over a string (its characters, a
+; list made for it); str-chars, str-split and bytes made into views; str-join and buffer of views
+
+(fun {rest x} {&_})
+(fun {rest-t x} {tail &_})
+(fun {rest-c x} {cons x &_})
+(fun {rest-j x} {join &_ &_ [x]})
+(print (rest 1 2 3 4) (rest-t 1 2 3 4) (rest-c 1 2 3 4) (rest-j 1 2 3) (rest 1) (rest-t 1 2) (rest-c 1))
+(fun {grab} {[&_ (tail &_) (cons :c &_) (drop 1 &_) (take 1 &_)]})
+(def {g} (grab :a :b :c))
+(print g (map len g))
+(fun {again} {unpack rest-c &_})
+(print (again 1 2 3) (again :x) (unpack rest-t (range 5)) (unpack rest-c (cons 9 (range 3))))
+
+; each over views, and over the items of a list made fresh (map's), bound one by one
+(def {l} (cons :h (range 5)))
+(def {seen} NIL)
+(each {x (tail l)} (set! {seen} (cons x seen)))
+(each {x (take 3 l)} (set! {seen} (cons x seen)))
+(each (fn {x} {set! {seen} (cons [:f x] seen)}) (drop 4 l))
+(print seen l)
+(def {fresh} (map (fn {i} {[i (* i i)]}) (range 6)))
+(each {p fresh} (print p (cons :p p) (tail p)))
+(dotimes {i 3} (print i (drop i fresh) (cons i (take i fresh))))
+(print fresh)
+
+; strings: each's characters, str-chars, str-split, bytes, then views of them
+(def {s} "hello world")
+(def {cs} NIL)
+(each {c s} (set! {cs} (cons c cs)))
+(print cs (len cs) (reverse cs) (str-join (reverse cs) ""))
+(def {chars} (str-chars s))
+(print (tail chars) (cons \X (drop 6 chars)) (str-join (take 5 chars) "-") (str-join (cons "<" (tail chars)) ""))
+(def {words} (str-split "a bb ccc dddd eeeee"))
+(print words (tail words) (cons "z" (drop 2 words)) (str-join (init words) "+") (map len (tail words)))
+(def {bs} (bytes "ABCDEF"))
+(print bs (tail bs) (from-bytes (drop 2 bs)) (from-bytes (cons 97 (take 2 bs))) (buffer (tail bs)) (buffer (cons 48 bs)))
+(print (each {c (str-upper "abc")} (print c)) (str-join (map str-upper (tail words))))

@@ -1,0 +1,35 @@
+(def {a} (cons 1 (cons 2 (cons 3 NIL))))
+(def {b} (cons 0 a))
+(def {c} (cons 9 a))
+a
+b
+c
+(tail b)
+(join (tail b) {4})
+(join (tail b) {5})
+(take 2 c)
+(cons :x (take 2 c))
+(cons :y (take 2 c))
+(drop 1 c)
+=(q (list 1 2 3))
+(join q q)
+q
+(eval (cons + a))
+(eval (cons * a))
+(unpack list (tail b))
+(tail (tail (tail a)))
+(tail (tail (tail (tail a))))
+(head (drop 3 a))
+(zip a (tail b))
+(remove-fst 2 b)
+(remove-fst 0 b)
+(distinct (join a b c))
+(fun {walk l} {if l (do (print (fst l)) (walk (tail l))) :done})
+(walk c)
+(walk (drop 2 b))
+(fun {bad l} {+ 1 (tail l)})
+(bad (drop 3 a))
+(bad a)
+a
+b
+c

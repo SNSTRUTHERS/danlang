@@ -1,0 +1,50 @@
+; 06-code-from-views.dl - a list run as code is compiled once (the call its items make, kept with it), and that call
+; reads the list's items where they are: code made of a view of another list (tail, take, drop, a cons onto it),
+; then that other list's storage grown past its end (join) or before its start (cons), and each run again; unpack's
+; (eval (cons f l)) onto the same list over and over, with different functions; and eval of what list built
+
+(def {c} (list + 1 2))
+(print (eval c) (eval c))
+(def {j} (join c {10}))
+(print (eval c) (eval j) (eval c) (eval j))
+(def {j2} (join c {100}))
+(print (eval c) (eval j) (eval j2) c j j2)
+(def {j3} (join j {1000}))
+(print (eval j3) (eval j) (eval c) (eval (init j3)) (eval (take 3 j3)))
+
+; code that's a cons onto a list, and other conses onto that list after it's been run
+(def {args} (cons 3 (cons 4 NIL)))
+(def {k1} (cons + args))
+(print (eval k1) k1)
+(def {k2} (cons * args))
+(def {k3} (cons - args))
+(print (eval k1) (eval k2) (eval k3) k1 k2 k3 args)
+(def {k4} (cons list (cons 99 args)))
+(print (eval k4) (eval k1) (eval k4))
+
+; unpack (eval (cons f l)) onto the same list: the first takes the place before it, the rest copy
+(def {nums} (cons 5 (cons 6 (cons 7 NIL))))
+(print (unpack + nums) (unpack * nums) (unpack list nums) (unpack max nums) (unpack min nums) (unpack + nums) nums)
+(print (map (fn {f} {unpack f nums}) [+ - * list max min]) nums)
+(print (minimum nums) (maximum nums) (remove-min nums) (remove-max nums) nums)
+
+; code from parts of a written list
+(def {prog} {+ 1 2 3 4 5})
+(print (eval prog) (eval (take 3 prog)) (eval (init prog)) (eval (cons - (tail prog))) (eval (cons * (drop 3 prog))))
+(print (eval (join (take 2 prog) (drop 4 prog))) (eval prog) prog)
+(def {calls} {(list 1) (list 2 2) (list 3 3 3)})
+(print (eval (fst calls)) (map eval calls) (eval (cons list (map eval calls))) calls)
+
+; a function body that's a view of another list: its code compiled from it, then the list consed onto
+(def {body} (tail {ignored + x 1}))
+(def {inc} (fn {x} body))
+(print (inc 1) (inc 41) body)
+(def {body2} (cons :more body))
+(print (inc 2) body body2 (inc 3))
+(def {dbl} (fn {x} (cons * (tail body))))
+(print (dbl 21) (inc 21) body)
+
+; eval of the lists list made (the arguments as they came), then joins and conses onto them, run again
+(fun {mk a b} {list + a b})
+(def {m} (mk 20 22))
+(print (eval m) (eval (join m [100])) (eval (cons list (tail m))) (eval m) m)

@@ -1,0 +1,33 @@
+; 05-view-thresholds.dl - a part of a list is a view of its storage unless it's under a quarter of it (then a copy):
+; take, drop, init, tail, subset, head and end of lists of 1 to 40 items (range's, whose storage has doubled as it
+; grew, so some parts are views and some copies), each part then consed onto, joined onto and reversed, and the
+; original checked against a copy of itself made item by item after every part
+
+(fun {copy l} {map (fn {x} {x}) l})
+(fun {probe n} {do
+  =(l (range n))
+  =(c (copy l))
+  =(parts [(take 1 l) (take 2 l) (take (div n 4) l) (take (+ 1 (div n 4)) l) (drop (- n 1) l) (drop (- n 2) l)
+           (drop (- n (div n 4)) l) (drop (- n (+ 1 (div n 4))) l) (init l) (tail l) (head l) (end l)
+           (subset l 1 (div n 4)) (subset l (div n 2)) (drop 0 l) (take n l)])
+  =(consed (map (fn {p} {cons :c p}) parts))
+  =(joined (map (fn {p} {join p [:j]}) parts))
+  =(joined2 (map (fn {p} {join p [:k :k]}) parts))
+  =(revs (map reverse parts))
+  =(ok (eq l c))
+  [n ok (map len parts) (map last joined) (map last joined2) (map fst consed) (eq parts (map (fn {p} {init p}) joined))
+     (eq parts (map tail consed)) (eq revs (map reverse (map reverse revs)))]})
+
+(each {n (map (fn {k} {* 4 (+ 1 k)}) (range 10))} (print (probe n)))
+(each {n {1 2 3 5 6 7 9 13 17 31 33}} (print (probe n)))
+
+; a part of a part: the quarter is of the storage, not of the list it's taken from
+(def {big} (range 64))
+(def {p1} (take 20 big))
+(def {p2} (take 12 p1))
+(def {p3} (take 4 p2))
+(def {p4} (drop 3 p1))
+(def {p5} (tail (tail (tail p4))))
+(print p1 p2 p3 p4 p5)
+(print (join p2 [:a]) (join p3 [:b]) (cons :c p3) (cons :d p5) (join p5 [:e]) (join p1 [:f]))
+(print p1 p2 p3 p4 p5 (eq big (range 64)))

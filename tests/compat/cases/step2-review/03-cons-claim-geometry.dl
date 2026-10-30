@@ -1,0 +1,72 @@
+; 03-cons-claim-geometry.dl - cons onto a list made by cons takes the free place before its first item; these chains
+; run the free places out (four of them after a one-item list, then as many again as the list has), cons onto the
+; same list twice (the second can't take the place), cons onto views that start where the chain does (take, init,
+; drop 0, join of one), onto views that start later (tail, drop), and every list made printed again after each step.
+
+(def {base} (cons 0 NIL))
+(def {c1} (cons 1 base))
+(def {c2} (cons 2 c1))
+(def {c3} (cons 3 c2))
+(def {c4} (cons 4 c3))
+(def {c5} (cons 5 c4))
+(def {c6} (cons 6 c5))
+(print "chain" base c1 c2 c3 c4 c5 c6)
+
+; the same lists consed onto again: none of them may change
+(def {b2} (cons :b2 base))
+(def {d1} (cons :d1 c1))
+(def {d4} (cons :d4 c4))
+(def {d6} (cons :d6 c6))
+(def {d6b} (cons :d6b c6))
+(print "again" base c1 c2 c3 c4 c5 c6 b2 d1 d4 d6 d6b)
+
+; views that start where the list does: their cons takes the place before (if it's still free)
+(def {v2} (take 2 c6))
+(def {w2} (cons :w2 v2))
+(def {w2b} (cons :w2b v2))
+(def {v3} (init c6))
+(def {w3} (cons :w3 v3))
+(def {v4} (drop 0 c6))
+(def {w4} (cons :w4 v4))
+(def {v5} (join c6))
+(def {w5} (cons :w5 v5))
+(print "views" c6 v2 w2 w2b v3 w3 v4 w4 v5 w5 d6 d6b)
+
+; views that start later: tail and drop
+(def {t1} (tail c6))
+(def {u1} (cons :u1 t1))
+(def {u1b} (cons :u1b t1))
+(def {t2} (drop 3 c6))
+(def {u2} (cons :u2 t2))
+(def {u2b} (cons :u2b (cons :u2c t2)))
+(print "tails" c6 t1 u1 u1b t2 u2 u2b c5 c4)
+
+; a chain grown from a view, then views of that chain, consed onto
+(fun {grow l n} {if (zero? n) l (grow (cons n l) (- n 1))})
+(def {g} (grow t2 12))
+(def {g2} (grow (take 2 g) 5))
+(def {g3} (grow (tail g) 5))
+(def {g4} (grow g 3))
+(def {g5} (grow g 3))
+(print "grown" t2 g g2 g3 g4 g5 (eq g4 g5) c6)
+
+; long chains: each one's every tail kept, and checked against the chain rebuilt by join
+(fun {chain n} {foldl (fn {l i} {cons i l}) NIL (range n)})
+(def {long} (chain 200))
+(def {again} (chain 200))
+(print (eq long again) (len long) (sum long) (take 5 long) (drop 195 long))
+(def {tails} (map (fn {k} {drop k long}) (range 0 200 7)))
+(def {conses} (map (fn {l} {cons :x l}) tails))
+(def {conses2} (map (fn {l} {cons :y l}) tails))
+(print (map len tails) (map fst conses) (map fst conses2))
+(print (all? (fn {k} {eq (drop k long) (reverse (take (- 200 k) (reverse long)))}) (range 0 200 7)))
+(print (map (fn {l} {take 3 l}) conses) (map (fn {l} {take 3 l}) conses2))
+(print (eq long again) (map (fn {l} {sum l}) tails))
+
+; two chains from one list, built in turns: they share the first's places, never each other's items
+(def {root} (cons :r NIL))
+(fun {two a b n} {if (zero? n) [a b] (two (cons [:a n] a) (cons [:b n] b) (- n 1))})
+(def {pair} (two root root 9))
+(print root (fst pair) (snd pair) (len (fst pair)) (len (snd pair)))
+(def {pair2} (two (fst pair) (fst pair) 3))
+(print (fst pair) (fst pair2) (snd pair2) root)

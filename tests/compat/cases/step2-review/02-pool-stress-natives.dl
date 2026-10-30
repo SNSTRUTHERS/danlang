@@ -1,0 +1,68 @@
+; 02-pool-stress-natives.dl - the pool of 01, with lib/globals.dl's functions that have native ways (zip, flatten,
+; remove-fst, remove-all, distinct, has-element?, minimum, maximum, remove-min, remove-max, sort-desc, best-of, top,
+; split, unpack, ??, avg) mixed in with cons, tail, take, drop and join, whose results are views of the lists
+; given (remove-fst's of a list whose first item goes is that list's tail itself).  Each list fingerprinted after
+; every step, the pool printed every 20.
+
+(def {seed} 424242)
+(fun {rnd n} {do (set! {seed} (bit-and (+ (* seed 1103515245) 12345) 2147483647)) (mod (shr seed 7) n)})
+
+(def {pool} [(range 12) (cons 5 (cons 5 (range 8))) (list 3 1 4 1 5 9 2 6) (tail (range 25)) (drop 2 (range 9))
+  (take 6 (range 30)) (cons 1 NIL) (join (range 4) (range 4))])
+
+(fun {put i v} {set! {pool} (join (take i pool) [v] (drop (+ i 1) pool))})
+(fun {cap l} {if (> (len l) 48) (if (zero? (rnd 2)) (take 48 l) (drop (- (len l) 48) l)) l})
+(fun {nums l} {filter num? (flatten l)})
+(fun {zipped l} {flatten l})
+
+(def {names} {cons tail drop take join zip remove-fst remove-all distinct flatten remove-min remove-max sort-desc
+  best-of top split-snd unpack-list cons-many has min-max avg coalesce remove-fst-head join-tail})
+
+(fun {op k x y n} {
+  if (== k 0) (cons n x)
+  (if (== k 1) (if x (tail x) x)
+  (if (== k 2) (drop (rnd 5) x)
+  (if (== k 3) (take (+ 1 (rnd 30)) x)
+  (if (== k 4) (join x y)
+  (if (== k 5) (flatten (zip x y))
+  (if (== k 6) (remove-fst (if x (nth (rnd (len x)) x) n) x)
+  (if (== k 7) (remove-all (if x (fst x) n) x)
+  (if (== k 8) (distinct x)
+  (if (== k 9) (flatten [x [y] n])
+  (if (== k 10) (if (nums x) (remove-min (nums x)) x)
+  (if (== k 11) (if (nums x) (remove-max (nums x)) x)
+  (if (== k 12) (sort-desc (nums x))
+  (if (== k 13) (best-of (rnd 6) (nums x))
+  (if (== k 14) (top (rnd 4) (nums x))
+  (if (== k 15) (snd (split (rnd 6) x))
+  (if (== k 16) (unpack list x)
+  (if (== k 17) (cons n (cons n (cons n x)))
+  (if (== k 18) [(if (has-element? x n) 1 0) (len x) n]
+  (if (== k 19) (if (nums x) [(minimum (nums x)) (maximum (nums x))] x)
+  (if (== k 20) (if (nums x) (cons (truncate (avg (nums x))) x) x)
+  (if (== k 21) (cons (?? NIL (take 0 x) n) x)
+  (if (== k 22) (if x (remove-fst (fst x) x) x)
+  (join (if x (tail x) x) (take 3 y))))))))))))))))))))))))
+})
+
+(def {fingerprint} (fn {l} {foldl (fn {a v} {bit-and (+ (* a 31) (if (num? v) v 999)) 16777215}) (len l) l}))
+(def {weights} {0 0 0 1 2 3 4 4 5 5 6 6 6 7 8 8 9 10 11 12 13 14 15 16 16 17 17 18 19 20 21 22 22 22 23 23 4 0})
+
+(fun {run steps} {
+  dotimes {s steps} (do
+    =(k (nth (rnd (len weights)) weights))
+    =(xi (rnd (len pool)))
+    =(x (nth xi pool))
+    =(y (nth (rnd (len pool)) pool))
+    =(res (op k x y (rnd 50)))
+    =(r0 (if (all? num? res) res (nums res)))
+    =(r (cap (if (< (len r0) 8) (cons (rnd 50) (join r0 x y)) r0)))
+    (put (if (zero? (rnd 3)) (rnd (len pool)) xi) r)
+    (print s (nth k names) (len r) (map fingerprint pool))
+    (if (zero? (mod (+ s 1) 20)) (print "pool" pool)))
+})
+
+(run 500)
+(print "final" pool)
+(print "zip of the pool" (zip pool (tail pool)))
+(print "distinct" (map distinct pool) "remove-fst" (map (fn {l} {remove-fst (?? (fst l) 0) l}) pool))

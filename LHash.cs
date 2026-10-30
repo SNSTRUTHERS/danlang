@@ -87,7 +87,7 @@ public class LHash : TaggedValue<Dictionary<HKey, LHash.LHashEntry>> {
 
         // the overrides, each its own (the first error among them kept: OverrideError)
         if (overrides != null)
-            foreach (var o in overrides.Cells ?? new List<LVal>()) {
+            foreach (var o in overrides.Cells ?? new LList()) {
                 OverrideError = Override(o);
                 if (OverrideError != null) break;
             }

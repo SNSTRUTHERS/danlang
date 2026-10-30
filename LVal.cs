@@ -34,7 +34,7 @@ public partial class LVal {
         set => _num = value;
     }
     public string Text = string.Empty;  // a string's or a character's text, a symbol's or an atom's name, an error's message
-    public List<LVal>? Cells = null;
+    public LList? Cells = null;
     private object? _x = null;      // a function's FunInfo, a hash's LHash, a stream's LStream, an error's code, exit's code, a tail call's TailInfo
 
     public string StrVal { get => Text; set => Text = value; }
@@ -126,15 +126,39 @@ public partial class LVal {
     public bool Frozen = false;
     internal bool Used;     // (an integer a native's way will give a Num, when its value's used: Natives.cs)
 
+    // (Freezing goes so many values deep at most: one deeper waits, its parts frozen when the outermost's are, so a list
+    // nested however deep is frozen without the host's stack running out)
+    private const int FreezeDepth = 10000;
+    private static int _freezing;
+    private static Stack<LVal>? _waiting;
+
     public LVal Freeze() {
         if (Frozen) return this;
         Frozen = true;
         if (_x == null && Cells == null) return this;
-        if (Cells != null) foreach (var c in Cells) c.Freeze();
+        if (_freezing >= FreezeDepth) {
+            (_waiting ??= new()).Push(this);
+            return this;
+        }
+        _freezing++;
+        FreezeParts();
+        if (--_freezing == 0 && _waiting != null)
+            while (_waiting.Count > 0) {
+                _freezing++;
+                _waiting.Pop().FreezeParts();
+                _freezing--;
+            }
+        return this;
+    }
+
+    private void FreezeParts() {
+        if (Cells != null) {
+            var a = Cells.Unfrozen(out int i, out int end);
+            for (; i < end; i++) a[i].Freeze();
+        }
         if (Bound != null) foreach (var b in Bound) b.Freeze();
         Formals?.Freeze();
         Body?.Freeze();
-        return this;
     }
 
     private void Mutable() {
@@ -207,7 +231,7 @@ public partial class LVal {
 
             case LE.SEXPR:
             case LE.QEXPR:
-                x.Cells = Cells?.Select(c => c.Copy()).ToList();
+                x.Cells = Cells == null ? null : new LList(Cells.Select(c => c.Copy()));
                 break;
         }
         x.Scope = Scope;
@@ -216,7 +240,7 @@ public partial class LVal {
 
     // T and NIL: one each, shared (frozen)
     private static readonly LVal _t = new LVal { ValType = LE.T, Frozen = true };
-    private static readonly LVal _nil = new LVal { ValType = LE.QEXPR, Cells = new List<LVal>(), Frozen = true };
+    private static readonly LVal _nil = new LVal { ValType = LE.QEXPR, Cells = new LList(), Frozen = true };
     public static LVal T() => _t;
     public static LVal NIL() => _nil;
     public static LVal Bool(bool b) => b ? _t : _nil;
@@ -464,16 +488,19 @@ public partial class LVal {
     public static LVal Sexpr() {
         LVal v = new LVal();
         v.ValType = LE.SEXPR;
-        v.Cells = new List<LVal>();
+        v.Cells = new LList();
         return v;
     }
 
     public static LVal Qexpr() {
         LVal v = new LVal();
         v.ValType = LE.QEXPR;
-        v.Cells = new List<LVal>();
+        v.Cells = new LList();
         return v;
     }
+
+    // A list of these items (shared, as they are)
+    public static LVal Qexpr(LList cells) => new LVal { ValType = LE.QEXPR, Cells = cells };
 
     public static LVal Comment(string s) {
         LVal v = new LVal();
@@ -541,14 +568,14 @@ public partial class LVal {
     // Helper methods
     public LVal Add(LVal x) {
         Mutable();
-        Cells = Cells ?? new List<LVal>();
+        Cells = Cells ?? new LList();
         Cells.Add(x);
         return this;
     }
 
     public LVal Join(LVal y) {
         Mutable();
-        Cells = Cells ?? new List<LVal>();
+        Cells = Cells ?? new LList();
         if (y.Cells != null) Cells?.AddRange(y.Cells);
         return this;
     }

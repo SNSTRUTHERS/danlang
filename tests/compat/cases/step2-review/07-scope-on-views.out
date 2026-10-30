@@ -1,0 +1,60 @@
+--- stdout
+:in-mk 1
+:in-mk-q 2
+l NIL q NIL
+:in-run-it 1
+:in-mk 1
+:in-mk 1
+tail NIL NIL NIL
+:in-mk
+:in-mk-q
+:in-mk-q 2
+init NIL NIL NIL
+:in-run-it
+:in-run-it
+:in-run-it 1
+:in-run-it 2
+take NIL NIL NIL NIL
+1
+:in-run-it 2
+cons NIL NIL
+:in-mk 1
+:in-mk-q 2
+reverse NIL NIL
+:in-run-it 2
+:in-mk-q 1
+join NIL NIL Error: S-Expression starts with incorrect type. Got Atom, Expected Function.
+:in-run-it
+:in-run-it
+subset NIL NIL
+:one
+:two
+:three
+{NIL NIL NIL}
+:one
+:two
+:three
+{NIL NIL NIL}
+:in-run-it
+:in-run-it
+:in-run-it
+{NIL NIL NIL}
+:one
+:two
+:three
+{NIL NIL NIL}
+:in-run-it
+:in-run-it
+:in-run-it
+{NIL NIL NIL}
+:in-keep
+:in-keep
+
+NIL NIL {{print who} NIL {print}}
+:in-keep
+:in-run-it
+:in-run-it
+NIL NIL NIL
+--- stderr
+
+--- exit 0

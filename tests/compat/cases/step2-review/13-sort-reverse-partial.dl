@@ -1,0 +1,34 @@
+; 13-sort-reverse-partial.dl - sort and reverse of views and conses (reverse is the list's own copy, turned round in
+; place); sort stable on views with equal keys, with a less function; partial applications holding lists that share
+; storage (cons, take, drop, join, map given a list first), called many times; the originals printed after each
+
+(def {base} (cons 5 (cons 3 (cons 8 (cons 1 (cons 9 (cons 2 NIL)))))))
+(def {t1} (tail base))
+(def {t2} (drop 2 base))
+(print (reverse base) (reverse t1) (reverse t2) (reverse (take 3 base)) (reverse (init base)) base t1 t2)
+(print (sort base) (sort t1) (sort t2 >) (sort (cons 0 t2)) (sort (join t2 t1)) base t1 t2)
+(def {r1} (reverse t1))
+(def {r2} (cons :r r1))
+(def {r3} (reverse (cons :q t1)))
+(print r1 r2 r3 (reverse r2) (reverse r3) t1 base)
+(print (reverse (reverse base)) (eq base (reverse (reverse base))) (reverse NIL) (reverse (tail (list 1))))
+
+; stable: pairs with equal keys keep their order
+(def {pairs} (map (fn {i} {[(mod i 3) i]}) (range 12)))
+(def {by-key} (fn {a b} {< (fst a) (fst b)}))
+(print (sort pairs by-key) (sort (tail pairs) by-key) (sort (drop 5 pairs) by-key) (sort (reverse pairs) by-key))
+(print (sort (cons [1 :first] pairs) by-key) pairs)
+(print (sort-desc (map snd pairs)) (best-of 3 (tail (map snd pairs))) (top 2 (drop 3 (map snd pairs))))
+
+; partial applications holding lists
+(def {pre} (cons :pre))
+(def {tk} (take 2))
+(def {dr} (drop 3))
+(def {jn} (fn {x} {join base x}))
+(def {mp} (map (fn {x} {* x 10})))
+(print (pre base) (pre t1) (tk base) (tk t2) (dr base) (dr t1) (jn t1) (jn [:x]) (mp t2) (mp base))
+(def {cons-base} (fn {x} {cons x base}))
+(print (map cons-base {a b c}) (map (cons :z) [base t1 t2]) (map (fn {x} {join t2 x}) [t1 [:k]]) base t1 t2)
+(def {applied} (map (fn {f} {f t1}) [pre tk dr jn mp reverse sort len]))
+(print applied t1)
+(print (foldl (fn {acc f} {f acc}) base [tail tail (cons 0) (take 3) reverse (fn {x} {join [:a] x}) (drop 1) sort]) base)

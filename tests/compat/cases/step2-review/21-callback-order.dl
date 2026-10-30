@@ -1,0 +1,40 @@
+; 21-callback-order.dl - the order and number of the calls built-ins make of a function given them, which print each
+; call: sort's less (its comparisons, as the sort makes them), map, filter, foldl, foldr, any?, all?, find, count,
+; each, on views and conses of lists (sharing storage) and on lists of their own, which must make the same calls
+
+(def {calls} 0)
+(fun {less a b} {do (set! {calls} (+ calls 1)) (write "<" a "," b " ") (< a b)})
+(fun {note x} {do (write "[" x "]") x})
+
+(def {own} (list 5 3 8 1 9 2 7 4 6 0))
+(def {chain} (foldl (fn {l x} {cons x l}) NIL (reverse own)))
+(def {view} (tail (cons 99 own)))
+(print own chain view (eq own chain) (eq own view))
+(each {l [own chain view]} (do
+  (set! {calls} 0)
+  (print)
+  (print "sorted" (sort l less) calls)))
+(each {l [(drop 3 own) (drop 3 chain) (take 7 view) (init (join view [11]))]} (do
+  (set! {calls} 0)
+  (print)
+  (print "part" (sort l less) calls)))
+(print)
+
+; ties: a less that's only ever false for equal keys, and one that's always T
+(def {pairs} (map (fn {i} {[(mod i 3) i]}) (range 9)))
+(def {pairs-view} (tail (cons [0 -1] pairs)))
+(fun {by-key a b} {do (write (snd a) "?" (snd b) " ") (< (fst a) (fst b))})
+(print (sort pairs by-key))
+(print (sort pairs-view by-key))
+(print (sort (tail pairs) (fn {a b} {do (write ".") T})))
+(print (sort (drop 1 pairs-view) (fn {a b} {do (write ".") T})))
+
+; the other built-ins that call a function for each item
+(each {l [own view (drop 2 chain)]} (do
+  (print "map" (map note l))
+  (print "filter" (filter (fn {x} {> (note x) 4}) l))
+  (print "foldl" (foldl (fn {a x} {+ a (note x)}) 0 l) "foldr" (foldr (fn {x a} {+ a (note x)}) 0 l))
+  (print "any" (any? (fn {x} {> (note x) 7}) l) "all" (all? (fn {x} {< (note x) 8}) l))
+  (print "find" (find (fn {x} {zero? (mod (note x) 4)}) l) "count" (count (fn {x} {odd? (note x)}) l))
+  (each (fn {x} {note x}) l)
+  (print)))

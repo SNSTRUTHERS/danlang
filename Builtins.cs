@@ -99,7 +99,7 @@ public partial class Builtins
     private static LVal Made(LEnv e, LVal a, string fn) {
         LVal formals = a.Pop(0);
         LVal body = a.Pop(0);
-        if (!formals.IsQExpr || (formals.Cells ?? new List<LVal>()).Any(c => !c.IsSym)) return LVal.Err($"'{fn}' expects a list of symbols first");
+        if (!formals.IsQExpr || (formals.Cells ?? new LList()).Any(c => !c.IsSym)) return LVal.Err($"'{fn}' expects a list of symbols first");
         if (!body.IsQExpr) return LVal.Err($"'{fn}' expects a QExpr body");
         return LVal.Lambda(formals, body, e);
     }
@@ -151,8 +151,7 @@ public partial class Builtins
     // (A list made from another keeps the scope it was written in: Scope, which eval runs it in.  The other isn't
     // changed: values are shared)
     private static LVal Sublist(LVal v, int from, int count) {
-        var ret = LVal.Qexpr();
-        ret.Cells!.AddRange(v.Cells!.GetRange(from, count));
+        var ret = LVal.Qexpr(v.Cells!.Slice(from, count));
         ret.Scope = v.Scope;
         return ret;
     }
@@ -1080,7 +1079,7 @@ public partial class Builtins
             var l = LoopSpec(e, a.Pop(0), "each", out var name);
             if (l.IsErr) return l;
             if (!l.IsQExpr && !l.IsStr) return LVal.Err("'each' expects a list or a String");
-            foreach (var item in l.IsStr ? l.StrVal.Select(Chr).ToList() : l.Cells!) {
+            foreach (var item in l.IsStr ? new LList(l.StrVal.Select(Chr)) : l.Cells!) {
                 var r = LoopBody(e, a, name, item);
                 if (r.IsErr) return r;
             }
@@ -1093,7 +1092,7 @@ public partial class Builtins
         var lst = a.Pop(0, e);
         if (lst.IsErr) return lst;
         if (!lst.IsQExpr && !lst.IsStr) return LVal.Err("'each' expects a list or a String");
-        foreach (var item in lst.IsStr ? lst.StrVal.Select(Chr).ToList() : lst.Cells!) {
+        foreach (var item in lst.IsStr ? new LList(lst.StrVal.Select(Chr)) : lst.Cells!) {
             var r = Apply(e, f, item);
             if (r.IsErr) return r;
         }

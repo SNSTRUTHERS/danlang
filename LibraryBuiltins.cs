@@ -9,7 +9,7 @@ public partial class Builtins
     private static LVal Not(LVal v) => v.IsErr ? v : LVal.Bool(v.IsNIL);
 
     // A list argument's items (NIL: none).  OUT: null, it isn't a list
-    private static List<LVal>? Items(LVal l) => l.IsNIL ? new List<LVal>() : l.IsQExpr ? l.Cells! : null;
+    private static LList? Items(LVal l) => l.IsNIL ? new LList() : l.IsQExpr ? l.Cells! : null;
 
     // The list's item n (a number: 0 on), as it's written; past the list's end, or before it, an error
     private static LVal Nth(LVal n, LVal l, string fn) {
@@ -54,10 +54,7 @@ public partial class Builtins
         AddBuiltin(e, "cons", (e, a) => {
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'cons' expects a list second");
-            var q = LVal.Qexpr();
-            q.Add(a[0]);
-            foreach (var c in items) q.Add(c);
-            return q;
+            return LVal.Qexpr(items.Prepend(a[0]));
         });
         AddBuiltin(e, "fst",  (e, a) => Nth(zero, a[0], "fst"));
         AddBuiltin(e, "snd",  (e, a) => Nth(one, a[0], "snd"));
@@ -74,18 +71,15 @@ public partial class Builtins
             if (w.IsErr) return w;
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'take' expects a list");
-            var q = LVal.Qexpr();
-            foreach (var c in items.Take(k < items.Count ? (int)k : items.Count)) q.Add(c);
-            return q;
+            return LVal.Qexpr(items.Slice(0, k < items.Count ? (int)k : items.Count));
         });
         AddBuiltin(e, "drop", (e, a) => {
             var w = Count(a[0], "drop", out var k);
             if (w.IsErr) return w;
             var items = Items(a[1]);
             if (items == null) return LVal.Err("'drop' expects a list");
-            var q = LVal.Qexpr();
-            foreach (var c in items.Skip(k < items.Count ? (int)k : items.Count)) q.Add(c);
-            return q;
+            int from = k < items.Count ? (int)k : items.Count;
+            return LVal.Qexpr(items.Slice(from, items.Count - from));
         });
         LVal Elem(LVal x, LVal l, string fn) {
             var items = Items(l);

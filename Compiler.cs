@@ -164,13 +164,13 @@ public partial class LVal {
 
     // A call: a list's items, the first the function
     internal sealed class CallNode : Node {
-        private readonly List<LVal> _cells;
+        private readonly LList _cells;
         private readonly Node?[] _nodes;      // each item's, as it's needed
         private readonly CodeInfo _info;      // (its place, for an error's trace)
         private readonly int _n;              // (its items: how many)
 
         public CallNode(LVal code, CodeInfo info) {
-            _cells = code.Cells ?? new List<LVal>();
+            _cells = code.Cells ?? new LList();
             _n = _cells.Count;
             _nodes = new Node?[_n];
             _info = info;
